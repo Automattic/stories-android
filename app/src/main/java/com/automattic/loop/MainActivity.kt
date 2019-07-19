@@ -43,4 +43,7 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
             else -> super.onOptionsItemSelected(item)
         }
     }
+
+    override fun onSupportNavigateUp() =
+        Navigation.findNavController(this, R.id.nav_host_fragment).navigateUp()
 }
