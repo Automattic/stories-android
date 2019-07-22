@@ -1,4 +1,4 @@
-package com.automattic.loop
+package com.automattic.portkey
 
 import android.content.Context
 import android.net.Uri
