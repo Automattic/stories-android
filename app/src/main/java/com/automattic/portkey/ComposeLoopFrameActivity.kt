@@ -1,14 +1,13 @@
 package com.automattic.portkey
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 
 import kotlinx.android.synthetic.main.activity_main.*
 
 class ComposeLoopFrameActivity : AppCompatActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_composer)
@@ -16,7 +15,6 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         // TODO: flesh out photoEditor under nav host here
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
