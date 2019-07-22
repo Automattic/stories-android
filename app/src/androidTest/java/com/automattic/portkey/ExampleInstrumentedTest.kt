@@ -1,4 +1,4 @@
-package com.automattic.loop
+package com.automattic.portkey
 
 import androidx.test.InstrumentationRegistry
 import androidx.test.runner.AndroidJUnit4
@@ -19,6 +19,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getTargetContext()
-        assertEquals("com.automattic.loop", appContext.packageName)
+        assertEquals("com.automattic.portkey", appContext.packageName)
     }
 }

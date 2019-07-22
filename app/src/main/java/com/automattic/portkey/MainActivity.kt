@@ -1,4 +1,4 @@
-package com.automattic.loop
+package com.automattic.portkey
 
 import android.os.Bundle
 import com.google.android.material.snackbar.Snackbar
