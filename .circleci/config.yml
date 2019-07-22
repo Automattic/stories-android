@@ -1,0 +1,41 @@
+version: 2.1
+
+orbs:
+  android: wordpress-mobile/android@0.0.23
+  slack: circleci/slack@2.5.0
+
+jobs:
+  Lint:
+    executor: 
+      name: android/default
+      api-version: "29"
+    steps:
+      - checkout
+      - android/restore-gradle-cache
+      - run:
+          name: Check Style
+          command: ./gradlew --stacktrace checkstyle ktlint
+      - run:
+          name: Lint
+          command: |
+            ./gradlew --stacktrace lintRelease || (grep -A20 -B2 'severity="Error"' */build/**/*.xml; exit 1);
+      - android/save-gradle-cache
+      - android/save-lint-results
+  Unit Tests:
+    executor: 
+      name: android/default
+      api-version: "29"
+    steps:
+      - checkout
+      - android/restore-gradle-cache
+      - run:
+          name: Unit tests
+          command: ./gradlew --stacktrace -PtestsMaxHeapSize=1536m testRelease
+      - android/save-gradle-cache
+      - android/save-test-results
+
+workflows:
+  portkey:
+    jobs:
+      - Lint
+      - Unit Tests
