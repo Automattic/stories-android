@@ -5,7 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.media.effect.Effect
 import android.media.effect.EffectContext
-import android.media.effect.EffectFactory
+import android.media.effect.EffectFactory.*
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.opengl.GLUtils
@@ -17,7 +17,6 @@ import android.util.Log
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
-import android.media.effect.EffectFactory.*
 import com.automattic.photoeditor.PhotoFilter.NONE
 
 /**
@@ -60,15 +59,11 @@ internal class ImageFilterView : GLSurfaceView, GLSurfaceView.Renderer {
     }
 
     fun setSourceBitmap(sourceBitmap: Bitmap) {
-        /* if (mSourceBitmap != null && mSourceBitmap.sameAs(sourceBitmap)) {
-            //mCurrentEffect = NONE;
-        }*/
         mSourceBitmap = sourceBitmap
         mInitialized = false
     }
 
     override fun onSurfaceCreated(gl: GL10, config: EGLConfig) {
-
     }
 
     override fun onSurfaceChanged(gl: GL10, width: Int, height: Int) {
@@ -151,7 +146,6 @@ internal class ImageFilterView : GLSurfaceView, GLSurfaceView.Renderer {
         } else {
             // Initialize the correct effect based on the selected menu/action item
             when (mCurrentEffect) {
-
                 PhotoFilter.AUTO_FIX -> {
                     mEffect = effectFactory.createEffect(EFFECT_AUTOFIX)
                     mEffect!!.setParameter("scale", 0.5f)
@@ -243,7 +237,6 @@ internal class ImageFilterView : GLSurfaceView, GLSurfaceView.Renderer {
     }
 
     companion object {
-
         private val TAG = "ImageFilterView"
     }
 }

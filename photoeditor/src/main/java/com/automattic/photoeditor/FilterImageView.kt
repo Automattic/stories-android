@@ -9,8 +9,8 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.Icon
 import android.net.Uri
-import android.support.v7.widget.AppCompatImageView
 import android.util.AttributeSet
+import androidx.appcompat.widget.AppCompatImageView
 
 /**
  * @author [Burhanuddin Rashid](https://github.com/burhanrashid52)
@@ -18,7 +18,6 @@ import android.util.AttributeSet
  * @since 5/21/2018
  */
 internal class FilterImageView : AppCompatImageView {
-
     private var mOnImageChangedListener: OnImageChangedListener? = null
 
     val bitmap: Bitmap?

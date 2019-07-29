@@ -19,7 +19,6 @@ package com.automattic.photoeditor
 import android.opengl.GLES20
 
 internal object GLToolbox {
-
     private fun loadShader(shaderType: Int, source: String): Int {
         val shader = GLES20.glCreateShader(shaderType)
         if (shader != 0) {
@@ -92,5 +91,4 @@ internal object GLToolbox {
             GLES20.GL_CLAMP_TO_EDGE
         )
     }
-
 }

@@ -13,7 +13,6 @@ import android.view.View
  *
  */
 interface OnPhotoEditorListener {
-
     /**
      * When user long press the existing text this event will trigger implying that user want to
      * edit the current [android.widget.TextView]

@@ -12,7 +12,6 @@ import java.util.HashMap
  * @since 5/22/2018
  */
 class CustomEffect private constructor(builder: Builder) {
-
     /**
      * @return Custom effect name from [android.media.effect.EffectFactory.createEffect]
      */
