@@ -235,7 +235,6 @@ internal class ScaleGestureDetector(private val mListener: OnScaleGestureListene
      * of scaling-related events. This implements all methods in
      */
     internal open class SimpleOnScaleGestureListener : OnScaleGestureListener {
-
         override fun onScale(view: View, detector: ScaleGestureDetector): Boolean {
             return false
         }
