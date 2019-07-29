@@ -3,13 +3,14 @@ package com.automattic.photoeditor
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
-import android.support.annotation.ColorInt
-import android.support.annotation.IntRange
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import androidx.annotation.ColorInt
+import androidx.annotation.IntRange
 
 import java.util.Stack
+import kotlin.ranges.IntRange as IntRange1
 
 /**
  *
@@ -23,7 +24,6 @@ import java.util.Stack
  * @since 12/1/18
  */
 class BrushDrawingView : View {
-
     internal var brushSize = 25f
         set(size) {
             field = size
@@ -64,7 +64,7 @@ class BrushDrawingView : View {
         }
 
     init {
-        //Caution: This line is to disable hardware acceleration to make eraser feature work properly
+        // Caution: This line is to disable hardware acceleration to make eraser feature work properly
         setLayerType(View.LAYER_TYPE_HARDWARE, null)
         mDrawPaint = Paint()
         mPath = Path()
@@ -76,8 +76,8 @@ class BrushDrawingView : View {
         mDrawPaint.strokeCap = Paint.Cap.ROUND
         mDrawPaint.strokeWidth = brushSize
         mDrawPaint.alpha = mOpacity
-        //Resolve Brush color changes after saving image  #52
-        //Resolve Brush bug using PorterDuff.Mode.SRC_OVER #80 and PR #83
+        // Resolve Brush color changes after saving image  #52
+        // Resolve Brush bug using PorterDuff.Mode.SRC_OVER #80 and PR #83
         mDrawPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_OVER)
         this.visibility = View.GONE
     }
@@ -99,8 +99,8 @@ class BrushDrawingView : View {
         mDrawPaint.strokeCap = Paint.Cap.ROUND
         mDrawPaint.strokeWidth = brushSize
         mDrawPaint.alpha = mOpacity
-        //Resolve Brush color changes after saving image  #52
-        //Resolve Brush bug using PorterDuff.Mode.SRC_OVER #80 and PR #83
+        // Resolve Brush color changes after saving image  #52
+        // Resolve Brush bug using PorterDuff.Mode.SRC_OVER #80 and PR #83
         mDrawPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_OVER)
     }
 
