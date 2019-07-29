@@ -145,7 +145,6 @@ internal class TextureRenderer {
     }
 
     companion object {
-
         private val VERTEX_SHADER = "attribute vec4 a_position;\n" +
                 "attribute vec2 a_texcoord;\n" +
                 "varying vec2 v_texcoord;\n" +

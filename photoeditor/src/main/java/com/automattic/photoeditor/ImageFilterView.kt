@@ -5,7 +5,28 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.media.effect.Effect
 import android.media.effect.EffectContext
-import android.media.effect.EffectFactory.*
+import android.media.effect.EffectFactory.EFFECT_AUTOFIX
+import android.media.effect.EffectFactory.EFFECT_BLACKWHITE
+import android.media.effect.EffectFactory.EFFECT_BRIGHTNESS
+import android.media.effect.EffectFactory.EFFECT_CONTRAST
+import android.media.effect.EffectFactory.EFFECT_CROSSPROCESS
+import android.media.effect.EffectFactory.EFFECT_DOCUMENTARY
+import android.media.effect.EffectFactory.EFFECT_DUOTONE
+import android.media.effect.EffectFactory.EFFECT_FILLLIGHT
+import android.media.effect.EffectFactory.EFFECT_FISHEYE
+import android.media.effect.EffectFactory.EFFECT_FLIP
+import android.media.effect.EffectFactory.EFFECT_GRAIN
+import android.media.effect.EffectFactory.EFFECT_GRAYSCALE
+import android.media.effect.EffectFactory.EFFECT_LOMOISH
+import android.media.effect.EffectFactory.EFFECT_NEGATIVE
+import android.media.effect.EffectFactory.EFFECT_POSTERIZE
+import android.media.effect.EffectFactory.EFFECT_ROTATE
+import android.media.effect.EffectFactory.EFFECT_SATURATE
+import android.media.effect.EffectFactory.EFFECT_SEPIA
+import android.media.effect.EffectFactory.EFFECT_SHARPEN
+import android.media.effect.EffectFactory.EFFECT_TEMPERATURE
+import android.media.effect.EffectFactory.EFFECT_TINT
+import android.media.effect.EffectFactory.EFFECT_VIGNETTE
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.opengl.GLUtils
@@ -71,16 +92,15 @@ internal class ImageFilterView : GLSurfaceView, GLSurfaceView.Renderer {
     }
 
     override fun onDrawFrame(gl: GL10) {
-
         if (!mInitialized) {
-            //Only need to do this once
+            // Only need to do this once
             mEffectContext = EffectContext.createWithCurrentGlContext()
             mTexRenderer.init()
             loadTextures()
             mInitialized = true
         }
         if (mCurrentEffect != NONE || mCustomEffect != null) {
-            //if an effect is chosen initialize it and apply it to the texture
+            // if an effect is chosen initialize it and apply it to the texture
             initEffect()
             applyEffect()
         }
@@ -105,7 +125,6 @@ internal class ImageFilterView : GLSurfaceView, GLSurfaceView.Renderer {
         mCustomEffect = customEffect
         requestRender()
     }
-
 
     fun saveBitmap(onSaveBitmap: OnSaveBitmap) {
         mOnSaveBitmap = onSaveBitmap

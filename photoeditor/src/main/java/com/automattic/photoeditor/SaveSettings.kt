@@ -1,7 +1,5 @@
 package com.automattic.photoeditor
 
-import android.graphics.Bitmap
-
 /**
  * @author [Burhanuddin Rashid](https://github.com/burhanrashid52)
  * @since 8/8/2018

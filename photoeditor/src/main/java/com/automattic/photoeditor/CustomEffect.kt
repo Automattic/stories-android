@@ -49,7 +49,7 @@ class CustomEffect private constructor(builder: Builder) {
         /**
          * set parameter to the attributes with its value
          *
-         * @param paramKey   attribute key for [android.media.effect.Effect.setParameter]
+         * @param paramKey attribute key for [android.media.effect.Effect.setParameter]
          * @param paramValue value for [android.media.effect.Effect.setParameter]
          * @return builder instance to setup multiple parameters
          */

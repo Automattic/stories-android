@@ -16,8 +16,10 @@ import android.widget.RelativeLayout
  *
  */
 internal class MultiTouchListener(
-    private val deleteView: View?, private val parentView: RelativeLayout,
-    private val photoEditImageView: ImageView, private val mIsTextPinchZoomable: Boolean,
+    private val deleteView: View?,
+    private val parentView: RelativeLayout,
+    private val photoEditImageView: ImageView,
+    private val mIsTextPinchZoomable: Boolean,
     private val mOnPhotoEditorListener: OnPhotoEditorListener?
 ) : OnTouchListener {
     private val mGestureListener: GestureDetector
@@ -139,7 +141,6 @@ internal class MultiTouchListener(
     }
 
     private inner class ScaleGestureListener : ScaleGestureDetector.SimpleOnScaleGestureListener() {
-
         private var mPivotX: Float = 0.toFloat()
         private var mPivotY: Float = 0.toFloat()
         private val mPrevSpanVector = Vector2D()
@@ -211,7 +212,6 @@ internal class MultiTouchListener(
     }
 
     companion object {
-
         private val INVALID_POINTER_ID = -1
 
         private fun adjustAngle(origDegrees: Float): Float {

@@ -121,7 +121,6 @@ class PhotoEditorView : RelativeLayout {
         // set main listener
         autoFitTextureView.surfaceTextureListener = surfaceTextureListener
 
-
         // Setup brush view
         brushDrawingView = BrushDrawingView(context)
         brushDrawingView.visibility = View.GONE
@@ -167,7 +166,6 @@ class PhotoEditorView : RelativeLayout {
         // Add brush view
         addView(brushDrawingView, brushParam)
     }
-
 
     internal fun saveFilter(onSaveBitmap: OnSaveBitmap) {
         // check which background is currently visible: if it's
@@ -219,8 +217,10 @@ class PhotoEditorView : RelativeLayout {
         autoFitTextureView.visibility = View.GONE
     }
 
-    internal fun toggleTextureView() : Boolean {
-        imgSource.visibility = autoFitTextureView.visibility.also { autoFitTextureView.visibility = imgSource.visibility }
+    internal fun toggleTextureView(): Boolean {
+        imgSource.visibility = autoFitTextureView.visibility.also {
+            autoFitTextureView.visibility = imgSource.visibility
+        }
         return autoFitTextureView.visibility == View.VISIBLE
     }
 

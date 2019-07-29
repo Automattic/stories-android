@@ -73,7 +73,7 @@ internal object BitmapUtil {
      * Save filter bitmap from [ImageFilterView]
      *
      * @param glSurfaceView surface view on which is image is drawn
-     * @param gl            open gl source to read pixels from [GLSurfaceView]
+     * @param gl open gl source to read pixels from [GLSurfaceView]
      * @return save bitmap
      * @throws OutOfMemoryError error when system is out of memory to load and save bitmap
      */

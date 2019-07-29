@@ -21,7 +21,7 @@ class AddedViewList : ArrayList<AddedView>() {
         }
         return null
     }
-    fun indexOfView(element: View) : Int {
+    fun indexOfView(element: View): Int {
         for (n in this) {
             if (n.view == element) {
                 return this.indexOf(n)
@@ -30,5 +30,3 @@ class AddedViewList : ArrayList<AddedView>() {
         return -1
     }
 }
-
-

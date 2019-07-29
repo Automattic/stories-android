@@ -29,7 +29,6 @@ import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import java.io.IOException
 
-
 class VideoPlayingBasicHandling : Fragment(),
     ActivityCompat.OnRequestPermissionsResultCallback, SurfaceFragmentHandler {
     /**

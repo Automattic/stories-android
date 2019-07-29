@@ -32,7 +32,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.ArrayList
 import kotlinx.android.synthetic.main.view_photo_editor_text.view.*
-import kotlin.ranges.IntRange as IntRange1
 
 /**
  *
@@ -65,8 +64,7 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
      *
      * @return scalable multitouch listener
      */
-    private//multiTouchListener.setOnMultiTouchListener(this);
-    val multiTouchListener: MultiTouchListener
+    private val multiTouchListener: MultiTouchListener
         get() = MultiTouchListener(
             deleteView,
             parentView,
@@ -125,7 +123,6 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
      */
     val isCacheEmpty: Boolean
         get() = addedViews.size == 0 && redoViews.size == 0
-
 
     init {
         this.context = builder.context
@@ -198,7 +195,7 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
         // now load the gif on this ImageView with Glide
         Glide.with(context)
             .load(uri)
-            .into(imageView);
+            .into(imageView)
     }
 
     fun addNewImageView(isAnimated: Boolean): ImageView {
@@ -230,8 +227,8 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
      * This add the text on the [PhotoEditorView] with provided parameters
      * by default [TextView.setText] will be 18sp
      *
-     * @param textTypeface      typeface for custom font in the text
-     * @param text              text to display
+     * @param textTypeface typeface for custom font in the text
+     * @param text text to display
      * @param colorCodeTextView text color to be displayed
      */
     @SuppressLint("ClickableViewAccessibility")
@@ -270,11 +267,10 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
         addViewToParent(textRootView, ViewType.TEXT)
     }
 
-
     /**
      * This will update text and color on provided view
      *
-     * @param view      view on which you want update
+     * @param view view on which you want update
      * @param inputText text to update [TextView]
      * @param colorCode color to update on [TextView]
      */
@@ -285,10 +281,10 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
     /**
      * This will update the text and color on provided view
      *
-     * @param view         root view where text view is a child
+     * @param view root view where text view is a child
      * @param textTypeface update typeface for custom font in the text
-     * @param inputText    text to update [TextView]
-     * @param colorCode    color to update on [TextView]
+     * @param inputText text to update [TextView]
+     * @param colorCode color to update on [TextView]
      */
     fun editText(view: View, textTypeface: Typeface?, inputText: String, colorCode: Int) {
         val inputTextView = view.findViewById<TextView>(R.id.tvPhotoEditorText)
@@ -319,7 +315,7 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
      * if [PhotoEditor.Builder.setPinchTextScalable] enabled
      *
      * @param emojiTypeface typeface for custom font to show emoji unicode in specific font
-     * @param emojiName     unicode in form of string to display emoji
+     * @param emojiName unicode in form of string to display emoji
      */
     fun addEmoji(emojiTypeface: Typeface?, emojiName: String) {
         brushDrawingView.brushDrawingMode = false
@@ -347,7 +343,6 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
         emojiRootView.setOnTouchListener(multiTouchListener)
         addViewToParent(emojiRootView, ViewType.EMOJI)
     }
-
 
     /**
      * Add to root view from image,emoji and text to our parent view
@@ -398,8 +393,8 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
         }
 
         if (rootView != null) {
-            //We are setting tag as ViewType to identify what type of the view it is
-            //when we remove the view from stack i.e onRemoveViewListener(ViewType viewType, int numberOfAddedViews);
+            // We are setting tag as ViewType to identify what type of the view it is
+            // when we remove the view from stack i.e onRemoveViewListener(ViewType viewType, int numberOfAddedViews);
             rootView.tag = viewType
             val imgClose = rootView.findViewById<ImageView>(R.id.imgPhotoEditorClose)
             val finalRootView = rootView
@@ -589,7 +584,7 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
         parentView.turnTextureViewOff()
     }
 
-    fun toggleTextureView() : Boolean {
+    fun toggleTextureView(): Boolean {
         return parentView.toggleTextureView()
     }
 
@@ -597,7 +592,7 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
         parentView.turnTextureAndImageViewOff()
     }
 
-    fun isTextureViewVisible() : Boolean {
+    fun isTextureViewVisible(): Boolean {
         return parentView.textureView.visibility == View.VISIBLE
     }
 
@@ -605,7 +600,6 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
      * A callback to save the edited media asynchronously
      */
     interface OnSaveListener {
-
         /**
          * Call when edited media is saved successfully on given path
          *
@@ -620,7 +614,6 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
          */
         fun onFailure(exception: Exception)
     }
-
 
     /**
      * A callback to save the edited media asynchronously
@@ -647,7 +640,7 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
     }
 
     /**
-     * @param imagePath      path on which image to be saved
+     * @param imagePath path on which image to be saved
      * @param onSaveListener callback for saving image
      * @see OnSaveListener
      *
@@ -662,7 +655,7 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
     /**
      * Save the edited image on given path
      *
-     * @param imagePath      path on which image to be saved
+     * @param imagePath path on which image to be saved
      * @param onSaveListener callback for saving image
      * @see OnSaveListener
      */
@@ -674,8 +667,8 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
     /**
      * Save the edited image on given path
      *
-     * @param imagePath      path on which image to be saved
-     * @param saveSettings   builder for multiple save options [SaveSettings]
+     * @param imagePath path on which image to be saved
+     * @param saveSettings builder for multiple save options [SaveSettings]
      * @param onSaveListener callback for saving image
      * @see OnSaveListener
      */
@@ -690,7 +683,6 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
         parentView.saveFilter(object : OnSaveBitmap {
             override fun onBitmapReady(saveBitmap: Bitmap) {
                 object : AsyncTask<String, String, Exception>() {
-
                     override fun onPreExecute() {
                         super.onPreExecute()
                         clearHelperBox()
@@ -721,7 +713,7 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
                     override fun onPostExecute(e: Exception?) {
                         super.onPostExecute(e)
                         if (e == null) {
-                            //Clear all views if its enabled in save settings
+                            // Clear all views if its enabled in save settings
                             if (saveSettings.isClearViewsEnabled) clearAllViews()
                             onSaveListener.onSuccess(imagePath)
                         } else {
@@ -751,7 +743,7 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
     /**
      * Save the edited image as bitmap
      *
-     * @param saveSettings   builder for multiple save options [SaveSettings]
+     * @param saveSettings builder for multiple save options [SaveSettings]
      * @param onSaveBitmap callback for saving image as bitmap
      * @see OnSaveBitmap
      */
@@ -784,7 +776,6 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
                             onSaveBitmap.onFailure(Exception("Failed to load the bitmap"))
                         }
                     }
-
                 }.execute()
             }
 
@@ -806,9 +797,12 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
         // FIXME creating a scaled bitmap
         // if we don't scale the bitmap we get an BufferOverflowException:
         // java.nio.BufferOverflowException
-        //2019-07-09 16:41:50.965 9252-9536/com.automattic.loops W/System.err:     at java.nio.DirectByteBuffer.put(DirectByteBuffer.java:291)
-        //2019-07-09 16:41:50.965 9252-9536/com.automattic.loops W/System.err:     at java.nio.ByteBuffer.put(ByteBuffer.java:642)
-        //2019-07-09 16:41:50.965 9252-9536/com.automattic.loops W/System.err:     at com.daasuu.mp4compose.composer.VideoComposer.stepPipelineStaticImageBackground(VideoComposer.java:173)
+        // 2019-07-09 16:41:50.965 9252-9536/com.automattic.loops W/System.err:
+        //      at java.nio.DirectByteBuffer.put(DirectByteBuffer.java:291)
+        // 2019-07-09 16:41:50.965 9252-9536/com.automattic.loops W/System.err:
+        //      at java.nio.ByteBuffer.put(ByteBuffer.java:642)
+        // 2019-07-09 16:41:50.965 9252-9536/com.automattic.loops W/System.err:
+        //      at com.daasuu.mp4compose.composer.VideoComposer.stepPipelineStaticImageBackground(VideoComposer.java:173)
         val bitmap2 = Bitmap.createScaledBitmap(bitmap, 480, 720, true)
         bitmap.recycle()
         val c = Canvas(bitmap2)
@@ -824,7 +818,6 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
     fun setOnPhotoEditorListener(onPhotoEditorListener: OnPhotoEditorListener) {
         this.mOnPhotoEditorListener = onPhotoEditorListener
     }
-
 
     override fun onViewAdd(brushDrawingView: BrushDrawingView) {
         if (redoViews.size > 0) {
@@ -854,8 +847,8 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
         mOnPhotoEditorListener?.onStopViewChangeListener(ViewType.BRUSH_DRAWING)
     }
 
-    fun anyStickersAdded() : Boolean {
-        for (v : AddedView in addedViews) {
+    fun anyStickersAdded(): Boolean {
+        for (v: AddedView in addedViews) {
             if (v.viewType == STICKER_ANIMATED) {
                 return true
             }
@@ -871,7 +864,7 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
      * Building a PhotoEditor which requires a Context and PhotoEditorView
      * which we have setup in our xml layout
      *
-     * @param context         context
+     * @param context context
      * @param photoEditorView [PhotoEditorView]
      */
         (val context: Context, val parentView: PhotoEditorView) {
@@ -880,7 +873,7 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
         val brushDrawingView: BrushDrawingView
         var textTypeface: Typeface? = null
         var emojiTypeface: Typeface? = null
-        //By Default pinch zoom on text is enabled
+        // By Default pinch zoom on text is enabled
         var isTextPinchZoomable = true
 
         init {

@@ -2,7 +2,13 @@ package com.automattic.photoeditor
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
@@ -10,7 +16,6 @@ import androidx.annotation.ColorInt
 import androidx.annotation.IntRange
 
 import java.util.Stack
-import kotlin.ranges.IntRange as IntRange1
 
 /**
  *
@@ -206,7 +211,6 @@ class BrushDrawingView : View {
         }
         return !mRedoPaths.empty()
     }
-
 
     private fun touchStart(x: Float, y: Float) {
         mRedoPaths.clear()

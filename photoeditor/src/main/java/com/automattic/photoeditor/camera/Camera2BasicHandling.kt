@@ -51,7 +51,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.automattic.photoeditor.FileUtils
-import com.automattic.photoeditor.FileUtils.Companion
 import com.automattic.photoeditor.R
 import java.io.File
 import java.io.IOException
@@ -96,7 +95,6 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
      */
     lateinit var textureView: AutoFitTextureView
 
-
     private var active: Boolean = false
 
     /**
@@ -118,7 +116,6 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
      * [CameraDevice.StateCallback] is called when [CameraDevice] changes its state.
      */
     private val stateCallback = object : CameraDevice.StateCallback() {
-
         override fun onOpened(cameraDevice: CameraDevice) {
             cameraOpenCloseLock.release()
             this@Camera2BasicHandling.cameraDevice = cameraDevice
@@ -197,13 +194,13 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
      * Orientation of the camera sensor
      */
     private var sensorOrientation = 0
-    
+
     /*
     * Media recorder
     * */
-    private var mediaRecorder : MediaRecorder = MediaRecorder()
+    private var mediaRecorder: MediaRecorder = MediaRecorder()
 
-    var currentFile : File? = null
+    var currentFile: File? = null
 
     /**
      * A [CameraCaptureSession.CaptureCallback] that handles events related to JPEG capture.
@@ -238,8 +235,8 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
             val afState = result.get(CaptureResult.CONTROL_AF_STATE)
             if (afState == null) {
                 captureStillPicture()
-            } else if (afState == CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED
-                    || afState == CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED) {
+            } else if (afState == CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED ||
+                afState == CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED) {
                 // CONTROL_AE_STATE can be null on some devices
                 val aeState = result.get(CaptureResult.CONTROL_AE_STATE)
                 if (aeState == null || aeState == CaptureResult.CONTROL_AE_STATE_CONVERGED) {
@@ -251,15 +248,19 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
             }
         }
 
-        override fun onCaptureProgressed(session: CameraCaptureSession,
-                request: CaptureRequest,
-                partialResult: CaptureResult) {
+        override fun onCaptureProgressed(
+            session: CameraCaptureSession,
+            request: CaptureRequest,
+            partialResult: CaptureResult
+        ) {
             process(partialResult)
         }
 
-        override fun onCaptureCompleted(session: CameraCaptureSession,
-                request: CaptureRequest,
-                result: TotalCaptureResult) {
+        override fun onCaptureCompleted(
+            session: CameraCaptureSession,
+            request: CaptureRequest,
+            result: TotalCaptureResult
+        ) {
             process(result)
         }
     }
@@ -326,9 +327,11 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int,
-            permissions: Array<String>,
-            grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
         if (requestCode == REQUEST_CAMERA_PERMISSION) {
             if (grantResults.size != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 ErrorDialog.newInstance(getString(R.string.request_permission))
@@ -344,7 +347,7 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
     /**
      * Sets up member variables related to camera.
      *
-     * @param width  The width of available size for camera preview
+     * @param width The width of available size for camera preview
      * @param height The height of available size for camera preview
      */
     private fun setUpCameraOutputs(width: Int, height: Int) {
@@ -582,7 +585,7 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
      * This method should be called after the camera preview size is determined in
      * setUpCameraOutputs and also the size of `textureView` is fixed.
      *
-     * @param viewWidth  The width of `textureView`
+     * @param viewWidth The width of `textureView`
      * @param viewHeight The height of `textureView`
      */
     private fun configureTransform(viewWidth: Int, viewHeight: Int) {
@@ -672,10 +675,11 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
             }.also { setAutoFlash(it) }
 
             val captureCallback = object : CameraCaptureSession.CaptureCallback() {
-                override fun onCaptureCompleted(session: CameraCaptureSession,
-                        request: CaptureRequest,
-                        result: TotalCaptureResult) {
-                    // activity.showToast("Saved: $file")
+                override fun onCaptureCompleted(
+                    session: CameraCaptureSession,
+                    request: CaptureRequest,
+                    result: TotalCaptureResult
+                ) {
                     Log.d(TAG, file.toString())
                     unlockFocus()
                 }
@@ -739,7 +743,7 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
 
     @Throws(IOException::class)
     private fun setUpMediaRecorder() {
-        val activity : Activity? = getActivity()
+        val activity: Activity? = getActivity()
         if (activity == null) return
 
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
@@ -755,7 +759,7 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
         * set output file in media recorder
         */
         mediaRecorder.setOutputFile(currentFile?.getAbsolutePath())
-        val profile : CamcorderProfile = CamcorderProfile.get(CamcorderProfile.QUALITY_480P)
+        val profile: CamcorderProfile = CamcorderProfile.get(CamcorderProfile.QUALITY_480P)
         mediaRecorder.setVideoFrameRate(profile.videoFrameRate)
         mediaRecorder.setVideoSize(profile.videoFrameWidth, profile.videoFrameHeight)
         mediaRecorder.setVideoEncodingBitRate(profile.videoBitRate)
@@ -766,10 +770,10 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
 
         val rotation = activity.getWindowManager().getDefaultDisplay().getRotation()
         when (sensorOrientation) {
-         SENSOR_ORIENTATION_DEFAULT_DEGREES ->
-             mediaRecorder.setOrientationHint(ORIENTATIONS.get(rotation))
-         SENSOR_ORIENTATION_INVERSE_DEGREES ->
-             mediaRecorder.setOrientationHint(INVERSE_ORIENTATIONS.get(rotation))
+            SENSOR_ORIENTATION_DEFAULT_DEGREES ->
+                mediaRecorder.setOrientationHint(ORIENTATIONS.get(rotation))
+            SENSOR_ORIENTATION_INVERSE_DEGREES ->
+                mediaRecorder.setOrientationHint(INVERSE_ORIENTATIONS.get(rotation))
         }
         mediaRecorder.prepare()
     }
@@ -922,24 +926,23 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
          * size doesn't exist, choose the largest one that is at most as large as the respective max
          * size, and whose aspect ratio matches with the specified value.
          *
-         * @param choices           The list of sizes that the camera supports for the intended
+         * @param choices The list of sizes that the camera supports for the intended
          *                          output class
-         * @param textureViewWidth  The width of the texture view relative to sensor coordinate
+         * @param textureViewWidth The width of the texture view relative to sensor coordinate
          * @param textureViewHeight The height of the texture view relative to sensor coordinate
-         * @param maxWidth          The maximum width that can be chosen
-         * @param maxHeight         The maximum height that can be chosen
-         * @param aspectRatio       The aspect ratio
+         * @param maxWidth The maximum width that can be chosen
+         * @param maxHeight The maximum height that can be chosen
+         * @param aspectRatio The aspect ratio
          * @return The optimal `Size`, or an arbitrary one if none were big enough
          */
         @JvmStatic private fun chooseOptimalSize(
-                choices: Array<Size>,
-                textureViewWidth: Int,
-                textureViewHeight: Int,
-                maxWidth: Int,
-                maxHeight: Int,
-                aspectRatio: Size
+            choices: Array<Size>,
+            textureViewWidth: Int,
+            textureViewHeight: Int,
+            maxWidth: Int,
+            maxHeight: Int,
+            aspectRatio: Size
         ): Size {
-
             // Collect the supported resolutions that are at least as big as the preview Surface
             val bigEnough = ArrayList<Size>()
             // Collect the supported resolutions that are smaller than the preview Surface

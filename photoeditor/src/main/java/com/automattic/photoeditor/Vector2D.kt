@@ -14,7 +14,6 @@ internal class Vector2D : PointF {
     }
 
     companion object {
-
         fun getAngle(vector1: Vector2D, vector2: Vector2D): Float {
             vector1.normalize()
             vector2.normalize()
