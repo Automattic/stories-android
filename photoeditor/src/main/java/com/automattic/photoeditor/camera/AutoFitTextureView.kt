@@ -29,7 +29,6 @@ class AutoFitTextureView @JvmOverloads constructor(
         attrs: AttributeSet? = null,
         defStyle: Int = 0
 ) : TextureView(context, attrs, defStyle) {
-
     private var ratioWidth = 0
     private var ratioHeight = 0
 
