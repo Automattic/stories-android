@@ -5,7 +5,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
 import android.os.Build
-import android.support.annotation.RequiresApi
 import android.util.AttributeSet
 import android.util.Log
 import android.view.TextureView
@@ -14,6 +13,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.RelativeLayout
+import androidx.annotation.RequiresApi
 import com.automattic.photoeditor.camera.AutoFitTextureView
 
 /**
@@ -29,7 +29,6 @@ import com.automattic.photoeditor.camera.AutoFitTextureView
  */
 
 class PhotoEditorView : RelativeLayout {
-
     private lateinit var autoFitTextureView: AutoFitTextureView
     private lateinit var imgSource: FilterImageView
     private lateinit var brushDrawingView: BrushDrawingView
@@ -95,7 +94,7 @@ class PhotoEditorView : RelativeLayout {
 
     @SuppressLint("Recycle")
     private fun init(attrs: AttributeSet?) {
-        //Setup image attributes
+        // Setup image attributes
         imgSource = FilterImageView(context)
         imgSource.id = imgSrcId
         imgSource.adjustViewBounds = true
@@ -123,11 +122,11 @@ class PhotoEditorView : RelativeLayout {
         autoFitTextureView.surfaceTextureListener = surfaceTextureListener
 
 
-        //Setup brush view
+        // Setup brush view
         brushDrawingView = BrushDrawingView(context)
         brushDrawingView.visibility = View.GONE
         brushDrawingView.id = brushSrcId
-        //Align brush to the size of image view
+        // Align brush to the size of image view
         val brushParam = RelativeLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
         )
@@ -135,12 +134,12 @@ class PhotoEditorView : RelativeLayout {
         brushParam.addRule(RelativeLayout.ALIGN_TOP, imgSrcId)
         brushParam.addRule(RelativeLayout.ALIGN_BOTTOM, imgSrcId)
 
-        //Setup GLSurface attributes
+        // Setup GLSurface attributes
         imageFilterView = ImageFilterView(context)
         imageFilterView.id = glFilterId
         imageFilterView.visibility = View.GONE
 
-        //Align brush to the size of image view
+        // Align brush to the size of image view
         val imgFilterParam = RelativeLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
         )
@@ -156,18 +155,17 @@ class PhotoEditorView : RelativeLayout {
             }
         })
 
-        //Add camera preview
+        // Add camera preview
         addView(autoFitTextureView, cameraParam)
 
-        //Add image source
+        // Add image source
         addView(imgSource, imgSrcParam)
 
-        //Add Gl FilterView
+        // Add Gl FilterView
         addView(imageFilterView, imgFilterParam)
 
-        //Add brush view
+        // Add brush view
         addView(brushDrawingView, brushParam)
-
     }
 
 
