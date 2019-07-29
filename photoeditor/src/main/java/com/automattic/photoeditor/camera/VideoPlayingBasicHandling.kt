@@ -18,28 +18,25 @@ package com.automattic.photoeditor.camera
 
 import android.graphics.SurfaceTexture
 import android.os.Bundle
-import android.support.v4.app.ActivityCompat
-import android.support.v4.app.Fragment
 import android.util.Log
 import android.util.Size
 import android.view.Surface
 import android.view.TextureView
-import android.view.View
 import java.io.File
 import android.media.AudioManager
 import android.media.MediaPlayer
+import androidx.core.app.ActivityCompat
+import androidx.fragment.app.Fragment
 import java.io.IOException
 
 
-class VideoPlayingBasicHandling : Fragment(), View.OnClickListener,
-        ActivityCompat.OnRequestPermissionsResultCallback, SurfaceFragmentHandler {
-
+class VideoPlayingBasicHandling : Fragment(),
+    ActivityCompat.OnRequestPermissionsResultCallback, SurfaceFragmentHandler {
     /**
      * [TextureView.SurfaceTextureListener] handles several lifecycle events on a
      * [TextureView].
      */
     val surfaceTextureListener = object : TextureView.SurfaceTextureListener {
-
         override fun onSurfaceTextureAvailable(texture: SurfaceTexture, width: Int, height: Int) {
             if (active) {
                 startVideoPlay(texture)
@@ -54,7 +51,6 @@ class VideoPlayingBasicHandling : Fragment(), View.OnClickListener,
         override fun onSurfaceTextureDestroyed(texture: SurfaceTexture) = true
 
         override fun onSurfaceTextureUpdated(texture: SurfaceTexture) = Unit
-
     }
 
     /**
@@ -131,20 +127,6 @@ class VideoPlayingBasicHandling : Fragment(), View.OnClickListener,
 
     private fun windDown() {
         stopVideoPlay()
-    }
-
-    override fun onClick(view: View) {
-//        when (view.id) {
-//            R.id.picture -> lockFocus()
-//            R.id.info -> {
-//                if (activity != null) {
-//                    AlertDialog.Builder(activity)
-//                            .setMessage(R.string.intro_message)
-//                            .setPositiveButton(android.R.string.ok, null)
-//                            .show()
-//                }
-//            }
-//        }
     }
 
     fun startVideoPlay(texture: SurfaceTexture) {
