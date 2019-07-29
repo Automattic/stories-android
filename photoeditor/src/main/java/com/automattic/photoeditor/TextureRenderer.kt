@@ -23,7 +23,6 @@ import java.nio.ByteOrder
 import java.nio.FloatBuffer
 
 internal class TextureRenderer {
-
     private var mProgram: Int = 0
     private var mTexSamplerHandle: Int = 0
     private var mTexCoordHandle: Int = 0
@@ -168,5 +167,4 @@ internal class TextureRenderer {
 
         private val FLOAT_SIZE_BYTES = 4
     }
-
 }
