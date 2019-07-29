@@ -15,6 +15,5 @@ enum class ViewType {
     TEXT,
     IMAGE,
     EMOJI,
-    STICKER_STATIC, // this is static
     STICKER_ANIMATED // this can be animated - needed this distinction for post-processing
 }
