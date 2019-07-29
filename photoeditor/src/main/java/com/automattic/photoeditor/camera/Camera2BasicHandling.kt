@@ -41,15 +41,15 @@ import android.media.MediaRecorder
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
-import android.support.v4.app.ActivityCompat
-import android.support.v4.app.Fragment
-import android.support.v4.content.ContextCompat
 import android.util.Log
 import android.util.Size
 import android.util.SparseIntArray
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import com.automattic.photoeditor.FileUtils
 import com.automattic.photoeditor.FileUtils.Companion
 import com.automattic.photoeditor.R
@@ -66,13 +66,11 @@ import kotlin.collections.ArrayList
 
 class Camera2BasicHandling : Fragment(), View.OnClickListener,
         ActivityCompat.OnRequestPermissionsResultCallback, SurfaceFragmentHandler {
-
     /**
      * [TextureView.SurfaceTextureListener] handles several lifecycle events on a
      * [TextureView].
      */
     val surfaceTextureListener = object : TextureView.SurfaceTextureListener {
-
         override fun onSurfaceTextureAvailable(texture: SurfaceTexture, width: Int, height: Int) {
             if (active) {
                 openCamera(width, height)
@@ -86,7 +84,6 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
         override fun onSurfaceTextureDestroyed(texture: SurfaceTexture) = true
 
         override fun onSurfaceTextureUpdated(texture: SurfaceTexture) = Unit
-
     }
 
     /**
@@ -212,7 +209,6 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
      * A [CameraCaptureSession.CaptureCallback] that handles events related to JPEG capture.
      */
     private val captureCallback = object : CameraCaptureSession.CaptureCallback() {
-
         private fun process(result: CaptureResult) {
             when (state) {
                 STATE_PREVIEW -> Unit // Do nothing when the camera preview is working normally.
@@ -381,7 +377,7 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
                 // coordinate.
                 val displayRotation = activity!!.windowManager.defaultDisplay.rotation
 
-                sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION)
+                sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION) ?: continue
                 val swappedDimensions = areDimensionsSwapped(displayRotation)
 
                 val displaySize = Point()
@@ -433,7 +429,6 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
                         FRAGMENT_DIALOG
                     )
         }
-
     }
 
     /**
@@ -574,7 +569,7 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
                         }
 
                         override fun onConfigureFailed(session: CameraCaptureSession) {
-                            //activity.showToast("Failed")
+                            // TODO: capture error, inform the user about it
                         }
                     }, null)
         } catch (e: CameraAccessException) {
@@ -630,7 +625,6 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
         } catch (e: CameraAccessException) {
             Log.e(TAG, e.toString())
         }
-
     }
 
     /**
@@ -649,7 +643,6 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
         } catch (e: CameraAccessException) {
             Log.e(TAG, e.toString())
         }
-
     }
 
     /**
@@ -662,9 +655,9 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
             val rotation = activity!!.windowManager.defaultDisplay.rotation
 
             // This is the CaptureRequest.Builder that we use to take a picture.
-            val captureBuilder = cameraDevice?.createCaptureRequest(
-                    CameraDevice.TEMPLATE_STILL_CAPTURE)?.apply {
-                addTarget(imageReader?.surface)
+            val captureBuilder = cameraDevice!!.createCaptureRequest(
+                    CameraDevice.TEMPLATE_STILL_CAPTURE).apply {
+                addTarget(imageReader?.surface!!)
 
                 // Sensor orientation is 90 for most devices, or 270 for some devices (eg. Nexus 5X)
                 // We have to take that into account and rotate JPEG properly.
@@ -676,10 +669,9 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
                 // Use the same AE and AF modes as the preview.
                 set(CaptureRequest.CONTROL_AF_MODE,
                         CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
-            }?.also { setAutoFlash(it) }
+            }.also { setAutoFlash(it) }
 
             val captureCallback = object : CameraCaptureSession.CaptureCallback() {
-
                 override fun onCaptureCompleted(session: CameraCaptureSession,
                         request: CaptureRequest,
                         result: TotalCaptureResult) {
@@ -692,7 +684,7 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
             captureSession?.apply {
                 stopRepeating()
                 abortCaptures()
-                capture(captureBuilder?.build(), captureCallback, null)
+                capture(captureBuilder.build(), captureCallback, null)
             }
         } catch (e: CameraAccessException) {
             Log.e(TAG, e.toString())
@@ -750,9 +742,9 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
         val activity : Activity? = getActivity()
         if (activity == null) return
 
-        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
-        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
+        mediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE)
+        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
         /**
         * create video output file
         */
@@ -775,11 +767,11 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
         val rotation = activity.getWindowManager().getDefaultDisplay().getRotation()
         when (sensorOrientation) {
          SENSOR_ORIENTATION_DEFAULT_DEGREES ->
-             mediaRecorder.setOrientationHint(ORIENTATIONS.get(rotation));
+             mediaRecorder.setOrientationHint(ORIENTATIONS.get(rotation))
          SENSOR_ORIENTATION_INVERSE_DEGREES ->
-             mediaRecorder.setOrientationHint(INVERSE_ORIENTATIONS.get(rotation));
+             mediaRecorder.setOrientationHint(INVERSE_ORIENTATIONS.get(rotation))
         }
-        mediaRecorder.prepare();
+        mediaRecorder.prepare()
     }
 
     /**
@@ -829,20 +821,13 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
                                 captureCallback, backgroundHandler)
 
                             mediaRecorder.start()
-//                            activity?.runOnUiThread(object : Runnable {
-//                                override fun run() {
-//                                    // mIsRecordingVideo = true;
-//                                    // Start recording
-//                                    mediaRecorder.start()
-//                                }
-//                            })
                         } catch (e: CameraAccessException) {
                             Log.e(TAG, e.toString())
                         }
                     }
 
                     override fun onConfigureFailed(session: CameraCaptureSession) {
-                        //activity.showToast("Failed")
+                        // TODO: capture error, inform the user about it
                     }
                 }, null)
         } catch (e: CameraAccessException) {
@@ -856,7 +841,7 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
             abortCaptures()
         }
 
-        mediaRecorder?.apply {
+        mediaRecorder.apply {
             stop()
             reset()
         }
@@ -884,10 +869,10 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
             ORIENTATIONS.append(Surface.ROTATION_180, 270)
             ORIENTATIONS.append(Surface.ROTATION_270, 180)
 
-            INVERSE_ORIENTATIONS.append(Surface.ROTATION_270, 0);
-            INVERSE_ORIENTATIONS.append(Surface.ROTATION_180, 90);
-            INVERSE_ORIENTATIONS.append(Surface.ROTATION_90, 180);
-            INVERSE_ORIENTATIONS.append(Surface.ROTATION_0, 270);
+            INVERSE_ORIENTATIONS.append(Surface.ROTATION_270, 0)
+            INVERSE_ORIENTATIONS.append(Surface.ROTATION_180, 90)
+            INVERSE_ORIENTATIONS.append(Surface.ROTATION_90, 180)
+            INVERSE_ORIENTATIONS.append(Surface.ROTATION_0, 270)
         }
 
         /**
