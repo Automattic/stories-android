@@ -3,7 +3,6 @@ package com.automattic.photoeditor
 import android.graphics.PointF
 
 internal class Vector2D : PointF {
-
     constructor() : super() {}
 
     constructor(x: Float, y: Float) : super(x, y) {}
