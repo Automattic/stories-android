@@ -120,9 +120,6 @@ class VideoPlayingBasicHandling : Fragment(),
         if (textureView.isAvailable && active) {
             startVideoPlay(textureView.surfaceTexture)
         }
-//        else {
-//            textureView.surfaceTextureListener = surfaceTextureListener
-//        }
     }
 
     private fun windDown() {
@@ -143,6 +140,7 @@ class VideoPlayingBasicHandling : Fragment(),
                 setDataSource(descriptor?.getFileDescriptor(), descriptor.getStartOffset(), descriptor.getLength())
                 setSurface(s)
                 prepare()
+                // TODO check whether we want fine grained error handling by setting these listeners
 //                setOnBufferingUpdateListener(this)
 //                setOnCompletionListener(this)
 //                setOnPreparedListener(this)
@@ -164,7 +162,6 @@ class VideoPlayingBasicHandling : Fragment(),
             // TODO Auto-generated catch block
             e.printStackTrace()
         }
-
     }
 
     companion object {
