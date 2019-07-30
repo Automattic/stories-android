@@ -1,5 +1,6 @@
 package com.automattic.portkey
 
+import android.net.Uri
 import android.os.Bundle
 import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
@@ -100,7 +101,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun testSticker() {
         txtCurrentTool.setText("")
-        // TODO something here
-        Toast.makeText(this, "Not implemented", Toast.LENGTH_SHORT).show()
+        photoEditor.addNewImageView(true, Uri.parse("https://i.giphy.com/Ok4HaWlYrewuY.gif"))
     }
 }
