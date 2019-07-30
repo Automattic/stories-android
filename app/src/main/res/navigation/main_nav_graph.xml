@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools" android:id="@+id/main_nav_graph"
+            app:startDestination="@id/mainFragment">
+    <fragment android:id="@+id/mainFragment" android:name="com.automattic.portkey.MainFragment"
+              android:label="fragment_main" tools:layout="@layout/fragment_main">
+        <action android:id="@+id/action_mainFragment_to_composeLoopFrameActivity"
+                app:destination="@id/composeLoopFrameActivity"
+                app:enterAnim="@anim/nav_default_enter_anim" app:exitAnim="@anim/nav_default_exit_anim"
+        />
+    </fragment>
+    <activity android:id="@+id/composeLoopFrameActivity" android:name="com.automattic.portkey.ComposeLoopFrameActivity"
+              android:label="ComposeLoopFrameActivity"/>
+</navigation>

@@ -19,6 +19,12 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <activity
+                android:name=".ComposeLoopFrameActivity"
+                android:label="@string/app_name"
+                android:parentActivityName="com.automattic.portkey.MainActivity"
+                android:theme="@style/AppTheme.NoActionBar">
+        </activity>
     </application>
 
 </manifest>
