@@ -99,5 +99,4 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         txtCurrentTool.setText("")
         photoEditor.addNewImageView(true, Uri.parse("https://i.giphy.com/Ok4HaWlYrewuY.gif"))
     }
-
 }
