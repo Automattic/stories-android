@@ -84,16 +84,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun testText() {
-        // TODO something here
-        Toast.makeText(this, "Not implemented", Toast.LENGTH_SHORT).show()
+        txtCurrentTool.setText("")
+        photoEditor.addText(
+            text = getString(R.string.text_placeholder),
+            colorCodeTextView = ContextCompat.getColor(baseContext, R.color.grey))
     }
 
     private fun testEmoji() {
-        // TODO something here
-        Toast.makeText(this, "Not implemented", Toast.LENGTH_SHORT).show()
+        txtCurrentTool.setText("")
+        val emojisList = PhotoEditor.getEmojis(this)
+        // get some random emoji
+        val randomEmojiPos = (0..emojisList.size).shuffled().first()
+        photoEditor.addEmoji(emojisList.get(randomEmojiPos))
     }
 
     private fun testSticker() {
+        txtCurrentTool.setText("")
         // TODO something here
         Toast.makeText(this, "Not implemented", Toast.LENGTH_SHORT).show()
     }
