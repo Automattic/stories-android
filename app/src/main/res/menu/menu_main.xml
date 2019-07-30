@@ -6,6 +6,10 @@
           android:title="@string/main_test_brush"
           android:orderInCategory="100"
           app:showAsAction="never"/>
+    <item android:id="@+id/action_eraser"
+          android:title="@string/main_test_eraser"
+          android:orderInCategory="100"
+          app:showAsAction="never"/>
     <item android:id="@+id/action_text"
           android:title="@string/main_test_text"
           android:orderInCategory="100"
@@ -16,6 +20,10 @@
           app:showAsAction="never"/>
     <item android:id="@+id/action_sticker"
           android:title="@string/main_test_sticker"
+          android:orderInCategory="100"
+          app:showAsAction="never"/>
+    <item android:id="@+id/action_save"
+          android:title="@string/main_test_save"
           android:orderInCategory="100"
           app:showAsAction="never"/>
 </menu>

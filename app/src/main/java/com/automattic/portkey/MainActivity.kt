@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import com.automattic.photoeditor.PhotoEditor
 
 import kotlinx.android.synthetic.main.activity_main.*
@@ -46,6 +47,10 @@ class MainActivity : AppCompatActivity() {
                 testBrush()
                 true
             }
+            R.id.action_eraser -> {
+                testEraser()
+                true
+            }
             R.id.action_text -> {
                 testText()
                 true
@@ -58,13 +63,24 @@ class MainActivity : AppCompatActivity() {
                 testSticker()
                 true
             }
+            R.id.action_save -> {
+                Toast.makeText(this, "Not implemented", Toast.LENGTH_SHORT).show()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
 
     private fun testBrush() {
-        // TODO something here
-        Toast.makeText(this, "Not implemented", Toast.LENGTH_SHORT).show()
+        txtCurrentTool.setText(R.string.label_tool_brush)
+        photoEditor.setBrushDrawingMode(true)
+        photoEditor.brushColor = ContextCompat.getColor(baseContext, R.color.red)
+    }
+
+    private fun testEraser() {
+        txtCurrentTool.setText(R.string.label_tool_eraser)
+        photoEditor.setBrushDrawingMode(false)
+        photoEditor.brushEraser()
     }
 
     private fun testText() {

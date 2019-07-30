@@ -23,6 +23,17 @@
 
     <include layout="@layout/content_main"/>
 
+    <TextView
+        android:id="@+id/txtCurrentTool"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|right"
+        android:layout_marginTop="?attr/actionBarSize"
+        android:textSize="24sp"
+        android:textColor="@color/white"
+        android:background="@color/black_transp"
+        />
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab"
             android:layout_width="wrap_content"
