@@ -5,21 +5,15 @@ import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import android.view.View.OnClickListener
 import android.widget.Toast
 
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.content_main.*
 
-class MainActivity : AppCompatActivity(), OnClickListener {
+class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
-
-        // test buttons just to test photoEditor module integration
-        initTestListeners()
 
         fab.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
@@ -37,26 +31,27 @@ class MainActivity : AppCompatActivity(), OnClickListener {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
+
+        // test actions just to test photoEditor module integration
         return when (item.itemId) {
-            R.id.action_settings -> true
+            R.id.action_brush -> {
+                testBrush()
+                true
+            }
+            R.id.action_text -> {
+                testText()
+                true
+            }
+            R.id.action_emoji -> {
+                testEmoji()
+                true
+            }
+            R.id.action_sticker -> {
+                testSticker()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
-    }
-
-    override fun onClick(view: View) {
-        when (view.id) {
-            R.id.testBrush -> testBrush()
-            R.id.testText -> testText()
-            R.id.testEmoji -> testEmoji()
-            R.id.testSticker -> testSticker()
-        }
-    }
-
-    private fun initTestListeners() {
-        testBrush.setOnClickListener(this)
-        testText.setOnClickListener(this)
-        testEmoji.setOnClickListener(this)
-        testSticker.setOnClickListener(this)
     }
 
     private fun testBrush() {

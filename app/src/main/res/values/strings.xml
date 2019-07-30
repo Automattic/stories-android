@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">portkey</string>
-    <string name="action_settings">Settings</string>
 
     <string name="main_test_brush">Test Brush</string>
     <string name="main_test_emoji">Test emoji</string>
