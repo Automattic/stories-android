@@ -6,10 +6,14 @@ import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
+import com.automattic.photoeditor.PhotoEditor
 
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.content_main.*
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var photoEditor: PhotoEditor
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -19,6 +23,10 @@ class MainActivity : AppCompatActivity() {
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show()
         }
+
+        photoEditor = PhotoEditor.Builder(this, photoEditorView)
+            .setPinchTextScalable(true) // set flag to make text scalable when pinch
+            .build() // build photo editor sdk
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
