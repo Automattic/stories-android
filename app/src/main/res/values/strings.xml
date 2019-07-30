@@ -15,4 +15,6 @@
     <string name="label_tool_eraser">Eraser tool</string>
 
     <string name="text_placeholder">your text here</string>
+
+    <string name="main_placeholder">Expect a list of Loops to be shown on this screen</string>
 </resources>
