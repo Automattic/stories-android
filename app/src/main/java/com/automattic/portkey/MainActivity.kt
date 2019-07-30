@@ -87,7 +87,7 @@ class MainActivity : AppCompatActivity() {
         txtCurrentTool.setText("")
         photoEditor.addText(
             text = getString(R.string.text_placeholder),
-            colorCodeTextView = ContextCompat.getColor(baseContext, R.color.grey))
+            colorCodeTextView = ContextCompat.getColor(baseContext, R.color.black))
     }
 
     private fun testEmoji() {
