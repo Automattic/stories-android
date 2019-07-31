@@ -17,7 +17,7 @@ import androidx.appcompat.widget.AppCompatImageView
  * @version 0.1.2
  * @since 5/21/2018
  */
-internal class FilterImageView : AppCompatImageView {
+internal class BackgroundImageView : AppCompatImageView {
     private var mOnImageChangedListener: OnImageChangedListener? = null
 
     val bitmap: Bitmap?

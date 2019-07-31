@@ -30,7 +30,7 @@ import com.automattic.photoeditor.camera.AutoFitTextureView
 
 class PhotoEditorView : RelativeLayout {
     private lateinit var autoFitTextureView: AutoFitTextureView
-    private lateinit var imgSource: FilterImageView
+    private lateinit var imgSource: BackgroundImageView
     private lateinit var brushDrawingView: BrushDrawingView
     private lateinit var imageFilterView: ImageFilterView
     private var surfaceListeners: ArrayList<SurfaceTextureListener> = ArrayList()
@@ -95,7 +95,7 @@ class PhotoEditorView : RelativeLayout {
     @SuppressLint("Recycle")
     private fun init(attrs: AttributeSet?) {
         // Setup image attributes
-        imgSource = FilterImageView(context)
+        imgSource = BackgroundImageView(context)
         imgSource.id = imgSrcId
         imgSource.adjustViewBounds = true
         val imgSrcParam = RelativeLayout.LayoutParams(
@@ -146,7 +146,7 @@ class PhotoEditorView : RelativeLayout {
         imgFilterParam.addRule(RelativeLayout.ALIGN_TOP, imgSrcId)
         imgFilterParam.addRule(RelativeLayout.ALIGN_BOTTOM, imgSrcId)
 
-        imgSource.setOnImageChangedListener(object : FilterImageView.OnImageChangedListener {
+        imgSource.setOnImageChangedListener(object : BackgroundImageView.OnImageChangedListener {
             override fun onBitmapLoaded(sourceBitmap: Bitmap?) {
                 imageFilterView.setFilterEffect(PhotoFilter.NONE)
                 imageFilterView.setSourceBitmap(sourceBitmap!!)
