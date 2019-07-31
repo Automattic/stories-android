@@ -163,7 +163,6 @@ class PhotoEditor private constructor(builder: Builder) :
 
         imageView.setImageBitmap(desiredImage)
 
-        val multiTouchListener = multiTouchListener
         multiTouchListener.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
             override fun onClick() {
                 val isBackgroundVisible = frmBorder.tag != null && frmBorder.tag as Boolean
@@ -186,7 +185,6 @@ class PhotoEditor private constructor(builder: Builder) :
         val frmBorder = imageRootView.findViewById<FrameLayout>(R.id.frmBorder)
         val imgClose = imageRootView.findViewById<ImageView>(R.id.imgPhotoEditorClose)
 
-        val multiTouchListener = multiTouchListener
         multiTouchListener.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
             override fun onClick() {
                 val isBackgroundVisible = frmBorder.tag != null && frmBorder.tag as Boolean
@@ -214,7 +212,6 @@ class PhotoEditor private constructor(builder: Builder) :
         val frmBorder = imageRootView.findViewById<FrameLayout>(R.id.frmBorder)
         val imgClose = imageRootView.findViewById<ImageView>(R.id.imgPhotoEditorClose)
 
-        val multiTouchListener = multiTouchListener
         multiTouchListener.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
             override fun onClick() {
                 val isBackgroundVisible = frmBorder.tag != null && frmBorder.tag as Boolean
@@ -255,7 +252,7 @@ class PhotoEditor private constructor(builder: Builder) :
         if (textTypeface != null) {
             textInputTv.typeface = textTypeface
         }
-        val multiTouchListener = multiTouchListener
+
         multiTouchListener.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
             override fun onClick() {
                 val isBackgroundVisible = frmBorder.tag != null && frmBorder.tag as Boolean
@@ -339,7 +336,7 @@ class PhotoEditor private constructor(builder: Builder) :
         }
         emojiTextView.textSize = 56f
         emojiTextView.text = emojiName
-        val multiTouchListener = multiTouchListener
+
         multiTouchListener.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
             override fun onClick() {
                 val isBackgroundVisible = frmBorder.tag != null && frmBorder.tag as Boolean
