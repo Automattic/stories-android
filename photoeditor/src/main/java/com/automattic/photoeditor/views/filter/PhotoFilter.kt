@@ -1,4 +1,4 @@
-package com.automattic.photoeditor
+package com.automattic.photoeditor.views.filter
 
 /**
  *

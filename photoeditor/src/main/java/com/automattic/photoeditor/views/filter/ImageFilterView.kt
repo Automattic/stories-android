@@ -1,4 +1,4 @@
-package com.automattic.photoeditor
+package com.automattic.photoeditor.views.filter
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -34,11 +34,36 @@ import android.os.Handler
 import android.os.Looper
 import android.util.AttributeSet
 import android.util.Log
+import com.automattic.photoeditor.util.BitmapUtil
+import com.automattic.photoeditor.OnSaveBitmap
+import com.automattic.photoeditor.views.filter.PhotoFilter.AUTO_FIX
+import com.automattic.photoeditor.views.filter.PhotoFilter.BLACK_WHITE
+import com.automattic.photoeditor.views.filter.PhotoFilter.BRIGHTNESS
+import com.automattic.photoeditor.views.filter.PhotoFilter.CONTRAST
+import com.automattic.photoeditor.views.filter.PhotoFilter.CROSS_PROCESS
+import com.automattic.photoeditor.views.filter.PhotoFilter.DOCUMENTARY
+import com.automattic.photoeditor.views.filter.PhotoFilter.DUE_TONE
+import com.automattic.photoeditor.views.filter.PhotoFilter.FILL_LIGHT
+import com.automattic.photoeditor.views.filter.PhotoFilter.FISH_EYE
+import com.automattic.photoeditor.views.filter.PhotoFilter.FLIP_HORIZONTAL
+import com.automattic.photoeditor.views.filter.PhotoFilter.FLIP_VERTICAL
+import com.automattic.photoeditor.views.filter.PhotoFilter.GRAIN
+import com.automattic.photoeditor.views.filter.PhotoFilter.GRAY_SCALE
+import com.automattic.photoeditor.views.filter.PhotoFilter.LOMISH
+import com.automattic.photoeditor.views.filter.PhotoFilter.NEGATIVE
 
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
-import com.automattic.photoeditor.PhotoFilter.NONE
+import com.automattic.photoeditor.views.filter.PhotoFilter.NONE
+import com.automattic.photoeditor.views.filter.PhotoFilter.POSTERIZE
+import com.automattic.photoeditor.views.filter.PhotoFilter.ROTATE
+import com.automattic.photoeditor.views.filter.PhotoFilter.SATURATE
+import com.automattic.photoeditor.views.filter.PhotoFilter.SEPIA
+import com.automattic.photoeditor.views.filter.PhotoFilter.SHARPEN
+import com.automattic.photoeditor.views.filter.PhotoFilter.TEMPERATURE
+import com.automattic.photoeditor.views.filter.PhotoFilter.TINT
+import com.automattic.photoeditor.views.filter.PhotoFilter.VIGNETTE
 
 /**
  *
@@ -165,75 +190,75 @@ internal class ImageFilterView : GLSurfaceView, GLSurfaceView.Renderer {
         } else {
             // Initialize the correct effect based on the selected menu/action item
             when (mCurrentEffect) {
-                PhotoFilter.AUTO_FIX -> {
+                AUTO_FIX -> {
                     mEffect = effectFactory.createEffect(EFFECT_AUTOFIX)
                     mEffect!!.setParameter("scale", 0.5f)
                 }
-                PhotoFilter.BLACK_WHITE -> {
+                BLACK_WHITE -> {
                     mEffect = effectFactory.createEffect(EFFECT_BLACKWHITE)
                     mEffect!!.setParameter("black", .1f)
                     mEffect!!.setParameter("white", .7f)
                 }
-                PhotoFilter.BRIGHTNESS -> {
+                BRIGHTNESS -> {
                     mEffect = effectFactory.createEffect(EFFECT_BRIGHTNESS)
                     mEffect!!.setParameter("brightness", 2.0f)
                 }
-                PhotoFilter.CONTRAST -> {
+                CONTRAST -> {
                     mEffect = effectFactory.createEffect(EFFECT_CONTRAST)
                     mEffect!!.setParameter("contrast", 1.4f)
                 }
-                PhotoFilter.CROSS_PROCESS -> mEffect = effectFactory.createEffect(EFFECT_CROSSPROCESS)
-                PhotoFilter.DOCUMENTARY -> mEffect = effectFactory.createEffect(EFFECT_DOCUMENTARY)
-                PhotoFilter.DUE_TONE -> {
+                CROSS_PROCESS -> mEffect = effectFactory.createEffect(EFFECT_CROSSPROCESS)
+                DOCUMENTARY -> mEffect = effectFactory.createEffect(EFFECT_DOCUMENTARY)
+                DUE_TONE -> {
                     mEffect = effectFactory.createEffect(EFFECT_DUOTONE)
                     mEffect!!.setParameter("first_color", Color.YELLOW)
                     mEffect!!.setParameter("second_color", Color.DKGRAY)
                 }
-                PhotoFilter.FILL_LIGHT -> {
+                FILL_LIGHT -> {
                     mEffect = effectFactory.createEffect(EFFECT_FILLLIGHT)
                     mEffect!!.setParameter("strength", .8f)
                 }
-                PhotoFilter.FISH_EYE -> {
+                FISH_EYE -> {
                     mEffect = effectFactory.createEffect(EFFECT_FISHEYE)
                     mEffect!!.setParameter("scale", .5f)
                 }
-                PhotoFilter.FLIP_HORIZONTAL -> {
+                FLIP_HORIZONTAL -> {
                     mEffect = effectFactory.createEffect(EFFECT_FLIP)
                     mEffect!!.setParameter("horizontal", true)
                 }
-                PhotoFilter.FLIP_VERTICAL -> {
+                FLIP_VERTICAL -> {
                     mEffect = effectFactory.createEffect(EFFECT_FLIP)
                     mEffect!!.setParameter("vertical", true)
                 }
-                PhotoFilter.GRAIN -> {
+                GRAIN -> {
                     mEffect = effectFactory.createEffect(EFFECT_GRAIN)
                     mEffect!!.setParameter("strength", 1.0f)
                 }
-                PhotoFilter.GRAY_SCALE -> mEffect = effectFactory.createEffect(EFFECT_GRAYSCALE)
-                PhotoFilter.LOMISH -> mEffect = effectFactory.createEffect(EFFECT_LOMOISH)
-                PhotoFilter.NEGATIVE -> mEffect = effectFactory.createEffect(EFFECT_NEGATIVE)
+                GRAY_SCALE -> mEffect = effectFactory.createEffect(EFFECT_GRAYSCALE)
+                LOMISH -> mEffect = effectFactory.createEffect(EFFECT_LOMOISH)
+                NEGATIVE -> mEffect = effectFactory.createEffect(EFFECT_NEGATIVE)
                 NONE -> {
                 }
-                PhotoFilter.POSTERIZE -> mEffect = effectFactory.createEffect(EFFECT_POSTERIZE)
-                PhotoFilter.ROTATE -> {
+                POSTERIZE -> mEffect = effectFactory.createEffect(EFFECT_POSTERIZE)
+                ROTATE -> {
                     mEffect = effectFactory.createEffect(EFFECT_ROTATE)
                     mEffect!!.setParameter("angle", 180)
                 }
-                PhotoFilter.SATURATE -> {
+                SATURATE -> {
                     mEffect = effectFactory.createEffect(EFFECT_SATURATE)
                     mEffect!!.setParameter("scale", .5f)
                 }
-                PhotoFilter.SEPIA -> mEffect = effectFactory.createEffect(EFFECT_SEPIA)
-                PhotoFilter.SHARPEN -> mEffect = effectFactory.createEffect(EFFECT_SHARPEN)
-                PhotoFilter.TEMPERATURE -> {
+                SEPIA -> mEffect = effectFactory.createEffect(EFFECT_SEPIA)
+                SHARPEN -> mEffect = effectFactory.createEffect(EFFECT_SHARPEN)
+                TEMPERATURE -> {
                     mEffect = effectFactory.createEffect(EFFECT_TEMPERATURE)
                     mEffect!!.setParameter("scale", .9f)
                 }
-                PhotoFilter.TINT -> {
+                TINT -> {
                     mEffect = effectFactory.createEffect(EFFECT_TINT)
                     mEffect!!.setParameter("tint", Color.MAGENTA)
                 }
-                PhotoFilter.VIGNETTE -> {
+                VIGNETTE -> {
                     mEffect = effectFactory.createEffect(EFFECT_VIGNETTE)
                     mEffect!!.setParameter("scale", .5f)
                 }

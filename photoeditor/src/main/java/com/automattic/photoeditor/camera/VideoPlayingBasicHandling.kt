@@ -27,6 +27,7 @@ import android.media.AudioManager
 import android.media.MediaPlayer
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
+import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.io.IOException
 
 class VideoPlayingBasicHandling : Fragment(),

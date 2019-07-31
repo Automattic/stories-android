@@ -1,4 +1,4 @@
-package com.automattic.photoeditor.views
+package com.automattic.photoeditor.views.added
 
 import android.view.View
 import java.util.ArrayList

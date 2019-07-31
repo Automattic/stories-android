@@ -1,4 +1,4 @@
-package com.automattic.photoeditor
+package com.automattic.photoeditor.util
 
 import android.os.Environment
 import java.io.File

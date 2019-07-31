@@ -9,7 +9,7 @@
         tools:showIn="@layout/activity_main"
         tools:context=".MainActivity">
 
-    <com.automattic.photoeditor.PhotoEditorView
+    <com.automattic.photoeditor.views.PhotoEditorView
         android:id="@+id/photoEditorView"
         android:layout_width="0dp"
         android:layout_height="0dp"

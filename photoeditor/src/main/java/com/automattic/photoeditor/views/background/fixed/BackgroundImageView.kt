@@ -1,4 +1,4 @@
-package com.automattic.photoeditor
+package com.automattic.photoeditor.views.background.fixed
 
 import android.content.Context
 import android.content.res.ColorStateList

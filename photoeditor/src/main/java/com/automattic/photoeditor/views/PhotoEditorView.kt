@@ -1,4 +1,4 @@
-package com.automattic.photoeditor
+package com.automattic.photoeditor.views
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -14,7 +14,14 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import androidx.annotation.RequiresApi
-import com.automattic.photoeditor.camera.AutoFitTextureView
+import com.automattic.photoeditor.views.filter.CustomEffect
+import com.automattic.photoeditor.OnSaveBitmap
+import com.automattic.photoeditor.R.styleable
+import com.automattic.photoeditor.views.background.fixed.BackgroundImageView
+import com.automattic.photoeditor.views.background.video.AutoFitTextureView
+import com.automattic.photoeditor.views.brush.BrushDrawingView
+import com.automattic.photoeditor.views.filter.ImageFilterView
+import com.automattic.photoeditor.views.filter.PhotoFilter
 
 /**
  *
@@ -103,8 +110,8 @@ class PhotoEditorView : RelativeLayout {
         )
         imgSrcParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
         if (attrs != null) {
-            val a = context.obtainStyledAttributes(attrs, R.styleable.PhotoEditorView)
-            val imgSrcDrawable = a.getDrawable(R.styleable.PhotoEditorView_photo_src)
+            val a = context.obtainStyledAttributes(attrs, styleable.PhotoEditorView)
+            val imgSrcDrawable = a.getDrawable(styleable.PhotoEditorView_photo_src)
             if (imgSrcDrawable != null) {
                 imgSource.setImageDrawable(imgSrcDrawable)
             }
@@ -130,8 +137,12 @@ class PhotoEditorView : RelativeLayout {
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
         )
         brushParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
-        brushParam.addRule(RelativeLayout.ALIGN_TOP, imgSrcId)
-        brushParam.addRule(RelativeLayout.ALIGN_BOTTOM, imgSrcId)
+        brushParam.addRule(RelativeLayout.ALIGN_TOP,
+            imgSrcId
+        )
+        brushParam.addRule(RelativeLayout.ALIGN_BOTTOM,
+            imgSrcId
+        )
 
         // Setup GLSurface attributes
         imageFilterView = ImageFilterView(context)
@@ -143,8 +154,12 @@ class PhotoEditorView : RelativeLayout {
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
         )
         imgFilterParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
-        imgFilterParam.addRule(RelativeLayout.ALIGN_TOP, imgSrcId)
-        imgFilterParam.addRule(RelativeLayout.ALIGN_BOTTOM, imgSrcId)
+        imgFilterParam.addRule(RelativeLayout.ALIGN_TOP,
+            imgSrcId
+        )
+        imgFilterParam.addRule(RelativeLayout.ALIGN_BOTTOM,
+            imgSrcId
+        )
 
         imgSource.setOnImageChangedListener(object : BackgroundImageView.OnImageChangedListener {
             override fun onBitmapLoaded(sourceBitmap: Bitmap?) {
