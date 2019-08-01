@@ -10,7 +10,7 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.automattic.photoeditor.OnPhotoEditorListener
 import com.automattic.photoeditor.PhotoEditor
-import com.automattic.photoeditor.ViewType
+import com.automattic.photoeditor.views.ViewType
 import com.automattic.portkey.R
 import com.automattic.portkey.R.color
 import com.automattic.portkey.R.id
