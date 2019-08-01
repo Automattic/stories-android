@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.automattic.photoeditor.OnPhotoEditorListener
 import com.automattic.photoeditor.PhotoEditor
+import com.automattic.photoeditor.state.BackgroundSurfaceManager
 import com.automattic.photoeditor.views.ViewType
 import com.automattic.portkey.R
 import com.automattic.portkey.R.color
@@ -68,6 +69,8 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 // no op
             }
         })
+
+        lifecycle.addObserver(BackgroundSurfaceManager(this, lifecycle, photoEditorView, supportFragmentManager))
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
