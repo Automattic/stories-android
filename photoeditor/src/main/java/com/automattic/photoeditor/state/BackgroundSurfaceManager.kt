@@ -18,6 +18,7 @@ import com.automattic.photoeditor.camera.Camera2BasicHandling
 import com.automattic.photoeditor.camera.VideoPlayingBasicHandling
 import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.PhotoEditorView
+import java.io.File
 
 class BackgroundSurfaceManager(
     private val activity: Activity,
@@ -172,6 +173,10 @@ class BackgroundSurfaceManager(
         photoEditorView.turnTextureViewOn()
         camera2BasicHandler.deactivate()
         videoPlayerHandling.activate()
+    }
+
+    fun getCurrentVideoFile(): File? {
+        return camera2BasicHandler.currentFile
     }
 
     private fun getStateFromBundle() {

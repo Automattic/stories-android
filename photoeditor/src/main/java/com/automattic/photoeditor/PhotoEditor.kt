@@ -5,7 +5,9 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Matrix
 import android.graphics.Typeface
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.AsyncTask
 import android.text.TextUtils
@@ -36,11 +38,19 @@ import com.automattic.photoeditor.views.brush.BrushViewChangeListener
 import com.automattic.photoeditor.views.filter.CustomEffect
 import com.automattic.photoeditor.views.filter.PhotoFilter
 import com.bumptech.glide.Glide
+import com.daasuu.mp4compose.FillMode
+import com.daasuu.mp4compose.composer.Mp4Composer
+import com.daasuu.mp4compose.filter.GlFilter
+import com.daasuu.mp4compose.filter.GlFilterGroup
+import com.daasuu.mp4compose.filter.GlGifWatermarkFilter
+import com.daasuu.mp4compose.filter.GlWatermarkFilter
+import com.daasuu.mp4compose.filter.ViewPositionInfo
 
 import java.io.File
 import java.io.FileOutputStream
 import java.util.ArrayList
 import kotlinx.android.synthetic.main.view_photo_editor_text.view.*
+import java.io.FileInputStream
 
 /**
  *
@@ -734,6 +744,149 @@ class PhotoEditor private constructor(builder: Builder) :
                 onSaveListener.onFailure(e)
             }
         })
+    }
+
+    /**
+     * Save the edited VIDEO on given path
+     *
+     * @param videoInputPath      path on which video to be saved
+     * @param saveSettings   builder for multiple save options [SaveSettings]
+     * @param onSaveListener callback for saving video
+     * @see OnSaveListener
+     */
+    @SuppressLint("StaticFieldLeak")
+    @RequiresPermission(allOf = [Manifest.permission.WRITE_EXTERNAL_STORAGE])
+    fun saveVideoAsFile(
+        videoInputPath: String,
+        videoOutputPath: String,
+        saveSettings: SaveSettings,
+        onSaveListener: OnSaveWithCancelListener
+    ) {
+        Log.d(TAG, "Video Path: $videoInputPath")
+        var widthParent = parentView.getWidth()
+        var heightParent = parentView.getHeight()
+
+
+        val retriever = MediaMetadataRetriever()
+        retriever.setDataSource(videoInputPath)
+        var width = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH))
+        var height = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT))
+        var rotation = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION))
+        // if rotation is vertical, then swap height/width
+        if (rotation == 90 || rotation == 270) {
+            width = height.also { height = width }
+        }
+        retriever.release()
+
+        // get the images currently on top of the screen, and add them as Filters to the mp4composer
+        val filterCollection = ArrayList<GlFilter>()
+        for (v in addedViews) {
+            val viewPositionInfo = ViewPositionInfo(widthParent, heightParent, v.view.width, v.view.height, v.view.matrix)
+            when (v.viewType) {
+                STICKER_ANIMATED -> {
+                    val file = File(v.uri?.path)
+                    val fileInputStream = FileInputStream(file)
+                    filterCollection.add(GlGifWatermarkFilter(context, fileInputStream, viewPositionInfo))
+                }
+                else -> {
+                    clearHelperBox()
+                    filterCollection.add(GlWatermarkFilter(BitmapUtil.createBitmapFromView(v.view), viewPositionInfo))
+                }
+            }
+        }
+
+        Mp4Composer(videoInputPath, videoOutputPath)
+            .size(width, height)
+            .fillMode(FillMode.PRESERVE_ASPECT_FIT)
+            .filter(GlFilterGroup(filterCollection))
+            .listener(object : Mp4Composer.Listener {
+                override fun onProgress(progress: Double) {
+                    Log.d(TAG, "onProgress = $progress")
+                    // TODO: show progress to user
+                }
+
+                override fun onCompleted() {
+                    Log.d(TAG, "onCompleted()")
+                    onSaveListener.onSuccess(videoOutputPath)
+                }
+
+                override fun onCanceled() {
+                    Log.d(TAG, "onCanceled")
+                    onSaveListener.onCancel()
+                }
+
+                override fun onFailed(exception: Exception) {
+                    Log.e(TAG, "onFailed()", exception)
+                    onSaveListener.onFailure(exception)
+                }
+            })
+            .start()
+    }
+
+    /**
+     * Produce a new video with a static background image
+     *
+     * @param saveSettings   builder for multiple save options [SaveSettings]
+     * @param onSaveListener callback for saving video
+     * @see OnSaveListener
+     */
+    @SuppressLint("StaticFieldLeak")
+    @RequiresPermission(allOf = [Manifest.permission.WRITE_EXTERNAL_STORAGE])
+    fun saveVideoFromStaticBackgroundAsFile(
+        videoOutputPath: String,
+        saveSettings: SaveSettings,
+        onSaveListener: OnSaveWithCancelListener
+    ) {
+        var widthParent = parentView.getWidth()
+        var heightParent = parentView.getHeight()
+
+        // get the images currently on top of the screen, and add them as Filters to the mp4composer
+        val filterCollection = ArrayList<GlFilter>()
+        for (v in addedViews) {
+            val viewPositionInfo = ViewPositionInfo(widthParent, heightParent, v.view.width, v.view.height, v.view.matrix)
+            when (v.viewType) {
+                ViewType.STICKER_ANIMATED -> {
+                    val file = File(v.uri?.path)
+                    val fileInputStream = FileInputStream(file)
+                    filterCollection.add(GlGifWatermarkFilter(context, fileInputStream, viewPositionInfo))
+                }
+                else -> {
+                    clearHelperBox()
+                    filterCollection.add(GlWatermarkFilter(BitmapUtil.createBitmapFromView(v.view), viewPositionInfo))
+                }
+            }
+        }
+
+
+        // take the static background image
+        val bmp = createBitmapFromView(parentView.source)
+
+        Mp4Composer(bmp, videoOutputPath)
+            .size(bmp.width, bmp.height) // FIXME check whether these are the right values or not
+            .fillMode(FillMode.PRESERVE_ASPECT_FIT)
+            .filter(GlFilterGroup(filterCollection))
+            .listener(object : Mp4Composer.Listener {
+                override fun onProgress(progress: Double) {
+                    Log.d(TAG, "onProgress = $progress")
+                    // TODO: show progress to user
+                }
+
+                override fun onCompleted() {
+                    Log.d(TAG, "onCompleted()")
+                    onSaveListener.onSuccess(videoOutputPath)
+                }
+
+                override fun onCanceled() {
+                    Log.d(TAG, "onCanceled")
+                    onSaveListener.onCancel()
+                }
+
+                override fun onFailed(exception: Exception) {
+                    Log.e(TAG, "onFailed()", exception)
+                    onSaveListener.onFailure(exception)
+                }
+            })
+            .start()
     }
 
     /**
