@@ -11,14 +11,14 @@ class PermissionUtils {
         fun isPermissionGranted(isGranted: Boolean, permission: String)
     }
     companion object {
-        val READ_WRITE_STORAGE = 52
+        val PERMISSION_REQUEST_CODE = 5200
 
         fun checkPermission(context: Context, permission: String) =
             ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
 
         fun requestPermission(activity: Activity, permission: String) {
             ActivityCompat.requestPermissions(activity, arrayOf(permission),
-                READ_WRITE_STORAGE
+                PERMISSION_REQUEST_CODE
             )
         }
 
@@ -26,7 +26,7 @@ class PermissionUtils {
             val isGranted = ContextCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_GRANTED
             if (!isGranted) {
                 ActivityCompat.requestPermissions(activity, arrayOf(permission),
-                    READ_WRITE_STORAGE
+                    PERMISSION_REQUEST_CODE
                 )
             }
             return isGranted
@@ -39,7 +39,7 @@ class PermissionUtils {
             grantResults: IntArray
         ) {
             when (requestCode) {
-                READ_WRITE_STORAGE -> onRequestPermissionChecker.isPermissionGranted(
+                PERMISSION_REQUEST_CODE -> onRequestPermissionChecker.isPermissionGranted(
                     grantResults[0] == PackageManager.PERMISSION_GRANTED,
                     permissions[0]
                 )
