@@ -1,4 +1,4 @@
-package com.automattic.photoeditor
+package com.automattic.photoeditor.gesture
 
 import android.graphics.Rect
 import android.view.GestureDetector
@@ -7,6 +7,9 @@ import android.view.View
 import android.view.View.OnTouchListener
 import android.widget.ImageView
 import android.widget.RelativeLayout
+import com.automattic.photoeditor.OnPhotoEditorListener
+import com.automattic.photoeditor.views.ViewType
+import com.automattic.photoeditor.gesture.ScaleGestureDetector.SimpleOnScaleGestureListener
 
 /**
  * Created on 18/01/2017.
@@ -86,11 +89,16 @@ internal class MultiTouchListener(
                     val currX = event.getX(pointerIndexMove)
                     val currY = event.getY(pointerIndexMove)
                     if (!mScaleGestureDetector.isInProgress) {
-                        adjustTranslation(view, currX - mPrevX, currY - mPrevY)
+                        adjustTranslation(
+                            view,
+                            currX - mPrevX,
+                            currY - mPrevY
+                        )
                     }
                 }
             }
-            MotionEvent.ACTION_CANCEL -> mActivePointerId = INVALID_POINTER_ID
+            MotionEvent.ACTION_CANCEL -> mActivePointerId =
+                INVALID_POINTER_ID
             MotionEvent.ACTION_UP -> {
                 mActivePointerId = INVALID_POINTER_ID
                 if (deleteView != null && isViewInBounds(deleteView, x, y)) {
@@ -140,7 +148,7 @@ internal class MultiTouchListener(
         this.onMultiTouchListener = onMultiTouchListener
     }
 
-    private inner class ScaleGestureListener : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+    private inner class ScaleGestureListener : SimpleOnScaleGestureListener() {
         private var mPivotX: Float = 0.toFloat()
         private var mPivotY: Float = 0.toFloat()
         private val mPrevSpanVector = Vector2D()
@@ -156,7 +164,10 @@ internal class MultiTouchListener(
             val info = TransformInfo()
             info.deltaScale = if (isScaleEnabled) detector.scaleFactor else 1.0f
             info.deltaAngle =
-                if (isRotateEnabled) Vector2D.getAngle(mPrevSpanVector, detector.currentSpanVector) else 0.0f
+                if (isRotateEnabled) Vector2D.getAngle(
+                    mPrevSpanVector,
+                    detector.currentSpanVector
+                ) else 0.0f
             info.deltaX = if (isTranslateEnabled) detector.focusX - mPivotX else 0.0f
             info.deltaY = if (isTranslateEnabled) detector.focusY - mPivotY else 0.0f
             info.pivotX = mPivotX
@@ -225,15 +236,24 @@ internal class MultiTouchListener(
         }
 
         private fun move(view: View, info: TransformInfo) {
-            computeRenderOffset(view, info.pivotX, info.pivotY)
-            adjustTranslation(view, info.deltaX, info.deltaY)
+            computeRenderOffset(
+                view,
+                info.pivotX,
+                info.pivotY
+            )
+            adjustTranslation(
+                view,
+                info.deltaX,
+                info.deltaY
+            )
 
             var scale = view.scaleX * info.deltaScale
             scale = Math.max(info.minimumScale, Math.min(info.maximumScale, scale))
             view.scaleX = scale
             view.scaleY = scale
 
-            val rotation = adjustAngle(view.rotation + info.deltaAngle)
+            val rotation =
+                adjustAngle(view.rotation + info.deltaAngle)
             view.rotation = rotation
         }
 

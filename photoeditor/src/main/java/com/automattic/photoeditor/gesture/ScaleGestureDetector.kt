@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.automattic.photoeditor
+package com.automattic.photoeditor.gesture
 
 import android.util.Log
 import android.view.MotionEvent
@@ -234,7 +234,8 @@ internal class ScaleGestureDetector(private val mListener: OnScaleGestureListene
      * A convenience class to extend when you only want to listen for a subset
      * of scaling-related events. This implements all methods in
      */
-    internal open class SimpleOnScaleGestureListener : OnScaleGestureListener {
+    internal open class SimpleOnScaleGestureListener :
+        OnScaleGestureListener {
         override fun onScale(view: View, detector: ScaleGestureDetector): Boolean {
             return false
         }

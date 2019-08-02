@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.automattic.photoeditor.camera
+package com.automattic.photoeditor.views.background.video
 
 import android.content.Context
 import android.util.AttributeSet

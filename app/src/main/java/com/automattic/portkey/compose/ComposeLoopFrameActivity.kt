@@ -10,7 +10,8 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.automattic.photoeditor.OnPhotoEditorListener
 import com.automattic.photoeditor.PhotoEditor
-import com.automattic.photoeditor.ViewType
+import com.automattic.photoeditor.state.BackgroundSurfaceManager
+import com.automattic.photoeditor.views.ViewType
 import com.automattic.portkey.R
 import com.automattic.portkey.R.color
 import com.automattic.portkey.R.id
@@ -23,6 +24,7 @@ import kotlinx.android.synthetic.main.content_composer.*
 
 class ComposeLoopFrameActivity : AppCompatActivity() {
     private lateinit var photoEditor: PhotoEditor
+    private lateinit var backgroundSurfaceManager: BackgroundSurfaceManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,6 +70,19 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 // no op
             }
         })
+
+        backgroundSurfaceManager = BackgroundSurfaceManager(
+            this,
+            savedInstanceState,
+            lifecycle,
+            photoEditorView,
+            supportFragmentManager)
+        lifecycle.addObserver(backgroundSurfaceManager)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        backgroundSurfaceManager.saveStateToBundle(outState)
+        super.onSaveInstanceState(outState)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -103,6 +118,20 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 testSticker()
                 true
             }
+
+            id.action_bkg_camera_preview -> {
+                testCameraPreview()
+                true
+            }
+            id.action_bkg_static -> {
+                testStaticBackground()
+                true
+            }
+            id.action_bkg_play_video -> {
+                testPlayVideo()
+                true
+            }
+
             id.action_save -> {
                 Toast.makeText(this, "Not implemented", Toast.LENGTH_SHORT).show()
                 true
@@ -141,5 +170,20 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     private fun testSticker() {
         txtCurrentTool.setText("")
         photoEditor.addNewImageView(true, Uri.parse("https://i.giphy.com/Ok4HaWlYrewuY.gif"))
+    }
+
+    private fun testCameraPreview() {
+        txtCurrentTool.setText(string.main_test_camera_preview)
+        backgroundSurfaceManager.switchCameraPreviewOn()
+    }
+
+    private fun testPlayVideo() {
+        txtCurrentTool.setText(string.main_test_play_video)
+        backgroundSurfaceManager.switchVideoPlayerOn()
+    }
+
+    private fun testStaticBackground() {
+        txtCurrentTool.setText(string.main_test_static_background)
+        backgroundSurfaceManager.switchStaticImageBackgroundModeOn()
     }
 }

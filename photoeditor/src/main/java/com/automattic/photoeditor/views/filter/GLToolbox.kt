@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.automattic.photoeditor
+package com.automattic.photoeditor.views.filter
 
 import android.opengl.GLES20
 
@@ -36,11 +36,13 @@ internal object GLToolbox {
     }
 
     fun createProgram(vertexSource: String, fragmentSource: String): Int {
-        val vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, vertexSource)
+        val vertexShader =
+            loadShader(GLES20.GL_VERTEX_SHADER, vertexSource)
         if (vertexShader == 0) {
             return 0
         }
-        val pixelShader = loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentSource)
+        val pixelShader =
+            loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentSource)
         if (pixelShader == 0) {
             return 0
         }

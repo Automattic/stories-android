@@ -1,6 +1,7 @@
 package com.automattic.photoeditor
 
 import android.view.View
+import com.automattic.photoeditor.views.ViewType
 
 /**
  * @author [Burhanuddin Rashid](https://github.com/burhanrashid52)

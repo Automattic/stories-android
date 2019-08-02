@@ -1,4 +1,4 @@
-package com.automattic.photoeditor
+package com.automattic.photoeditor.views
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -14,7 +14,14 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import androidx.annotation.RequiresApi
-import com.automattic.photoeditor.camera.AutoFitTextureView
+import com.automattic.photoeditor.views.filter.CustomEffect
+import com.automattic.photoeditor.OnSaveBitmap
+import com.automattic.photoeditor.R.styleable
+import com.automattic.photoeditor.views.background.fixed.BackgroundImageView
+import com.automattic.photoeditor.views.background.video.AutoFitTextureView
+import com.automattic.photoeditor.views.brush.BrushDrawingView
+import com.automattic.photoeditor.views.filter.ImageFilterView
+import com.automattic.photoeditor.views.filter.PhotoFilter
 
 /**
  *
@@ -30,7 +37,7 @@ import com.automattic.photoeditor.camera.AutoFitTextureView
 
 class PhotoEditorView : RelativeLayout {
     private lateinit var autoFitTextureView: AutoFitTextureView
-    private lateinit var imgSource: FilterImageView
+    private lateinit var backgroundImage: BackgroundImageView
     private lateinit var brushDrawingView: BrushDrawingView
     private lateinit var imageFilterView: ImageFilterView
     private var surfaceListeners: ArrayList<SurfaceTextureListener> = ArrayList()
@@ -59,7 +66,7 @@ class PhotoEditorView : RelativeLayout {
      * @return source ImageView
      */
     val source: ImageView
-        get() = imgSource
+        get() = backgroundImage
 
     val brush: BrushDrawingView
         get() = brushDrawingView
@@ -95,18 +102,18 @@ class PhotoEditorView : RelativeLayout {
     @SuppressLint("Recycle")
     private fun init(attrs: AttributeSet?) {
         // Setup image attributes
-        imgSource = FilterImageView(context)
-        imgSource.id = imgSrcId
-        imgSource.adjustViewBounds = true
+        backgroundImage = BackgroundImageView(context)
+        backgroundImage.id = imgSrcId
+        backgroundImage.adjustViewBounds = true
         val imgSrcParam = RelativeLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
         )
         imgSrcParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
         if (attrs != null) {
-            val a = context.obtainStyledAttributes(attrs, R.styleable.PhotoEditorView)
-            val imgSrcDrawable = a.getDrawable(R.styleable.PhotoEditorView_photo_src)
+            val a = context.obtainStyledAttributes(attrs, styleable.PhotoEditorView)
+            val imgSrcDrawable = a.getDrawable(styleable.PhotoEditorView_photo_src)
             if (imgSrcDrawable != null) {
-                imgSource.setImageDrawable(imgSrcDrawable)
+                backgroundImage.setImageDrawable(imgSrcDrawable)
             }
         }
 
@@ -146,7 +153,7 @@ class PhotoEditorView : RelativeLayout {
         imgFilterParam.addRule(RelativeLayout.ALIGN_TOP, imgSrcId)
         imgFilterParam.addRule(RelativeLayout.ALIGN_BOTTOM, imgSrcId)
 
-        imgSource.setOnImageChangedListener(object : FilterImageView.OnImageChangedListener {
+        backgroundImage.setOnImageChangedListener(object : BackgroundImageView.OnImageChangedListener {
             override fun onBitmapLoaded(sourceBitmap: Bitmap?) {
                 imageFilterView.setFilterEffect(PhotoFilter.NONE)
                 imageFilterView.setSourceBitmap(sourceBitmap!!)
@@ -158,7 +165,7 @@ class PhotoEditorView : RelativeLayout {
         addView(autoFitTextureView, cameraParam)
 
         // Add image source
-        addView(imgSource, imgSrcParam)
+        addView(backgroundImage, imgSrcParam)
 
         // Add Gl FilterView
         addView(imageFilterView, imgFilterParam)
@@ -171,12 +178,12 @@ class PhotoEditorView : RelativeLayout {
         // check which background is currently visible: if it's
         // - imageFilterView:  a filter has been applied, process it first
         // - autoFitTextureView:  a video (camera preview or video player) is being shown, use that
-        // - else: use deafult imgSource.bitmap
+        // - else: use deafult backgroundImage.bitmap
         if (imageFilterView.visibility == View.VISIBLE) {
             imageFilterView.saveBitmap(object : OnSaveBitmap {
                 override fun onBitmapReady(saveBitmap: Bitmap) {
                     Log.e(TAG, "saveFilter: $saveBitmap")
-                    imgSource.setImageBitmap(saveBitmap)
+                    backgroundImage.setImageBitmap(saveBitmap)
                     imageFilterView.visibility = View.GONE
                     onSaveBitmap.onBitmapReady(saveBitmap)
                 }
@@ -187,45 +194,45 @@ class PhotoEditorView : RelativeLayout {
             })
         } else if (autoFitTextureView.visibility == View.VISIBLE) {
             // this saves just a snapshot of whatever is being displayed on the TextureSurface
-            imgSource.setImageBitmap(autoFitTextureView.bitmap)
+            backgroundImage.setImageBitmap(autoFitTextureView.bitmap)
             toggleTextureView()
-            onSaveBitmap.onBitmapReady(imgSource.bitmap!!)
+            onSaveBitmap.onBitmapReady(backgroundImage.bitmap!!)
         } else {
-            onSaveBitmap.onBitmapReady(imgSource.bitmap!!)
+            onSaveBitmap.onBitmapReady(backgroundImage.bitmap!!)
         }
     }
 
     internal fun setFilterEffect(filterType: PhotoFilter) {
         imageFilterView.visibility = View.VISIBLE
-        imageFilterView.setSourceBitmap(imgSource.bitmap!!)
+        imageFilterView.setSourceBitmap(backgroundImage.bitmap!!)
         imageFilterView.setFilterEffect(filterType)
     }
 
     internal fun setFilterEffect(customEffect: CustomEffect) {
         imageFilterView.visibility = View.VISIBLE
-        imageFilterView.setSourceBitmap(imgSource.bitmap!!)
+        imageFilterView.setSourceBitmap(backgroundImage.bitmap!!)
         imageFilterView.setFilterEffect(customEffect)
     }
 
     internal fun turnTextureViewOn() {
-        imgSource.visibility = View.GONE
+        backgroundImage.visibility = View.GONE
         autoFitTextureView.visibility = View.VISIBLE
     }
 
     internal fun turnTextureViewOff() {
-        imgSource.visibility = View.VISIBLE
+        backgroundImage.visibility = View.VISIBLE
         autoFitTextureView.visibility = View.GONE
     }
 
     internal fun toggleTextureView(): Boolean {
-        imgSource.visibility = autoFitTextureView.visibility.also {
-            autoFitTextureView.visibility = imgSource.visibility
+        backgroundImage.visibility = autoFitTextureView.visibility.also {
+            autoFitTextureView.visibility = backgroundImage.visibility
         }
         return autoFitTextureView.visibility == View.VISIBLE
     }
 
     internal fun turnTextureAndImageViewOff() {
-        imgSource.visibility = View.GONE
+        backgroundImage.visibility = View.GONE
         autoFitTextureView.visibility = View.GONE
     }
 

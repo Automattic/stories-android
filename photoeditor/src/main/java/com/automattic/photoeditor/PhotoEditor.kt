@@ -23,9 +23,18 @@ import androidx.annotation.ColorInt
 import androidx.annotation.IntRange
 import androidx.annotation.RequiresPermission
 import androidx.annotation.UiThread
-import com.automattic.photoeditor.ViewType.STICKER_ANIMATED
-import com.automattic.photoeditor.views.AddedView
-import com.automattic.photoeditor.views.AddedViewList
+import com.automattic.photoeditor.views.ViewType.BRUSH_DRAWING
+import com.automattic.photoeditor.views.ViewType.STICKER_ANIMATED
+import com.automattic.photoeditor.gesture.MultiTouchListener
+import com.automattic.photoeditor.util.BitmapUtil
+import com.automattic.photoeditor.views.PhotoEditorView
+import com.automattic.photoeditor.views.ViewType
+import com.automattic.photoeditor.views.added.AddedView
+import com.automattic.photoeditor.views.added.AddedViewList
+import com.automattic.photoeditor.views.brush.BrushDrawingView
+import com.automattic.photoeditor.views.brush.BrushViewChangeListener
+import com.automattic.photoeditor.views.filter.CustomEffect
+import com.automattic.photoeditor.views.filter.PhotoFilter
 import com.bumptech.glide.Glide
 
 import java.io.File
@@ -45,7 +54,8 @@ import kotlinx.android.synthetic.main.view_photo_editor_text.view.*
  * @since 18/01/2017
  */
 
-class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListener {
+class PhotoEditor private constructor(builder: Builder) :
+    BrushViewChangeListener {
     private val layoutInflater: LayoutInflater
     private val context: Context
     private val parentView: PhotoEditorView
@@ -153,7 +163,6 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
 
         imageView.setImageBitmap(desiredImage)
 
-        val multiTouchListener = multiTouchListener
         multiTouchListener.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
             override fun onClick() {
                 val isBackgroundVisible = frmBorder.tag != null && frmBorder.tag as Boolean
@@ -176,7 +185,6 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
         val frmBorder = imageRootView.findViewById<FrameLayout>(R.id.frmBorder)
         val imgClose = imageRootView.findViewById<ImageView>(R.id.imgPhotoEditorClose)
 
-        val multiTouchListener = multiTouchListener
         multiTouchListener.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
             override fun onClick() {
                 val isBackgroundVisible = frmBorder.tag != null && frmBorder.tag as Boolean
@@ -204,7 +212,6 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
         val frmBorder = imageRootView.findViewById<FrameLayout>(R.id.frmBorder)
         val imgClose = imageRootView.findViewById<ImageView>(R.id.imgPhotoEditorClose)
 
-        val multiTouchListener = multiTouchListener
         multiTouchListener.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
             override fun onClick() {
                 val isBackgroundVisible = frmBorder.tag != null && frmBorder.tag as Boolean
@@ -245,7 +252,7 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
         if (textTypeface != null) {
             textInputTv.typeface = textTypeface
         }
-        val multiTouchListener = multiTouchListener
+
         multiTouchListener.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
             override fun onClick() {
                 val isBackgroundVisible = frmBorder.tag != null && frmBorder.tag as Boolean
@@ -329,7 +336,7 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
         }
         emojiTextView.textSize = 56f
         emojiTextView.text = emojiName
-        val multiTouchListener = multiTouchListener
+
         multiTouchListener.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
             override fun onClick() {
                 val isBackgroundVisible = frmBorder.tag != null && frmBorder.tag as Boolean
@@ -823,7 +830,7 @@ class PhotoEditor private constructor(builder: Builder) : BrushViewChangeListene
         if (redoViews.size > 0) {
             redoViews.removeAt(redoViews.size - 1)
         }
-        addedViews.add(AddedView(brushDrawingView, ViewType.BRUSH_DRAWING))
+        addedViews.add(AddedView(brushDrawingView, BRUSH_DRAWING))
         mOnPhotoEditorListener?.onAddViewListener(ViewType.BRUSH_DRAWING, addedViews.size)
     }
 

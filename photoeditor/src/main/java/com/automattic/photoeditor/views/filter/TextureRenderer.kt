@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.automattic.photoeditor
+package com.automattic.photoeditor.views.filter
 
 import android.opengl.GLES20
 
@@ -39,7 +39,10 @@ internal class TextureRenderer {
 
     fun init() {
         // Create program
-        mProgram = GLToolbox.createProgram(VERTEX_SHADER, FRAGMENT_SHADER)
+        mProgram = GLToolbox.createProgram(
+            VERTEX_SHADER,
+            FRAGMENT_SHADER
+        )
 
         // Bind attributes and uniforms
         mTexSamplerHandle = GLES20.glGetUniformLocation(
