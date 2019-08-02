@@ -22,6 +22,20 @@
           android:title="@string/main_test_sticker"
           android:orderInCategory="100"
           app:showAsAction="never"/>
+
+    <item android:id="@+id/action_bkg_camera_preview"
+          android:title="@string/main_test_camera_preview"
+          android:orderInCategory="100"
+          app:showAsAction="never"/>
+    <item android:id="@+id/action_bkg_static"
+          android:title="@string/main_test_static_background"
+          android:orderInCategory="100"
+          app:showAsAction="never"/>
+    <item android:id="@+id/action_bkg_play_video"
+          android:title="@string/main_test_play_video"
+          android:orderInCategory="100"
+          app:showAsAction="never"/>
+
     <item android:id="@+id/action_save"
           android:title="@string/main_test_save"
           android:orderInCategory="100"

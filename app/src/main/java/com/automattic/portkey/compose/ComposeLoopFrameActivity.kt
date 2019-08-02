@@ -118,6 +118,20 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 testSticker()
                 true
             }
+
+            id.action_bkg_camera_preview -> {
+                testCameraPreview()
+                true
+            }
+            id.action_bkg_static -> {
+                testStaticBackground()
+                true
+            }
+            id.action_bkg_play_video -> {
+                testPlayVideo()
+                true
+            }
+
             id.action_save -> {
                 Toast.makeText(this, "Not implemented", Toast.LENGTH_SHORT).show()
                 true
@@ -156,5 +170,20 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     private fun testSticker() {
         txtCurrentTool.setText("")
         photoEditor.addNewImageView(true, Uri.parse("https://i.giphy.com/Ok4HaWlYrewuY.gif"))
+    }
+
+    private fun testCameraPreview() {
+        txtCurrentTool.setText(string.main_test_camera_preview)
+        backgroundSurfaceManager.switchCameraPreviewOn()
+    }
+
+    private fun testPlayVideo() {
+        txtCurrentTool.setText(string.main_test_play_video)
+        backgroundSurfaceManager.switchVideoPlayerOn()
+    }
+
+    private fun testStaticBackground() {
+        txtCurrentTool.setText(string.main_test_static_background)
+        backgroundSurfaceManager.switchStaticImageBackgroundModeOn()
     }
 }

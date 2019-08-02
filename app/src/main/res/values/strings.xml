@@ -6,6 +6,9 @@
     <string name="main_test_emoji">Test emoji</string>
     <string name="main_test_text">Test text</string>
     <string name="main_test_sticker">Test sticker</string>
+    <string name="main_test_camera_preview">Camera preview</string>
+    <string name="main_test_static_background">Static bkg</string>
+    <string name="main_test_play_video">Play video</string>
     <string name="main_test_save">Save</string>
 
 
