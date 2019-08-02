@@ -36,7 +36,8 @@ class PermissionUtils {
             onRequestPermissionChecker: OnRequestPermissionGrantedCheck,
             requestCode: Int,
             permissions: Array<String>,
-            grantResults: IntArray) {
+            grantResults: IntArray
+        ) {
             when (requestCode) {
                 READ_WRITE_STORAGE -> onRequestPermissionChecker.isPermissionGranted(
                     grantResults[0] == PackageManager.PERMISSION_GRANTED,

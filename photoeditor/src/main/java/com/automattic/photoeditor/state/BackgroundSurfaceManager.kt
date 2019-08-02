@@ -19,21 +19,20 @@ import com.automattic.photoeditor.camera.VideoPlayingBasicHandling
 import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.PhotoEditorView
 
-
 class BackgroundSurfaceManager(
     private val activity: Activity,
     private val savedInstanceState: Bundle?,
     private val lifeCycle: Lifecycle,
     private val photoEditorView: PhotoEditorView,
-    private val supportFragmentManager: FragmentManager) : LifecycleObserver {
+    private val supportFragmentManager: FragmentManager
+) : LifecycleObserver {
     private lateinit var camera2BasicHandler: Camera2BasicHandling
     private lateinit var videoPlayerHandling: VideoPlayingBasicHandling
 
     // state flags
-    private var isCameraVisible : Boolean = false
+    private var isCameraVisible: Boolean = false
     private var isVideoPlayerVisible: Boolean = false
     private var isCameraRecording: Boolean = false
-
 
     @OnLifecycleEvent(ON_CREATE)
     fun onCreate(source: LifecycleOwner) {
@@ -43,7 +42,7 @@ class BackgroundSurfaceManager(
 
         // ask FragmentManager to add the headless fragment so it receives the Activity's lifecycle callback calls
         val cameraFragment = supportFragmentManager.findFragmentByTag(KEY_CAMERA_HANDLING_FRAGMENT_TAG)
-        if (cameraFragment == null ) {
+        if (cameraFragment == null) {
             camera2BasicHandler = Camera2BasicHandling.getInstance(photoEditorView.textureView)
             supportFragmentManager
                 .beginTransaction().add(camera2BasicHandler, KEY_CAMERA_HANDLING_FRAGMENT_TAG).commit()
@@ -56,10 +55,9 @@ class BackgroundSurfaceManager(
         // add camera handling texture listener
         photoEditorView.listeners.add(camera2BasicHandler.surfaceTextureListener)
 
-
         // ask FragmentManager to add the headless fragment so it receives the Activity's lifecycle callback calls
         val videoPlayerFragment = supportFragmentManager.findFragmentByTag(KEY_VIDEOPLAYER_HANDLING_FRAGMENT_TAG)
-        if (videoPlayerFragment == null ) {
+        if (videoPlayerFragment == null) {
             videoPlayerHandling = VideoPlayingBasicHandling.getInstance(photoEditorView.textureView)
             supportFragmentManager
                 .beginTransaction().add(videoPlayerHandling, KEY_VIDEOPLAYER_HANDLING_FRAGMENT_TAG).commit()
@@ -112,15 +110,15 @@ class BackgroundSurfaceManager(
         outState?.putBoolean(KEY_IS_CAMERA_RECORDING, isCameraRecording)
     }
 
-    fun cameraVisible() : Boolean {
+    fun cameraVisible(): Boolean {
         return isCameraVisible
     }
 
-    fun videoPlayerVisible() : Boolean {
+    fun videoPlayerVisible(): Boolean {
         return isVideoPlayerVisible
     }
 
-    fun cameraRecording() : Boolean {
+    fun cameraRecording(): Boolean {
         return isCameraRecording
     }
 
@@ -142,13 +140,13 @@ class BackgroundSurfaceManager(
                     PermissionUtils.requestPermission(activity, Manifest.permission.RECORD_AUDIO)
                 } else {
                     isCameraRecording = true
-                    //txtRecording.visibility = View.VISIBLE
+                    // txtRecording.visibility = View.VISIBLE
                     camera2BasicHandler.createCameraRecordingSession()
                 }
             } else {
                 // stop recording
                 isCameraRecording = false
-                //txtRecording.visibility = View.GONE
+                // txtRecording.visibility = View.GONE
                 camera2BasicHandler.stopRecordingVideo()
             }
         } else {
