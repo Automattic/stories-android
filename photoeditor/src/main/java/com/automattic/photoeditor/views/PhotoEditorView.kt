@@ -137,12 +137,8 @@ class PhotoEditorView : RelativeLayout {
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
         )
         brushParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
-        brushParam.addRule(RelativeLayout.ALIGN_TOP,
-            imgSrcId
-        )
-        brushParam.addRule(RelativeLayout.ALIGN_BOTTOM,
-            imgSrcId
-        )
+        brushParam.addRule(RelativeLayout.ALIGN_TOP, imgSrcId)
+        brushParam.addRule(RelativeLayout.ALIGN_BOTTOM, imgSrcId)
 
         // Setup GLSurface attributes
         imageFilterView = ImageFilterView(context)
@@ -154,12 +150,8 @@ class PhotoEditorView : RelativeLayout {
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
         )
         imgFilterParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
-        imgFilterParam.addRule(RelativeLayout.ALIGN_TOP,
-            imgSrcId
-        )
-        imgFilterParam.addRule(RelativeLayout.ALIGN_BOTTOM,
-            imgSrcId
-        )
+        imgFilterParam.addRule(RelativeLayout.ALIGN_TOP, imgSrcId)
+        imgFilterParam.addRule(RelativeLayout.ALIGN_BOTTOM, imgSrcId)
 
         backgroundImage.setOnImageChangedListener(object : BackgroundImageView.OnImageChangedListener {
             override fun onBitmapLoaded(sourceBitmap: Bitmap?) {
