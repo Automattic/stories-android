@@ -1,7 +1,6 @@
 package com.automattic.photoeditor.state
 
-import android.content.Context
-import android.preference.PreferenceManager
+import android.os.Bundle
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.Event.ON_CREATE
@@ -19,7 +18,7 @@ import com.automattic.photoeditor.views.PhotoEditorView
 
 
 class BackgroundSurfaceManager(
-    private val context: Context,
+    private val savedInstanceState: Bundle?,
     private val lifeCycle: Lifecycle,
     private val photoEditorView: PhotoEditorView,
     private val supportFragmentManager: FragmentManager) : LifecycleObserver {
@@ -35,7 +34,7 @@ class BackgroundSurfaceManager(
     fun onCreate(source: LifecycleOwner) {
         // clear surfaceTexture listeners
         photoEditorView.listeners.clear()
-        getStateFromPrefs()
+        getStateFromBundle()
 
         // ask FragmentManager to add the headless fragment so it receives the Activity's lifecycle callback calls
         val cameraFragment = supportFragmentManager.findFragmentByTag(KEY_CAMERA_HANDLING_FRAGMENT_TAG)
@@ -67,6 +66,8 @@ class BackgroundSurfaceManager(
         }
         // add video player texture listener
         photoEditorView.listeners.add(videoPlayerHandling.surfaceTextureListener)
+
+        if (isCameraVisible || isVideoPlayerVisible) { photoEditorView.toggleTextureView() }
     }
 
     @OnLifecycleEvent(ON_DESTROY)
@@ -74,7 +75,6 @@ class BackgroundSurfaceManager(
         if (lifeCycle.currentState.isAtLeast(Lifecycle.State.DESTROYED)) {
             // clear surfaceTexture listeners
             photoEditorView.listeners.clear()
-            saveStateToPrefs()
         }
         // stop listening to events - should be safe to not remove it as per mentioned here
         // https://github.com/googlecodelabs/android-lifecycles/issues/5#issuecomment-303717013
@@ -85,12 +85,10 @@ class BackgroundSurfaceManager(
     @OnLifecycleEvent(ON_START)
     fun onStart(source: LifecycleOwner) {
         // TODO: get state and restart fragments / camera preview?
-        getStateFromPrefs()
     }
     @OnLifecycleEvent(ON_STOP)
     fun onStop(source: LifecycleOwner) {
         // TODO: save state and pause fragments / camera preview?
-        saveStateToPrefs()
     }
 
     @OnLifecycleEvent(ON_RESUME)
@@ -103,20 +101,18 @@ class BackgroundSurfaceManager(
         // TODO: save state and pause fragments / camera preview?
     }
 
-    private fun saveStateToPrefs() {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-        val editor = prefs.edit()
-        editor.putBoolean(KEY_IS_CAMERA_VISIBLE, isCameraVisible)
-        editor.putBoolean(KEY_IS_VIDEO_PLAYER_VISIBLE, isVideoPlayerVisible)
-        editor.putBoolean(KEY_IS_CAMERA_RECORDING, isCameraRecording)
-        editor.apply()
+    fun saveStateToBundle(outState: Bundle?) {
+        outState?.putBoolean(KEY_IS_CAMERA_VISIBLE, isCameraVisible)
+        outState?.putBoolean(KEY_IS_VIDEO_PLAYER_VISIBLE, isVideoPlayerVisible)
+        outState?.putBoolean(KEY_IS_CAMERA_RECORDING, isCameraRecording)
     }
 
-    private fun getStateFromPrefs() {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-        isCameraVisible = prefs.getBoolean(KEY_IS_CAMERA_VISIBLE, true)
-        isVideoPlayerVisible = prefs.getBoolean(KEY_IS_VIDEO_PLAYER_VISIBLE, false)
-        isCameraRecording = prefs.getBoolean(KEY_IS_CAMERA_RECORDING, false)
+    private fun getStateFromBundle() {
+        if (savedInstanceState != null) {
+            isCameraVisible = savedInstanceState.getBoolean(KEY_IS_CAMERA_VISIBLE)
+            isVideoPlayerVisible = savedInstanceState.getBoolean(KEY_IS_VIDEO_PLAYER_VISIBLE)
+            isCameraRecording = savedInstanceState.getBoolean(KEY_IS_CAMERA_RECORDING)
+        }
     }
 
     companion object {

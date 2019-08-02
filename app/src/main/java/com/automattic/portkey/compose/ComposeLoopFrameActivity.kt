@@ -24,6 +24,7 @@ import kotlinx.android.synthetic.main.content_composer.*
 
 class ComposeLoopFrameActivity : AppCompatActivity() {
     private lateinit var photoEditor: PhotoEditor
+    private lateinit var backgroundSurfaceManager: BackgroundSurfaceManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,7 +71,18 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             }
         })
 
-        lifecycle.addObserver(BackgroundSurfaceManager(this, lifecycle, photoEditorView, supportFragmentManager))
+        backgroundSurfaceManager = BackgroundSurfaceManager(
+            savedInstanceState,
+            lifecycle,
+            photoEditorView,
+            supportFragmentManager)
+
+        lifecycle.addObserver(backgroundSurfaceManager)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        backgroundSurfaceManager.saveStateToBundle(outState)
+        super.onSaveInstanceState(outState)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
