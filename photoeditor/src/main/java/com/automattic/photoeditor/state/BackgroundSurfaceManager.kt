@@ -136,17 +136,16 @@ class BackgroundSurfaceManager(
             if (!isCameraRecording) {
                 // let's start recording
                 if (!PermissionUtils.checkPermission(activity, Manifest.permission.RECORD_AUDIO)) {
-                    // locationPermissionRequestor = ::switchCameraPreviewOn
                     PermissionUtils.requestPermission(activity, Manifest.permission.RECORD_AUDIO)
                 } else {
                     isCameraRecording = true
-                    // txtRecording.visibility = View.VISIBLE
+                    // TODO txtRecording.visibility = View.VISIBLE
                     camera2BasicHandler.createCameraRecordingSession()
                 }
             } else {
                 // stop recording
                 isCameraRecording = false
-                // txtRecording.visibility = View.GONE
+                // TODO txtRecording.visibility = View.GONE
                 camera2BasicHandler.stopRecordingVideo()
             }
         } else {
@@ -156,7 +155,6 @@ class BackgroundSurfaceManager(
             photoEditorView.turnTextureViewOn()
             camera2BasicHandler.activate()
             videoPlayerHandling.deactivate()
-            // photoEditor.toggleTextureView()
         }
     }
 
