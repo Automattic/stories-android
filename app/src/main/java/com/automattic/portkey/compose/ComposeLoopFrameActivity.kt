@@ -276,24 +276,25 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                     .setTransparencyEnabled(true)
                     .build()
 
-                photoEditor.saveVideoAsFile(inputFile, file.absolutePath, saveSettings, object : PhotoEditor.OnSaveWithCancelListener
-                {
+                photoEditor.saveVideoAsFile(
+                    inputFile,
+                    file.absolutePath,
+                    saveSettings,
+                    object : PhotoEditor.OnSaveWithCancelListener {
                     override fun onCancel() {
-                        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-                    }
+                            // TODO not implemented
+                        }
 
-                    override fun onSuccess(imagePath: String) {
-                        hideLoading()
-                        showSnackbar("Video Saved Successfully")
-                        // TODO: not sure here, re-start video or something?
-                        //photoEditorView.source.setImageURI(Uri.fromFile(File(imagePath)))
-                    }
+                        override fun onSuccess(imagePath: String) {
+                            hideLoading()
+                            showSnackbar("Video Saved Successfully")
+                        }
 
-                    override fun onFailure(exception: Exception) {
-                        hideLoading()
-                        showSnackbar("Failed to save Video")
-                    }
-                })
+                        override fun onFailure(exception: Exception) {
+                            hideLoading()
+                            showSnackbar("Failed to save Video")
+                        }
+                    })
             } catch (e: IOException) {
                 e.printStackTrace()
                 hideLoading()
@@ -317,24 +318,26 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                     .setTransparencyEnabled(true)
                     .build()
 
-                photoEditor.saveVideoFromStaticBackgroundAsFile(file.absolutePath, saveSettings, object : PhotoEditor.OnSaveWithCancelListener
-                {
-                    override fun onCancel() {
-                        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-                    }
+                photoEditor.saveVideoFromStaticBackgroundAsFile(
+                    file.absolutePath,
+                    saveSettings,
+                    object : PhotoEditor.OnSaveWithCancelListener {
+                        override fun onCancel() {
+                            // TODO not implemented
+                        }
 
-                    override fun onSuccess(imagePath: String) {
-                        // now save the video with emoji, but using the previously saved video as input
-                        hideLoading()
-                        saveVideo(imagePath)
-                        // TODO: delete the temporal video produced originally
-                    }
+                        override fun onSuccess(imagePath: String) {
+                            // now save the video with emoji, but using the previously saved video as input
+                            hideLoading()
+                            saveVideo(imagePath)
+                            // TODO: delete the temporal video produced originally
+                        }
 
-                    override fun onFailure(exception: Exception) {
-                        hideLoading()
-                        showSnackbar("Failed to save Video")
-                    }
-                })
+                        override fun onFailure(exception: Exception) {
+                            hideLoading()
+                            showSnackbar("Failed to save Video")
+                        }
+                    })
             } catch (e: IOException) {
                 e.printStackTrace()
                 hideLoading()
@@ -346,7 +349,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     protected fun showLoading(message: String) {
-        runOnUiThread{
+        runOnUiThread {
             progressDialog = ProgressDialog(this)
             progressDialog!!.setMessage(message)
             progressDialog!!.setProgressStyle(ProgressDialog.STYLE_SPINNER)
@@ -356,7 +359,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     protected fun hideLoading() {
-        runOnUiThread{
+        runOnUiThread {
             if (progressDialog != null) {
                 progressDialog!!.dismiss()
             }
@@ -364,7 +367,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     protected fun showSnackbar(message: String) {
-        runOnUiThread{
+        runOnUiThread {
             val view = findViewById<View>(android.R.id.content)
             if (view != null) {
                 Snackbar.make(view, message, Snackbar.LENGTH_SHORT).show()

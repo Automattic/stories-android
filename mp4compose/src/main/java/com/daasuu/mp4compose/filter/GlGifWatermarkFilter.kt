@@ -18,8 +18,11 @@ import java.io.IOException
 import java.io.InputStream
 import java.nio.ByteBuffer
 
-class GlGifWatermarkFilter (val context: Context, gifAsInputStream: InputStream,
-    val positionInfo: ViewPositionInfo? = null) : GlOverlayFilter() {
+class GlGifWatermarkFilter(
+    val context: Context,
+    gifAsInputStream: InputStream,
+    val positionInfo: ViewPositionInfo? = null
+) : GlOverlayFilter() {
     private val TAG = "GlGifWatermarkFilter"
     private var bitmap: Bitmap? = null
     private var position = Position.LEFT_TOP
@@ -126,7 +129,7 @@ class GlGifWatermarkFilter (val context: Context, gifAsInputStream: InputStream,
         }
     }
 
-    private fun shouldAdvanceGifFrame(gifNextDelay: Int, presentationTime: Long) : Boolean {
+    private fun shouldAdvanceGifFrame(gifNextDelay: Int, presentationTime: Long): Boolean {
         if ((currentGifDuration + gifNextDelay) <= presentationTime) {
             return true
         }
@@ -151,10 +154,10 @@ class GlGifWatermarkFilter (val context: Context, gifAsInputStream: InputStream,
         val sampleSize = Math.max(1, powerOfTwoSampleSize)
         if (Log.isLoggable(TAG, Log.VERBOSE) && sampleSize > 1) {
             Log.v(
-                TAG, "Downsampling GIF"
-                        + ", sampleSize: " + sampleSize
-                        + ", target dimens: [" + targetWidth + "x" + targetHeight + "]"
-                        + ", actual dimens: [" + gifHeader.width + "x" + gifHeader.height + "]"
+                TAG, "Downsampling GIF" +
+                        ", sampleSize: " + sampleSize +
+                        ", target dimens: [" + targetWidth + "x" + targetHeight + "]" +
+                        ", actual dimens: [" + gifHeader.width + "x" + gifHeader.height + "]"
             )
         }
         return sampleSize

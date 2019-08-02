@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Matrix
 import android.graphics.Typeface
 import android.media.MediaMetadataRetriever
 import android.net.Uri
@@ -749,8 +748,8 @@ class PhotoEditor private constructor(builder: Builder) :
     /**
      * Save the edited VIDEO on given path
      *
-     * @param videoInputPath      path on which video to be saved
-     * @param saveSettings   builder for multiple save options [SaveSettings]
+     * @param videoInputPath path on which video to be saved
+     * @param saveSettings builder for multiple save options [SaveSettings]
      * @param onSaveListener callback for saving video
      * @see OnSaveListener
      */
@@ -766,7 +765,6 @@ class PhotoEditor private constructor(builder: Builder) :
         var widthParent = parentView.getWidth()
         var heightParent = parentView.getHeight()
 
-
         val retriever = MediaMetadataRetriever()
         retriever.setDataSource(videoInputPath)
         var width = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH))
@@ -781,7 +779,13 @@ class PhotoEditor private constructor(builder: Builder) :
         // get the images currently on top of the screen, and add them as Filters to the mp4composer
         val filterCollection = ArrayList<GlFilter>()
         for (v in addedViews) {
-            val viewPositionInfo = ViewPositionInfo(widthParent, heightParent, v.view.width, v.view.height, v.view.matrix)
+            val viewPositionInfo = ViewPositionInfo(
+                widthParent,
+                heightParent,
+                v.view.width,
+                v.view.height,
+                v.view.matrix
+            )
             when (v.viewType) {
                 STICKER_ANIMATED -> {
                     val file = File(v.uri?.path)
@@ -826,7 +830,7 @@ class PhotoEditor private constructor(builder: Builder) :
     /**
      * Produce a new video with a static background image
      *
-     * @param saveSettings   builder for multiple save options [SaveSettings]
+     * @param saveSettings builder for multiple save options [SaveSettings]
      * @param onSaveListener callback for saving video
      * @see OnSaveListener
      */
@@ -843,7 +847,13 @@ class PhotoEditor private constructor(builder: Builder) :
         // get the images currently on top of the screen, and add them as Filters to the mp4composer
         val filterCollection = ArrayList<GlFilter>()
         for (v in addedViews) {
-            val viewPositionInfo = ViewPositionInfo(widthParent, heightParent, v.view.width, v.view.height, v.view.matrix)
+            val viewPositionInfo = ViewPositionInfo(
+                widthParent,
+                heightParent,
+                v.view.width,
+                v.view.height,
+                v.view.matrix
+            )
             when (v.viewType) {
                 ViewType.STICKER_ANIMATED -> {
                     val file = File(v.uri?.path)
@@ -856,7 +866,6 @@ class PhotoEditor private constructor(builder: Builder) :
                 }
             }
         }
-
 
         // take the static background image
         val bmp = createBitmapFromView(parentView.source)
