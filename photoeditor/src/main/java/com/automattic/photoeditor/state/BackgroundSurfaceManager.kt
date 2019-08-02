@@ -135,8 +135,15 @@ class BackgroundSurfaceManager(
             // camera preview is ON
             if (!isCameraRecording) {
                 // let's start recording
-                if (!PermissionUtils.checkPermission(activity, Manifest.permission.RECORD_AUDIO)) {
-                    PermissionUtils.requestPermission(activity, Manifest.permission.RECORD_AUDIO)
+                if (!PermissionUtils.checkPermission(activity, Manifest.permission.RECORD_AUDIO)
+                    || !PermissionUtils.checkPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    || !PermissionUtils.checkPermission(activity, Manifest.permission.CAMERA)) {
+                    val permissions = arrayOf(
+                            Manifest.permission.RECORD_AUDIO,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                            Manifest.permission.CAMERA
+                        )
+                    PermissionUtils.requestPermissions(activity, permissions)
                 } else {
                     isCameraRecording = true
                     // TODO txtRecording.visibility = View.VISIBLE
