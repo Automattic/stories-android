@@ -100,7 +100,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                     } else if (permission == Manifest.permission.RECORD_AUDIO) {
                         backgroundSurfaceManager.switchCameraPreviewOn()
                     }
-                } 
+                }
             }
         }, requestCode, permissions, grantResults)
     }
