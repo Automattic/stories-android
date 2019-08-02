@@ -100,9 +100,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                     } else if (permission == Manifest.permission.RECORD_AUDIO) {
                         backgroundSurfaceManager.switchCameraPreviewOn()
                     }
-                } else {
-                    // TODO: if user keeps denying, we can't go ahead with saving / recording video. Inform them.
-                }
+                } 
             }
         }, requestCode, permissions, grantResults)
     }
