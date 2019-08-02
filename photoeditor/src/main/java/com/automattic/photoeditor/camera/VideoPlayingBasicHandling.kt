@@ -25,13 +25,11 @@ import android.view.TextureView
 import java.io.File
 import android.media.AudioManager
 import android.media.MediaPlayer
-import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.io.IOException
 
-class VideoPlayingBasicHandling : Fragment(),
-    ActivityCompat.OnRequestPermissionsResultCallback, SurfaceFragmentHandler {
+class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler {
     /**
      * [TextureView.SurfaceTextureListener] handles several lifecycle events on a
      * [TextureView].
