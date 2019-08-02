@@ -1,7 +1,6 @@
 package com.automattic.portkey.compose
 
 import android.Manifest
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
