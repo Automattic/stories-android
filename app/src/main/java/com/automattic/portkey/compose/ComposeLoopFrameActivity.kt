@@ -72,11 +72,11 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         })
 
         backgroundSurfaceManager = BackgroundSurfaceManager(
+            this,
             savedInstanceState,
             lifecycle,
             photoEditorView,
             supportFragmentManager)
-
         lifecycle.addObserver(backgroundSurfaceManager)
     }
 

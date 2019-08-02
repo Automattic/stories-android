@@ -1,5 +1,7 @@
 package com.automattic.photoeditor.state
 
+import android.Manifest
+import android.app.Activity
 import android.os.Bundle
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
@@ -14,10 +16,12 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import com.automattic.photoeditor.camera.Camera2BasicHandling
 import com.automattic.photoeditor.camera.VideoPlayingBasicHandling
+import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.PhotoEditorView
 
 
 class BackgroundSurfaceManager(
+    private val activity: Activity,
     private val savedInstanceState: Bundle?,
     private val lifeCycle: Lifecycle,
     private val photoEditorView: PhotoEditorView,
@@ -29,6 +33,7 @@ class BackgroundSurfaceManager(
     private var isCameraVisible : Boolean = false
     private var isVideoPlayerVisible: Boolean = false
     private var isCameraRecording: Boolean = false
+
 
     @OnLifecycleEvent(ON_CREATE)
     fun onCreate(source: LifecycleOwner) {
@@ -105,6 +110,65 @@ class BackgroundSurfaceManager(
         outState?.putBoolean(KEY_IS_CAMERA_VISIBLE, isCameraVisible)
         outState?.putBoolean(KEY_IS_VIDEO_PLAYER_VISIBLE, isVideoPlayerVisible)
         outState?.putBoolean(KEY_IS_CAMERA_RECORDING, isCameraRecording)
+    }
+
+    fun cameraVisible() : Boolean {
+        return isCameraVisible
+    }
+
+    fun videoPlayerVisible() : Boolean {
+        return isVideoPlayerVisible
+    }
+
+    fun cameraRecording() : Boolean {
+        return isCameraRecording
+    }
+
+    fun switchStaticImageBackgroundModeOn() {
+        isCameraVisible = false
+        isVideoPlayerVisible = false
+        camera2BasicHandler.deactivate()
+        videoPlayerHandling.deactivate()
+        photoEditorView.turnTextureViewOff()
+    }
+
+    fun switchCameraPreviewOn() {
+        if (isCameraVisible) {
+            // camera preview is ON
+            if (!isCameraRecording) {
+                // let's start recording
+                if (!PermissionUtils.checkPermission(activity, Manifest.permission.RECORD_AUDIO)) {
+                    // locationPermissionRequestor = ::switchCameraPreviewOn
+                    PermissionUtils.requestPermission(activity, Manifest.permission.RECORD_AUDIO)
+                } else {
+                    isCameraRecording = true
+                    //txtRecording.visibility = View.VISIBLE
+                    camera2BasicHandler.createCameraRecordingSession()
+                }
+            } else {
+                // stop recording
+                isCameraRecording = false
+                //txtRecording.visibility = View.GONE
+                camera2BasicHandler.stopRecordingVideo()
+            }
+        } else {
+            isCameraVisible = true
+            isVideoPlayerVisible = false
+            // now, start playing video
+            photoEditorView.turnTextureViewOn()
+            camera2BasicHandler.activate()
+            videoPlayerHandling.deactivate()
+            // photoEditor.toggleTextureView()
+        }
+    }
+
+    fun switchVideoPlayerOn() {
+        // in case the Camera was being visible, set if off
+        isVideoPlayerVisible = true
+        isCameraVisible = false
+        photoEditorView.turnTextureViewOn()
+        camera2BasicHandler.deactivate()
+        videoPlayerHandling.activate()
     }
 
     private fun getStateFromBundle() {
