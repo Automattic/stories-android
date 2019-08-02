@@ -1,5 +1,7 @@
 package com.automattic.portkey.compose
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -11,6 +13,8 @@ import androidx.core.content.ContextCompat
 import com.automattic.photoeditor.OnPhotoEditorListener
 import com.automattic.photoeditor.PhotoEditor
 import com.automattic.photoeditor.state.BackgroundSurfaceManager
+import com.automattic.photoeditor.util.PermissionUtils
+import com.automattic.photoeditor.util.PermissionUtils.OnRequestPermissionGrantedCheck
 import com.automattic.photoeditor.views.ViewType
 import com.automattic.portkey.R
 import com.automattic.portkey.R.color
@@ -83,6 +87,25 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         backgroundSurfaceManager.saveStateToBundle(outState)
         super.onSaveInstanceState(outState)
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        PermissionUtils.onRequestPermissionsResult(object : OnRequestPermissionGrantedCheck {
+            override fun isPermissionGranted(isGranted: Boolean, permission: String) {
+                if (isGranted) {
+                    if (permission == Manifest.permission.WRITE_EXTERNAL_STORAGE) {
+                        // TODO we should check for a request Code to make sure
+                        // the permission was requested in order to save a loop frame rather than something else
+                        // (i.e. as opposed to saving the originally captured video)
+                        // saveLoopFrame()
+                    } else if (permission == Manifest.permission.RECORD_AUDIO) {
+                        backgroundSurfaceManager.switchCameraPreviewOn()
+                    }
+                } else {
+                    // TODO: if user keeps denying, we can't go ahead with saving / recording video. Inform them.
+                }
+            }
+        }, requestCode, permissions, grantResults)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
