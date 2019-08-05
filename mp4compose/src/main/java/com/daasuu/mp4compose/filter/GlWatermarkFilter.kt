@@ -10,10 +10,9 @@ import android.graphics.Paint
  */
 
 class GlWatermarkFilter : GlOverlayFilter {
-
     private var bitmap: Bitmap? = null
-    private val position = Position.LEFT_TOP
-    private val positionInfo: ViewPositionInfo?
+    private var position = Position.LEFT_TOP
+    private var positionInfo: ViewPositionInfo? = null
     private var matrixF: Matrix? = null
 
     constructor(bitmap: Bitmap) {
@@ -37,17 +36,17 @@ class GlWatermarkFilter : GlOverlayFilter {
                 if (matrixF == null) {
                     // transform coordinates from original parent View coordinate system to this video Canvas
                     // coordinate system
-                    val newScaleY = canvas.height.toFloat() / positionInfo.parentViewHeight.toFloat()
-                    val newScaleX = canvas.width.toFloat() / positionInfo.parentViewWidth.toFloat()
+                    val newScaleY = canvas.height.toFloat() / positionInfo!!.parentViewHeight.toFloat()
+                    val newScaleX = canvas.width.toFloat() / positionInfo!!.parentViewWidth.toFloat()
 
-                    val quadrant1XOffset = (positionInfo.parentViewWidth / 2).toFloat()
-                    val quadrant1YOffset = (positionInfo.parentViewHeight / 2).toFloat()
-                    val newXcoord = (quadrant1XOffset - positionInfo.width / 2) * newScaleX
-                    val newYcoord = (quadrant1YOffset - positionInfo.height / 2) * newScaleY
+                    val quadrant1XOffset = (positionInfo!!.parentViewWidth / 2).toFloat()
+                    val quadrant1YOffset = (positionInfo!!.parentViewHeight / 2).toFloat()
+                    val newXcoord = (quadrant1XOffset - positionInfo!!.width / 2) * newScaleX
+                    val newYcoord = (quadrant1YOffset - positionInfo!!.height / 2) * newScaleY
 
                     // deep copy the Matrix from original pinched/dragged view, re-scale with new destination surface scale
                     // and translate to new coordinate system
-                    matrixF = Matrix(positionInfo.matrix)
+                    matrixF = Matrix(positionInfo!!.matrix)
                     matrixF!!.postScale(newScaleX, newScaleX)
                     matrixF!!.postTranslate(newXcoord, newYcoord)
                 }

@@ -19,7 +19,6 @@ internal class AudioChannel(
     private val encoder: MediaCodec,
     private val encodeFormat: MediaFormat
 ) {
-
     private val emptyBuffers = ArrayDeque<AudioBuffer>()
     private val filledBuffers = ArrayDeque<AudioBuffer>()
 

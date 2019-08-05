@@ -43,10 +43,10 @@ class GlToneCurveFilter(input: InputStream) : GlFilter(GlFilter.DEFAULT_VERTEX_S
 
         setFromCurveFileInputStream(input)
 
-        setRgbCompositeControlPoints(rgbCompositeControlPoints)
-        setRedControlPoints(redControlPoints)
-        setGreenControlPoints(greenControlPoints)
-        setBlueControlPoints(blueControlPoints)
+        setRgbCompositeControlPoints(rgbCompositeControlPoints!!)
+        setRedControlPoints(redControlPoints!!)
+        setGreenControlPoints(greenControlPoints!!)
+        setBlueControlPoints(blueControlPoints!!)
     }
 
     override fun setup() {
@@ -65,7 +65,6 @@ class GlToneCurveFilter(input: InputStream) : GlFilter(GlFilter.DEFAULT_VERTEX_S
     }
 
     public override fun onDraw(presentationTime: Long) {
-
         val offsetDepthMapTextureUniform = getHandle("toneCurveTexture") // 3
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE3)
@@ -91,14 +90,18 @@ class GlToneCurveFilter(input: InputStream) : GlFilter(GlFilter.DEFAULT_VERTEX_S
             val version = readShort(input).toInt()
             val totalCurves = readShort(input).toInt()
 
-            val curves = ArrayList<Array<PointF>>(totalCurves)
+            val curves = ArrayList<Array<PointF>?>(totalCurves)
+            // val curves = arrayOfNulls<Array<PointF?>>(totalCurves)
             val pointRate = 1.0f / 255
 
             for (i in 0 until totalCurves) {
                 // 2 bytes, Count of points in the curve (short integer toAndroidFormat 2...19)
                 val pointCount = readShort(input)
 
-                val points = arrayOfNulls<PointF>(pointCount)
+                // val points = arrayOfNulls<PointF>(pointCount.toInt())
+                // val points = emptyArray<PointF>()
+                val points = Array<PointF>(pointCount.toInt()){PointF(0f,0f)}
+                // val points = arrayOf<PointF>(pointCount.toInt())
 
                 // point count * 4
                 // Curve points. Each curve point is a pair of short integers where
@@ -169,28 +172,28 @@ class GlToneCurveFilter(input: InputStream) : GlFilter(GlFilter.DEFAULT_VERTEX_S
                 toneCurveByteArray = ByteArray(256 * 4)
                 for (currentCurveIndex in 0..255) {
                     // BGRA for upload to texture
-                    toneCurveByteArray[currentCurveIndex * 4 + 2] = (Math.min(
+                    toneCurveByteArray!![currentCurveIndex * 4 + 2] = (Math.min(
                         Math.max(
                             currentCurveIndex.toFloat() + blueCurve!![currentCurveIndex] +
                                     rgbCompositeCurve!![currentCurveIndex],
                             0f
                         ), 255f
                     ).toInt() and 0xff).toByte()
-                    toneCurveByteArray[currentCurveIndex * 4 + 1] = (Math.min(
+                    toneCurveByteArray!![currentCurveIndex * 4 + 1] = (Math.min(
                         Math.max(
                             currentCurveIndex.toFloat() + greenCurve!![currentCurveIndex] +
                                     rgbCompositeCurve!![currentCurveIndex],
                             0f
                         ), 255f
                     ).toInt() and 0xff).toByte()
-                    toneCurveByteArray[currentCurveIndex * 4] = (Math.min(
+                    toneCurveByteArray!![currentCurveIndex * 4] = (Math.min(
                         Math.max(
                             currentCurveIndex.toFloat() + redCurve!![currentCurveIndex] +
                                     rgbCompositeCurve!![currentCurveIndex],
                             0f
                         ), 255f
                     ).toInt() and 0xff).toByte()
-                    toneCurveByteArray[currentCurveIndex * 4 + 3] = (255 and 0xff).toByte()
+                    toneCurveByteArray!![currentCurveIndex * 4 + 3] = (255 and 0xff).toByte()
                 }
 
                 GLES20.glTexImage2D(
@@ -236,7 +239,8 @@ class GlToneCurveFilter(input: InputStream) : GlFilter(GlFilter.DEFAULT_VERTEX_S
         }
 
         // Convert toAndroidFormat (0, 1) to (0, 255).
-        val convertedPoints = arrayOfNulls<Point>(pointsSorted.size)
+        // val convertedPoints = arrayOfNulls<Point>(pointsSorted.size)
+        val convertedPoints = Array<Point>(pointsSorted.size){Point(0,0)}
         for (i in points.indices) {
             val point = pointsSorted[i]
             convertedPoints[i] = Point((point.x * 255).toInt(), (point.y * 255).toInt())

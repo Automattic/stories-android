@@ -31,7 +31,7 @@ class GlLut512Filter : GlFilter {
 
     private fun loadTexture() {
         if (hTex == EglUtil.NO_TEXTURE) {
-            hTex = EglUtil.loadTexture(lutTexture, EglUtil.NO_TEXTURE, false)
+            hTex = EglUtil.loadTexture(lutTexture!!, EglUtil.NO_TEXTURE, false)
         }
     }
 

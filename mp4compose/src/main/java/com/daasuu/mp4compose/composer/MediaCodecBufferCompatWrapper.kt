@@ -14,28 +14,27 @@ import java.nio.ByteBuffer
 
 internal class MediaCodecBufferCompatWrapper(private val mediaCodec: MediaCodec) {
     private val inputBuffers: Array<ByteBuffer>
-    private val putputBuffers: Array<ByteBuffer>?
+    private val outputBuffers: Array<ByteBuffer>?
 
     init {
-
         if (Build.VERSION.SDK_INT < 21) {
             inputBuffers = mediaCodec.inputBuffers
-            putputBuffers = mediaCodec.outputBuffers
+            outputBuffers = mediaCodec.outputBuffers
         } else {
-            putputBuffers = null
-            inputBuffers = putputBuffers
+            outputBuffers = null
+            inputBuffers = outputBuffers!!
         }
     }
 
     fun getInputBuffer(index: Int): ByteBuffer? {
         return if (Build.VERSION.SDK_INT >= 21) {
             mediaCodec.getInputBuffer(index)
-        } else inputBuffers[index]
+        } else inputBuffers!![index]
     }
 
     fun getOutputBuffer(index: Int): ByteBuffer? {
         return if (Build.VERSION.SDK_INT >= 21) {
             mediaCodec.getOutputBuffer(index)
-        } else putputBuffers!![index]
+        } else outputBuffers!![index]
     }
 }

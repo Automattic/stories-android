@@ -10,7 +10,6 @@ enum class FillMode {
     CUSTOM;
 
     companion object {
-
         fun getScaleAspectFit(angle: Int, widthIn: Int, heightIn: Int, widthOut: Int, heightOut: Int): FloatArray {
             var widthIn = widthIn
             var heightIn = heightIn

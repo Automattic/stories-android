@@ -54,13 +54,13 @@ class FillModeCustomItem : Parcelable {
     }
 
     companion object {
-
+        @JvmField
         val CREATOR: Parcelable.Creator<FillModeCustomItem> = object : Parcelable.Creator<FillModeCustomItem> {
             override fun createFromParcel(source: Parcel): FillModeCustomItem {
                 return FillModeCustomItem(source)
             }
 
-            override fun newArray(size: Int): Array<FillModeCustomItem> {
+            override fun newArray(size: Int): Array<FillModeCustomItem?> {
                 return arrayOfNulls(size)
             }
         }

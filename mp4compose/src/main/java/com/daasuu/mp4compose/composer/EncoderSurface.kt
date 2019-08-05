@@ -138,14 +138,13 @@ internal class EncoderSurface
      * Checks for EGL errors.
      */
     private fun checkEglError(msg: String) {
-        val error: Int
-        if ((error = EGL14.eglGetError()) != EGL14.EGL_SUCCESS) {
+        val error = EGL14.eglGetError()
+        if (error != EGL14.EGL_SUCCESS) {
             throw RuntimeException(msg + ": EGL error: 0x" + Integer.toHexString(error))
         }
     }
 
     companion object {
-
         private val EGL_RECORDABLE_ANDROID = 0x3142
     }
 }

@@ -8,6 +8,7 @@ import android.util.Size
 import com.daasuu.mp4compose.FillMode
 import com.daasuu.mp4compose.FillModeCustomItem
 import com.daasuu.mp4compose.Rotation
+import com.daasuu.mp4compose.composer.Mp4ComposerEngine.ProgressCallback
 import com.daasuu.mp4compose.filter.GlFilter
 
 import java.io.File
@@ -22,7 +23,6 @@ import java.util.concurrent.Executors
  */
 
 class Mp4Composer {
-
     private val srcPath: String?
     private val destPath: String
     private var filter: GlFilter? = null
@@ -37,7 +37,7 @@ class Mp4Composer {
     private var flipVertical = false
     private var flipHorizontal = false
     private var isStaticImageBkgSource = false
-    private val bkgBitmap: Bitmap
+    private var bkgBitmap: Bitmap? = null
 
     private var executorService: ExecutorService? = null
 
@@ -116,18 +116,20 @@ class Mp4Composer {
         if (executorService == null) {
             executorService = Executors.newSingleThreadExecutor()
         }
-        return executorService
+        return executorService!!
     }
 
     fun start(): Mp4Composer {
         getExecutorService().execute(Runnable {
             val engine = Mp4ComposerEngine()
 
-            engine.setProgressCallback { progress ->
-                if (listener != null) {
-                    listener!!.onProgress(progress)
+            engine.setProgressCallback(
+                object : ProgressCallback {
+                    override fun onProgress(progress: Double) {
+                        listener?.onProgress(progress)
+                    }
                 }
-            }
+            )
 
             if (filter == null) {
                 filter = GlFilter()
@@ -206,14 +208,14 @@ class Mp4Composer {
                     }
                     engine.composeFromVideoSource(
                         destPath,
-                        outputResolution,
-                        filter,
+                        outputResolution!!,
+                        filter!!,
                         bitrate,
                         mute,
                         Rotation.fromInt(rotation.rotation + videoRotate),
                         srcVideoResolution,
-                        fillMode,
-                        fillModeCustomItem,
+                        fillMode!!,
+                        fillModeCustomItem!!,
                         timeScale,
                         flipVertical,
                         flipHorizontal
@@ -233,18 +235,18 @@ class Mp4Composer {
                 timeScale = 1
                 bitrate = calcBitRate(outputResolution!!.width, outputResolution!!.height)
                 try {
-                    val staticImageResolution = Size(bkgBitmap.width, bkgBitmap.height)
+                    val staticImageResolution = Size(bkgBitmap!!.width, bkgBitmap!!.height)
                     engine.composeFromStaticImageSource(
-                        bkgBitmap,
+                        bkgBitmap!!,
                         destPath,
-                        outputResolution,
-                        filter,
+                        outputResolution!!,
+                        filter!!,
                         bitrate,
                         mute,
                         Rotation.fromInt(rotation.rotation), // FIXME assume portrait for now
                         staticImageResolution,
-                        fillMode,
-                        fillModeCustomItem,
+                        fillMode!!,
+                        fillModeCustomItem!!,
                         timeScale,
                         flipVertical,
                         flipHorizontal
@@ -343,7 +345,6 @@ class Mp4Composer {
     }
 
     companion object {
-
         private val TAG = Mp4Composer::class.java.simpleName
     }
 }

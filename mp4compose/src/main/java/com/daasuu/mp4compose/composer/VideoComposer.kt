@@ -18,7 +18,6 @@ import java.nio.ByteBuffer
 // Refer: https://android.googlesource.com/platform/cts/+/lollipop-release/tests/tests/media/src/android/media/cts/ExtractDecodeEditEncodeMuxTest.java
 // Refer: https://github.com/ypresto/android-transcoder/blob/master/lib/src/main/java/net/ypresto/androidtranscoder/engine/VideoTrackTranscoder.java
 internal class VideoComposer {
-
     private val mediaExtractor: MediaExtractor?
     private val trackIndex: Int
     private val outputFormat: MediaFormat
@@ -40,10 +39,10 @@ internal class VideoComposer {
     var writtenPresentationTimeUs: Long = 0
         private set
     private val timeScale: Int
-    private val useStaticBkg: Boolean
+    private var useStaticBkg: Boolean = false
     private var addedFrameCount = 0
-    private val bkgBitmapBytesNV12: ByteArray
-    private val lastBufferIdx = 0
+    private var bkgBitmapBytesNV12: ByteArray? = null
+    private var lastBufferIdx = 0
 
     constructor(
         mediaExtractor: MediaExtractor,
@@ -173,7 +172,7 @@ internal class VideoComposer {
                 inputBuffer!!.clear()
                 inputBuffer.put(bkgBitmapBytesNV12)
                 encoder!!.queueInputBuffer(
-                    inputBufIdx, 0, bkgBitmapBytesNV12.size,
+                    inputBufIdx, 0, bkgBitmapBytesNV12!!.size,
                     getPresentationTimeUsec(addedFrameCount), 0
                 )
                 addedFrameCount++
@@ -281,7 +280,7 @@ internal class VideoComposer {
                     throw RuntimeException("Video output format changed twice.")
                 }
                 actualOutputFormat = encoder!!.outputFormat
-                muxRender.setOutputFormat(MuxRender.SampleType.VIDEO, actualOutputFormat)
+                muxRender.setOutputFormat(MuxRender.SampleType.VIDEO, actualOutputFormat!!)
                 muxRender.onSetOutputFormat()
                 return DRAIN_STATE_SHOULD_RETRY_IMMEDIATELY
             }

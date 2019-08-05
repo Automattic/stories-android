@@ -61,7 +61,6 @@ class GlPreview(private val texTarget: Int) : GlFilter(VERTEX_SHADER, createFrag
     }
 
     companion object {
-
         val GL_TEXTURE_EXTERNAL_OES = 0x8D65
 
         private val VERTEX_SHADER = "uniform mat4 uMVPMatrix;\n" +

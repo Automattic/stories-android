@@ -48,10 +48,10 @@ internal class RemixAudioComposer(
             throw IllegalStateException(e)
         }
 
-        encoder!!.configure(outputFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
-        encoder!!.start()
+        encoder?.configure(outputFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+        encoder?.start()
         encoderStarted = true
-        encoderBuffers = MediaCodecBufferCompatWrapper(encoder)
+        encoderBuffers = MediaCodecBufferCompatWrapper(encoder!!)
 
         val inputFormat = extractor.getTrackFormat(trackIndex)
         try {
@@ -63,9 +63,9 @@ internal class RemixAudioComposer(
         decoder!!.configure(inputFormat, null, null, 0)
         decoder!!.start()
         decoderStarted = true
-        decoderBuffers = MediaCodecBufferCompatWrapper(decoder)
+        decoderBuffers = MediaCodecBufferCompatWrapper(decoder!!)
 
-        audioChannel = AudioChannel(decoder, encoder, outputFormat)
+        audioChannel = AudioChannel(decoder!!, encoder!!, outputFormat)
     }
 
     override fun stepPipeline(): Boolean {
@@ -147,11 +147,11 @@ internal class RemixAudioComposer(
                     throw RuntimeException("Audio output format changed twice.")
                 }
                 actualOutputFormat = encoder!!.outputFormat
-                muxer.setOutputFormat(SAMPLE_TYPE, actualOutputFormat)
+                muxer.setOutputFormat(SAMPLE_TYPE, actualOutputFormat!!)
                 return DRAIN_STATE_SHOULD_RETRY_IMMEDIATELY
             }
             MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED -> {
-                encoderBuffers = MediaCodecBufferCompatWrapper(encoder)
+                encoderBuffers = MediaCodecBufferCompatWrapper(encoder!!)
                 return DRAIN_STATE_SHOULD_RETRY_IMMEDIATELY
             }
         }
@@ -171,7 +171,7 @@ internal class RemixAudioComposer(
         }
 
         if (muxCount == 1) {
-            muxer.writeSampleData(SAMPLE_TYPE, encoderBuffers!!.getOutputBuffer(result), bufferInfo)
+            muxer.writeSampleData(SAMPLE_TYPE, encoderBuffers!!.getOutputBuffer(result)!!, bufferInfo)
         }
         if (muxCount < timeScale) {
             muxCount++

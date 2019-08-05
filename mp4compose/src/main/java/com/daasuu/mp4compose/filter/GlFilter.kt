@@ -18,7 +18,6 @@ open class GlFilter @JvmOverloads constructor(
     private val vertexShaderSource: String = DEFAULT_VERTEX_SHADER,
     private var fragmentShaderSource: String? = DEFAULT_FRAGMENT_SHADER
 ) {
-
     private var program: Int = 0
 
     private var vertexShader: Int = 0
@@ -42,7 +41,7 @@ open class GlFilter @JvmOverloads constructor(
     open fun setup() {
         release()
         vertexShader = EglUtil.loadShader(vertexShaderSource, GLES20.GL_VERTEX_SHADER)
-        fragmentShader = EglUtil.loadShader(fragmentShaderSource, GLES20.GL_FRAGMENT_SHADER)
+        fragmentShader = EglUtil.loadShader(fragmentShaderSource!!, GLES20.GL_FRAGMENT_SHADER)
         program = EglUtil.createProgram(vertexShader, fragmentShader)
         vertexBufferName = EglUtil.createBuffer(VERTICES_DATA)
 
@@ -143,7 +142,6 @@ open class GlFilter @JvmOverloads constructor(
     }
 
     companion object {
-
         val DEFAULT_UNIFORM_SAMPLER = "sTexture"
 
         @JvmStatic
@@ -155,6 +153,7 @@ open class GlFilter @JvmOverloads constructor(
                 "vTextureCoord = aTextureCoord.xy;\n" +
                 "}\n"
 
+        @JvmStatic
         protected val DEFAULT_FRAGMENT_SHADER = "precision mediump float;\n" +
                 "varying highp vec2 vTextureCoord;\n" +
                 "uniform lowp sampler2D sTexture;\n" +
@@ -187,10 +186,15 @@ open class GlFilter @JvmOverloads constructor(
         )
 
         private val FLOAT_SIZE_BYTES = 4
+        @JvmStatic
         protected val VERTICES_DATA_POS_SIZE = 3
+        @JvmStatic
         protected val VERTICES_DATA_UV_SIZE = 2
+        @JvmStatic
         protected val VERTICES_DATA_STRIDE_BYTES = (VERTICES_DATA_POS_SIZE + VERTICES_DATA_UV_SIZE) * FLOAT_SIZE_BYTES
+        @JvmStatic
         protected val VERTICES_DATA_POS_OFFSET = 0 * FLOAT_SIZE_BYTES
+        @JvmStatic
         protected val VERTICES_DATA_UV_OFFSET = VERTICES_DATA_POS_OFFSET + VERTICES_DATA_POS_SIZE * FLOAT_SIZE_BYTES
     }
 }
