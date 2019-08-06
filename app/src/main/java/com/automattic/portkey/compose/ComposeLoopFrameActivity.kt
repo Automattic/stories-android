@@ -281,8 +281,9 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                     file.absolutePath,
                     saveSettings,
                     object : PhotoEditor.OnSaveWithCancelListener {
-                    override fun onCancel() {
-                            // TODO not implemented
+                    override fun onCancel(noAddedViews: Boolean) {
+                            hideLoading()
+                            showSnackbar("No views added - original video saved")
                         }
 
                         override fun onSuccess(imagePath: String) {
@@ -322,7 +323,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                     file.absolutePath,
                     saveSettings,
                     object : PhotoEditor.OnSaveWithCancelListener {
-                        override fun onCancel() {
+                        override fun onCancel(noAddedViews: Boolean) {
                             // TODO not implemented
                         }
 

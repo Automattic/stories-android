@@ -652,7 +652,7 @@ class PhotoEditor private constructor(builder: Builder) :
         /**
          * Call when user cancelled operation
          */
-        fun onCancel()
+        fun onCancel(noAddedViews: Boolean = false)
     }
 
     /**
@@ -764,6 +764,11 @@ class PhotoEditor private constructor(builder: Builder) :
         Log.d(TAG, "Video Path: $videoInputPath")
         var widthParent = parentView.getWidth()
         var heightParent = parentView.getHeight()
+
+        if (addedViews.size == 0) {
+            onSaveListener.onCancel(true)
+            return
+        }
 
         val retriever = MediaMetadataRetriever()
         retriever.setDataSource(videoInputPath)
