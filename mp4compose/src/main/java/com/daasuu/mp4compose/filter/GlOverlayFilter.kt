@@ -12,7 +12,6 @@ import android.util.Size
  */
 
 abstract class GlOverlayFilter : GlFilter(GlFilter.DEFAULT_VERTEX_SHADER, FRAGMENT_SHADER) {
-
     private val textures = IntArray(1)
 
     private var bitmap: Bitmap? = null
@@ -74,7 +73,6 @@ abstract class GlOverlayFilter : GlFilter(GlFilter.DEFAULT_VERTEX_SHADER, FRAGME
     protected abstract fun drawCanvas(canvas: Canvas, presentationTime: Long)
 
     companion object {
-
         private val FRAGMENT_SHADER = "precision mediump float;\n" +
                 "varying vec2 vTextureCoord;\n" +
                 "uniform lowp sampler2D sTexture;\n" +

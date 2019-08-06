@@ -47,7 +47,6 @@ internal class MuxRender(private val muxer: MediaMuxer) {
                         " to muxer"
             )
         } else if (videoFormat != null) {
-
             videoTrackIndex = muxer.addTrack(videoFormat!!)
             Log.v(
                 TAG,

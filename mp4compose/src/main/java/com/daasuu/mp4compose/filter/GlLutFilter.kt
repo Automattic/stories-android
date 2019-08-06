@@ -12,7 +12,6 @@ import com.daasuu.mp4compose.utils.EglUtil
  */
 
 class GlLutFilter : GlFilter {
-
     private var hTex: Int = 0
 
     private var lutTexture: Bitmap? = null
@@ -58,7 +57,6 @@ class GlLutFilter : GlFilter {
     }
 
     companion object {
-
         private val FRAGMENT_SHADER = "precision mediump float;" +
                 "uniform mediump sampler2D lutTexture; \n" +
                 "uniform lowp sampler2D sTexture; \n" +

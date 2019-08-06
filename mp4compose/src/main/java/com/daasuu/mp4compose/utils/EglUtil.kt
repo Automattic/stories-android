@@ -26,7 +26,6 @@ import android.opengl.GLES20.glCreateProgram
  */
 
 object EglUtil {
-
     val NO_TEXTURE = -1
     private val FLOAT_SIZE_BYTES = 4
 

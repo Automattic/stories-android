@@ -9,7 +9,6 @@ import com.daasuu.mp4compose.utils.EglUtil
 
 // OpenGL Lut filter using 512x512 color LUTs
 class GlLut512Filter : GlFilter {
-
     private var hTex: Int = 0
     private val NO_TEXTURE = -1
     private var lutTexture: Bitmap? = null
@@ -43,7 +42,6 @@ class GlLut512Filter : GlFilter {
     }
 
     companion object {
-
         private val FRAGMENT_SHADER = "#extension GL_OES_EGL_image_external : require\n" +
                 "precision mediump float;" +
                 "uniform mediump sampler2D lutTexture; \n" +

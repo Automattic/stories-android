@@ -25,7 +25,6 @@ internal class AudioComposer(
         private set
 
     init {
-
         actualOutputFormat = this.mediaExtractor.getTrackFormat(this.trackIndex)
         this.muxRender.setOutputFormat(this.sampleType, actualOutputFormat)
         bufferSize = actualOutputFormat.getInteger(MediaFormat.KEY_MAX_INPUT_SIZE)

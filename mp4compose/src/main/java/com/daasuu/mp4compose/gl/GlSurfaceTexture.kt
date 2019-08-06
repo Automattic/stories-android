@@ -3,7 +3,6 @@ package com.daasuu.mp4compose.gl
 import android.graphics.SurfaceTexture
 
 class GlSurfaceTexture(texName: Int) : SurfaceTexture.OnFrameAvailableListener {
-
     val surfaceTexture: SurfaceTexture
     private var onFrameAvailableListener: SurfaceTexture.OnFrameAvailableListener? = null
 

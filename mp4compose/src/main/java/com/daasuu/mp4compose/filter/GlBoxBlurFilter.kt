@@ -7,7 +7,6 @@ import android.opengl.GLES20
  */
 
 class GlBoxBlurFilter : GlFilter(VERTEX_SHADER, FRAGMENT_SHADER) {
-
     var texelWidthOffset = 0.003f
     var texelHeightOffset = 0.003f
     var blurSize = 1.0f
@@ -19,7 +18,6 @@ class GlBoxBlurFilter : GlFilter(VERTEX_SHADER, FRAGMENT_SHADER) {
     }
 
     companion object {
-
         private val VERTEX_SHADER = "attribute vec4 aPosition;" +
                 "attribute vec4 aTextureCoord;" +
 

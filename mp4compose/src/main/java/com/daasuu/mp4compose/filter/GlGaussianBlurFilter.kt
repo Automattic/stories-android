@@ -7,7 +7,6 @@ import android.opengl.GLES20
  */
 
 class GlGaussianBlurFilter : GlFilter(VERTEX_SHADER, FRAGMENT_SHADER) {
-
     var texelWidthOffset = 0.01f
     var texelHeightOffset = 0.01f
     var blurSize = 0.2f
@@ -19,7 +18,6 @@ class GlGaussianBlurFilter : GlFilter(VERTEX_SHADER, FRAGMENT_SHADER) {
     }
 
     companion object {
-
         private val VERTEX_SHADER = "attribute vec4 aPosition;" +
                 "attribute vec4 aTextureCoord;" +
 

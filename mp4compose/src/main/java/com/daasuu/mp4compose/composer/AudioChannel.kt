@@ -40,7 +40,6 @@ internal class AudioChannel(
     }
 
     init {
-
         decoderBuffers = MediaCodecBufferCompatWrapper(this.decoder)
         encoderBuffers = MediaCodecBufferCompatWrapper(this.encoder)
     }
@@ -208,7 +207,6 @@ internal class AudioChannel(
     }
 
     companion object {
-
         val BUFFER_INDEX_END_OF_STREAM = -1
 
         private val BYTES_PER_SHORT = 2

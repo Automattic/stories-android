@@ -314,8 +314,6 @@ internal class DecoderSurface
             filter!!.draw(filterFramebufferObject!!.texName, framebufferObject!!, presentationTime)
         }
 
-        // //////////////////////////////////////////////////////////////////////////////////
-
         GLES20.glBindFramebuffer(GL_FRAMEBUFFER, 0)
         GLES20.glViewport(0, 0, framebufferObject!!.width, framebufferObject!!.height)
 

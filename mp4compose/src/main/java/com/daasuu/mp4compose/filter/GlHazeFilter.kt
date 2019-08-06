@@ -7,7 +7,6 @@ import android.opengl.GLES20
  */
 
 class GlHazeFilter : GlFilter(GlFilter.DEFAULT_VERTEX_SHADER, FRAGMENT_SHADER) {
-
     var distance = 0.2f
     var slope = 0.0f
 
@@ -17,7 +16,6 @@ class GlHazeFilter : GlFilter(GlFilter.DEFAULT_VERTEX_SHADER, FRAGMENT_SHADER) {
     }
 
     companion object {
-
         private val FRAGMENT_SHADER = "precision mediump float;" +
                 "varying highp vec2 vTextureCoord;" +
                 "uniform lowp sampler2D sTexture;" +

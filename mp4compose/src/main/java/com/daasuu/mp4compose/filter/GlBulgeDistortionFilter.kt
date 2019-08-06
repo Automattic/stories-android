@@ -7,13 +7,10 @@ import android.opengl.GLES20
  */
 
 class GlBulgeDistortionFilter : GlFilter(GlFilter.DEFAULT_VERTEX_SHADER, FRAGMENT_SHADER) {
-
     var centerX = 0.5f
     var centerY = 0.5f
     var radius = 0.25f
     var scale = 0.5f
-
-    // ////////////////////////////////////////////////////////////////////////
 
     public override fun onDraw(presentationTime: Long) {
         GLES20.glUniform2f(getHandle("center"), centerX, centerY)
@@ -22,7 +19,6 @@ class GlBulgeDistortionFilter : GlFilter(GlFilter.DEFAULT_VERTEX_SHADER, FRAGMEN
     }
 
     companion object {
-
         private val FRAGMENT_SHADER = "precision mediump float;" +
 
                 "varying highp vec2 vTextureCoord;" +

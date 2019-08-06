@@ -12,8 +12,6 @@ class GlVignetteFilter : GlFilter(GlFilter.DEFAULT_VERTEX_SHADER, FRAGMENT_SHADE
     var vignetteStart = 0.2f
     var vignetteEnd = 0.85f
 
-    // ////////////////////////////////////////////////////////////////////////
-
     public override fun onDraw(presentationTime: Long) {
         GLES20.glUniform2f(getHandle("vignetteCenter"), vignetteCenterX, vignetteCenterY)
         GLES20.glUniform1f(getHandle("vignetteStart"), vignetteStart)
@@ -21,7 +19,6 @@ class GlVignetteFilter : GlFilter(GlFilter.DEFAULT_VERTEX_SHADER, FRAGMENT_SHADE
     }
 
     companion object {
-
         private val FRAGMENT_SHADER = "precision mediump float;" +
 
                 "varying vec2 vTextureCoord;" +

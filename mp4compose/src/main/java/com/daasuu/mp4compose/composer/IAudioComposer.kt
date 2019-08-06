@@ -5,7 +5,6 @@ package com.daasuu.mp4compose.composer
  */
 
 internal interface IAudioComposer {
-
     val writtenPresentationTimeUs: Long
 
     val isFinished: Boolean

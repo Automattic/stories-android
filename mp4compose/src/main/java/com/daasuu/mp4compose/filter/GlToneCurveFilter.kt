@@ -100,7 +100,7 @@ class GlToneCurveFilter(input: InputStream) : GlFilter(GlFilter.DEFAULT_VERTEX_S
 
                 // val points = arrayOfNulls<PointF>(pointCount.toInt())
                 // val points = emptyArray<PointF>()
-                val points = Array<PointF>(pointCount.toInt()){PointF(0f,0f)}
+                val points = Array<PointF>(pointCount.toInt()) { PointF(0f, 0f) }
                 // val points = arrayOf<PointF>(pointCount.toInt())
 
                 // point count * 4
@@ -240,7 +240,7 @@ class GlToneCurveFilter(input: InputStream) : GlFilter(GlFilter.DEFAULT_VERTEX_S
 
         // Convert toAndroidFormat (0, 1) to (0, 255).
         // val convertedPoints = arrayOfNulls<Point>(pointsSorted.size)
-        val convertedPoints = Array<Point>(pointsSorted.size){Point(0,0)}
+        val convertedPoints = Array<Point>(pointsSorted.size) { Point(0, 0) }
         for (i in points.indices) {
             val point = pointsSorted[i]
             convertedPoints[i] = Point((point.x * 255).toInt(), (point.y * 255).toInt())
@@ -389,7 +389,6 @@ class GlToneCurveFilter(input: InputStream) : GlFilter(GlFilter.DEFAULT_VERTEX_S
     }
 
     companion object {
-
         private val FRAGMENT_SHADER = "precision mediump float;\n" +
                 " varying highp vec2 vTextureCoord;\n" +
                 " uniform lowp sampler2D sTexture;\n" +

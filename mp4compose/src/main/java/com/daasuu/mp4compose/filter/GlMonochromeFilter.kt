@@ -7,7 +7,6 @@ import android.opengl.GLES20
  */
 
 class GlMonochromeFilter : GlFilter(GlFilter.DEFAULT_VERTEX_SHADER, FRAGMENT_SHADER) {
-
     var intensity = 1.0f
 
     public override fun onDraw(presentationTime: Long) {
@@ -15,7 +14,6 @@ class GlMonochromeFilter : GlFilter(GlFilter.DEFAULT_VERTEX_SHADER, FRAGMENT_SHA
     }
 
     companion object {
-
         private val FRAGMENT_SHADER = "precision lowp float;" +
 
                 "varying highp vec2 vTextureCoord;" +

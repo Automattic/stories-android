@@ -7,7 +7,6 @@ import android.opengl.GLES20
  * contrast value ranges from 0.0 to 4.0, with 1.0 as the normal level
  */
 class GlContrastFilter : GlFilter(GlFilter.DEFAULT_VERTEX_SHADER, CONTRAST_FRAGMENT_SHADER) {
-
     private var contrast = 1.2f
 
     fun setContrast(contrast: Float) {
@@ -19,7 +18,6 @@ class GlContrastFilter : GlFilter(GlFilter.DEFAULT_VERTEX_SHADER, CONTRAST_FRAGM
     }
 
     companion object {
-
         private val CONTRAST_FRAGMENT_SHADER = "" +
                 "precision mediump float;" +
                 " varying vec2 vTextureCoord;\n" +

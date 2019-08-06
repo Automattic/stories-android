@@ -6,7 +6,6 @@ package com.daasuu.mp4compose.filter
 
 class GlCGAColorspaceFilter : GlFilter(GlFilter.DEFAULT_VERTEX_SHADER, FRAGMENT_SHADER) {
     companion object {
-
         private val FRAGMENT_SHADER = "precision mediump float;" +
 
                 "varying vec2 vTextureCoord;" +

@@ -33,8 +33,6 @@ class GlSphereRefractionFilter : GlFilter(GlFilter.DEFAULT_VERTEX_SHADER, FRAGME
         this.refractiveIndex = refractiveIndex
     }
 
-    // ////////////////////////////////////////////////////////////////////////
-
     public override fun onDraw(presentationTime: Long) {
         GLES20.glUniform2f(getHandle("center"), centerX, centerY)
         GLES20.glUniform1f(getHandle("radius"), radius)

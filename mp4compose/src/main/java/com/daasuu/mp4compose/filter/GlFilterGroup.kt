@@ -12,7 +12,6 @@ import android.opengl.GLES20.GL_COLOR_BUFFER_BIT
 import android.opengl.GLES20.GL_FRAMEBUFFER
 
 class GlFilterGroup(private val filters: Collection<GlFilter>?) : GlFilter() {
-
     private val list = ArrayList<Pair<GlFilter, GlFramebufferObject>>()
 
     private var prevTexName: Int = 0

@@ -3,7 +3,6 @@ package com.daasuu.mp4compose.filter
 import android.opengl.GLES20
 
 class GlBrightnessFilter : GlFilter(GlFilter.DEFAULT_VERTEX_SHADER, BRIGHTNESS_FRAGMENT_SHADER) {
-
     private var brightness = 0f
 
     fun setBrightness(brightness: Float) {

@@ -11,7 +11,6 @@ import android.opengl.GLES20.GL_TEXTURE_2D
 import android.opengl.GLES20.GL_TRIANGLE_STRIP
 
 class GlPreview(private val texTarget: Int) : GlFilter(VERTEX_SHADER, createFragmentShaderSourceOESIfNeed(texTarget)) {
-
     override fun setup() {
         super.setup()
         getHandle("uMVPMatrix")
