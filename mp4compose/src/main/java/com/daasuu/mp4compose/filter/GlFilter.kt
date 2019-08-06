@@ -144,8 +144,7 @@ open class GlFilter @JvmOverloads constructor(
     companion object {
         val DEFAULT_UNIFORM_SAMPLER = "sTexture"
 
-        @JvmStatic
-        protected val DEFAULT_VERTEX_SHADER = "attribute highp vec4 aPosition;\n" +
+        val DEFAULT_VERTEX_SHADER = "attribute highp vec4 aPosition;\n" +
                 "attribute highp vec4 aTextureCoord;\n" +
                 "varying highp vec2 vTextureCoord;\n" +
                 "void main() {\n" +
@@ -153,8 +152,7 @@ open class GlFilter @JvmOverloads constructor(
                 "vTextureCoord = aTextureCoord.xy;\n" +
                 "}\n"
 
-        @JvmStatic
-        protected val DEFAULT_FRAGMENT_SHADER = "precision mediump float;\n" +
+        val DEFAULT_FRAGMENT_SHADER = "precision mediump float;\n" +
                 "varying highp vec2 vTextureCoord;\n" +
                 "uniform lowp sampler2D sTexture;\n" +
                 "void main() {\n" +
@@ -186,15 +184,10 @@ open class GlFilter @JvmOverloads constructor(
         )
 
         private val FLOAT_SIZE_BYTES = 4
-        @JvmStatic
-        protected val VERTICES_DATA_POS_SIZE = 3
-        @JvmStatic
-        protected val VERTICES_DATA_UV_SIZE = 2
-        @JvmStatic
-        protected val VERTICES_DATA_STRIDE_BYTES = (VERTICES_DATA_POS_SIZE + VERTICES_DATA_UV_SIZE) * FLOAT_SIZE_BYTES
-        @JvmStatic
-        protected val VERTICES_DATA_POS_OFFSET = 0 * FLOAT_SIZE_BYTES
-        @JvmStatic
-        protected val VERTICES_DATA_UV_OFFSET = VERTICES_DATA_POS_OFFSET + VERTICES_DATA_POS_SIZE * FLOAT_SIZE_BYTES
+        val VERTICES_DATA_POS_SIZE = 3
+        val VERTICES_DATA_UV_SIZE = 2
+        val VERTICES_DATA_STRIDE_BYTES = (VERTICES_DATA_POS_SIZE + VERTICES_DATA_UV_SIZE) * FLOAT_SIZE_BYTES
+        val VERTICES_DATA_POS_OFFSET = 0 * FLOAT_SIZE_BYTES
+        val VERTICES_DATA_UV_OFFSET = VERTICES_DATA_POS_OFFSET + VERTICES_DATA_POS_SIZE * FLOAT_SIZE_BYTES
     }
 }
