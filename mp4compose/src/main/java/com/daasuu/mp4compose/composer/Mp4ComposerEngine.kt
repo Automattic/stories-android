@@ -59,7 +59,7 @@ internal class Mp4ComposerEngine {
         rotation: Rotation,
         inputResolution: Size,
         fillMode: FillMode,
-        fillModeCustomItem: FillModeCustomItem,
+        fillModeCustomItem: FillModeCustomItem?,
         timeScale: Int,
         flipVertical: Boolean,
         flipHorizontal: Boolean
@@ -82,7 +82,7 @@ internal class Mp4ComposerEngine {
         rotation: Rotation,
         inputResolution: Size,
         fillMode: FillMode,
-        fillModeCustomItem: FillModeCustomItem,
+        fillModeCustomItem: FillModeCustomItem?,
         timeScale: Int,
         flipVertical: Boolean,
         flipHorizontal: Boolean
@@ -105,7 +105,7 @@ internal class Mp4ComposerEngine {
         rotation: Rotation,
         inputResolution: Size,
         fillMode: FillMode,
-        fillModeCustomItem: FillModeCustomItem,
+        fillModeCustomItem: FillModeCustomItem?,
         timeScale: Int,
         flipVertical: Boolean,
         flipHorizontal: Boolean

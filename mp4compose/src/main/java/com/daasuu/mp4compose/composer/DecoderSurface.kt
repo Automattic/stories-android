@@ -350,7 +350,7 @@ internal class DecoderSurface
         this.inputResolution = resolution
     }
 
-    fun setFillModeCustomItem(fillModeCustomItem: FillModeCustomItem) {
+    fun setFillModeCustomItem(fillModeCustomItem: FillModeCustomItem?) {
         this.fillModeCustomItem = fillModeCustomItem
     }
 

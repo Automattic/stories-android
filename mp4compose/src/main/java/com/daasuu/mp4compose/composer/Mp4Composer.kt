@@ -31,7 +31,7 @@ class Mp4Composer {
     private var mute = false
     private var rotation = Rotation.NORMAL
     private var listener: Listener? = null
-    private var fillMode: FillMode? = FillMode.PRESERVE_ASPECT_FIT
+    private var fillMode: FillMode = FillMode.PRESERVE_ASPECT_FIT
     private var fillModeCustomItem: FillModeCustomItem? = null
     private var timeScale = 1
     private var flipVertical = false
@@ -214,8 +214,8 @@ class Mp4Composer {
                         mute,
                         Rotation.fromInt(rotation.rotation + videoRotate),
                         srcVideoResolution,
-                        fillMode!!,
-                        fillModeCustomItem!!,
+                        fillMode,
+                        fillModeCustomItem,
                         timeScale,
                         flipVertical,
                         flipHorizontal

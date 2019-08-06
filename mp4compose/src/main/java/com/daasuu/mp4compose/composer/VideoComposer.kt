@@ -78,7 +78,7 @@ internal class VideoComposer {
         outputResolution: Size,
         inputResolution: Size,
         fillMode: FillMode,
-        fillModeCustomItem: FillModeCustomItem,
+        fillModeCustomItem: FillModeCustomItem?,
         flipVertical: Boolean,
         flipHorizontal: Boolean
     ) {
