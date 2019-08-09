@@ -3,8 +3,12 @@ package com.automattic.photoeditor.camera
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
+import androidx.camera.core.CameraX
+import androidx.camera.core.Preview
+import androidx.camera.core.PreviewConfig
+import androidx.camera.core.VideoCapture
+import androidx.camera.core.VideoCaptureConfig
 import androidx.core.app.ActivityCompat
-import androidx.camera.core.*
 import com.automattic.photoeditor.R
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
 import com.automattic.photoeditor.util.FileUtils
@@ -86,7 +90,7 @@ class CameraXBasicHandling : VideoRecorderFragment(),
         currentFile = FileUtils.getLoopFrameFile(true, "orig_")
         currentFile?.createNewFile()
 
-        videoCapture.startRecording(currentFile, object: VideoCapture.OnVideoSavedListener{
+        videoCapture.startRecording(currentFile, object : VideoCapture.OnVideoSavedListener {
             override fun onVideoSaved(file: File?) {
                 Log.i(tag, "Video File : $file")
             }
