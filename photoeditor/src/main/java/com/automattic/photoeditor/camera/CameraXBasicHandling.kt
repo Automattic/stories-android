@@ -71,12 +71,11 @@ class CameraXBasicHandling : VideoRecorderFragment(),
     // TODO remove this RestrictedApi annotation once androidx.camera:camera moves out of alpha
     @SuppressLint("RestrictedApi")
     private fun startCamera() {
-        // Create configuration object for the viewfinder use case
+        // Create configuration object for the preview use case
         val previewConfig = PreviewConfig.Builder().build()
-        // Build the viewfinder use case
         val preview = Preview(previewConfig)
 
-        // Create a configuration object for the video use case
+        // Create a configuration object for the video capture use case
         val videoCaptureConfig = VideoCaptureConfig.Builder().apply {
             setTargetRotation(textureView.display.rotation)
         }.build()
@@ -87,7 +86,6 @@ class CameraXBasicHandling : VideoRecorderFragment(),
         }
 
         // Bind use cases to lifecycle
-        // CameraX.bindToLifecycle(this, preview, videoCapture)
         CameraX.bindToLifecycle(activity, preview, videoCapture)
     }
 
