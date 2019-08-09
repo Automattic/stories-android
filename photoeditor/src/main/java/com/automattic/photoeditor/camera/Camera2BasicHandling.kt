@@ -52,6 +52,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.R
+import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.io.File
 import java.io.IOException
@@ -61,7 +62,6 @@ import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 
-@JvmField val REQUEST_CAMERA_PERMISSION = 1
 @JvmField val PIC_FILE_NAME = "pic.jpg"
 
 class Camera2BasicHandling : Fragment(), View.OnClickListener,
@@ -316,30 +316,16 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
         stopBackgroundThread()
     }
 
-    private fun requestCameraPermission() {
-        if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
-            ConfirmationDialog().show(childFragmentManager,
-                FRAGMENT_DIALOG
-            )
-        } else {
-            requestPermissions(arrayOf(Manifest.permission.CAMERA),
-                REQUEST_CAMERA_PERMISSION
-            )
-        }
-    }
-
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
         grantResults: IntArray
     ) {
-        if (requestCode == REQUEST_CAMERA_PERMISSION) {
-            if (grantResults.size != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                ErrorDialog.newInstance(getString(R.string.request_permission))
-                        .show(childFragmentManager,
-                            FRAGMENT_DIALOG
-                        )
-            }
+        if (!PermissionUtils.allRequiredPermissionsGranted(activity!!)) {
+            ErrorDialog.newInstance(getString(R.string.request_permissions))
+                    .show(childFragmentManager,
+                        FRAGMENT_DIALOG
+                    )
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
@@ -468,7 +454,7 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
     private fun openCamera(width: Int, height: Int) {
         val permission = ContextCompat.checkSelfPermission(activity!!, Manifest.permission.CAMERA)
         if (permission != PackageManager.PERMISSION_GRANTED) {
-            requestCameraPermission()
+            PermissionUtils.requestAllRequiredPermissions(activity!!)
             return
         }
         setUpCameraOutputs(width, height)

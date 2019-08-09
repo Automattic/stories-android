@@ -17,7 +17,6 @@ import com.automattic.photoeditor.SaveSettings
 import com.automattic.photoeditor.state.BackgroundSurfaceManager
 import com.automattic.photoeditor.util.FileUtils.Companion.getLoopFrameFile
 import com.automattic.photoeditor.util.PermissionUtils
-import com.automattic.photoeditor.util.PermissionUtils.OnRequestPermissionGrantedCheck
 import com.automattic.photoeditor.views.ViewType
 import com.automattic.portkey.R
 import com.automattic.portkey.R.color
@@ -97,20 +96,11 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        PermissionUtils.onRequestPermissionsResult(object : OnRequestPermissionGrantedCheck {
-            override fun isPermissionGranted(isGranted: Boolean, permission: String) {
-                if (isGranted) {
-                    if (permission == Manifest.permission.WRITE_EXTERNAL_STORAGE) {
-                        // TODO we should check for a request Code to make sure
-                        // the permission was requested in order to save a loop frame rather than something else
-                        // (i.e. as opposed to saving the originally captured video)
-                        saveLoopFrame()
-                    } else if (permission == Manifest.permission.RECORD_AUDIO) {
-                        backgroundSurfaceManager.switchCameraPreviewOn()
-                    }
-                }
-            }
-        }, requestCode, permissions, grantResults)
+        if (PermissionUtils.allRequiredPermissionsGranted(this)) {
+            backgroundSurfaceManager.switchCameraPreviewOn()
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -201,6 +191,18 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     private fun testCameraPreview() {
+        if (!PermissionUtils.checkPermission(this, Manifest.permission.RECORD_AUDIO) ||
+            !PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) ||
+            !PermissionUtils.checkPermission(this, Manifest.permission.CAMERA)) {
+            val permissions = arrayOf(
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.CAMERA
+            )
+            PermissionUtils.requestPermissions(this, permissions)
+            return
+        }
+
         txtCurrentTool.setText(string.main_test_camera_preview)
         backgroundSurfaceManager.switchCameraPreviewOn()
     }
