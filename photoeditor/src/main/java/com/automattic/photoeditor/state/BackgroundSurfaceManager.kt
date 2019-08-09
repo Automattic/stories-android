@@ -13,6 +13,7 @@ import androidx.lifecycle.Lifecycle.Event.ON_PAUSE
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
+import com.automattic.photoeditor.BuildConfig
 import com.automattic.photoeditor.camera.Camera2BasicHandling
 import com.automattic.photoeditor.camera.VideoPlayingBasicHandling
 import com.automattic.photoeditor.views.PhotoEditorView
@@ -23,7 +24,8 @@ class BackgroundSurfaceManager(
     private val savedInstanceState: Bundle?,
     private val lifeCycle: Lifecycle,
     private val photoEditorView: PhotoEditorView,
-    private val supportFragmentManager: FragmentManager
+    private val supportFragmentManager: FragmentManager,
+    private val useCameraX: Boolean
 ) : LifecycleObserver {
     private lateinit var camera2BasicHandler: Camera2BasicHandling
     private lateinit var videoPlayerHandling: VideoPlayingBasicHandling
@@ -39,20 +41,24 @@ class BackgroundSurfaceManager(
         photoEditorView.listeners.clear()
         getStateFromBundle()
 
-        // ask FragmentManager to add the headless fragment so it receives the Activity's lifecycle callback calls
-        val cameraFragment = supportFragmentManager.findFragmentByTag(KEY_CAMERA_HANDLING_FRAGMENT_TAG)
-        if (cameraFragment == null) {
-            camera2BasicHandler = Camera2BasicHandling.getInstance(photoEditorView.textureView)
-            supportFragmentManager
-                .beginTransaction().add(camera2BasicHandler, KEY_CAMERA_HANDLING_FRAGMENT_TAG).commit()
+        if (useCameraX) {
+            // TODO add implementation
         } else {
-            // get the existing camera2BasicHandler object reference in this new Activity instance
-            camera2BasicHandler = cameraFragment as Camera2BasicHandling
-            // the photoEditorView layout has been recreated so, re-assign its TextureView
-            camera2BasicHandler.textureView = photoEditorView.textureView
+            // ask FragmentManager to add the headless fragment so it receives the Activity's lifecycle callback calls
+            val cameraFragment = supportFragmentManager.findFragmentByTag(KEY_CAMERA_HANDLING_FRAGMENT_TAG)
+            if (cameraFragment == null) {
+                camera2BasicHandler = Camera2BasicHandling.getInstance(photoEditorView.textureView)
+                supportFragmentManager
+                    .beginTransaction().add(camera2BasicHandler, KEY_CAMERA_HANDLING_FRAGMENT_TAG).commit()
+            } else {
+                // get the existing camera2BasicHandler object reference in this new Activity instance
+                camera2BasicHandler = cameraFragment as Camera2BasicHandling
+                // the photoEditorView layout has been recreated so, re-assign its TextureView
+                camera2BasicHandler.textureView = photoEditorView.textureView
+            }
+            // add camera handling texture listener
+            photoEditorView.listeners.add(camera2BasicHandler.surfaceTextureListener)
         }
-        // add camera handling texture listener
-        photoEditorView.listeners.add(camera2BasicHandler.surfaceTextureListener)
 
         // ask FragmentManager to add the headless fragment so it receives the Activity's lifecycle callback calls
         val videoPlayerFragment = supportFragmentManager.findFragmentByTag(KEY_VIDEOPLAYER_HANDLING_FRAGMENT_TAG)
