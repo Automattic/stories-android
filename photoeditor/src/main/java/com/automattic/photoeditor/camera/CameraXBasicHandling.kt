@@ -14,7 +14,6 @@ import java.io.File
 
 class CameraXBasicHandling : VideoRecorderFragment(),
         ActivityCompat.OnRequestPermissionsResultCallback {
-
     private lateinit var videoCapture: VideoCapture
 
     private var active: Boolean = false
