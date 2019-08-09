@@ -91,11 +91,6 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener,
      */
     private lateinit var cameraId: String
 
-    /**
-     * An [AutoFitTextureView] for camera preview.
-     */
-    lateinit var textureView: AutoFitTextureView
-
     private var active: Boolean = false
 
     /**
@@ -200,8 +195,6 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener,
     * Media recorder
     * */
     private var mediaRecorder: MediaRecorder = MediaRecorder()
-
-    var currentFile: File? = null
 
     /**
      * A [CameraCaptureSession.CaptureCallback] that handles events related to JPEG capture.

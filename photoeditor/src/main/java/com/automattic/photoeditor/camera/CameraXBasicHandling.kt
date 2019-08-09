@@ -14,16 +14,10 @@ import java.io.File
 
 class CameraXBasicHandling : VideoRecorderFragment(),
         ActivityCompat.OnRequestPermissionsResultCallback {
-    /**
-     * An [AutoFitTextureView] for camera preview.
-     */
-    lateinit var textureView: AutoFitTextureView
 
     private lateinit var videoCapture: VideoCapture
 
     private var active: Boolean = false
-
-    var currentFile: File? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
