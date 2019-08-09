@@ -112,7 +112,11 @@ class BackgroundSurfaceManager(
     fun switchStaticImageBackgroundModeOn() {
         isCameraVisible = false
         isVideoPlayerVisible = false
-        camera2BasicHandler.deactivate()
+        if (useCameraX) {
+            cameraXBasicHandler.deactivate()
+        } else {
+            camera2BasicHandler.deactivate()
+        }
         videoPlayerHandling.deactivate()
         photoEditorView.turnTextureViewOff()
     }
@@ -121,22 +125,20 @@ class BackgroundSurfaceManager(
         if (isCameraVisible) {
             // camera preview is ON
             if (!isCameraRecording) {
-                // let's start recording
-                isCameraRecording = true
-                // TODO txtRecording.visibility = View.VISIBLE
-                camera2BasicHandler.createCameraRecordingSession()
+                startRecordingVideo()
             } else {
-                // stop recording
-                isCameraRecording = false
-                // TODO txtRecording.visibility = View.GONE
-                camera2BasicHandler.stopRecordingVideo()
+                stopRecordingVideo()
             }
         } else {
             isCameraVisible = true
             isVideoPlayerVisible = false
             // now, start playing video
             photoEditorView.turnTextureViewOn()
-            camera2BasicHandler.activate()
+            if (useCameraX) {
+                cameraXBasicHandler.activate()
+            } else {
+                camera2BasicHandler.activate()
+            }
             videoPlayerHandling.deactivate()
         }
     }
@@ -146,12 +148,42 @@ class BackgroundSurfaceManager(
         isVideoPlayerVisible = true
         isCameraVisible = false
         photoEditorView.turnTextureViewOn()
-        camera2BasicHandler.deactivate()
+        if (useCameraX) {
+            cameraXBasicHandler.deactivate()
+        } else {
+            camera2BasicHandler.deactivate()
+        }
         videoPlayerHandling.activate()
     }
 
+    fun startRecordingVideo() {
+        // let's start recording
+        isCameraRecording = true
+        // TODO txtRecording.visibility = View.VISIBLE
+        if (useCameraX) {
+            cameraXBasicHandler.startRecordingVideo()
+        } else {
+            camera2BasicHandler.startRecordingVideo()
+        }
+    }
+
+    fun stopRecordingVideo() {
+        // stop recording
+        isCameraRecording = false
+        // TODO txtRecording.visibility = View.GONE
+        if (useCameraX) {
+            cameraXBasicHandler.stopRecordingVideo()
+        } else {
+            camera2BasicHandler.stopRecordingVideo()
+        }
+    }
+
     fun getCurrentVideoFile(): File? {
-        return camera2BasicHandler.currentFile
+        if (useCameraX) {
+            return cameraXBasicHandler.currentFile
+        } else {
+            return camera2BasicHandler.currentFile
+        }
     }
 
     private fun getStateFromBundle() {

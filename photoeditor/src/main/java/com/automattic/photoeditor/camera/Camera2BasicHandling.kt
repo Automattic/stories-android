@@ -49,9 +49,9 @@ import android.view.TextureView
 import android.view.View
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.Fragment
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.R
+import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
 import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.io.File
@@ -64,8 +64,8 @@ import kotlin.collections.ArrayList
 
 @JvmField val PIC_FILE_NAME = "pic.jpg"
 
-class Camera2BasicHandling : Fragment(), View.OnClickListener,
-        ActivityCompat.OnRequestPermissionsResultCallback, SurfaceFragmentHandler {
+class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener,
+        ActivityCompat.OnRequestPermissionsResultCallback {
     /**
      * [TextureView.SurfaceTextureListener] handles several lifecycle events on a
      * [TextureView].
@@ -768,7 +768,7 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
     /**
      * Creates a new [CameraCaptureSession] for actual video recording.
      */
-    fun createCameraRecordingSession() {
+    override fun startRecordingVideo() {
         try {
             closePreviewSession()
             setUpMediaRecorder()
@@ -826,7 +826,7 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
         }
     }
 
-    fun stopRecordingVideo() {
+    override fun stopRecordingVideo() {
         captureSession?.apply {
             stopRepeating()
             abortCaptures()
