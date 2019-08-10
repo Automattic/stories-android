@@ -28,9 +28,13 @@ import android.media.MediaPlayer
 import androidx.fragment.app.Fragment
 import com.automattic.photoeditor.camera.interfaces.SurfaceFragmentHandler
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
+import java.io.FileInputStream
 import java.io.IOException
 
 class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler {
+    // holds the File handle to the current video file to be played
+    var currentFile: File? = null
+
     /**
      * [TextureView.SurfaceTextureListener] handles several lifecycle events on a
      * [TextureView].
@@ -132,22 +136,26 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler {
                 stopVideoPlay()
             }
 
-            val assetManager = context?.assets
-            val descriptor = assetManager!!.openFd("small.mp4")
-            mediaPlayer = MediaPlayer().apply {
-                // setDataSource("http://techslides.com/demos/sample-videos/small.mp4")
-                setDataSource(descriptor?.getFileDescriptor(), descriptor.getStartOffset(), descriptor.getLength())
-                setSurface(s)
-                prepare()
-                // TODO check whether we want fine grained error handling by setting these listeners
-//                setOnBufferingUpdateListener(this)
-//                setOnCompletionListener(this)
-//                setOnPreparedListener(this)
-//                setOnVideoSizeChangedListener(this)
-                setAudioStreamType(AudioManager.STREAM_MUSIC)
-                start()
+            if (currentFile != null && currentFile!!.exists()) {
+//                val assetManager = context?.assets
+//                val descriptor = assetManager!!.openFd("small.mp4")
+                val inputStream = FileInputStream(currentFile)
+                mediaPlayer = MediaPlayer().apply {
+                    setDataSource(inputStream.getFD())
+                    // setDataSource("http://techslides.com/demos/sample-videos/small.mp4")
+                    // setDataSource(descriptor?.getFileDescriptor(), descriptor.getStartOffset(), descriptor.getLength())
+                    setSurface(s)
+                    prepare()
+                    // TODO check whether we want fine grained error handling by setting these listeners
+    //                setOnBufferingUpdateListener(this)
+    //                setOnCompletionListener(this)
+    //                setOnPreparedListener(this)
+    //                setOnVideoSizeChangedListener(this)
+                    setAudioStreamType(AudioManager.STREAM_MUSIC)
+                    start()
+                }
+//                descriptor?.close()
             }
-            descriptor?.close()
         } catch (e: IllegalArgumentException) {
             // TODO Auto-generated catch block
             e.printStackTrace()

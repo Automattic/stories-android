@@ -2,6 +2,7 @@ package com.automattic.photoeditor.state
 
 import android.app.Activity
 import android.os.Bundle
+import android.os.Handler
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.Event.ON_CREATE
@@ -63,6 +64,8 @@ class BackgroundSurfaceManager(
     @OnLifecycleEvent(ON_DESTROY)
     fun onDestroy(source: LifecycleOwner) {
         if (lifeCycle.currentState.isAtLeast(Lifecycle.State.DESTROYED)) {
+            cameraBasicHandler.deactivate()
+            videoPlayerHandling.deactivate()
             // clear surfaceTexture listeners
             photoEditorView.listeners.clear()
         }
@@ -138,10 +141,17 @@ class BackgroundSurfaceManager(
     fun switchVideoPlayerOn() {
         // in case the Camera was being visible, set if off
         isVideoPlayerVisible = true
-        isCameraVisible = false
+        if (isCameraVisible) {
+            isCameraVisible = false
+            cameraBasicHandler.deactivate()
+            videoPlayerHandling.currentFile = cameraBasicHandler.currentFile
+            videoPlayerHandling.textureView = cameraBasicHandler.textureView
+        }
         photoEditorView.turnTextureViewOn()
-        cameraBasicHandler.deactivate()
-        videoPlayerHandling.activate()
+        val handler = Handler()
+        handler.postDelayed(Runnable {
+            videoPlayerHandling.activate()
+        }, 1500)
     }
 
     fun startRecordingVideo() {
