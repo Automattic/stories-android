@@ -118,15 +118,11 @@ class PhotoEditorView : RelativeLayout {
         }
 
         // Setup Camera preview view
-        autoFitTextureView = AutoFitTextureView(context)
-        autoFitTextureView.id = cameraPreviewId
-        autoFitTextureView.visibility = View.GONE
         val cameraParam = RelativeLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
         )
         cameraParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
-        // set main listener
-        autoFitTextureView.surfaceTextureListener = surfaceTextureListener
+        setupAutoFitTextureView(false)
 
         // Setup brush view
         brushDrawingView = BrushDrawingView(context)
@@ -172,6 +168,45 @@ class PhotoEditorView : RelativeLayout {
 
         // Add brush view
         addView(brushDrawingView, brushParam)
+    }
+
+    // added this method as a helper due to the reasons outlined here:
+    // https://developer.android.com/reference/androidx/camera/core/Preview.html#setOnPreviewOutputUpdateListener(androidx.camera.core.Preview.OnPreviewOutputUpdateListener)
+    // Copying here to make it clear:
+    //
+    // * Calling TextureView.setSurfaceTexture(SurfaceTexture) when the TextureView's SurfaceTexture is already created,
+    // * should be preceded by calling ViewGroup.removeView(View) and ViewGroup.addView(View) on the parent view of the
+    // * TextureView to ensure the setSurfaceTexture() call succeeds.
+    fun reCreateSurfaceTexture(isVisible: Boolean): AutoFitTextureView {
+        if (textureView != null) {
+            val parent = textureView.parent as ViewGroup
+            val index = parent.indexOfChild(textureView)
+            parent.removeView(textureView)
+
+            setupAutoFitTextureView(isVisible)
+
+            val cameraParam = RelativeLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            cameraParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
+
+            // Add camera preview
+            parent.addView(autoFitTextureView, index, cameraParam)
+        }
+        return textureView
+    }
+
+    private fun setupAutoFitTextureView(isVisible: Boolean) {
+        // Setup Camera preview view
+        autoFitTextureView = AutoFitTextureView(context)
+        autoFitTextureView.id = cameraPreviewId
+        if (isVisible) {
+            autoFitTextureView.visibility = View.VISIBLE
+        } else {
+            autoFitTextureView.visibility = View.GONE
+        }
+        // set main listener
+        autoFitTextureView.surfaceTextureListener = surfaceTextureListener
     }
 
     internal fun saveFilter(onSaveBitmap: OnSaveBitmap) {

@@ -113,9 +113,12 @@ class BackgroundSurfaceManager(
     }
 
     fun switchStaticImageBackgroundModeOn() {
+        if (isCameraRecording) {
+            stopRecordingVideo()
+        }
         isCameraVisible = false
         isVideoPlayerVisible = false
-        cameraBasicHandler.deactivate()
+        cameraXAwareSurfaceDeactivator(false)
         videoPlayerHandling.deactivate()
         photoEditorView.turnTextureViewOff()
     }
@@ -143,15 +146,41 @@ class BackgroundSurfaceManager(
         isVideoPlayerVisible = true
         if (isCameraVisible) {
             isCameraVisible = false
-            cameraBasicHandler.deactivate()
-            videoPlayerHandling.currentFile = cameraBasicHandler.currentFile
-            videoPlayerHandling.textureView = cameraBasicHandler.textureView
+            if (isCameraRecording) {
+                stopRecordingVideo()
+
+                // we need to give a bit of time before changing the surface as the video stops recording,
+                // saves to file and so on.
+                // TODO: implement this in the saveFile listener so we're sure to only change to the option
+                // wanted (video player) once we're sure video has been successfully saved
+                val handler = Handler()
+                handler.postDelayed(
+                    Runnable {
+                        cameraXAwareSurfaceDeactivator(true) // keep visible as we're going to render video from player
+                        videoPlayerHandling.currentFile = cameraBasicHandler.currentFile
+                        photoEditorView.turnTextureViewOn()
+                        videoPlayerHandling.activate()
+                    }, 500
+                )
+                return
+            } else {
+                cameraXAwareSurfaceDeactivator(true) // keep visible as we're going to render video from player
+                videoPlayerHandling.currentFile = cameraBasicHandler.currentFile
+            }
         }
         photoEditorView.turnTextureViewOn()
-        val handler = Handler()
-        handler.postDelayed(Runnable {
-            videoPlayerHandling.activate()
-        }, 1500)
+        videoPlayerHandling.activate()
+    }
+
+    fun cameraXAwareSurfaceDeactivator(isVisible: Boolean) {
+        cameraBasicHandler.deactivate()
+        if (useCameraX) {
+            // IMPORTANT: recreate the TextureView and re-assign the references to the new TextureView
+            // on other handlers such as VideoPlayer (the only other one sharing the surface)
+            val recreatedSurface = photoEditorView.reCreateSurfaceTexture(isVisible)
+            videoPlayerHandling.textureView = recreatedSurface
+            cameraBasicHandler.textureView = recreatedSurface
+        }
     }
 
     fun startRecordingVideo() {
