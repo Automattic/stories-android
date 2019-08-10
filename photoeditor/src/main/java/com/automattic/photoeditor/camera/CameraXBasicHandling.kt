@@ -33,8 +33,10 @@ class CameraXBasicHandling : VideoRecorderFragment(),
     }
 
     override fun deactivate() {
-        active = false
-        windDown()
+        if (active) {
+            active = false
+            windDown()
+        }
     }
 
     private fun startUp() {
