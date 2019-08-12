@@ -7,6 +7,9 @@ import android.util.Log
 import android.util.Rational
 import android.view.ViewGroup
 import androidx.camera.core.CameraX
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCapture.CaptureMode
+import androidx.camera.core.ImageCaptureConfig
 import androidx.camera.core.Preview
 import androidx.camera.core.PreviewConfig
 import androidx.camera.core.VideoCapture
@@ -23,6 +26,7 @@ class CameraXBasicHandling : VideoRecorderFragment(),
         ActivityCompat.OnRequestPermissionsResultCallback {
     private lateinit var videoCapture: VideoCapture
     private lateinit var videoPreview: Preview
+    private lateinit var imageCapture: ImageCapture
     private var lensFacing = CameraX.LensFacing.BACK
 
     private var active: Boolean = false
@@ -95,6 +99,21 @@ class CameraXBasicHandling : VideoRecorderFragment(),
 
         videoPreview = Preview(previewConfig)
 
+
+        // Set up the capture use case to allow users to take photos
+        val imageCaptureConfig = ImageCaptureConfig.Builder().apply {
+            setLensFacing(lensFacing)
+            setCaptureMode(CaptureMode.MIN_LATENCY)
+            // We request aspect ratio but no resolution to match preview config but letting
+            // CameraX optimize for whatever specific resolution best fits requested capture mode
+            setTargetAspectRatio(screenAspectRatio)
+            // Set initial target rotation, we will have to call this again if rotation changes
+            // during the lifecycle of this use case
+            setTargetRotation(textureView.display.rotation)
+        }.build()
+
+        imageCapture = ImageCapture(imageCaptureConfig)
+
         // Create a configuration object for the video capture use case
         val videoCaptureConfig = VideoCaptureConfig.Builder().apply {
             setTargetRotation(textureView.display.rotation)
@@ -125,7 +144,7 @@ class CameraXBasicHandling : VideoRecorderFragment(),
         }
 
         // Bind use cases to lifecycle
-        CameraX.bindToLifecycle(activity, videoPreview, videoCapture)
+        CameraX.bindToLifecycle(activity, videoPreview, videoCapture, imageCapture)
     }
 
     @SuppressLint("RestrictedApi")
