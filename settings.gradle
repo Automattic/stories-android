@@ -1,1 +1,1 @@
-include ':app', ':photoeditor'
+include ':app', ':photoeditor', ':mp4compose'

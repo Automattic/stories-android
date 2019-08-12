@@ -1,0 +1,39 @@
+package com.daasuu.mp4compose.filter
+
+import android.opengl.GLES20
+
+/**
+ * Created by sudamasayuki on 2018/01/07.
+ */
+
+class GlVignetteFilter : GlFilter(GlFilter.DEFAULT_VERTEX_SHADER, FRAGMENT_SHADER) {
+    private val vignetteCenterX = 0.5f
+    private val vignetteCenterY = 0.5f
+    var vignetteStart = 0.2f
+    var vignetteEnd = 0.85f
+
+    public override fun onDraw(presentationTime: Long) {
+        GLES20.glUniform2f(getHandle("vignetteCenter"), vignetteCenterX, vignetteCenterY)
+        GLES20.glUniform1f(getHandle("vignetteStart"), vignetteStart)
+        GLES20.glUniform1f(getHandle("vignetteEnd"), vignetteEnd)
+    }
+
+    companion object {
+        private val FRAGMENT_SHADER = "precision mediump float;" +
+
+                "varying vec2 vTextureCoord;" +
+                "uniform lowp sampler2D sTexture;" +
+
+                "uniform lowp vec2 vignetteCenter;" +
+                "uniform highp float vignetteStart;" +
+                "uniform highp float vignetteEnd;" +
+
+                "void main() {" +
+                "lowp vec3 rgb = texture2D(sTexture, vTextureCoord).rgb;" +
+                "lowp float d = distance(vTextureCoord, vec2(vignetteCenter.x, vignetteCenter.y));" +
+                "lowp float percent = smoothstep(vignetteStart, vignetteEnd, d);" +
+                "gl_FragColor = vec4(mix(rgb.x, 0.0, percent), mix(rgb.y, 0.0, percent), " +
+                "mix(rgb.z, 0.0, percent), 1.0);" +
+                "}"
+    }
+}

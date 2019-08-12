@@ -1,5 +1,8 @@
 package com.automattic.portkey.compose
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.app.ProgressDialog
 import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -10,21 +13,29 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.automattic.photoeditor.OnPhotoEditorListener
 import com.automattic.photoeditor.PhotoEditor
+import com.automattic.photoeditor.SaveSettings
 import com.automattic.photoeditor.state.BackgroundSurfaceManager
+import com.automattic.photoeditor.util.FileUtils.Companion.getLoopFrameFile
+import com.automattic.photoeditor.util.PermissionUtils
+import com.automattic.photoeditor.util.PermissionUtils.OnRequestPermissionGrantedCheck
 import com.automattic.photoeditor.views.ViewType
 import com.automattic.portkey.R
 import com.automattic.portkey.R.color
 import com.automattic.portkey.R.id
 import com.automattic.portkey.R.layout
 import com.automattic.portkey.R.string
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_composer.*
 
 import kotlinx.android.synthetic.main.activity_main.toolbar
 import kotlinx.android.synthetic.main.content_composer.*
+import java.io.File
+import java.io.IOException
 
 class ComposeLoopFrameActivity : AppCompatActivity() {
     private lateinit var photoEditor: PhotoEditor
     private lateinit var backgroundSurfaceManager: BackgroundSurfaceManager
+    private var progressDialog: ProgressDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,6 +96,23 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         super.onSaveInstanceState(outState)
     }
 
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        PermissionUtils.onRequestPermissionsResult(object : OnRequestPermissionGrantedCheck {
+            override fun isPermissionGranted(isGranted: Boolean, permission: String) {
+                if (isGranted) {
+                    if (permission == Manifest.permission.WRITE_EXTERNAL_STORAGE) {
+                        // TODO we should check for a request Code to make sure
+                        // the permission was requested in order to save a loop frame rather than something else
+                        // (i.e. as opposed to saving the originally captured video)
+                        saveLoopFrame()
+                    } else if (permission == Manifest.permission.RECORD_AUDIO) {
+                        backgroundSurfaceManager.switchCameraPreviewOn()
+                    }
+                }
+            }
+        }, requestCode, permissions, grantResults)
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
@@ -133,7 +161,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             }
 
             id.action_save -> {
-                Toast.makeText(this, "Not implemented", Toast.LENGTH_SHORT).show()
+                saveLoopFrame()
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -185,5 +213,168 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     private fun testStaticBackground() {
         txtCurrentTool.setText(string.main_test_static_background)
         backgroundSurfaceManager.switchStaticImageBackgroundModeOn()
+    }
+
+    // this one saves one composed unit: ether an Image or a Video
+    private fun saveLoopFrame() {
+        // check wether we have an Image or a Video, and call its save functionality accordingly
+        if (backgroundSurfaceManager.cameraVisible() || backgroundSurfaceManager.videoPlayerVisible()) {
+            saveVideo(backgroundSurfaceManager.getCurrentVideoFile().toString())
+        } else {
+            // check whether there are any GIF stickers - if there are, we need to produce a video instead
+            if (photoEditor.anyStickersAdded()) {
+                saveVideoWithStaticBackground()
+            } else {
+                saveImage()
+            }
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun saveImage() {
+        if (PermissionUtils.checkAndRequestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            showLoading("Saving...")
+            val file = getLoopFrameFile(false)
+            try {
+                file.createNewFile()
+
+                val saveSettings = SaveSettings.Builder()
+                    .setClearViewsEnabled(true)
+                    .setTransparencyEnabled(true)
+                    .build()
+
+                photoEditor.saveAsFile(file.absolutePath, saveSettings, object : PhotoEditor.OnSaveListener {
+                    override fun onSuccess(imagePath: String) {
+                        hideLoading()
+                        showSnackbar("Image Saved Successfully")
+                        photoEditorView.source.setImageURI(Uri.fromFile(File(imagePath)))
+                    }
+
+                    override fun onFailure(exception: Exception) {
+                        hideLoading()
+                        showSnackbar("Failed to save Image")
+                    }
+                })
+            } catch (e: IOException) {
+                e.printStackTrace()
+                hideLoading()
+                e.message?.takeIf { it.isNotEmpty() }?.let { showSnackbar(it) }
+            }
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun saveVideo(inputFile: String) {
+        if (PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            showLoading("Saving...")
+            try {
+                val file = getLoopFrameFile(true)
+                file.createNewFile()
+
+                val saveSettings = SaveSettings.Builder()
+                    .setClearViewsEnabled(true)
+                    .setTransparencyEnabled(true)
+                    .build()
+
+                photoEditor.saveVideoAsFile(
+                    inputFile,
+                    file.absolutePath,
+                    saveSettings,
+                    object : PhotoEditor.OnSaveWithCancelListener {
+                    override fun onCancel(noAddedViews: Boolean) {
+                            hideLoading()
+                            showSnackbar("No views added - original video saved")
+                        }
+
+                        override fun onSuccess(imagePath: String) {
+                            hideLoading()
+                            showSnackbar("Video Saved Successfully")
+                        }
+
+                        override fun onFailure(exception: Exception) {
+                            hideLoading()
+                            showSnackbar("Failed to save Video")
+                        }
+                    })
+            } catch (e: IOException) {
+                e.printStackTrace()
+                hideLoading()
+                e.message?.takeIf { it.isNotEmpty() }?.let { showSnackbar(it) }
+            }
+        } else {
+            showSnackbar("Please allow WRITE TO STORAGE permissions")
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun saveVideoWithStaticBackground() {
+        if (PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            showLoading("Saving...")
+            try {
+                val file = getLoopFrameFile(true, "tmp")
+                file.createNewFile()
+
+                val saveSettings = SaveSettings.Builder()
+                    .setClearViewsEnabled(true)
+                    .setTransparencyEnabled(true)
+                    .build()
+
+                photoEditor.saveVideoFromStaticBackgroundAsFile(
+                    file.absolutePath,
+                    saveSettings,
+                    object : PhotoEditor.OnSaveWithCancelListener {
+                        override fun onCancel(noAddedViews: Boolean) {
+                            // TODO not implemented
+                        }
+
+                        override fun onSuccess(imagePath: String) {
+                            // now save the video with emoji, but using the previously saved video as input
+                            hideLoading()
+                            saveVideo(imagePath)
+                            // TODO: delete the temporal video produced originally
+                        }
+
+                        override fun onFailure(exception: Exception) {
+                            hideLoading()
+                            showSnackbar("Failed to save Video")
+                        }
+                    })
+            } catch (e: IOException) {
+                e.printStackTrace()
+                hideLoading()
+                e.message?.takeIf { it.isNotEmpty() }?.let { showSnackbar(it) }
+            }
+        } else {
+            showSnackbar("Please allow WRITE TO STORAGE permissions")
+        }
+    }
+
+    protected fun showLoading(message: String) {
+        runOnUiThread {
+            progressDialog = ProgressDialog(this)
+            progressDialog!!.setMessage(message)
+            progressDialog!!.setProgressStyle(ProgressDialog.STYLE_SPINNER)
+            progressDialog!!.setCancelable(false)
+            progressDialog!!.show()
+        }
+    }
+
+    protected fun hideLoading() {
+        runOnUiThread {
+            if (progressDialog != null) {
+                progressDialog!!.dismiss()
+            }
+        }
+    }
+
+    protected fun showSnackbar(message: String) {
+        runOnUiThread {
+            val view = findViewById<View>(android.R.id.content)
+            if (view != null) {
+                Snackbar.make(view, message, Snackbar.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }

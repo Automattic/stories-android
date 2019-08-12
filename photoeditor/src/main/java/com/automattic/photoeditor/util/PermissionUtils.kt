@@ -22,6 +22,12 @@ class PermissionUtils {
             )
         }
 
+        fun requestPermissions(activity: Activity, permissions: Array<String>) {
+            ActivityCompat.requestPermissions(activity, permissions,
+                PERMISSION_REQUEST_CODE
+            )
+        }
+
         fun checkAndRequestPermission(activity: Activity, permission: String): Boolean {
             val isGranted = ContextCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_GRANTED
             if (!isGranted) {
