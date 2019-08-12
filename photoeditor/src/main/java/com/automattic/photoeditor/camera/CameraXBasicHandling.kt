@@ -10,6 +10,7 @@ import androidx.camera.core.CameraX
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCapture.CaptureMode
 import androidx.camera.core.ImageCapture.Metadata
+import androidx.camera.core.ImageCapture.UseCaseError
 import androidx.camera.core.ImageCaptureConfig
 import androidx.camera.core.Preview
 import androidx.camera.core.PreviewConfig
@@ -18,6 +19,7 @@ import androidx.camera.core.VideoCaptureConfig
 import androidx.core.app.ActivityCompat
 import com.automattic.photoeditor.R
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureHandler
+import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.util.PermissionUtils
@@ -169,7 +171,7 @@ ActivityCompat.OnRequestPermissionsResultCallback {
         videoCapture.stopRecording()
     }
 
-    override fun takePicture() {
+    override fun takePicture(onImageCapturedListener: ImageCaptureListener) {
         // Get a stable reference of the modifiable image capture use case
         imageCapture?.let { imageCapture ->
 
@@ -184,22 +186,15 @@ ActivityCompat.OnRequestPermissionsResultCallback {
             }
 
             // Setup image capture listener which is triggered after photo has been taken
-            imageCapture.takePicture(currentFile, imageSavedListener, metadata)
-        }
-    }
+            imageCapture.takePicture(currentFile, object: ImageCapture.OnImageSavedListener {
+                override fun onImageSaved(file: File) {
+                    onImageCapturedListener.onImageSaved(file)
+                }
 
-    /** Define callback that will be triggered after a photo has been taken and saved to disk */
-    private val imageSavedListener = object : ImageCapture.OnImageSavedListener {
-        override fun onError(
-            error: ImageCapture.UseCaseError, message: String, exc: Throwable?) {
-            Log.e(TAG, "Photo capture failed: $message")
-            exc?.printStackTrace()
-        }
-
-        override fun onImageSaved(photoFile: File) {
-            Log.d(TAG, "Photo capture succeeded: ${photoFile.absolutePath}")
-            // TODO set this as a background in PhotoEditor
-            // photoEditorView.source.setImageURI(Uri.fromFile(File(imagePath)))
+                override fun onError(useCaseError: UseCaseError, message: String, cause: Throwable?) {
+                    onImageCapturedListener.onError(message, cause)
+                }
+            }, metadata)
         }
     }
 
