@@ -17,6 +17,7 @@ import androidx.lifecycle.OnLifecycleEvent
 import com.automattic.photoeditor.camera.Camera2BasicHandling
 import com.automattic.photoeditor.camera.CameraXBasicHandling
 import com.automattic.photoeditor.camera.VideoPlayingBasicHandling
+import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
 import com.automattic.photoeditor.state.BackgroundSurfaceManager.SurfaceHandlerType.CAMERA2
 import com.automattic.photoeditor.state.BackgroundSurfaceManager.SurfaceHandlerType.CAMERAX
@@ -197,7 +198,11 @@ class BackgroundSurfaceManager(
         cameraBasicHandler.stopRecordingVideo()
     }
 
-    fun getCurrentVideoFile(): File? {
+    fun takePicture(listener: ImageCaptureListener) {
+        cameraBasicHandler.takePicture(listener)
+    }
+
+    fun getCurrentFile(): File? {
             return cameraBasicHandler.currentFile
     }
 

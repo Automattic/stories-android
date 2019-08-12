@@ -18,7 +18,6 @@ import androidx.camera.core.VideoCapture
 import androidx.camera.core.VideoCaptureConfig
 import androidx.core.app.ActivityCompat
 import com.automattic.photoeditor.R
-import com.automattic.photoeditor.camera.interfaces.ImageCaptureHandler
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
 import com.automattic.photoeditor.util.FileUtils
@@ -26,8 +25,7 @@ import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.io.File
 
-class CameraXBasicHandling : VideoRecorderFragment(), ImageCaptureHandler,
-ActivityCompat.OnRequestPermissionsResultCallback {
+class CameraXBasicHandling : VideoRecorderFragment(), ActivityCompat.OnRequestPermissionsResultCallback {
     private lateinit var videoCapture: VideoCapture
     private lateinit var videoPreview: Preview
     private lateinit var imageCapture: ImageCapture

@@ -9,6 +9,7 @@
     <string name="main_test_camera_preview">Camera preview</string>
     <string name="main_test_static_background">Static bkg</string>
     <string name="main_test_play_video">Play video</string>
+    <string name="main_test_take_picture">Take picture</string>
     <string name="main_test_save">Save</string>
 
 

@@ -35,6 +35,10 @@
           android:title="@string/main_test_play_video"
           android:orderInCategory="100"
           app:showAsAction="never"/>
+    <item android:id="@+id/action_bkg_take_picture"
+          android:title="@string/main_test_take_picture"
+          android:orderInCategory="100"
+          app:showAsAction="never"/>
 
     <item android:id="@+id/action_save"
           android:title="@string/main_test_save"

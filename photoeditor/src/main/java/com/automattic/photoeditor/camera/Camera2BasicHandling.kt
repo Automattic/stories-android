@@ -51,6 +51,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.R
+import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
 import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
@@ -66,6 +67,10 @@ import kotlin.collections.ArrayList
 
 class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener,
         ActivityCompat.OnRequestPermissionsResultCallback {
+    override fun takePicture(onImageCapturedListener: ImageCaptureListener) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     /**
      * [TextureView.SurfaceTextureListener] handles several lifecycle events on a
      * [TextureView].

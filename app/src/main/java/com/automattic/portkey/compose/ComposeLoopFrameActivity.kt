@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat
 import com.automattic.photoeditor.OnPhotoEditorListener
 import com.automattic.photoeditor.PhotoEditor
 import com.automattic.photoeditor.SaveSettings
+import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 import com.automattic.photoeditor.state.BackgroundSurfaceManager
 import com.automattic.photoeditor.util.FileUtils.Companion.getLoopFrameFile
 import com.automattic.photoeditor.util.PermissionUtils
@@ -152,6 +153,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 testPlayVideo()
                 true
             }
+            id.action_bkg_take_picture -> {
+                testTakeStillPicture()
+                true
+            }
 
             id.action_save -> {
                 saveLoopFrame()
@@ -220,11 +225,24 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         backgroundSurfaceManager.switchStaticImageBackgroundModeOn()
     }
 
+    private fun testTakeStillPicture() {
+        txtCurrentTool.setText(string.main_test_take_picture)
+        backgroundSurfaceManager.takePicture(object: ImageCaptureListener {
+            override fun onImageSaved(file: File) {
+                photoEditorView.source.setImageURI(Uri.fromFile(backgroundSurfaceManager.getCurrentFile()))
+                backgroundSurfaceManager.switchStaticImageBackgroundModeOn()
+            }
+            override fun onError(message: String, cause: Throwable?) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+        })
+    }
+
     // this one saves one composed unit: ether an Image or a Video
     private fun saveLoopFrame() {
         // check wether we have an Image or a Video, and call its save functionality accordingly
         if (backgroundSurfaceManager.cameraVisible() || backgroundSurfaceManager.videoPlayerVisible()) {
-            saveVideo(backgroundSurfaceManager.getCurrentVideoFile().toString())
+            saveVideo(backgroundSurfaceManager.getCurrentFile().toString())
         } else {
             // check whether there are any GIF stickers - if there are, we need to produce a video instead
             if (photoEditor.anyStickersAdded()) {
