@@ -2,7 +2,9 @@ package com.automattic.photoeditor.camera
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.DisplayMetrics
 import android.util.Log
+import android.util.Rational
 import android.view.ViewGroup
 import androidx.camera.core.CameraX
 import androidx.camera.core.Preview
@@ -21,6 +23,7 @@ class CameraXBasicHandling : VideoRecorderFragment(),
         ActivityCompat.OnRequestPermissionsResultCallback {
     private lateinit var videoCapture: VideoCapture
     private lateinit var videoPreview: Preview
+    private var lensFacing = CameraX.LensFacing.BACK
 
     private var active: Boolean = false
 
@@ -75,8 +78,21 @@ class CameraXBasicHandling : VideoRecorderFragment(),
     // TODO remove this RestrictedApi annotation once androidx.camera:camera moves out of alpha
     @SuppressLint("RestrictedApi")
     private fun startCamera() {
+        // Get screen metrics used to setup camera for full screen resolution
+        val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
+        val screenAspectRatio = Rational(metrics.widthPixels, metrics.heightPixels)
+        Log.d(TAG, "Screen metrics: ${metrics.widthPixels} x ${metrics.heightPixels}")
+
         // Create configuration object for the preview use case
-        val previewConfig = PreviewConfig.Builder().build()
+        val previewConfig = PreviewConfig.Builder().apply {
+            setLensFacing(lensFacing)
+            // We request aspect ratio but no r esolution to let CameraX optimize our use cases
+            setTargetAspectRatio(screenAspectRatio)
+            // Set initial target rotation, we will have to call this again if rotation changes
+            // during the lifecycle of this use case
+            setTargetRotation(textureView.display.rotation)
+        }.build()
+
         videoPreview = Preview(previewConfig)
 
         // Create a configuration object for the video capture use case
