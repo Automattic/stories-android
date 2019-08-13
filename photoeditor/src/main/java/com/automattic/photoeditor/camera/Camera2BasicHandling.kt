@@ -32,6 +32,7 @@ import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CameraMetadata
+import android.hardware.camera2.CaptureFailure
 import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.CaptureResult
 import android.hardware.camera2.TotalCaptureResult
@@ -55,7 +56,6 @@ import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
 import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
-import java.io.File
 import java.io.IOException
 import java.util.Arrays
 import java.util.Collections
@@ -63,14 +63,8 @@ import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 
-@JvmField val PIC_FILE_NAME = "pic.jpg"
-
 class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener,
         ActivityCompat.OnRequestPermissionsResultCallback {
-    override fun takePicture(onImageCapturedListener: ImageCaptureListener) {
-        // TODO implement take still picture in Camera2
-    }
-
     /**
      * [TextureView.SurfaceTextureListener] handles several lifecycle events on a
      * [TextureView].
@@ -90,6 +84,8 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener,
 
         override fun onSurfaceTextureUpdated(texture: SurfaceTexture) = Unit
     }
+
+    private var onImageCapturedListener: ImageCaptureListener? = null
 
     /**
      * ID of the current [CameraDevice].
@@ -120,7 +116,6 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener,
         override fun onOpened(cameraDevice: CameraDevice) {
             cameraOpenCloseLock.release()
             this@Camera2BasicHandling.cameraDevice = cameraDevice
-            // TODO: decide here whether user should preview for picture or preview for video recording
             createCameraPreviewSession()
         }
 
@@ -133,6 +128,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener,
         override fun onError(cameraDevice: CameraDevice, error: Int) {
             onDisconnected(cameraDevice)
             this@Camera2BasicHandling.activity?.finish()
+            // TODO decide whether to inform user about the error
         }
     }
 
@@ -152,16 +148,14 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener,
     private var imageReader: ImageReader? = null
 
     /**
-     * This is the output file for our picture.
-     */
-    private lateinit var file: File
-
-    /**
      * This a callback object for the [ImageReader]. "onImageAvailable" will be called when a
      * still image is ready to be saved.
      */
     private val onImageAvailableListener = ImageReader.OnImageAvailableListener {
-        backgroundHandler?.post(ImageSaver(it.acquireNextImage(), file))
+        backgroundHandler?.post( {
+            Log.d(TAG, "IMAGE AVAILABLE!!")
+            ImageSaver(it.acquireNextImage(), currentFile!!, onImageCapturedListener)
+        })
     }
 
     /**
@@ -269,12 +263,6 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener,
         retainInstance = true
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
-        file = File(activity?.getExternalFilesDir(null), PIC_FILE_NAME)
-    }
-
     override fun onResume() {
         super.onResume()
         startUp()
@@ -304,12 +292,13 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener,
             startBackgroundThread()
             openCamera(textureView.width, textureView.height)
         }
-//        else {
-//            textureView.surfaceTextureListener = surfaceTextureListener
-//        }
     }
 
     private fun windDown() {
+        captureSession?.apply {
+            stopRepeating()
+            abortCaptures()
+        }
         closeCamera()
         stopBackgroundThread()
     }
@@ -409,6 +398,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener,
             }
         } catch (e: CameraAccessException) {
             Log.e(TAG, e.toString())
+            // TODO inform the user
         } catch (e: NullPointerException) {
             // Currently an NPE is thrown when the Camera2API is used but not supported on the
             // device this code runs.
@@ -495,7 +485,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener,
      */
     private fun startBackgroundThread() {
         backgroundThread = HandlerThread("CameraBackground").also { it.start() }
-        backgroundHandler = Handler(backgroundThread?.looper)
+        backgroundHandler = Handler(backgroundThread?.looper!!)
     }
 
     /**
@@ -553,6 +543,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener,
                                         captureCallback, backgroundHandler)
                             } catch (e: CameraAccessException) {
                                 Log.e(TAG, e.toString())
+                                // TODO: capture error, inform the user about it
                             }
                         }
 
@@ -665,8 +656,17 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener,
                     request: CaptureRequest,
                     result: TotalCaptureResult
                 ) {
-                    Log.d(TAG, file.toString())
+                    Log.d(TAG, currentFile.toString())
                     unlockFocus()
+                }
+
+                override fun onCaptureFailed(
+                    session: CameraCaptureSession,
+                    request: CaptureRequest,
+                    failure: CaptureFailure
+                ) {
+                    super.onCaptureFailed(session, request, failure)
+                    onImageCapturedListener?.onError(failure.toString(), null)
                 }
             }
 
@@ -677,6 +677,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener,
             }
         } catch (e: CameraAccessException) {
             Log.e(TAG, e.toString())
+            onImageCapturedListener?.onError(e.message!!, e)
         }
     }
 
@@ -839,6 +840,14 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener,
     fun closePreviewSession() {
         captureSession?.close()
         captureSession = null
+    }
+
+    override fun takePicture(listener: ImageCaptureListener) {
+        // Create output file to hold the image
+        currentFile = FileUtils.getLoopFrameFile(false, "orig_")
+        currentFile?.createNewFile()
+        onImageCapturedListener = listener
+        lockFocus()
     }
 
     companion object {

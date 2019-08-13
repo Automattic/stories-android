@@ -1,7 +1,9 @@
 package com.automattic.photoeditor.camera
 
 import android.media.Image
+import android.os.Handler
 import android.util.Log
+import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 
 import java.io.File
 import java.io.FileOutputStream
@@ -19,7 +21,9 @@ internal class ImageSaver(
     /**
      * The file we save the image into.
      */
-    private val file: File
+    private val file: File,
+
+    private val imageCaptureListener: ImageCaptureListener?
 ) : Runnable {
     override fun run() {
         val buffer = image.planes[0].buffer
@@ -32,13 +36,16 @@ internal class ImageSaver(
             }
         } catch (e: IOException) {
             Log.e(TAG, e.toString())
+            imageCaptureListener?.onError(e.toString(), e)
         } finally {
             image.close()
             output?.let {
                 try {
                     it.close()
+                    imageCaptureListener?.onImageSaved(file)
                 } catch (e: IOException) {
                     Log.e(TAG, e.toString())
+                    imageCaptureListener?.onError(e.toString(), e)
                 }
             }
         }
