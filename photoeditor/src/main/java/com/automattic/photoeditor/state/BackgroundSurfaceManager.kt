@@ -26,7 +26,6 @@ import com.automattic.photoeditor.views.PhotoEditorView
 import java.io.File
 
 class BackgroundSurfaceManager(
-    private val activity: Activity,
     private val savedInstanceState: Bundle?,
     private val lifeCycle: Lifecycle,
     private val photoEditorView: PhotoEditorView,
