@@ -25,6 +25,7 @@ import com.automattic.portkey.R.color
 import com.automattic.portkey.R.id
 import com.automattic.portkey.R.layout
 import com.automattic.portkey.R.string
+import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_composer.*
 
@@ -229,7 +230,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         txtCurrentTool.setText(string.main_test_take_picture)
         backgroundSurfaceManager.takePicture(object : ImageCaptureListener {
             override fun onImageSaved(file: File) {
-                photoEditorView.source.setImageURI(Uri.fromFile(backgroundSurfaceManager.getCurrentFile()))
+                Glide.with(this@ComposeLoopFrameActivity)
+                    .load(backgroundSurfaceManager.getCurrentFile())
+                    .into(photoEditorView.source)
+
                 backgroundSurfaceManager.switchStaticImageBackgroundModeOn()
             }
             override fun onError(message: String, cause: Throwable?) {
