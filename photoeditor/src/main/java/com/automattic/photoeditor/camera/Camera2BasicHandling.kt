@@ -48,7 +48,6 @@ import android.util.SparseIntArray
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.R
@@ -63,8 +62,7 @@ import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 
-class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener,
-        ActivityCompat.OnRequestPermissionsResultCallback {
+class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
     /**
      * [TextureView.SurfaceTextureListener] handles several lifecycle events on a
      * [TextureView].
@@ -298,21 +296,6 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener,
         stopBackgroundThread()
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        if (!PermissionUtils.allRequiredPermissionsGranted(activity!!)) {
-            ErrorDialog.newInstance(getString(R.string.request_permissions))
-                    .show(childFragmentManager,
-                        FRAGMENT_DIALOG
-                    )
-        } else {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        }
-    }
-
     /**
      * Sets up member variables related to camera.
      *
@@ -435,24 +418,26 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener,
      * Opens the camera specified by [Camera2BasicHandling.cameraId].
      */
     private fun openCamera(width: Int, height: Int) {
-        val permission = ContextCompat.checkSelfPermission(activity!!, Manifest.permission.CAMERA)
-        if (permission != PackageManager.PERMISSION_GRANTED) {
-            PermissionUtils.requestAllRequiredPermissions(activity!!)
-            return
-        }
-        setUpCameraOutputs(width, height)
-        configureTransform(width, height)
-        val manager = activity!!.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-        try {
-            // Wait for camera to open - 2.5 seconds is sufficient
-            if (!cameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
-                throw RuntimeException("Time out waiting to lock camera opening.")
+        activity?.let { activity ->
+            val permission = ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA)
+            if (permission != PackageManager.PERMISSION_GRANTED) {
+                PermissionUtils.requestAllRequiredPermissions(activity)
+                return
             }
-            manager.openCamera(cameraId, stateCallback, backgroundHandler)
-        } catch (e: CameraAccessException) {
-            Log.e(TAG, e.toString())
-        } catch (e: InterruptedException) {
-            throw RuntimeException("Interrupted while trying to lock camera opening.", e)
+            setUpCameraOutputs(width, height)
+            configureTransform(width, height)
+            val manager = activity!!.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+            try {
+                // Wait for camera to open - 2.5 seconds is sufficient
+                if (!cameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
+                    throw RuntimeException("Time out waiting to lock camera opening.")
+                }
+                manager.openCamera(cameraId, stateCallback, backgroundHandler)
+            } catch (e: CameraAccessException) {
+                Log.e(TAG, e.toString())
+            } catch (e: InterruptedException) {
+                throw RuntimeException("Interrupted while trying to lock camera opening.", e)
+            }
         }
     }
 
