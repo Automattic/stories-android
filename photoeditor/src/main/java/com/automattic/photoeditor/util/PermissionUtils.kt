@@ -62,9 +62,9 @@ class PermissionUtils {
                         grantResults[0] == PackageManager.PERMISSION_GRANTED,
                         permissions[0]
                     )
-                    return true
+                    true
                 }
-                else -> return false
+                else -> false
             }
         }
 
