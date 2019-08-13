@@ -66,6 +66,7 @@ class PermissionUtils {
                 }
                 else -> false
             }
+            return false
         }
 
         fun allRequiredPermissionsGranted(context: Context): Boolean {
