@@ -56,7 +56,7 @@ class PermissionUtils {
             permissions: Array<String>,
             grantResults: IntArray
         ): Boolean {
-            when (requestCode) {
+            return when (requestCode) {
                 PERMISSION_REQUEST_CODE -> {
                     onRequestPermissionChecker.isPermissionGranted(
                         grantResults[0] == PackageManager.PERMISSION_GRANTED,
@@ -66,7 +66,6 @@ class PermissionUtils {
                 }
                 else -> false
             }
-            return false
         }
 
         fun allRequiredPermissionsGranted(context: Context): Boolean {
