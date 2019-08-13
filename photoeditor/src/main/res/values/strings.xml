@@ -409,6 +409,6 @@
     </string-array>
 
 
-    <string name="request_permission">This app needs camera permission.</string>
+    <string name="request_permissions">This app needs camera and audio recording permissions.</string>
     <string name="camera_error">This device doesn\'t support Camera2 API.</string>
 </resources>

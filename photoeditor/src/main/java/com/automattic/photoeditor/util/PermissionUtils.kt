@@ -1,5 +1,6 @@
 package com.automattic.photoeditor.util
 
+import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
@@ -12,6 +13,11 @@ class PermissionUtils {
     }
     companion object {
         val PERMISSION_REQUEST_CODE = 5200
+        val REQUIRED_PERMISSIONS = arrayOf(
+            Manifest.permission.CAMERA,
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
 
         fun checkPermission(context: Context, permission: String) =
             ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
@@ -24,6 +30,12 @@ class PermissionUtils {
 
         fun requestPermissions(activity: Activity, permissions: Array<String>) {
             ActivityCompat.requestPermissions(activity, permissions,
+                PERMISSION_REQUEST_CODE
+            )
+        }
+
+        fun requestAllRequiredPermissions(activity: Activity) {
+            ActivityCompat.requestPermissions(activity, REQUIRED_PERMISSIONS,
                 PERMISSION_REQUEST_CODE
             )
         }
@@ -43,13 +55,27 @@ class PermissionUtils {
             requestCode: Int,
             permissions: Array<String>,
             grantResults: IntArray
-        ) {
-            when (requestCode) {
-                PERMISSION_REQUEST_CODE -> onRequestPermissionChecker.isPermissionGranted(
-                    grantResults[0] == PackageManager.PERMISSION_GRANTED,
-                    permissions[0]
-                )
+        ): Boolean {
+            return when (requestCode) {
+                PERMISSION_REQUEST_CODE -> {
+                    onRequestPermissionChecker.isPermissionGranted(
+                        grantResults[0] == PackageManager.PERMISSION_GRANTED,
+                        permissions[0]
+                    )
+                    true
+                }
+                else -> false
             }
+        }
+
+        fun allRequiredPermissionsGranted(context: Context): Boolean {
+            for (permission in REQUIRED_PERMISSIONS) {
+                if (ContextCompat.checkSelfPermission(
+                        context, permission) != PackageManager.PERMISSION_GRANTED) {
+                    return false
+                }
+            }
+            return true
         }
     }
 }

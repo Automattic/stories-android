@@ -1,6 +1,5 @@
 package com.automattic.photoeditor.state
 
-import android.Manifest
 import android.app.Activity
 import android.os.Bundle
 import androidx.fragment.app.FragmentManager
@@ -16,7 +15,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import com.automattic.photoeditor.camera.Camera2BasicHandling
 import com.automattic.photoeditor.camera.VideoPlayingBasicHandling
-import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.PhotoEditorView
 import java.io.File
 
@@ -136,20 +134,9 @@ class BackgroundSurfaceManager(
             // camera preview is ON
             if (!isCameraRecording) {
                 // let's start recording
-                if (!PermissionUtils.checkPermission(activity, Manifest.permission.RECORD_AUDIO) ||
-                    !PermissionUtils.checkPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) ||
-                    !PermissionUtils.checkPermission(activity, Manifest.permission.CAMERA)) {
-                    val permissions = arrayOf(
-                            Manifest.permission.RECORD_AUDIO,
-                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                            Manifest.permission.CAMERA
-                        )
-                    PermissionUtils.requestPermissions(activity, permissions)
-                } else {
-                    isCameraRecording = true
-                    // TODO txtRecording.visibility = View.VISIBLE
-                    camera2BasicHandler.createCameraRecordingSession()
-                }
+                isCameraRecording = true
+                // TODO txtRecording.visibility = View.VISIBLE
+                camera2BasicHandler.createCameraRecordingSession()
             } else {
                 // stop recording
                 isCameraRecording = false
