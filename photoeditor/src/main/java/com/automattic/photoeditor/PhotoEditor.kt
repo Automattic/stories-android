@@ -714,7 +714,7 @@ class PhotoEditor private constructor(builder: Builder) :
                                 BitmapUtil.removeTransparency(BitmapUtil.createBitmapFromView(parentView))
                             else
                                 BitmapUtil.createBitmapFromView(parentView)
-                            wholeBitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+                            wholeBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
                             out.flush()
                             out.close()
                             Log.d(TAG, "Filed Saved Successfully")
