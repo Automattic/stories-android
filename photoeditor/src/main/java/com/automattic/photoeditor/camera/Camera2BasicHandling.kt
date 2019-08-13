@@ -71,9 +71,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener,
      */
     val surfaceTextureListener = object : TextureView.SurfaceTextureListener {
         override fun onSurfaceTextureAvailable(texture: SurfaceTexture, width: Int, height: Int) {
-            if (active) {
-                openCamera(width, height)
-            }
+            startUp()
         }
 
         override fun onSurfaceTextureSizeChanged(texture: SurfaceTexture, width: Int, height: Int) {
@@ -152,10 +150,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener,
      * still image is ready to be saved.
      */
     private val onImageAvailableListener = ImageReader.OnImageAvailableListener {
-        backgroundHandler?.post( {
-            Log.d(TAG, "IMAGE AVAILABLE!!")
-            ImageSaver(it.acquireNextImage(), currentFile!!, onImageCapturedListener)
-        })
+        backgroundHandler?.post(ImageSaver(it.acquireNextImage(), currentFile!!, onImageCapturedListener))
     }
 
     /**
