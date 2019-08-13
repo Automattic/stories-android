@@ -101,7 +101,6 @@ class CameraXBasicHandling : VideoRecorderFragment(), ActivityCompat.OnRequestPe
 
         videoPreview = Preview(previewConfig)
 
-
         // Set up the capture use case to allow users to take photos
         val imageCaptureConfig = ImageCaptureConfig.Builder().apply {
             setLensFacing(lensFacing)
@@ -184,7 +183,7 @@ class CameraXBasicHandling : VideoRecorderFragment(), ActivityCompat.OnRequestPe
             }
 
             // Setup image capture listener which is triggered after photo has been taken
-            imageCapture.takePicture(currentFile, object: ImageCapture.OnImageSavedListener {
+            imageCapture.takePicture(currentFile, object : ImageCapture.OnImageSavedListener {
                 override fun onImageSaved(file: File) {
                     onImageCapturedListener.onImageSaved(file)
                 }

@@ -227,13 +227,13 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
     private fun testTakeStillPicture() {
         txtCurrentTool.setText(string.main_test_take_picture)
-        backgroundSurfaceManager.takePicture(object: ImageCaptureListener {
+        backgroundSurfaceManager.takePicture(object : ImageCaptureListener {
             override fun onImageSaved(file: File) {
                 photoEditorView.source.setImageURI(Uri.fromFile(backgroundSurfaceManager.getCurrentFile()))
                 backgroundSurfaceManager.switchStaticImageBackgroundModeOn()
             }
             override fun onError(message: String, cause: Throwable?) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                // TODO implement error handling
             }
         })
     }

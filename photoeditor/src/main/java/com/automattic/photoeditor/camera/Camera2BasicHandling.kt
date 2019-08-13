@@ -68,7 +68,7 @@ import kotlin.collections.ArrayList
 class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener,
         ActivityCompat.OnRequestPermissionsResultCallback {
     override fun takePicture(onImageCapturedListener: ImageCaptureListener) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        // TODO implement take still picture in Camera2
     }
 
     /**
