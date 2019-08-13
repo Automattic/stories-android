@@ -63,6 +63,7 @@ class CameraXBasicHandling : VideoRecorderFragment(), ActivityCompat.OnRequestPe
     private fun windDown() {
         videoPreview.clear()
         videoCapture.clear()
+        imageCapture.clear()
         CameraX.unbindAll()
     }
 
