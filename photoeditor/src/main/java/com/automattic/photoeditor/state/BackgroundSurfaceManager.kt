@@ -1,6 +1,5 @@
 package com.automattic.photoeditor.state
 
-import android.app.Activity
 import android.os.Bundle
 import android.os.Handler
 import androidx.fragment.app.FragmentManager
