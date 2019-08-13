@@ -1,7 +1,6 @@
 package com.automattic.photoeditor.camera
 
 import android.media.Image
-import android.os.Handler
 import android.util.Log
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 
