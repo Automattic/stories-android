@@ -452,24 +452,26 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
      * Opens the camera specified by [Camera2BasicHandling.cameraId].
      */
     private fun openCamera(width: Int, height: Int) {
-        val permission = ContextCompat.checkSelfPermission(activity!!, Manifest.permission.CAMERA)
-        if (permission != PackageManager.PERMISSION_GRANTED) {
-            PermissionUtils.requestAllRequiredPermissions(activity!!)
-            return
-        }
-        setUpCameraOutputs(width, height)
-        configureTransform(width, height)
-        val manager = activity!!.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-        try {
-            // Wait for camera to open - 2.5 seconds is sufficient
-            if (!cameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
-                throw RuntimeException("Time out waiting to lock camera opening.")
+        activity?.let { activity ->
+            val permission = ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA)
+            if (permission != PackageManager.PERMISSION_GRANTED) {
+                PermissionUtils.requestAllRequiredPermissions(activity)
+                return
             }
-            manager.openCamera(cameraId, stateCallback, backgroundHandler)
-        } catch (e: CameraAccessException) {
-            Log.e(TAG, e.toString())
-        } catch (e: InterruptedException) {
-            throw RuntimeException("Interrupted while trying to lock camera opening.", e)
+            setUpCameraOutputs(width, height)
+            configureTransform(width, height)
+            val manager = activity!!.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+            try {
+                // Wait for camera to open - 2.5 seconds is sufficient
+                if (!cameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
+                    throw RuntimeException("Time out waiting to lock camera opening.")
+                }
+                manager.openCamera(cameraId, stateCallback, backgroundHandler)
+            } catch (e: CameraAccessException) {
+                Log.e(TAG, e.toString())
+            } catch (e: InterruptedException) {
+                throw RuntimeException("Interrupted while trying to lock camera opening.", e)
+            }
         }
     }
 
