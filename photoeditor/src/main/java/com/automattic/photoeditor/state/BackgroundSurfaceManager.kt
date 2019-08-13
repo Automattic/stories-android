@@ -169,7 +169,7 @@ class BackgroundSurfaceManager(
     }
 
     fun getCurrentVideoFile(): File? {
-            return cameraBasicHandler.currentFile
+        return cameraBasicHandler.currentFile
     }
 
     private fun getStateFromBundle() {
