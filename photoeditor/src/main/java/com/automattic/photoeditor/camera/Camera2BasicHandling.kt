@@ -47,7 +47,6 @@ import android.util.SparseIntArray
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.automattic.photoeditor.util.FileUtils
@@ -64,8 +63,7 @@ import kotlin.collections.ArrayList
 
 @JvmField val PIC_FILE_NAME = "pic.jpg"
 
-class Camera2BasicHandling : Fragment(), View.OnClickListener,
-        ActivityCompat.OnRequestPermissionsResultCallback, SurfaceFragmentHandler {
+class Camera2BasicHandling : Fragment(), View.OnClickListener, SurfaceFragmentHandler {
     /**
      * [TextureView.SurfaceTextureListener] handles several lifecycle events on a
      * [TextureView].
@@ -314,21 +312,6 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener,
     private fun windDown() {
         closeCamera()
         stopBackgroundThread()
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        if (!PermissionUtils.allRequiredPermissionsGranted(activity!!)) {
-            ErrorDialog.newInstance(getString(R.string.request_permissions))
-                    .show(childFragmentManager,
-                        FRAGMENT_DIALOG
-                    )
-        } else {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        }
     }
 
     /**
