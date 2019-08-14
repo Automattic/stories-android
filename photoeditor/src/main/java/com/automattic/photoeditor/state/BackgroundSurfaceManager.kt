@@ -154,8 +154,7 @@ class BackgroundSurfaceManager(
                 // TODO: implement this in the saveFile listener so we're sure to only change to the option
                 // wanted (video player) once we're sure video has been successfully saved
                 val handler = Handler()
-                handler.postDelayed(
-                    Runnable {
+                handler.postDelayed({
                         cameraXAwareSurfaceDeactivator(true) // keep visible as we're going to render video from player
                         videoPlayerHandling.currentFile = cameraBasicHandler.currentFile
                         photoEditorView.turnTextureViewOn()
