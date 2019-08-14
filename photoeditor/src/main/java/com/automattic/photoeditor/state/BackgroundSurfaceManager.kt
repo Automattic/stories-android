@@ -175,11 +175,9 @@ class BackgroundSurfaceManager(
     fun cameraXAwareSurfaceDeactivator(isVisible: Boolean) {
         cameraBasicHandler.deactivate()
         if (useCameraX) {
-            // IMPORTANT: recreate the TextureView and re-assign the references to the new TextureView
-            // on other handlers such as VideoPlayer (the only other one sharing the surface)
-            val recreatedSurface = photoEditorView.reCreateSurfaceTexture(isVisible)
-            videoPlayerHandling.textureView = recreatedSurface
-            cameraBasicHandler.textureView = recreatedSurface
+            // IMPORTANT: remove and add the TextureView back again to the view hierarchy so the SurfaceTexture
+            // is available for reuse by other fragments (i.e. VideoPlayingBasicHandler)
+            photoEditorView.removeAndAddTextureViewBack()
         }
     }
 
