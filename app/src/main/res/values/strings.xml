@@ -21,4 +21,6 @@
     <string name="text_placeholder">your text here</string>
 
     <string name="main_placeholder">Expect a list of Loops to be shown on this screen</string>
+
+    <string name="capture_button_alt">Capture</string>
 </resources>
