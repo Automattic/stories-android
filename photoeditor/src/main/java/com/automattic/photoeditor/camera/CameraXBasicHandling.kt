@@ -9,16 +9,12 @@ import androidx.camera.core.Preview
 import androidx.camera.core.PreviewConfig
 import androidx.camera.core.VideoCapture
 import androidx.camera.core.VideoCaptureConfig
-import androidx.core.app.ActivityCompat
-import com.automattic.photoeditor.R
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
 import com.automattic.photoeditor.util.FileUtils
-import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.io.File
 
-class CameraXBasicHandling : VideoRecorderFragment(),
-        ActivityCompat.OnRequestPermissionsResultCallback {
+class CameraXBasicHandling : VideoRecorderFragment() {
     private lateinit var videoCapture: VideoCapture
     private lateinit var videoPreview: Preview
 
@@ -55,21 +51,6 @@ class CameraXBasicHandling : VideoRecorderFragment(),
         videoPreview.clear()
         videoCapture.clear()
         CameraX.unbindAll()
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        if (!PermissionUtils.allRequiredPermissionsGranted(activity!!)) {
-            ErrorDialog.newInstance(getString(R.string.request_permissions))
-                .show(childFragmentManager,
-                    FRAGMENT_DIALOG
-                )
-        } else {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        }
     }
 
     // TODO remove this RestrictedApi annotation once androidx.camera:camera moves out of alpha
@@ -135,7 +116,6 @@ class CameraXBasicHandling : VideoRecorderFragment(),
     companion object {
         private val instance = CameraXBasicHandling()
 
-        private val FRAGMENT_DIALOG = "dialog"
         /**
          * Tag for the [Log].
          */

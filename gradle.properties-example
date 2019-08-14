@@ -1,4 +1,5 @@
 # Project-wide Gradle settings.
+
 # IDE (e.g. Android Studio) users:
 # Gradle settings configured through the IDE *will override*
 # any settings specified in this file.
@@ -19,5 +20,7 @@ android.useAndroidX=true
 android.enableJetifier=true
 # Kotlin code style for this project: "official" or "obsolete":
 kotlin.code.style=official
+
+# Portkey properties
 
 portkey.use.cameraX = true
