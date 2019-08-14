@@ -119,14 +119,10 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler {
                 stopVideoPlay()
             }
 
-            if (currentFile != null && currentFile!!.exists()) {
-//                val assetManager = context?.assets
-//                val descriptor = assetManager!!.openFd("small.mp4")
-                val inputStream = FileInputStream(currentFile)
+            currentFile?.takeIf { it.exists() }?.let { file ->
+                val inputStream = FileInputStream(file)
                 mediaPlayer = MediaPlayer().apply {
                     setDataSource(inputStream.getFD())
-                    // setDataSource("http://techslides.com/demos/sample-videos/small.mp4")
-                    // setDataSource(descriptor?.getFileDescriptor(), descriptor.getStartOffset(), descriptor.getLength())
                     setSurface(s)
                     prepare()
                     // TODO check whether we want fine grained error handling by setting these listeners
@@ -137,7 +133,6 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler {
                     setAudioStreamType(AudioManager.STREAM_MUSIC)
                     start()
                 }
-//                descriptor?.close()
             }
         } catch (e: IllegalArgumentException) {
             // TODO Auto-generated catch block

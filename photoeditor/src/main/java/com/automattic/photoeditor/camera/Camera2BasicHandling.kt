@@ -426,7 +426,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
             }
             setUpCameraOutputs(width, height)
             configureTransform(width, height)
-            val manager = activity!!.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+            val manager = activity.getSystemService(Context.CAMERA_SERVICE) as CameraManager
             try {
                 // Wait for camera to open - 2.5 seconds is sufficient
                 if (!cameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
