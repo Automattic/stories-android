@@ -118,7 +118,7 @@ class BackgroundSurfaceManager(
         }
         isCameraVisible = false
         isVideoPlayerVisible = false
-        cameraXAwareSurfaceDeactivator(false)
+        cameraXAwareSurfaceDeactivator()
         videoPlayerHandling.deactivate()
         photoEditorView.turnTextureViewOff()
     }
@@ -155,7 +155,7 @@ class BackgroundSurfaceManager(
                 // wanted (video player) once we're sure video has been successfully saved
                 val handler = Handler()
                 handler.postDelayed({
-                        cameraXAwareSurfaceDeactivator(true) // keep visible as we're going to render video from player
+                        cameraXAwareSurfaceDeactivator()
                         videoPlayerHandling.currentFile = cameraBasicHandler.currentFile
                         photoEditorView.turnTextureViewOn()
                         videoPlayerHandling.activate()
@@ -163,7 +163,7 @@ class BackgroundSurfaceManager(
                 )
                 return
             } else {
-                cameraXAwareSurfaceDeactivator(true) // keep visible as we're going to render video from player
+                cameraXAwareSurfaceDeactivator() // keep visible as we're going to render video from player
                 videoPlayerHandling.currentFile = cameraBasicHandler.currentFile
             }
         }
@@ -171,7 +171,7 @@ class BackgroundSurfaceManager(
         videoPlayerHandling.activate()
     }
 
-    fun cameraXAwareSurfaceDeactivator(isVisible: Boolean) {
+    private fun cameraXAwareSurfaceDeactivator() {
         cameraBasicHandler.deactivate()
         if (useCameraX) {
             // IMPORTANT: remove and add the TextureView back again to the view hierarchy so the SurfaceTexture
