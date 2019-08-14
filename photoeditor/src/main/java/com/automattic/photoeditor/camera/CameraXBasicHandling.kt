@@ -3,6 +3,7 @@ package com.automattic.photoeditor.camera
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
+import android.view.ViewGroup
 import androidx.camera.core.CameraX
 import androidx.camera.core.Preview
 import androidx.camera.core.PreviewConfig
@@ -15,6 +16,7 @@ import java.io.File
 
 class CameraXBasicHandling : VideoRecorderFragment() {
     private lateinit var videoCapture: VideoCapture
+    private lateinit var videoPreview: Preview
 
     private var active: Boolean = false
 
@@ -24,8 +26,11 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     }
 
     override fun activate() {
-        active = true
-        startUp()
+        if (!active) {
+            CameraX.unbindAll()
+            active = true
+            startUp()
+        }
     }
 
     override fun deactivate() {
@@ -41,10 +46,11 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         }
     }
 
+    @SuppressLint("RestrictedApi")
     private fun windDown() {
-        if (CameraX.isBound(videoCapture)) {
-            CameraX.unbind(videoCapture)
-        }
+        videoPreview.clear()
+        videoCapture.clear()
+        CameraX.unbindAll()
     }
 
     // TODO remove this RestrictedApi annotation once androidx.camera:camera moves out of alpha
@@ -52,7 +58,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     private fun startCamera() {
         // Create configuration object for the preview use case
         val previewConfig = PreviewConfig.Builder().build()
-        val preview = Preview(previewConfig)
+        videoPreview = Preview(previewConfig)
 
         // Create a configuration object for the video capture use case
         val videoCaptureConfig = VideoCaptureConfig.Builder().apply {
@@ -60,12 +66,31 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         }.build()
         videoCapture = VideoCapture(videoCaptureConfig)
 
-        preview.setOnPreviewOutputUpdateListener {
+        videoPreview.setOnPreviewOutputUpdateListener {
+            // if, for whatever reason a pre-existing surfaceTexture was being used,
+            // then call `release()`  on it, as per docs
+            // https://developer.android.com/reference/androidx/camera/core/Preview.html#setOnPreviewOutputUpdateListener(androidx.camera.core.Preview.OnPreviewOutputUpdateListener)
+            // * <p>Once {@link OnPreviewOutputUpdateListener#onUpdated(PreviewOutput)}  is called,
+            //     * ownership of the {@link PreviewOutput} and its contents is transferred to the application. It
+            //     * is the application's responsibility to release the last {@link SurfaceTexture} returned by
+            //     * {@link PreviewOutput#getSurfaceTexture()} when a new SurfaceTexture is provided via an update
+            //     * or when the user is finished with the use case.  A SurfaceTexture is created each time the
+            //     * use case becomes active and no previous SurfaceTexture exists.
+            textureView.surfaceTexture?.release()
+
+            // Also removing and re-adding the TextureView here, due to the following reasons:
+            // https://developer.android.com/reference/androidx/camera/core/Preview.html#setOnPreviewOutputUpdateListener(androidx.camera.core.Preview.OnPreviewOutputUpdateListener)
+            // * Calling TextureView.setSurfaceTexture(SurfaceTexture) when the TextureView's SurfaceTexture is already
+            // * created, should be preceded by calling ViewGroup.removeView(View) and ViewGroup.addView(View) on the
+            // * parent view of the TextureView to ensure the setSurfaceTexture() call succeeds.
+            val parent = textureView.parent as ViewGroup
+            parent.removeView(textureView)
+            parent.addView(textureView, 0)
             textureView.surfaceTexture = it.surfaceTexture
         }
 
         // Bind use cases to lifecycle
-        CameraX.bindToLifecycle(activity, preview, videoCapture)
+        CameraX.bindToLifecycle(activity, videoPreview, videoCapture)
     }
 
     @SuppressLint("RestrictedApi")

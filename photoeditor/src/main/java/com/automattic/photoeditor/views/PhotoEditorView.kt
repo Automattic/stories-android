@@ -42,7 +42,7 @@ class PhotoEditorView : RelativeLayout {
     private lateinit var imageFilterView: ImageFilterView
     private var surfaceListeners: ArrayList<SurfaceTextureListener> = ArrayList()
 
-    private val surfaceTextureListener = object : TextureView.SurfaceTextureListener {
+    private val mainSurfaceTextureListener = object : TextureView.SurfaceTextureListener {
         override fun onSurfaceTextureAvailable(texture: SurfaceTexture, width: Int, height: Int) {
             for (listener in surfaceListeners) {
                 listener.onSurfaceTextureAvailable(texture, width, height)
@@ -102,13 +102,14 @@ class PhotoEditorView : RelativeLayout {
     @SuppressLint("Recycle")
     private fun init(attrs: AttributeSet?) {
         // Setup image attributes
-        backgroundImage = BackgroundImageView(context)
-        backgroundImage.id = imgSrcId
-        backgroundImage.adjustViewBounds = true
-        val imgSrcParam = RelativeLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-        imgSrcParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
+        backgroundImage = BackgroundImageView(context).apply {
+            id = imgSrcId
+            adjustViewBounds = true
+        }
+
+        val imgSrcParam = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+            addRule(CENTER_IN_PARENT, TRUE)
+        }
         if (attrs != null) {
             val a = context.obtainStyledAttributes(attrs, styleable.PhotoEditorView)
             val imgSrcDrawable = a.getDrawable(styleable.PhotoEditorView_photo_src)
@@ -118,40 +119,38 @@ class PhotoEditorView : RelativeLayout {
         }
 
         // Setup Camera preview view
-        autoFitTextureView = AutoFitTextureView(context)
-        autoFitTextureView.id = cameraPreviewId
-        autoFitTextureView.visibility = View.GONE
-        val cameraParam = RelativeLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-        cameraParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
-        // set main listener
-        autoFitTextureView.surfaceTextureListener = surfaceTextureListener
+        val cameraParam = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+            addRule(CENTER_IN_PARENT, TRUE)
+        }
+        // Setup Camera preview view
+        autoFitTextureView = AutoFitTextureView(context).apply {
+            id = cameraPreviewId
+            visibility = View.GONE
+            // set main listener
+            surfaceTextureListener = mainSurfaceTextureListener
+        }
 
         // Setup brush view
-        brushDrawingView = BrushDrawingView(context)
-        brushDrawingView.visibility = View.GONE
-        brushDrawingView.id = brushSrcId
+        brushDrawingView = BrushDrawingView(context).apply {
+            visibility = View.GONE
+            id = brushSrcId
+        }
         // Align brush to the size of image view
-        val brushParam = RelativeLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-        brushParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
-        brushParam.addRule(RelativeLayout.ALIGN_TOP, imgSrcId)
-        brushParam.addRule(RelativeLayout.ALIGN_BOTTOM, imgSrcId)
+        val brushParam = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+            addRule(CENTER_IN_PARENT, TRUE)
+            addRule(ALIGN_TOP, imgSrcId)
+            addRule(ALIGN_BOTTOM, imgSrcId)
+        }
 
         // Setup GLSurface attributes
         imageFilterView = ImageFilterView(context)
         imageFilterView.id = glFilterId
         imageFilterView.visibility = View.GONE
-
-        // Align brush to the size of image view
-        val imgFilterParam = RelativeLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-        imgFilterParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
-        imgFilterParam.addRule(RelativeLayout.ALIGN_TOP, imgSrcId)
-        imgFilterParam.addRule(RelativeLayout.ALIGN_BOTTOM, imgSrcId)
+        val imgFilterParam = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+            addRule(CENTER_IN_PARENT, TRUE)
+            addRule(ALIGN_TOP, imgSrcId)
+            addRule(ALIGN_BOTTOM, imgSrcId)
+        }
 
         backgroundImage.setOnImageChangedListener(object : BackgroundImageView.OnImageChangedListener {
             override fun onBitmapLoaded(sourceBitmap: Bitmap?) {
@@ -172,6 +171,26 @@ class PhotoEditorView : RelativeLayout {
 
         // Add brush view
         addView(brushDrawingView, brushParam)
+    }
+
+    // added this method as a helper due to the reasons outlined here:
+    // https://developer.android.com/reference/androidx/camera/core/Preview.html#setOnPreviewOutputUpdateListener(androidx.camera.core.Preview.OnPreviewOutputUpdateListener)
+    // Copying here to make it clear:
+    //
+    // * Calling TextureView.setSurfaceTexture(SurfaceTexture) when the TextureView's SurfaceTexture is already created,
+    // * should be preceded by calling ViewGroup.removeView(View) and ViewGroup.addView(View) on the parent view of the
+    // * TextureView to ensure the setSurfaceTexture() call succeeds.
+    fun removeAndAddTextureViewBack() {
+        val parent = textureView.parent as ViewGroup
+        val index = parent.indexOfChild(textureView)
+        parent.removeView(textureView)
+
+        val cameraParam = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+            addRule(CENTER_IN_PARENT, TRUE)
+        }
+
+        // Add camera preview
+        parent.addView(textureView, index, cameraParam)
     }
 
     internal fun saveFilter(onSaveBitmap: OnSaveBitmap) {
