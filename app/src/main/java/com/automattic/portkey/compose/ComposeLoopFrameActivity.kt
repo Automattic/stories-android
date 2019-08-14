@@ -6,8 +6,6 @@ import android.app.ProgressDialog
 import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -20,16 +18,13 @@ import com.automattic.photoeditor.util.FileUtils.Companion.getLoopFrameFile
 import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.ViewType
 import com.automattic.portkey.BuildConfig
-import com.automattic.portkey.R
 import com.automattic.portkey.R.color
-import com.automattic.portkey.R.id
 import com.automattic.portkey.R.layout
 import com.automattic.portkey.R.string
 import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_composer.*
 
-import kotlinx.android.synthetic.main.activity_main.toolbar
 import kotlinx.android.synthetic.main.content_composer.*
 import java.io.File
 import java.io.IOException
@@ -42,8 +37,6 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(layout.activity_composer)
-        setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         photoEditor = PhotoEditor.Builder(this, photoEditorView)
             .setPinchTextScalable(true) // set flag to make text scalable when pinch
@@ -104,65 +97,6 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             backgroundSurfaceManager.switchCameraPreviewOn()
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        }
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-
-        // test actions just to test photoEditor module integration
-        return when (item.itemId) {
-            id.action_brush -> {
-                testBrush()
-                true
-            }
-            id.action_eraser -> {
-                testEraser()
-                true
-            }
-            id.action_text -> {
-                testText()
-                true
-            }
-            id.action_emoji -> {
-                testEmoji()
-                true
-            }
-            id.action_sticker -> {
-                testSticker()
-                true
-            }
-
-            id.action_bkg_camera_preview -> {
-                testCameraPreview()
-                true
-            }
-            id.action_bkg_static -> {
-                testStaticBackground()
-                true
-            }
-            id.action_bkg_play_video -> {
-                testPlayVideo()
-                true
-            }
-            id.action_bkg_take_picture -> {
-                testTakeStillPicture()
-                true
-            }
-
-            id.action_save -> {
-                saveLoopFrame()
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
         }
     }
 
