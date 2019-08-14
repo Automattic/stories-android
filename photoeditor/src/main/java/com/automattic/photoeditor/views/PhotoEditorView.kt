@@ -105,10 +105,9 @@ class PhotoEditorView : RelativeLayout {
         backgroundImage = BackgroundImageView(context)
         backgroundImage.id = imgSrcId
         backgroundImage.adjustViewBounds = true
-        val imgSrcParam = LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-        imgSrcParam.addRule(CENTER_IN_PARENT, TRUE)
+        val imgSrcParam = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+            addRule(CENTER_IN_PARENT, TRUE)
+        }
         if (attrs != null) {
             val a = context.obtainStyledAttributes(attrs, styleable.PhotoEditorView)
             val imgSrcDrawable = a.getDrawable(styleable.PhotoEditorView_photo_src)
@@ -118,11 +117,9 @@ class PhotoEditorView : RelativeLayout {
         }
 
         // Setup Camera preview view
-        val cameraParam = LayoutParams(
-            LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT
-        )
-        cameraParam.addRule(CENTER_IN_PARENT, TRUE)
-
+        val cameraParam = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+            addRule(CENTER_IN_PARENT, TRUE)
+        }
         // Setup Camera preview view
         autoFitTextureView = AutoFitTextureView(context)
         autoFitTextureView.id = cameraPreviewId
@@ -135,25 +132,21 @@ class PhotoEditorView : RelativeLayout {
         brushDrawingView.visibility = View.GONE
         brushDrawingView.id = brushSrcId
         // Align brush to the size of image view
-        val brushParam = LayoutParams(
-            LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT
-        )
-        brushParam.addRule(CENTER_IN_PARENT, TRUE)
-        brushParam.addRule(ALIGN_TOP, imgSrcId)
-        brushParam.addRule(ALIGN_BOTTOM, imgSrcId)
+        val brushParam = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+            addRule(CENTER_IN_PARENT, TRUE)
+            addRule(ALIGN_TOP, imgSrcId)
+            addRule(ALIGN_BOTTOM, imgSrcId)
+        }
 
         // Setup GLSurface attributes
         imageFilterView = ImageFilterView(context)
         imageFilterView.id = glFilterId
         imageFilterView.visibility = View.GONE
-
-        // Align brush to the size of image view
-        val imgFilterParam = LayoutParams(
-            LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT
-        )
-        imgFilterParam.addRule(CENTER_IN_PARENT, TRUE)
-        imgFilterParam.addRule(ALIGN_TOP, imgSrcId)
-        imgFilterParam.addRule(ALIGN_BOTTOM, imgSrcId)
+        val imgFilterParam = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+            addRule(CENTER_IN_PARENT, TRUE)
+            addRule(ALIGN_TOP, imgSrcId)
+            addRule(ALIGN_BOTTOM, imgSrcId)
+        }
 
         backgroundImage.setOnImageChangedListener(object : BackgroundImageView.OnImageChangedListener {
             override fun onBitmapLoaded(sourceBitmap: Bitmap?) {
@@ -188,10 +181,9 @@ class PhotoEditorView : RelativeLayout {
         val index = parent.indexOfChild(textureView)
         parent.removeView(textureView)
 
-        val cameraParam = LayoutParams(
-            LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT
-        )
-        cameraParam.addRule(CENTER_IN_PARENT, TRUE)
+        val cameraParam = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+            addRule(CENTER_IN_PARENT, TRUE)
+        }
 
         // Add camera preview
         parent.addView(textureView, index, cameraParam)
