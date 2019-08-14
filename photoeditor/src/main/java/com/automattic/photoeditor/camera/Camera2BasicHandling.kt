@@ -48,9 +48,9 @@ import android.view.Surface
 import android.view.TextureView
 import android.view.View
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.Fragment
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.R
+import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
 import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.io.File
@@ -63,7 +63,7 @@ import kotlin.collections.ArrayList
 
 @JvmField val PIC_FILE_NAME = "pic.jpg"
 
-class Camera2BasicHandling : Fragment(), View.OnClickListener, SurfaceFragmentHandler {
+class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
     /**
      * [TextureView.SurfaceTextureListener] handles several lifecycle events on a
      * [TextureView].
@@ -88,11 +88,6 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener, SurfaceFragmentHa
      * ID of the current [CameraDevice].
      */
     private lateinit var cameraId: String
-
-    /**
-     * An [AutoFitTextureView] for camera preview.
-     */
-    lateinit var textureView: AutoFitTextureView
 
     private var active: Boolean = false
 
@@ -198,8 +193,6 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener, SurfaceFragmentHa
     * Media recorder
     * */
     private var mediaRecorder: MediaRecorder = MediaRecorder()
-
-    var currentFile: File? = null
 
     /**
      * A [CameraCaptureSession.CaptureCallback] that handles events related to JPEG capture.
@@ -753,7 +746,7 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener, SurfaceFragmentHa
     /**
      * Creates a new [CameraCaptureSession] for actual video recording.
      */
-    fun createCameraRecordingSession() {
+    override fun startRecordingVideo() {
         try {
             closePreviewSession()
             setUpMediaRecorder()
@@ -811,7 +804,7 @@ class Camera2BasicHandling : Fragment(), View.OnClickListener, SurfaceFragmentHa
         }
     }
 
-    fun stopRecordingVideo() {
+    override fun stopRecordingVideo() {
         captureSession?.apply {
             stopRepeating()
             abortCaptures()

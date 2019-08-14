@@ -42,3 +42,40 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 }
+
+android.buildTypes.all { buildType ->
+    // Add properties named "portkey.xxx" to our BuildConfig
+    def inputFile = checkGradlePropertiesFile()
+    def properties = loadPropertiesFromFile(inputFile)
+    properties.any { property ->
+        if (property.key.toLowerCase().startsWith("portkey.use.")) {
+            buildType.buildConfigField "boolean", property.key.replace("portkey.", "").replace(".", "_").toUpperCase(),
+                    "${property.value}"
+        }
+        else if (property.key.toLowerCase().startsWith("portkey.")) {
+            buildType.buildConfigField "String", property.key.replace("portkey.", "").replace(".", "_").toUpperCase(),
+                    "\"${property.value}\""
+        }
+        else if (property.key.toLowerCase().startsWith("portkey.res.")) {
+            buildType.resValue "string", property.key.replace("portkey.res.", "").replace(".", "_").toLowerCase(),
+                    "${property.value}"
+        }
+    }
+}
+
+def checkGradlePropertiesFile() {
+    def inputFile = file("${rootDir}/gradle.properties")
+    if (!inputFile.exists()) {
+        throw new StopActionException("Build configuration file gradle.properties doesn't exist, follow README instructions")
+    }
+    return inputFile
+}
+
+static def loadPropertiesFromFile(inputFile) {
+    def properties = new Properties()
+    inputFile.withInputStream { stream ->
+        properties.load(stream)
+    }
+    return properties
+}
+

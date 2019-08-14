@@ -18,6 +18,7 @@ import com.automattic.photoeditor.state.BackgroundSurfaceManager
 import com.automattic.photoeditor.util.FileUtils.Companion.getLoopFrameFile
 import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.ViewType
+import com.automattic.portkey.BuildConfig
 import com.automattic.portkey.R
 import com.automattic.portkey.R.color
 import com.automattic.portkey.R.id
@@ -86,7 +87,9 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             savedInstanceState,
             lifecycle,
             photoEditorView,
-            supportFragmentManager)
+            supportFragmentManager,
+            BuildConfig.USE_CAMERAX)
+
         lifecycle.addObserver(backgroundSurfaceManager)
     }
 
