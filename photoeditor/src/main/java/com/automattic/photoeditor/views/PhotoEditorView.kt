@@ -130,7 +130,6 @@ class PhotoEditorView : RelativeLayout {
         // set main listener
         autoFitTextureView.surfaceTextureListener = surfaceTextureListener
 
-
         // Setup brush view
         brushDrawingView = BrushDrawingView(context)
         brushDrawingView.visibility = View.GONE
