@@ -5,6 +5,11 @@
     <dimen name="round_button_medium">64dp</dimen>
     <dimen name="round_button_large">92dp</dimen>
 
+    <dimen name="normal_button_small">24dp</dimen>
+    <dimen name="normal_button_margin">2dp</dimen>
+    <dimen name="top_button_group_margin">16dp</dimen>
+    <dimen name="margin_among_buttons">25dp</dimen>
+
     <dimen name="shutter_button_margin">80dp</dimen>
 
 </resources>
