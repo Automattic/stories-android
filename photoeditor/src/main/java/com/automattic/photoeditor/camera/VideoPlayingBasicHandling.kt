@@ -19,7 +19,6 @@ package com.automattic.photoeditor.camera
 import android.graphics.SurfaceTexture
 import android.os.Bundle
 import android.util.Log
-import android.util.Size
 import android.view.Surface
 import android.view.TextureView
 import java.io.File
@@ -63,27 +62,11 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler {
 
     private var active: Boolean = false
 
-    /**
-     * The [android.util.Size] of camera preview.
-     */
-    private lateinit var previewSize: Size
-
-    /**
-     * This is the output file for our picture.
-     */
-    private lateinit var file: File
-
     private var mediaPlayer: MediaPlayer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         retainInstance = true
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
-        file = File(activity?.getExternalFilesDir(null), PIC_FILE_NAME)
     }
 
     override fun onResume() {

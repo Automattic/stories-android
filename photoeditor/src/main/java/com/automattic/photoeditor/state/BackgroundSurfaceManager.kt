@@ -1,6 +1,5 @@
 package com.automattic.photoeditor.state
 
-import android.app.Activity
 import android.os.Bundle
 import android.os.Handler
 import androidx.fragment.app.FragmentManager
@@ -17,6 +16,7 @@ import androidx.lifecycle.OnLifecycleEvent
 import com.automattic.photoeditor.camera.Camera2BasicHandling
 import com.automattic.photoeditor.camera.CameraXBasicHandling
 import com.automattic.photoeditor.camera.VideoPlayingBasicHandling
+import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
 import com.automattic.photoeditor.state.BackgroundSurfaceManager.SurfaceHandlerType.CAMERA2
 import com.automattic.photoeditor.state.BackgroundSurfaceManager.SurfaceHandlerType.CAMERAX
@@ -25,7 +25,6 @@ import com.automattic.photoeditor.views.PhotoEditorView
 import java.io.File
 
 class BackgroundSurfaceManager(
-    private val activity: Activity,
     private val savedInstanceState: Bundle?,
     private val lifeCycle: Lifecycle,
     private val photoEditorView: PhotoEditorView,
@@ -194,8 +193,12 @@ class BackgroundSurfaceManager(
         cameraBasicHandler.stopRecordingVideo()
     }
 
-    fun getCurrentVideoFile(): File? {
-        return cameraBasicHandler.currentFile
+    fun takePicture(listener: ImageCaptureListener) {
+        cameraBasicHandler.takePicture(listener)
+    }
+
+    fun getCurrentFile(): File? {
+            return cameraBasicHandler.currentFile
     }
 
     private fun getStateFromBundle() {

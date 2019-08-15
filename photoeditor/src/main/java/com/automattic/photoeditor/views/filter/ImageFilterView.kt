@@ -104,7 +104,7 @@ internal class ImageFilterView : GLSurfaceView, GLSurfaceView.Renderer {
         setFilterEffect(NONE)
     }
 
-    fun setSourceBitmap(sourceBitmap: Bitmap) {
+    fun setSourceBitmap(sourceBitmap: Bitmap?) {
         mSourceBitmap = sourceBitmap
         mInitialized = false
     }

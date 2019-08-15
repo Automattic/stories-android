@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat
 import com.automattic.photoeditor.OnPhotoEditorListener
 import com.automattic.photoeditor.PhotoEditor
 import com.automattic.photoeditor.SaveSettings
+import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 import com.automattic.photoeditor.state.BackgroundSurfaceManager
 import com.automattic.photoeditor.util.FileUtils.Companion.getLoopFrameFile
 import com.automattic.photoeditor.util.PermissionUtils
@@ -24,6 +25,7 @@ import com.automattic.portkey.R.color
 import com.automattic.portkey.R.id
 import com.automattic.portkey.R.layout
 import com.automattic.portkey.R.string
+import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_composer.*
 
@@ -83,7 +85,6 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         })
 
         backgroundSurfaceManager = BackgroundSurfaceManager(
-            this,
             savedInstanceState,
             lifecycle,
             photoEditorView,
@@ -150,6 +151,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             }
             id.action_bkg_play_video -> {
                 testPlayVideo()
+                true
+            }
+            id.action_bkg_take_picture -> {
+                testTakeStillPicture()
                 true
             }
 
@@ -220,11 +225,29 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         backgroundSurfaceManager.switchStaticImageBackgroundModeOn()
     }
 
+    private fun testTakeStillPicture() {
+        txtCurrentTool.setText(string.main_test_take_picture)
+        backgroundSurfaceManager.takePicture(object : ImageCaptureListener {
+            override fun onImageSaved(file: File) {
+                runOnUiThread {
+                    Glide.with(this@ComposeLoopFrameActivity)
+                        .load(file)
+                        .into(photoEditorView.source)
+
+                    backgroundSurfaceManager.switchStaticImageBackgroundModeOn()
+                }
+            }
+            override fun onError(message: String, cause: Throwable?) {
+                // TODO implement error handling
+            }
+        })
+    }
+
     // this one saves one composed unit: ether an Image or a Video
     private fun saveLoopFrame() {
         // check wether we have an Image or a Video, and call its save functionality accordingly
         if (backgroundSurfaceManager.cameraVisible() || backgroundSurfaceManager.videoPlayerVisible()) {
-            saveVideo(backgroundSurfaceManager.getCurrentVideoFile().toString())
+            saveVideo(backgroundSurfaceManager.getCurrentFile().toString())
         } else {
             // check whether there are any GIF stickers - if there are, we need to produce a video instead
             if (photoEditor.anyStickersAdded()) {

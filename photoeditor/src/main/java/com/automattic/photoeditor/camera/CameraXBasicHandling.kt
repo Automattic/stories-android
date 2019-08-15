@@ -2,13 +2,21 @@ package com.automattic.photoeditor.camera
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.DisplayMetrics
 import android.util.Log
+import android.util.Rational
 import android.view.ViewGroup
 import androidx.camera.core.CameraX
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCapture.CaptureMode
+import androidx.camera.core.ImageCapture.Metadata
+import androidx.camera.core.ImageCapture.UseCaseError
+import androidx.camera.core.ImageCaptureConfig
 import androidx.camera.core.Preview
 import androidx.camera.core.PreviewConfig
 import androidx.camera.core.VideoCapture
 import androidx.camera.core.VideoCaptureConfig
+import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
@@ -17,6 +25,8 @@ import java.io.File
 class CameraXBasicHandling : VideoRecorderFragment() {
     private lateinit var videoCapture: VideoCapture
     private lateinit var videoPreview: Preview
+    private lateinit var imageCapture: ImageCapture
+    private var lensFacing = CameraX.LensFacing.BACK
 
     private var active: Boolean = false
 
@@ -50,15 +60,43 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     private fun windDown() {
         videoPreview.clear()
         videoCapture.clear()
+        imageCapture.clear()
         CameraX.unbindAll()
     }
 
     // TODO remove this RestrictedApi annotation once androidx.camera:camera moves out of alpha
     @SuppressLint("RestrictedApi")
     private fun startCamera() {
+        // Get screen metrics used to setup camera for full screen resolution
+        val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
+        val screenAspectRatio = Rational(metrics.widthPixels, metrics.heightPixels)
+        Log.d(TAG, "Screen metrics: ${metrics.widthPixels} x ${metrics.heightPixels}")
+
         // Create configuration object for the preview use case
-        val previewConfig = PreviewConfig.Builder().build()
+        val previewConfig = PreviewConfig.Builder().apply {
+            setLensFacing(lensFacing)
+            // We request aspect ratio but no r esolution to let CameraX optimize our use cases
+            setTargetAspectRatio(screenAspectRatio)
+            // Set initial target rotation, we will have to call this again if rotation changes
+            // during the lifecycle of this use case
+            setTargetRotation(textureView.display.rotation)
+        }.build()
+
         videoPreview = Preview(previewConfig)
+
+        // Set up the capture use case to allow users to take photos
+        val imageCaptureConfig = ImageCaptureConfig.Builder().apply {
+            setLensFacing(lensFacing)
+            setCaptureMode(CaptureMode.MIN_LATENCY)
+            // We request aspect ratio but no resolution to match preview config but letting
+            // CameraX optimize for whatever specific resolution best fits requested capture mode
+            setTargetAspectRatio(screenAspectRatio)
+            // Set initial target rotation, we will have to call this again if rotation changes
+            // during the lifecycle of this use case
+            setTargetRotation(textureView.display.rotation)
+        }.build()
+
+        imageCapture = ImageCapture(imageCaptureConfig)
 
         // Create a configuration object for the video capture use case
         val videoCaptureConfig = VideoCaptureConfig.Builder().apply {
@@ -90,7 +128,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         }
 
         // Bind use cases to lifecycle
-        CameraX.bindToLifecycle(activity, videoPreview, videoCapture)
+        CameraX.bindToLifecycle(activity, videoPreview, videoCapture, imageCapture)
     }
 
     @SuppressLint("RestrictedApi")
@@ -111,6 +149,29 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     @SuppressLint("RestrictedApi")
     override fun stopRecordingVideo() {
         videoCapture.stopRecording()
+    }
+
+    override fun takePicture(onImageCapturedListener: ImageCaptureListener) {
+        // Create output file to hold the image
+        currentFile = FileUtils.getLoopFrameFile(false, "orig_")
+        currentFile?.createNewFile()
+
+        // Setup image capture metadata
+        val metadata = Metadata().apply {
+            // Mirror image when using the front camera
+            isReversedHorizontal = lensFacing == CameraX.LensFacing.FRONT
+        }
+
+        // Setup image capture listener which is triggered after photo has been taken
+        imageCapture.takePicture(currentFile, object : ImageCapture.OnImageSavedListener {
+            override fun onImageSaved(file: File) {
+                onImageCapturedListener.onImageSaved(file)
+            }
+
+            override fun onError(useCaseError: UseCaseError, message: String, cause: Throwable?) {
+                onImageCapturedListener.onError(message, cause)
+            }
+        }, metadata)
     }
 
     companion object {
