@@ -5,9 +5,8 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        tools:showIn="@layout/activity_main"
-        tools:context=".MainActivity">
+        tools:showIn="@layout/activity_composer"
+        tools:context=".compose.ComposeLoopFrameActivity">
 
     <com.automattic.photoeditor.views.PhotoEditorView
         android:id="@+id/photoEditorView"
@@ -34,13 +33,12 @@
     <!-- Gradient  -->
     <View
         android:id="@+id/gradient_"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="72dp"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
         android:background="@drawable/top_gradient"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         />
 
     <LinearLayout
@@ -64,6 +62,7 @@
                 android:layout_gravity="center_horizontal"
                 android:background="@drawable/ic_flash_off_black_24dp"
                 android:contentDescription="@string/flash_button_alt"
+                android:backgroundTint="@color/white"
                 android:scaleType="fitCenter"/>
             <TextView
                 android:layout_height="wrap_content"
@@ -83,6 +82,7 @@
                 android:layout_margin="@dimen/normal_button_margin"
                 android:layout_gravity="center_horizontal"
                 android:background="@drawable/ic_cameraflip"
+                android:backgroundTint="@color/white"
                 android:contentDescription="@string/flip_button_alt"
                 android:scaleType="fitCenter"/>
             <TextView
