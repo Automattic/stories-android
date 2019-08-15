@@ -48,7 +48,6 @@ import android.util.SparseIntArray
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
-import androidx.camera.core.ImageCapture.OnImageCapturedListener
 import androidx.core.content.ContextCompat
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.R
