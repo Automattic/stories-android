@@ -152,30 +152,26 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     }
 
     override fun takePicture(onImageCapturedListener: ImageCaptureListener) {
-        // Get a stable reference of the modifiable image capture use case
-        imageCapture?.let { imageCapture ->
+        // Create output file to hold the image
+        currentFile = FileUtils.getLoopFrameFile(false, "orig_")
+        currentFile?.createNewFile()
 
-            // Create output file to hold the image
-            currentFile = FileUtils.getLoopFrameFile(false, "orig_")
-            currentFile?.createNewFile()
+        // Setup image capture metadata
+        val metadata = Metadata().apply {
+            // Mirror image when using the front camera
+            isReversedHorizontal = lensFacing == CameraX.LensFacing.FRONT
+        }
 
-            // Setup image capture metadata
-            val metadata = Metadata().apply {
-                // Mirror image when using the front camera
-                isReversedHorizontal = lensFacing == CameraX.LensFacing.FRONT
+        // Setup image capture listener which is triggered after photo has been taken
+        imageCapture.takePicture(currentFile, object : ImageCapture.OnImageSavedListener {
+            override fun onImageSaved(file: File) {
+                onImageCapturedListener.onImageSaved(file)
             }
 
-            // Setup image capture listener which is triggered after photo has been taken
-            imageCapture.takePicture(currentFile, object : ImageCapture.OnImageSavedListener {
-                override fun onImageSaved(file: File) {
-                    onImageCapturedListener.onImageSaved(file)
-                }
-
-                override fun onError(useCaseError: UseCaseError, message: String, cause: Throwable?) {
-                    onImageCapturedListener.onError(message, cause)
-                }
-            }, metadata)
-        }
+            override fun onError(useCaseError: UseCaseError, message: String, cause: Throwable?) {
+                onImageCapturedListener.onError(message, cause)
+            }
+        }, metadata)
     }
 
     companion object {
