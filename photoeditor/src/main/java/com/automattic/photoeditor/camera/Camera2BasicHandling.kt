@@ -658,7 +658,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
             }
         } catch (e: CameraAccessException) {
             Log.e(TAG, e.toString())
-            imageCapturedListener?.onError(e.message!!, e)
+            imageCapturedListener?.onError(e.message.orEmpty(), e)
         }
     }
 
