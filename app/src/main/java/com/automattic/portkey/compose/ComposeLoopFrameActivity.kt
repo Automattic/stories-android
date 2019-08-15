@@ -229,13 +229,13 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         txtCurrentTool.setText(string.main_test_take_picture)
         backgroundSurfaceManager.takePicture(object : ImageCaptureListener {
             override fun onImageSaved(file: File) {
-                runOnUiThread({
+                runOnUiThread {
                     Glide.with(this@ComposeLoopFrameActivity)
                         .load(file)
                         .into(photoEditorView.source)
 
                     backgroundSurfaceManager.switchStaticImageBackgroundModeOn()
-                })
+                }
             }
             override fun onError(message: String, cause: Throwable?) {
                 // TODO implement error handling
