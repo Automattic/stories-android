@@ -16,6 +16,7 @@ import androidx.camera.core.Preview
 import androidx.camera.core.PreviewConfig
 import androidx.camera.core.VideoCapture
 import androidx.camera.core.VideoCaptureConfig
+import com.automattic.photoeditor.camera.interfaces.FlashState
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
 import com.automattic.photoeditor.util.FileUtils
@@ -197,6 +198,22 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         } catch (exc: Exception) {
             // Do nothing
         }
+    }
+
+    override fun advanceFlashState() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun setFlashState(flashState: FlashState) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun isFlashAvailable(): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun currentFlashState(): FlashState {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     companion object {

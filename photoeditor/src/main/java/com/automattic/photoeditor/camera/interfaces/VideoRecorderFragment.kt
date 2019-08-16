@@ -9,6 +9,7 @@ abstract class VideoRecorderFragment : Fragment(),
     VideoRecorderHandler,
     ImageCaptureHandler,
     CameraFlipHandler,
+    CameraFlashStateHandler,
     SurfaceFragmentHandler {
     /**
      * An [AutoFitTextureView] for camera preview.

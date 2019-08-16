@@ -138,6 +138,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         camera_flip_button.setOnClickListener {
             backgroundSurfaceManager.flipCamera()
         }
+
+        camera_flash_button.setOnClickListener{
+            backgroundSurfaceManager.switchFlashState()
+        }
     }
 
     private fun testBrush() {

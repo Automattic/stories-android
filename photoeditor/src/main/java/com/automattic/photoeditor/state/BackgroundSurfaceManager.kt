@@ -137,6 +137,12 @@ class BackgroundSurfaceManager(
         }
     }
 
+    fun switchFlashState() {
+        if (isCameraVisible) {
+            // TODO advance the flash control state
+        }
+    }
+
     fun switchVideoPlayerOn() {
         // in case the Camera was being visible, set if off
         isVideoPlayerVisible = true
