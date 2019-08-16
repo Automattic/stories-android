@@ -1,10 +1,12 @@
 package com.automattic.portkey
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.Navigation
+import com.automattic.portkey.intro.IntroActivity
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionListener {
@@ -17,6 +19,12 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
+        if (isFirstLaunch) {
+            startActivity(Intent(this, IntroActivity::class.java))
+            isFirstLaunch = false
+            finish()
+        }
+
         fab.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show()
@@ -27,4 +35,8 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
 
     override fun onSupportNavigateUp() =
         Navigation.findNavController(this, R.id.nav_host_fragment).navigateUp()
+
+    companion object {
+        private var isFirstLaunch = true
+    }
 }
