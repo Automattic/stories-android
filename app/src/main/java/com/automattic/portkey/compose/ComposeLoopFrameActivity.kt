@@ -139,8 +139,12 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             backgroundSurfaceManager.flipCamera()
         }
 
-        camera_flash_button.setOnClickListener{
-            backgroundSurfaceManager.switchFlashState()
+        if (backgroundSurfaceManager.isFlashAvailable()) {
+            camera_flash_button.setOnClickListener{
+                backgroundSurfaceManager.switchFlashState()
+            }
+        } else {
+            camera_flash_button.visibility = View.GONE
         }
     }
 

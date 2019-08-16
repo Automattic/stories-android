@@ -139,8 +139,12 @@ class BackgroundSurfaceManager(
 
     fun switchFlashState() {
         if (isCameraVisible) {
-            // TODO advance the flash control state
+            cameraBasicHandler.advanceFlashState()
         }
+    }
+
+    fun isFlashAvailable(): Boolean {
+        return cameraBasicHandler.isFlashAvailable()
     }
 
     fun switchVideoPlayerOn() {
