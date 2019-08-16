@@ -52,7 +52,7 @@ import android.view.View
 import androidx.core.content.ContextCompat
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.R
-import com.automattic.photoeditor.camera.interfaces.FlashState
+import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
 import com.automattic.photoeditor.util.PermissionUtils
@@ -847,7 +847,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun setFlashState(flashState: FlashState) {
+    override fun setFlashState(flashIndicatorState: FlashIndicatorState) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
@@ -855,7 +855,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun currentFlashState(): FlashState {
+    override fun currentFlashState(): FlashIndicatorState {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
