@@ -9,4 +9,5 @@
 
     <!-- Intro -->
     <dimen name="promo_indicator_bullet_size">4dp</dimen>
+    <dimen name="promo_message_side_margin_size">24dp</dimen>
 </resources>

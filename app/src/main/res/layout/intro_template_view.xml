@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_centerInParent="true"
+    android:gravity="center_horizontal|center_vertical">
+
+    <View
+        android:id="@+id/view_image"
+        android:layout_width="200dp"
+        android:layout_height="300dp"
+        android:layout_gravity="center_horizontal"
+        android:background="@color/lighter_gray" />
+
+    <TextView
+        style="@style/IntroTheme.PromoText"
+        android:id="@+id/promo_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="70dp"
+        android:minLines="3"
+        tools:text="Save and share all the things that make you, you."
+        android:layout_marginStart="@dimen/promo_message_side_margin_size"
+        android:layout_marginEnd="@dimen/promo_message_side_margin_size"/>
+</LinearLayout>

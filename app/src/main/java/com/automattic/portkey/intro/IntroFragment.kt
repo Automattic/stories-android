@@ -22,5 +22,10 @@ class IntroFragment : Fragment() {
             startActivity(Intent(activity, MainActivity::class.java))
             activity?.finish()
         }
+
+        intro_pager.adapter = IntroPagerAdapter(childFragmentManager)
+
+        // Using a TabLayout for simulating a page indicator strip
+        tab_layout_indicator.setupWithViewPager(intro_pager, true)
     }
 }
