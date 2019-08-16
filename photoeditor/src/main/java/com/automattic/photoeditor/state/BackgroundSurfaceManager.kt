@@ -123,14 +123,12 @@ class BackgroundSurfaceManager(
     }
 
     fun switchCameraPreviewOn() {
-        if (!isCameraVisible) {
-            isCameraVisible = true
-            isVideoPlayerVisible = false
-            // now, start showing camera preview
-            photoEditorView.turnTextureViewOn()
-            cameraBasicHandler.activate()
-            videoPlayerHandling.deactivate()
-        }
+        isCameraVisible = true
+        isVideoPlayerVisible = false
+        // now, start showing camera preview
+        photoEditorView.turnTextureViewOn()
+        cameraBasicHandler.activate()
+        videoPlayerHandling.deactivate()
     }
 
     fun switchVideoPlayerOn() {
