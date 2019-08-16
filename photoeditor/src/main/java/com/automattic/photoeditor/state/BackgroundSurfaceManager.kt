@@ -123,17 +123,10 @@ class BackgroundSurfaceManager(
     }
 
     fun switchCameraPreviewOn() {
-        if (isCameraVisible) {
-            // camera preview is ON
-            if (!isCameraRecording) {
-                startRecordingVideo()
-            } else {
-                stopRecordingVideo()
-            }
-        } else {
+        if (!isCameraVisible) {
             isCameraVisible = true
             isVideoPlayerVisible = false
-            // now, start playing video
+            // now, start showing camera preview
             photoEditorView.turnTextureViewOn()
             cameraBasicHandler.activate()
             videoPlayerHandling.deactivate()
@@ -180,17 +173,21 @@ class BackgroundSurfaceManager(
     }
 
     fun startRecordingVideo() {
-        // let's start recording
-        isCameraRecording = true
-        // TODO txtRecording.visibility = View.VISIBLE
-        cameraBasicHandler.startRecordingVideo()
+        if (isCameraVisible) {
+            // let's start recording
+            isCameraRecording = true
+            // TODO txtRecording.visibility = View.VISIBLE
+            cameraBasicHandler.startRecordingVideo()
+        }
     }
 
     fun stopRecordingVideo() {
-        // stop recording
-        isCameraRecording = false
-        // TODO txtRecording.visibility = View.GONE
-        cameraBasicHandler.stopRecordingVideo()
+        if (isCameraRecording) {
+            // stop recording
+            isCameraRecording = false
+            // TODO txtRecording.visibility = View.GONE
+            cameraBasicHandler.stopRecordingVideo()
+        }
     }
 
     fun takePicture(listener: ImageCaptureListener) {

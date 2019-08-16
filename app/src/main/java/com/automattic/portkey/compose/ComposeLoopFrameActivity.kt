@@ -33,6 +33,8 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     private lateinit var photoEditor: PhotoEditor
     private lateinit var backgroundSurfaceManager: BackgroundSurfaceManager
     private var progressDialog: ProgressDialog? = null
+    private val CAMERA_PREVIEW_LAUNCH_DELAY = 500L
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,6 +87,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             BuildConfig.USE_CAMERAX)
 
         lifecycle.addObserver(backgroundSurfaceManager)
+
+        photoEditorView.postDelayed({
+            launchCameraPreview()
+        }, CAMERA_PREVIEW_LAUNCH_DELAY)
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -96,7 +102,6 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         super.onResume()
         // Before setting full screen flags, we must wait a bit to let UI settle; otherwise, we may
         // be trying to set app to immersive mode before it's ready and the flags do not stick
-        // This example uses decor view, but you can use any visible view.
         photoEditorView.postDelayed({
                 hideSystemUI(window)
         }, IMMERSIVE_FLAG_TIMEOUT)
@@ -147,7 +152,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         photoEditor.addNewImageView(true, Uri.parse("https://i.giphy.com/Ok4HaWlYrewuY.gif"))
     }
 
-    private fun testCameraPreview() {
+    private fun launchCameraPreview() {
         if (!PermissionUtils.checkPermission(this, Manifest.permission.RECORD_AUDIO) ||
             !PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) ||
             !PermissionUtils.checkPermission(this, Manifest.permission.CAMERA)) {
