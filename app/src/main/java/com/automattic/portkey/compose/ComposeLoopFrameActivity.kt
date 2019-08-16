@@ -31,8 +31,6 @@ import kotlinx.android.synthetic.main.content_composer.*
 import java.io.File
 import java.io.IOException
 
-
-
 class ComposeLoopFrameActivity : AppCompatActivity() {
     private lateinit var photoEditor: PhotoEditor
     private lateinit var backgroundSurfaceManager: BackgroundSurfaceManager
@@ -127,7 +125,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     private fun addClickListeners() {
-        camera_capture_button.setOnClickListener{
+        camera_capture_button.setOnClickListener {
             // capture still image
             takeStillPicture()
         }
