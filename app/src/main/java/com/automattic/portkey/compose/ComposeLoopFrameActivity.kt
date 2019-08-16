@@ -22,12 +22,16 @@ import com.automattic.portkey.R.color
 import com.automattic.portkey.R.layout
 import com.automattic.portkey.R.string
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_composer.*
 
 import kotlinx.android.synthetic.main.content_composer.*
 import java.io.File
 import java.io.IOException
+
+
 
 class ComposeLoopFrameActivity : AppCompatActivity() {
     private lateinit var photoEditor: PhotoEditor
@@ -191,6 +195,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 runOnUiThread {
                     Glide.with(this@ComposeLoopFrameActivity)
                         .load(file)
+                        .transform(CenterCrop(), RoundedCorners(16))
                         .into(gallery_upload_img)
                 }
             }
