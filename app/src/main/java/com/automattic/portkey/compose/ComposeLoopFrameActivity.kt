@@ -35,7 +35,6 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     private var progressDialog: ProgressDialog? = null
     private val CAMERA_PREVIEW_LAUNCH_DELAY = 500L
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(layout.activity_composer)
