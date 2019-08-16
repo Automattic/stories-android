@@ -12,12 +12,16 @@ import androidx.core.content.ContextCompat
 import com.automattic.photoeditor.OnPhotoEditorListener
 import com.automattic.photoeditor.PhotoEditor
 import com.automattic.photoeditor.SaveSettings
+import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.AUTO
+import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.OFF
+import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.ON
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 import com.automattic.photoeditor.state.BackgroundSurfaceManager
 import com.automattic.photoeditor.util.FileUtils.Companion.getLoopFrameFile
 import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.ViewType
 import com.automattic.portkey.BuildConfig
+import com.automattic.portkey.R
 import com.automattic.portkey.R.color
 import com.automattic.portkey.R.layout
 import com.automattic.portkey.R.string
@@ -25,7 +29,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.activity_composer.*
 
 import kotlinx.android.synthetic.main.content_composer.*
 import java.io.File
@@ -54,7 +57,6 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 textEditorDialogFragment.setOnTextEditorListener(object : TextEditorDialogFragment.TextEditor {
                     override fun onDone(inputText: String, colorCode: Int) {
                         photoEditor.editText(rootView, inputText, colorCode)
-                        txtCurrentTool.setText(string.label_tool_text)
                     }
                 })
             }
@@ -139,36 +141,40 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             backgroundSurfaceManager.flipCamera()
         }
 
-        if (backgroundSurfaceManager.isFlashAvailable()) {
-            camera_flash_button.setOnClickListener{
-                backgroundSurfaceManager.switchFlashState()
+        // attach listener a bit delayed as we need to have cameraBasicHandling created first
+        photoEditorView.postDelayed({
+            if (backgroundSurfaceManager.isFlashAvailable()) {
+                camera_flash_button.setOnClickListener {
+                    val flashState = backgroundSurfaceManager.switchFlashState()
+                    when (flashState) {
+                        AUTO -> camera_flash_button.background = getDrawable(R.drawable.ic_flash_auto_black_24dp)
+                        ON -> camera_flash_button.background = getDrawable(R.drawable.ic_flash_on_black_24dp)
+                        OFF -> camera_flash_button.background = getDrawable(R.drawable.ic_flash_off_black_24dp)
+                    }
+                }
+            } else {
+                camera_flash_button.visibility = View.GONE
             }
-        } else {
-            camera_flash_button.visibility = View.GONE
-        }
+        }, CAMERA_PREVIEW_LAUNCH_DELAY)
     }
 
     private fun testBrush() {
-        txtCurrentTool.setText(string.label_tool_brush)
         photoEditor.setBrushDrawingMode(true)
         photoEditor.brushColor = ContextCompat.getColor(baseContext, color.red)
     }
 
     private fun testEraser() {
-        txtCurrentTool.setText(string.label_tool_eraser)
         photoEditor.setBrushDrawingMode(false)
         photoEditor.brushEraser()
     }
 
     private fun testText() {
-        txtCurrentTool.setText("")
         photoEditor.addText(
             text = getString(string.text_placeholder),
             colorCodeTextView = ContextCompat.getColor(baseContext, color.white))
     }
 
     private fun testEmoji() {
-        txtCurrentTool.setText("")
         val emojisList = PhotoEditor.getEmojis(this)
         // get some random emoji
         val randomEmojiPos = (0..emojisList.size).shuffled().first()
@@ -176,7 +182,6 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     private fun testSticker() {
-        txtCurrentTool.setText("")
         photoEditor.addNewImageView(true, Uri.parse("https://i.giphy.com/Ok4HaWlYrewuY.gif"))
     }
 
@@ -193,22 +198,18 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             return
         }
 
-        txtCurrentTool.setText(string.main_test_camera_preview)
         backgroundSurfaceManager.switchCameraPreviewOn()
     }
 
     private fun testPlayVideo() {
-        txtCurrentTool.setText(string.main_test_play_video)
         backgroundSurfaceManager.switchVideoPlayerOn()
     }
 
     private fun testStaticBackground() {
-        txtCurrentTool.setText(string.main_test_static_background)
         backgroundSurfaceManager.switchStaticImageBackgroundModeOn()
     }
 
     private fun takeStillPicture() {
-        txtCurrentTool.setText(string.main_test_take_picture)
         backgroundSurfaceManager.takePicture(object : ImageCaptureListener {
             override fun onImageSaved(file: File) {
                 runOnUiThread {

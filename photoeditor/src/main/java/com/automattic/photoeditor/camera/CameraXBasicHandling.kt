@@ -229,7 +229,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     }
 
     // helper method to get CameraX flash mode from CameraFlashStateHandler.FlashIndicatorState enum
-    private fun flashModeFromPortkeyFlashState(flashIndicatorState: FlashIndicatorState) : FlashMode {
+    private fun flashModeFromPortkeyFlashState(flashIndicatorState: FlashIndicatorState): FlashMode {
         return when (flashIndicatorState) {
             AUTO -> FlashMode.AUTO
             ON -> FlashMode.ON

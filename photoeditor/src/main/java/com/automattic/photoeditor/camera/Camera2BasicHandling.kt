@@ -49,6 +49,7 @@ import android.util.SparseIntArray
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.R
@@ -844,19 +845,23 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
     }
 
     override fun advanceFlashState() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        // TODO implement
+        Toast.makeText(context, "not implemented yet", Toast.LENGTH_SHORT).show()
     }
 
     override fun setFlashState(flashIndicatorState: FlashIndicatorState) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        // TODO implement
+        Toast.makeText(context, "not implemented yet", Toast.LENGTH_SHORT).show()
     }
 
     override fun isFlashAvailable(): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        // TODO implement
+        Toast.makeText(context, "not implemented yet", Toast.LENGTH_SHORT).show()
     }
 
     override fun currentFlashState(): FlashIndicatorState {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        // TODO implement
+        Toast.makeText(context, "not implemented yet", Toast.LENGTH_SHORT).show()
     }
 
     companion object {

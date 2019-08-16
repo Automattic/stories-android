@@ -8,16 +8,4 @@
 
     <include layout="@layout/content_composer"/>
 
-    <TextView
-        android:id="@+id/txtCurrentTool"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top|right"
-        android:layout_marginTop="?attr/actionBarSize"
-        android:textSize="24sp"
-        android:textColor="@color/white"
-        android:background="@color/black_transp"
-        />
-
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
