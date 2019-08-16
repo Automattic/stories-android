@@ -10,7 +10,7 @@
     <dimen name="top_button_group_margin">16dp</dimen>
     <dimen name="margin_among_buttons">25dp</dimen>
 
-    <dimen name="shutter_button_margin">80dp</dimen>
+    <dimen name="shutter_button_margin">45dp</dimen>
 
     <dimen name="gradient_top_height">72dp</dimen>
     <dimen name="gradient_bottom_height">152dp</dimen>
