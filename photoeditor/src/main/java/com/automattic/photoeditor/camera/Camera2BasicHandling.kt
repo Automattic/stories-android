@@ -183,6 +183,8 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
      */
     private var sensorOrientation = 0
 
+    private var lensFacing = CameraMetadata.LENS_FACING_BACK
+
     /*
     * Media recorder
     * */
@@ -308,10 +310,8 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
             for (cameraId in manager.cameraIdList) {
                 val characteristics = manager.getCameraCharacteristics(cameraId)
 
-                // We don't use a front facing camera in this sample.
                 val cameraDirection = characteristics.get(CameraCharacteristics.LENS_FACING)
-                if (cameraDirection != null &&
-                        cameraDirection == CameraCharacteristics.LENS_FACING_FRONT) {
+                if (cameraDirection != null && lensFacing != cameraDirection) {
                     continue
                 }
 
@@ -831,7 +831,13 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
     }
 
     override fun flipCamera() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        lensFacing = if (CameraMetadata.LENS_FACING_FRONT == lensFacing) {
+            CameraMetadata.LENS_FACING_BACK
+        } else {
+            CameraMetadata.LENS_FACING_FRONT
+        }
+        windDown()
+        startUp()
     }
 
     companion object {
