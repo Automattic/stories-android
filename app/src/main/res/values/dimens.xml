@@ -1,3 +1,12 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
+
+    <dimen name="margin_extra_small">2dp</dimen>
+    <dimen name="margin_medium">8dp</dimen>
+    <dimen name="margin_extra_large">16dp</dimen>
+
+    <dimen name="button_height">64dp</dimen>
+
+    <!-- Intro -->
+    <dimen name="promo_indicator_bullet_size">4dp</dimen>
 </resources>

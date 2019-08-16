@@ -21,4 +21,7 @@
     <string name="text_placeholder">your text here</string>
 
     <string name="main_placeholder">Expect a list of Loops to be shown on this screen</string>
+
+    <!-- Intro -->
+    <string name="get_started">Get Started</string>
 </resources>
