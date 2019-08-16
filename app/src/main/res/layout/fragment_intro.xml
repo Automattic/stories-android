@@ -11,6 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/bottom_button"
+        android:overScrollMode="never"
         android:clipToPadding="false"/>
 
     <com.google.android.material.tabs.TabLayout
