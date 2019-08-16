@@ -42,6 +42,7 @@ import android.media.MediaRecorder
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
+import android.util.DisplayMetrics
 import android.util.Log
 import android.util.Size
 import android.util.SparseIntArray
@@ -335,8 +336,9 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
                 sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION) ?: continue
                 val swappedDimensions = areDimensionsSwapped(displayRotation)
 
-                val displaySize = Point()
-                activity?.windowManager?.defaultDisplay?.getSize(displaySize)
+                val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
+                val displaySize = Point(metrics.widthPixels, metrics.heightPixels)
+
                 val rotatedPreviewWidth = if (swappedDimensions) height else width
                 val rotatedPreviewHeight = if (swappedDimensions) width else height
                 var maxPreviewWidth = if (swappedDimensions) displaySize.y else displaySize.x
