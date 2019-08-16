@@ -2,6 +2,7 @@ package com.automattic.portkey.intro
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.navigation.Navigation
 import com.automattic.portkey.R.id
 import com.automattic.portkey.R.layout
@@ -12,6 +13,7 @@ class IntroActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(layout.activity_intro)
         setSupportActionBar(toolbar)
+        window.statusBarColor = ContextCompat.getColor(this, android.R.color.white)
     }
 
     override fun onSupportNavigateUp() =
