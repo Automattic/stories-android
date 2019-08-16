@@ -88,6 +88,12 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
         lifecycle.addObserver(backgroundSurfaceManager)
 
+        // add click listeners
+        camera_capture_button.setOnClickListener({
+            // capture still image
+            takeStillPicture()
+        })
+
         photoEditorView.postDelayed({
             launchCameraPreview()
         }, CAMERA_PREVIEW_LAUNCH_DELAY)
@@ -179,17 +185,15 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         backgroundSurfaceManager.switchStaticImageBackgroundModeOn()
     }
 
-    private fun testTakeStillPicture() {
+    private fun takeStillPicture() {
         txtCurrentTool.setText(string.main_test_take_picture)
         backgroundSurfaceManager.takePicture(object : ImageCaptureListener {
             override fun onImageSaved(file: File) {
-                runOnUiThread({
+                runOnUiThread {
                     Glide.with(this@ComposeLoopFrameActivity)
                         .load(file)
-                        .into(photoEditorView.source)
-
-                    backgroundSurfaceManager.switchStaticImageBackgroundModeOn()
-                })
+                        .into(gallery_upload_img)
+                }
             }
             override fun onError(message: String, cause: Throwable?) {
                 // TODO implement error handling

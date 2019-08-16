@@ -30,6 +30,21 @@
         app:layout_constraintBottom_toBottomOf="parent"
         android:contentDescription="@string/capture_button_alt" />
 
+    <!-- this will hold the thumbnail img for the picture taken  -->
+    <ImageView
+        android:id="@+id/gallery_upload_img"
+        android:layout_width="@dimen/normal_button_medium_round_corner"
+        android:layout_height="@dimen/normal_button_medium_round_corner"
+        android:layout_marginBottom="71dp"
+        android:background="@drawable/ic_gallery_upload"
+        android:contentDescription="@string/capture_button_alt"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.2"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"/>
+
+    <!-- this is just the border  -->
     <ImageView
         android:id="@+id/gallery_upload"
         android:layout_width="@dimen/normal_button_medium"
