@@ -36,8 +36,8 @@
         android:layout_width="0dp"
         android:layout_height="72dp"
         android:background="@drawable/top_gradient"
-        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         />
 
