@@ -30,9 +30,9 @@
         app:layout_constraintBottom_toBottomOf="parent"
         android:contentDescription="@string/capture_button_alt" />
 
-    <!-- Gradient  -->
+    <!-- top gradient  -->
     <View
-        android:id="@+id/gradient_"
+        android:id="@+id/gradient_top"
         android:layout_width="0dp"
         android:layout_height="72dp"
         android:background="@drawable/top_gradient"
@@ -92,5 +92,16 @@
                 android:text="@string/label_control_flip_camera"/>
         </LinearLayout>
     </LinearLayout>
+
+    <!-- bottom gradient  -->
+    <View
+        android:id="@+id/gradient_bottom"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/gradient_bottom_height"
+        android:background="@drawable/bottom_gradient"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
