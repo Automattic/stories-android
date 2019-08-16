@@ -92,10 +92,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         lifecycle.addObserver(backgroundSurfaceManager)
 
         // add click listeners
-        camera_capture_button.setOnClickListener({
-            // capture still image
-            takeStillPicture()
-        })
+        addClickListeners()
 
         photoEditorView.postDelayed({
             launchCameraPreview()
@@ -126,6 +123,22 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             backgroundSurfaceManager.switchCameraPreviewOn()
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        }
+    }
+
+    private fun addClickListeners() {
+        camera_capture_button.setOnClickListener{
+            // capture still image
+            takeStillPicture()
+        }
+
+        gallery_upload_img.setOnClickListener {
+            // TODO implement tapping on thumbnail
+            Toast.makeText(this, "not implemented yet", Toast.LENGTH_SHORT).show()
+        }
+
+        camera_flip_button.setOnClickListener {
+            backgroundSurfaceManager.flipCamera()
         }
     }
 

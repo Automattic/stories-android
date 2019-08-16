@@ -21,6 +21,7 @@ import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.io.File
+import java.lang.Exception
 
 class CameraXBasicHandling : VideoRecorderFragment() {
     private lateinit var videoCapture: VideoCapture
@@ -100,6 +101,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
 
         // Create a configuration object for the video capture use case
         val videoCaptureConfig = VideoCaptureConfig.Builder().apply {
+            setLensFacing(lensFacing)
             setTargetRotation(textureView.display.rotation)
         }.build()
         videoCapture = VideoCapture(videoCaptureConfig)
@@ -175,6 +177,25 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                     onImageCapturedListener.onError(message, cause)
                 }
             }, metadata)
+        }
+    }
+
+    @SuppressLint("RestrictedApi")
+    override fun flipCamera() {
+        lensFacing = if (CameraX.LensFacing.FRONT == lensFacing) {
+            CameraX.LensFacing.BACK
+        } else {
+            CameraX.LensFacing.FRONT
+        }
+        try {
+            // Only bind use cases if we can query a camera with this orientation
+            CameraX.getCameraWithLensFacing(lensFacing)
+
+            // Unbind all use cases and bind them again with the new lens facing configuration
+            CameraX.unbindAll()
+            startCamera()
+        } catch (exc: Exception) {
+            // Do nothing
         }
     }
 

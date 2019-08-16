@@ -131,6 +131,12 @@ class BackgroundSurfaceManager(
         videoPlayerHandling.deactivate()
     }
 
+    fun flipCamera() {
+        if (isCameraVisible) {
+            cameraBasicHandler.flipCamera()
+        }
+    }
+
     fun switchVideoPlayerOn() {
         // in case the Camera was being visible, set if off
         isVideoPlayerVisible = true

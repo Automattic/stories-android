@@ -830,6 +830,10 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
         lockFocus()
     }
 
+    override fun flipCamera() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     companion object {
         /**
          * Conversion from screen rotation to JPEG orientation.

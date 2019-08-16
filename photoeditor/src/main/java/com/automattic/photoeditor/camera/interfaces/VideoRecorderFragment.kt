@@ -5,7 +5,11 @@ import androidx.fragment.app.Fragment
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.io.File
 
-abstract class VideoRecorderFragment : Fragment(), VideoRecorderHandler, ImageCaptureHandler, SurfaceFragmentHandler {
+abstract class VideoRecorderFragment : Fragment(),
+    VideoRecorderHandler,
+    ImageCaptureHandler,
+    CameraFlipHandler,
+    SurfaceFragmentHandler {
     /**
      * An [AutoFitTextureView] for camera preview.
      */
