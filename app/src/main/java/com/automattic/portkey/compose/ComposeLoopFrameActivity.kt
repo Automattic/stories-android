@@ -8,6 +8,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.view.View
 import android.widget.Toast
+import androidx.constraintlayout.widget.Group
 import androidx.core.content.ContextCompat
 import com.automattic.photoeditor.OnPhotoEditorListener
 import com.automattic.photoeditor.PhotoEditor
@@ -33,6 +34,14 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.content_composer.*
 import java.io.File
 import java.io.IOException
+
+
+
+fun Group.setAllOnClickListener(listener: View.OnClickListener?) {
+    referencedIds.forEach { id ->
+        rootView.findViewById<View>(id).setOnClickListener(listener)
+    }
+}
 
 class ComposeLoopFrameActivity : AppCompatActivity() {
     private lateinit var photoEditor: PhotoEditor
@@ -137,21 +146,25 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             Toast.makeText(this, "not implemented yet", Toast.LENGTH_SHORT).show()
         }
 
-        camera_flip_button.setOnClickListener {
-            backgroundSurfaceManager.flipCamera()
-        }
+        camera_flip_group.setAllOnClickListener(object : View.OnClickListener {
+            override fun onClick(v: View) {
+                backgroundSurfaceManager.flipCamera()
+            }
+        })
 
         // attach listener a bit delayed as we need to have cameraBasicHandling created first
         photoEditorView.postDelayed({
             if (backgroundSurfaceManager.isFlashAvailable()) {
-                camera_flash_button.setOnClickListener {
-                    val flashState = backgroundSurfaceManager.switchFlashState()
-                    when (flashState) {
-                        AUTO -> camera_flash_button.background = getDrawable(R.drawable.ic_flash_auto_black_24dp)
-                        ON -> camera_flash_button.background = getDrawable(R.drawable.ic_flash_on_black_24dp)
-                        OFF -> camera_flash_button.background = getDrawable(R.drawable.ic_flash_off_black_24dp)
+                camera_flash_group.setAllOnClickListener(object : View.OnClickListener {
+                    override fun onClick(v: View) {
+                        val flashState = backgroundSurfaceManager.switchFlashState()
+                        when (flashState) {
+                            AUTO -> camera_flash_button.background = getDrawable(R.drawable.ic_flash_auto_black_24dp)
+                            ON -> camera_flash_button.background = getDrawable(R.drawable.ic_flash_on_black_24dp)
+                            OFF -> camera_flash_button.background = getDrawable(R.drawable.ic_flash_off_black_24dp)
+                        }
                     }
-                }
+                })
             } else {
                 camera_flash_button.visibility = View.GONE
             }
