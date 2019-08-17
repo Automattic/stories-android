@@ -162,20 +162,16 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
         // attach listener a bit delayed as we need to have cameraBasicHandling created first
         photoEditorView.postDelayed({
-            if (backgroundSurfaceManager.isFlashAvailable()) {
-                camera_flash_group.setAllOnClickListener(object : View.OnClickListener {
-                    override fun onClick(v: View) {
-                        val flashState = backgroundSurfaceManager.switchFlashState()
-                        when (flashState) {
-                            AUTO -> camera_flash_button.background = getDrawable(R.drawable.ic_flash_auto_black_24dp)
-                            ON -> camera_flash_button.background = getDrawable(R.drawable.ic_flash_on_black_24dp)
-                            OFF -> camera_flash_button.background = getDrawable(R.drawable.ic_flash_off_black_24dp)
-                        }
+            camera_flash_group.setAllOnClickListener(object : View.OnClickListener {
+                override fun onClick(v: View) {
+                    val flashState = backgroundSurfaceManager.switchFlashState()
+                    when (flashState) {
+                        AUTO -> camera_flash_button.background = getDrawable(R.drawable.ic_flash_auto_black_24dp)
+                        ON -> camera_flash_button.background = getDrawable(R.drawable.ic_flash_on_black_24dp)
+                        OFF -> camera_flash_button.background = getDrawable(R.drawable.ic_flash_off_black_24dp)
                     }
-                })
-            } else {
-                camera_flash_group.visibility = View.GONE
-            }
+                }
+            })
         }, CAMERA_PREVIEW_LAUNCH_DELAY)
     }
 
