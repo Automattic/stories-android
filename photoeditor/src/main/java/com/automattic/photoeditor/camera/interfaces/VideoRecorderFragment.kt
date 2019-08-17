@@ -2,9 +2,6 @@
 package com.automattic.photoeditor.camera.interfaces
 
 import androidx.fragment.app.Fragment
-import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.AUTO
-import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.OFF
-import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.ON
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.io.File
 

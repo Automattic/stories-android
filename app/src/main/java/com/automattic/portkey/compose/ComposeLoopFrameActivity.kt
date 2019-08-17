@@ -35,8 +35,6 @@ import kotlinx.android.synthetic.main.content_composer.*
 import java.io.File
 import java.io.IOException
 
-
-
 fun Group.setAllOnClickListener(listener: View.OnClickListener?) {
     referencedIds.forEach { id ->
         rootView.findViewById<View>(id).setOnClickListener(listener)
