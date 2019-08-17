@@ -54,6 +54,7 @@ import androidx.core.content.ContextCompat
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.R
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState
+import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.OFF
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
 import com.automattic.photoeditor.util.PermissionUtils
@@ -857,11 +858,13 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
     override fun isFlashAvailable(): Boolean {
         // TODO implement
         Toast.makeText(context, "not implemented yet", Toast.LENGTH_SHORT).show()
+        return true
     }
 
     override fun currentFlashState(): FlashIndicatorState {
         // TODO implement
         Toast.makeText(context, "not implemented yet", Toast.LENGTH_SHORT).show()
+        return OFF
     }
 
     companion object {
