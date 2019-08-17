@@ -17,6 +17,7 @@ import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.AUTO
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.OFF
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.ON
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
+import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment.FlashSupportChangeListener
 import com.automattic.photoeditor.state.BackgroundSurfaceManager
 import com.automattic.photoeditor.util.FileUtils.Companion.getLoopFrameFile
 import com.automattic.photoeditor.util.PermissionUtils
@@ -94,6 +95,15 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             lifecycle,
             photoEditorView,
             supportFragmentManager,
+            object : FlashSupportChangeListener {
+                override fun onFlashSupportChanged(isSupported: Boolean) {
+                    if (isSupported) {
+                        camera_flash_group.visibility = View.VISIBLE
+                    } else {
+                        camera_flash_group.visibility = View.GONE
+                    }
+                }
+            },
             BuildConfig.USE_CAMERAX)
 
         lifecycle.addObserver(backgroundSurfaceManager)

@@ -19,6 +19,7 @@ import com.automattic.photoeditor.camera.VideoPlayingBasicHandling
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
+import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment.FlashSupportChangeListener
 import com.automattic.photoeditor.state.BackgroundSurfaceManager.SurfaceHandlerType.CAMERA2
 import com.automattic.photoeditor.state.BackgroundSurfaceManager.SurfaceHandlerType.CAMERAX
 import com.automattic.photoeditor.state.BackgroundSurfaceManager.SurfaceHandlerType.VIDEOPLAYER
@@ -30,6 +31,7 @@ class BackgroundSurfaceManager(
     private val lifeCycle: Lifecycle,
     private val photoEditorView: PhotoEditorView,
     private val supportFragmentManager: FragmentManager,
+    private val flashSupportChangeListener: FlashSupportChangeListener,
     private val useCameraX: Boolean
 ) : LifecycleObserver {
     private lateinit var cameraBasicHandler: VideoRecorderFragment
@@ -227,7 +229,8 @@ class BackgroundSurfaceManager(
             CAMERAX -> {
                 val cameraFragment = supportFragmentManager.findFragmentByTag(KEY_CAMERA_HANDLING_FRAGMENT_TAG)
                 if (cameraFragment == null) {
-                    cameraBasicHandler = CameraXBasicHandling.getInstance(photoEditorView.textureView)
+                    cameraBasicHandler = CameraXBasicHandling.getInstance(photoEditorView.textureView,
+                        flashSupportChangeListener)
                     supportFragmentManager
                         .beginTransaction().add(cameraBasicHandler, KEY_CAMERA_HANDLING_FRAGMENT_TAG).commit()
                 } else {
@@ -235,13 +238,15 @@ class BackgroundSurfaceManager(
                     cameraBasicHandler = cameraFragment as CameraXBasicHandling
                     // the photoEditorView layout has been recreated so, re-assign its TextureView
                     cameraBasicHandler.textureView = photoEditorView.textureView
+                    cameraBasicHandler.flashSupportChangeListener = flashSupportChangeListener
                 }
             }
             CAMERA2 -> {
                 // ask FragmentManager to add the headless fragment so it receives the Activity's lifecycle callback calls
                 val cameraFragment = supportFragmentManager.findFragmentByTag(KEY_CAMERA_HANDLING_FRAGMENT_TAG)
                 if (cameraFragment == null) {
-                    cameraBasicHandler = Camera2BasicHandling.getInstance(photoEditorView.textureView)
+                    cameraBasicHandler = Camera2BasicHandling.getInstance(photoEditorView.textureView,
+                        flashSupportChangeListener)
                     supportFragmentManager
                         .beginTransaction().add(cameraBasicHandler, KEY_CAMERA_HANDLING_FRAGMENT_TAG).commit()
                 } else {
@@ -249,6 +254,7 @@ class BackgroundSurfaceManager(
                     cameraBasicHandler = cameraFragment as Camera2BasicHandling
                     // the photoEditorView layout has been recreated so, re-assign its TextureView
                     cameraBasicHandler.textureView = photoEditorView.textureView
+                    cameraBasicHandler.flashSupportChangeListener = flashSupportChangeListener
                 }
                 // add camera handling texture listener
                 photoEditorView.listeners.add((cameraBasicHandler as Camera2BasicHandling).surfaceTextureListener)

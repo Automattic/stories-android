@@ -176,11 +176,6 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
     private val cameraOpenCloseLock = Semaphore(1)
 
     /**
-     * Whether the current camera device supports Flash or not.
-     */
-    private var flashSupported = false
-
-    /**
      * Orientation of the camera sensor
      */
     private var sensorOrientation = 0
@@ -981,8 +976,12 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
             }
         }
 
-        @JvmStatic fun getInstance(textureView: AutoFitTextureView): Camera2BasicHandling {
+        @JvmStatic fun getInstance(
+            textureView: AutoFitTextureView,
+            flashSupportChangeListener: FlashSupportChangeListener
+        ): Camera2BasicHandling {
             instance.textureView = textureView
+            instance.flashSupportChangeListener = flashSupportChangeListener
             return instance
         }
     }

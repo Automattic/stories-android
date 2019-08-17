@@ -33,7 +33,6 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     private lateinit var videoPreview: Preview
     private lateinit var imageCapture: ImageCapture
     private var lensFacing = CameraX.LensFacing.BACK
-    private var flashSupported = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -248,8 +247,12 @@ class CameraXBasicHandling : VideoRecorderFragment() {
          */
         private val TAG = "CameraXBasicHandling"
 
-        @JvmStatic fun getInstance(textureView: AutoFitTextureView): CameraXBasicHandling {
+        @JvmStatic fun getInstance(
+            textureView: AutoFitTextureView,
+            flashSupportChangeListener: FlashSupportChangeListener
+        ): CameraXBasicHandling {
             instance.textureView = textureView
+            instance.flashSupportChangeListener = flashSupportChangeListener
             return instance
         }
     }
