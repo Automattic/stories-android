@@ -92,8 +92,6 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
      */
     private lateinit var cameraId: String
 
-    private var active: Boolean = false
-
     /**
      * A [CameraCaptureSession] for camera preview.
      */

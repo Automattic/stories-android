@@ -16,4 +16,5 @@ abstract class VideoRecorderFragment : Fragment(),
      */
     lateinit var textureView: AutoFitTextureView
     var currentFile: File? = null
+    protected var active: Boolean = false
 }

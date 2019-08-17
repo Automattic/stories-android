@@ -35,8 +35,6 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     private var lensFacing = CameraX.LensFacing.BACK
     private var currentFlashState = AUTO
 
-    private var active: Boolean = false
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         retainInstance = true
