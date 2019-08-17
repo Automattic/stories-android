@@ -164,7 +164,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                     }
                 })
             } else {
-                camera_flash_button.visibility = View.GONE
+                camera_flash_group.visibility = View.GONE
             }
         }, CAMERA_PREVIEW_LAUNCH_DELAY)
     }

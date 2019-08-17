@@ -1,6 +1,9 @@
 package com.automattic.photoeditor.camera
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraManager
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
@@ -30,6 +33,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     private lateinit var videoPreview: Preview
     private lateinit var imageCapture: ImageCapture
     private var lensFacing = CameraX.LensFacing.BACK
+    private var flashSupported = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,6 +76,12 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
         val screenAspectRatio = Rational(metrics.widthPixels, metrics.heightPixels)
         Log.d(TAG, "Screen metrics: ${metrics.widthPixels} x ${metrics.heightPixels}")
+
+        // retrieve flash availability for this camera
+        val cameraId = CameraX.getCameraWithLensFacing(lensFacing)
+        cameraId?.let {
+            updateFlashSupported(cameraId)
+        }
 
         // Create configuration object for the preview use case
         val previewConfig = PreviewConfig.Builder().apply {
@@ -190,7 +200,12 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         }
         try {
             // Only bind use cases if we can query a camera with this orientation
-            CameraX.getCameraWithLensFacing(lensFacing)
+            val cameraId = CameraX.getCameraWithLensFacing(lensFacing)
+
+            // retrieve flash availability for this camera
+            cameraId?.let {
+                updateFlashSupported(cameraId)
+            }
 
             // Unbind all use cases and bind them again with the new lens facing configuration
             CameraX.unbindAll()
@@ -215,9 +230,14 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     }
 
     override fun isFlashAvailable(): Boolean {
-        // TODO figure out how to check flash availability in CameraX
-        // haven't found a similar thing in CameraX as there is for Camera2
-        return true
+        return flashSupported
+    }
+
+    private fun updateFlashSupported(cameraId: String) {
+        val cameraManager = activity?.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        val characteristics = cameraManager.getCameraCharacteristics(cameraId)
+        flashSupported =
+            characteristics.get(CameraCharacteristics.FLASH_INFO_AVAILABLE) == true
     }
 
     companion object {
