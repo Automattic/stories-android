@@ -7,7 +7,6 @@ import android.util.Log
 import android.util.Rational
 import android.view.ViewGroup
 import androidx.camera.core.CameraX
-import androidx.camera.core.FlashMode
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCapture.CaptureMode
 import androidx.camera.core.ImageCapture.Metadata
@@ -18,11 +17,9 @@ import androidx.camera.core.PreviewConfig
 import androidx.camera.core.VideoCapture
 import androidx.camera.core.VideoCaptureConfig
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState
-import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.AUTO
-import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.OFF
-import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.ON
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
+import com.automattic.photoeditor.camera.interfaces.cameraXflashModeFromPortkeyFlashState
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.io.File
@@ -33,7 +30,6 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     private lateinit var videoPreview: Preview
     private lateinit var imageCapture: ImageCapture
     private var lensFacing = CameraX.LensFacing.BACK
-    private var currentFlashState = AUTO
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -92,7 +88,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         // Set up the capture use case to allow users to take photos
         val imageCaptureConfig = ImageCaptureConfig.Builder().apply {
             setLensFacing(lensFacing)
-            setFlashMode(flashModeFromPortkeyFlashState(currentFlashState))
+            setFlashMode(cameraXflashModeFromPortkeyFlashState(currentFlashState.currentFlashState()))
             setCaptureMode(CaptureMode.MIN_LATENCY)
             // We request aspect ratio but no resolution to match preview config but letting
             // CameraX optimize for whatever specific resolution best fits requested capture mode
@@ -205,20 +201,16 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     }
 
     override fun advanceFlashState() {
-        currentFlashState = when (currentFlashState) {
-            AUTO -> ON
-            ON -> OFF
-            OFF -> AUTO
-        }
-        imageCapture?.let {
-            it.flashMode = flashModeFromPortkeyFlashState(currentFlashState)
+        super.advanceFlashState()
+        imageCapture.let {
+            it.flashMode = cameraXflashModeFromPortkeyFlashState(currentFlashState.currentFlashState())
         }
     }
 
     override fun setFlashState(flashIndicatorState: FlashIndicatorState) {
-        currentFlashState = flashIndicatorState
-        imageCapture?.let {
-            it.flashMode = flashModeFromPortkeyFlashState(currentFlashState)
+        super.setFlashState(flashIndicatorState)
+        imageCapture.let {
+            it.flashMode = cameraXflashModeFromPortkeyFlashState(currentFlashState.currentFlashState())
         }
     }
 
@@ -226,19 +218,6 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         // TODO figure out how to check flash availability in CameraX
         // haven't found a similar thing in CameraX as there is for Camera2
         return true
-    }
-
-    override fun currentFlashState(): FlashIndicatorState {
-        return currentFlashState
-    }
-
-    // helper method to get CameraX flash mode from CameraFlashStateHandler.FlashIndicatorState enum
-    private fun flashModeFromPortkeyFlashState(flashIndicatorState: FlashIndicatorState): FlashMode {
-        return when (flashIndicatorState) {
-            AUTO -> FlashMode.AUTO
-            ON -> FlashMode.ON
-            OFF -> FlashMode.OFF
-        }
     }
 
     companion object {
