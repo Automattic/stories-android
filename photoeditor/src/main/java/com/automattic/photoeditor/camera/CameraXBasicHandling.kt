@@ -33,7 +33,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     private lateinit var videoPreview: Preview
     private lateinit var imageCapture: ImageCapture
     private var lensFacing = CameraX.LensFacing.BACK
-    private var currentFlashState = FlashIndicatorState.AUTO
+    private var currentFlashState = AUTO
 
     private var active: Boolean = false
 
@@ -212,10 +212,16 @@ class CameraXBasicHandling : VideoRecorderFragment() {
             ON -> OFF
             OFF -> AUTO
         }
+        imageCapture?.let {
+            it.flashMode = flashModeFromPortkeyFlashState(currentFlashState)
+        }
     }
 
     override fun setFlashState(flashIndicatorState: FlashIndicatorState) {
         currentFlashState = flashIndicatorState
+        imageCapture?.let {
+            it.flashMode = flashModeFromPortkeyFlashState(currentFlashState)
+        }
     }
 
     override fun isFlashAvailable(): Boolean {
