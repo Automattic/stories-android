@@ -6,7 +6,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:showIn="@layout/activity_composer"
-        tools:context=".compose.ComposeLoopFrameActivity">
+        tools:context=".compose.ComposeLoopFrameActivity"
+        android:animateLayoutChanges="true">
 
     <com.automattic.photoeditor.views.PhotoEditorView
         android:id="@+id/photoEditorView"
@@ -75,7 +76,8 @@
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/top_button_group_margin"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        android:animateLayoutChanges="true">
 
         <androidx.constraintlayout.widget.Group
             android:id="@+id/camera_flash_group"
