@@ -17,7 +17,7 @@
         <path
             android:pathData="M80 40C80 62.0914 62.0914 80 40 80C17.9086 80 0 62.0914 0 40C0 17.9086 17.9086 0 40 0C62.0914 0 80 17.9086 80 40Z"
             android:strokeWidth="12"
-            android:strokeColor="#C9356E"
+            android:strokeColor="@color/loop_magenta"
             />
 
     </group>

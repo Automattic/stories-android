@@ -10,4 +10,6 @@
     <color name="black_transp">#99000000</color>
     <color name="red">#FF0000</color>
 
+    <color name="loop_magenta">#C9356E</color>
+
 </resources>
