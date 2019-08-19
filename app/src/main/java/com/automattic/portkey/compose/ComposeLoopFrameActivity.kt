@@ -144,9 +144,32 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     private fun addClickListeners() {
-        camera_capture_button.setOnClickListener {
-            // capture still image
-            takeStillPicture()
+        camera_capture_button.apply {
+            setOnTouchListener(
+                PressAndHoldGestureHelper(PressAndHoldGestureHelper.CLICK_LENGTH,
+                object : PressAndHoldGestureListener {
+                    override fun onClickGesture() {
+                        if (!backgroundSurfaceManager.cameraRecording()) {
+                            takeStillPicture()
+                        }
+                    }
+                    override fun onHoldingGestureStart() {
+                        startRecordingVideo()
+                        Toast.makeText(this@ComposeLoopFrameActivity, "VIDEO STARTED", Toast.LENGTH_SHORT).show()
+                    }
+
+                    override fun onHoldingGestureEnd() {
+                        stopRecordingVideo()
+                        Toast.makeText(this@ComposeLoopFrameActivity, "VIDEO SAVED", Toast.LENGTH_SHORT).show()
+                    }
+
+                    override fun onHoldingGestureCanceled() {
+                        stopRecordingVideo()
+                        // TODO CANCEL, DON'T SAVE VIDEO
+                        Toast.makeText(this@ComposeLoopFrameActivity, "VIDEO CANCELLED", Toast.LENGTH_SHORT).show()
+                    }
+                })
+            )
         }
 
         gallery_upload_img.setOnClickListener {
@@ -240,6 +263,18 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 // TODO implement error handling
             }
         })
+    }
+
+    private fun startRecordingVideo() {
+        if (!backgroundSurfaceManager.cameraRecording()) {
+            backgroundSurfaceManager.startRecordingVideo()
+        }
+    }
+
+    private fun stopRecordingVideo() {
+        if (backgroundSurfaceManager.cameraRecording()) {
+            backgroundSurfaceManager.stopRecordingVideo()
+        }
     }
 
     // this one saves one composed unit: ether an Image or a Video
