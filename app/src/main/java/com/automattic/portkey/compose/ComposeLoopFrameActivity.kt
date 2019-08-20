@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.ProgressDialog
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
 import android.view.View
 import android.widget.Toast
@@ -50,6 +51,12 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     private val CAMERA_PREVIEW_LAUNCH_DELAY = 500L
     private val CAMERA_VIDEO_RECORD_MAX_LENGTH_MS = 10000L
     private val CAMERA_STILL_PICTURE_ANIM_MS = 300L
+
+    private val timesUpRunnable = Runnable {
+        stopRecordingVideo(false) // time's up, it's not a cancellation
+    }
+    private val timesUpHandler = Handler()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -294,9 +301,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     private fun startRecordingVideo() {
         if (!backgroundSurfaceManager.cameraRecording()) {
             // force stop recording video after maximum time limit reached
-             camera_capture_button.postDelayed({
-                stopRecordingVideo(false) // time's up, it's not a cancellation
-            }, CAMERA_VIDEO_RECORD_MAX_LENGTH_MS)
+            timesUpHandler.postDelayed(timesUpRunnable, CAMERA_VIDEO_RECORD_MAX_LENGTH_MS)
             // strat progressing animation
             camera_capture_button.startProgressingAnimation(CAMERA_VIDEO_RECORD_MAX_LENGTH_MS)
             backgroundSurfaceManager.startRecordingVideo()
@@ -315,6 +320,8 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 .duration = PressAndHoldGestureHelper.CLICK_LENGTH / 4
             backgroundSurfaceManager.stopRecordingVideo()
             if (isCanceled) {
+                // remove any pending callback if video was cancelled
+                timesUpHandler.removeCallbacksAndMessages(null)
                 // TODO CANCEL, DON'T SAVE VIDEO
                 showToast("VIDEO CANCELLED")
             } else {
