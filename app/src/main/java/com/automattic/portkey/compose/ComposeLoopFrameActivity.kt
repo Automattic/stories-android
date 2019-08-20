@@ -3,9 +3,13 @@ package com.automattic.portkey.compose
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.ProgressDialog
+import android.content.Context
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.os.VibrationEffect
+import android.os.Vibrator
 import androidx.appcompat.app.AppCompatActivity
 import android.view.View
 import android.widget.Toast
@@ -309,6 +313,18 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             backgroundSurfaceManager.startRecordingVideo()
             hideUIControls()
             showToast("VIDEO STARTED")
+            vibrate()
+        }
+    }
+
+    private fun vibrate() {
+        val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        // Vibrate for 500 milliseconds
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            // deprecated in API 26
+            vibrator.vibrate(200);
         }
     }
 
