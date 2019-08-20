@@ -57,7 +57,6 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
     private val timesUpHandler = Handler()
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(layout.activity_composer)
@@ -122,6 +121,9 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
         // add click listeners
         addClickListeners()
+
+        // small tweak to make sure to not show the background image for the static image background mode
+        backgroundSurfaceManager.preTurnTextureViewOn()
 
         photoEditorView.postDelayed({
             launchCameraPreview()
