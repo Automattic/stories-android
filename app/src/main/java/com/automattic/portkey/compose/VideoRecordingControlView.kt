@@ -13,7 +13,6 @@ import android.util.AttributeSet
 import android.view.animation.LinearInterpolator
 
 import androidx.appcompat.widget.AppCompatButton
-
 import com.automattic.portkey.R
 
 class VideoRecordingControlView @JvmOverloads constructor(
@@ -41,13 +40,11 @@ class VideoRecordingControlView @JvmOverloads constructor(
     init {
         if (attrs != null) {
             val ta = context.obtainStyledAttributes(attrs, R.styleable.VideoRecordingControlView)
-            if (ta != null) {
-                strokeWidth = ta.getInt(R.styleable.VideoRecordingControlView_strokeThickness, strokeWidth)
-                strokeFillColor = ta.getColor(R.styleable.VideoRecordingControlView_strokeFillColor, strokeFillColor)
-                strokeProgressColor =
-                    ta.getColor(R.styleable.VideoRecordingControlView_strokeProgressColor, strokeProgressColor)
-                ta.recycle()
-            }
+            strokeWidth = ta.getInt(R.styleable.VideoRecordingControlView_strokeThickness, strokeWidth)
+            strokeFillColor = ta.getColor(R.styleable.VideoRecordingControlView_strokeFillColor, strokeFillColor)
+            strokeProgressColor =
+                ta.getColor(R.styleable.VideoRecordingControlView_strokeProgressColor, strokeProgressColor)
+            ta.recycle()
         }
 
         circlePaint = Paint()
@@ -78,30 +75,38 @@ class VideoRecordingControlView @JvmOverloads constructor(
         viewCanvas!!.drawColor(0, PorterDuff.Mode.CLEAR)
 
         if (circleSweepAngle > 0f) {
-            viewCanvas!!.drawArc(
-                circleOuterBounds!!,
-                START_POSITION_ANGLE.toFloat(),
-                circleSweepAngle,
-                true,
-                circlePaint
-            )
-            viewCanvas!!.drawOval(circleInnerBounds!!, eraserPaint)
+            viewCanvas?.apply {
+                drawArc(
+                    circleOuterBounds!!,
+                    START_POSITION_ANGLE.toFloat(),
+                    circleSweepAngle,
+                    true,
+                    circlePaint
+                )
+                drawOval(circleInnerBounds!!, eraserPaint)
+            }
         }
 
         canvas.drawBitmap(bitmap!!, 0f, 0f, null)
     }
 
-    fun startProgressingAnimation(waitTimeMs: Long) {
-        stopAnimation()
-
-        valueAnimator = ValueAnimator.ofFloat(0f, 1f)
-        valueAnimator!!.duration = waitTimeMs
-        valueAnimator!!.interpolator = LinearInterpolator()
-        valueAnimator!!.addUpdateListener { animation -> drawProgress(animation.animatedValue as Float) }
-        valueAnimator!!.start()
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(widthMeasureSpec, widthMeasureSpec) // Trick to make the view square
     }
 
-    fun stopAnimation() {
+    fun startProgressingAnimation(waitTimeMs: Long) {
+        stopProgressingAnimation()
+
+        valueAnimator = ValueAnimator.ofFloat(0f, 1f)
+        valueAnimator?.apply {
+            duration = waitTimeMs
+            interpolator = LinearInterpolator()
+            addUpdateListener { animation -> drawProgress(animation.animatedValue as Float) }
+            start()
+        }
+    }
+
+    fun stopProgressingAnimation() {
         if (valueAnimator != null && valueAnimator!!.isRunning) {
             valueAnimator!!.cancel()
             valueAnimator = null

@@ -35,6 +35,7 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.content_composer.*
 import java.io.File
 import java.io.IOException
+import android.view.Gravity
 
 fun Group.setAllOnClickListener(listener: View.OnClickListener?) {
     referencedIds.forEach { id ->
@@ -47,7 +48,8 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     private lateinit var backgroundSurfaceManager: BackgroundSurfaceManager
     private var progressDialog: ProgressDialog? = null
     private val CAMERA_PREVIEW_LAUNCH_DELAY = 500L
-    private val CAMERA_VIDEO_RECORD_MAX_LENGTH_MS = 30000L
+    private val CAMERA_VIDEO_RECORD_MAX_LENGTH_MS = 10000L
+    private val CAMERA_STILL_PICTURE_ANIM_MS = 300L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -159,22 +161,14 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                         }
                         override fun onHoldingGestureStart() {
                             startRecordingVideo()
-                            camera_capture_button.startProgressingAnimation(CAMERA_VIDEO_RECORD_MAX_LENGTH_MS)
-                            Toast.makeText(
-                                this@ComposeLoopFrameActivity, "VIDEO STARTED", Toast.LENGTH_SHORT).show()
                         }
 
                         override fun onHoldingGestureEnd() {
-                            stopRecordingVideo()
-                            Toast.makeText(
-                                this@ComposeLoopFrameActivity, "VIDEO SAVED", Toast.LENGTH_SHORT).show()
+                            stopRecordingVideo(false)
                         }
 
                         override fun onHoldingGestureCanceled() {
-                            stopRecordingVideo()
-                            // TODO CANCEL, DON'T SAVE VIDEO
-                            Toast.makeText(
-                                this@ComposeLoopFrameActivity, "VIDEO CANCELLED", Toast.LENGTH_SHORT).show()
+                            stopRecordingVideo(true)
                         }
 
                         override fun onStartDetectionWait() {
@@ -278,6 +272,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     private fun takeStillPicture() {
+        camera_capture_button.startProgressingAnimation(CAMERA_STILL_PICTURE_ANIM_MS)
         backgroundSurfaceManager.takePicture(object : ImageCaptureListener {
             override fun onImageSaved(file: File) {
                 runOnUiThread {
@@ -286,22 +281,45 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                         .transform(CenterCrop(), RoundedCorners(16))
                         .into(gallery_upload_img)
                 }
+
+                showToast("IMAGE SAVED")
             }
             override fun onError(message: String, cause: Throwable?) {
                 // TODO implement error handling
+                showToast("ERROR SAVING IMAGE")
             }
         })
     }
 
     private fun startRecordingVideo() {
         if (!backgroundSurfaceManager.cameraRecording()) {
+            // force stop recording video after maximum time limit reached
+             camera_capture_button.postDelayed({
+                stopRecordingVideo(false) // time's up, it's not a cancellation
+            }, CAMERA_VIDEO_RECORD_MAX_LENGTH_MS)
+            // strat progressing animation
+            camera_capture_button.startProgressingAnimation(CAMERA_VIDEO_RECORD_MAX_LENGTH_MS)
             backgroundSurfaceManager.startRecordingVideo()
+            showToast("VIDEO STARTED")
         }
     }
 
-    private fun stopRecordingVideo() {
+    private fun stopRecordingVideo(isCanceled: Boolean) {
         if (backgroundSurfaceManager.cameraRecording()) {
+            camera_capture_button.stopProgressingAnimation()
+            camera_capture_button.clearAnimation()
+            camera_capture_button
+                .animate()
+                .scaleX(1.0f)
+                .scaleY(1.0f)
+                .duration = PressAndHoldGestureHelper.CLICK_LENGTH / 4
             backgroundSurfaceManager.stopRecordingVideo()
+            if (isCanceled) {
+                // TODO CANCEL, DON'T SAVE VIDEO
+                showToast("VIDEO CANCELLED")
+            } else {
+                showToast("VIDEO SAVED")
+            }
         }
     }
 
@@ -466,5 +484,12 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun showToast(message: String) {
+        val toast = Toast.makeText(
+            this@ComposeLoopFrameActivity, message, Toast.LENGTH_SHORT)
+        toast.setGravity(Gravity.TOP, 0, 0)
+        toast.show()
     }
 }

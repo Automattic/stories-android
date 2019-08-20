@@ -26,7 +26,7 @@
         android:layout_height="@dimen/round_button_large"
         android:layout_marginBottom="@dimen/shutter_button_margin"
         android:scaleType="fitCenter"
-        android:background="@drawable/ic_shutter"
+        android:background="@drawable/ic_shutter_ellipse"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
