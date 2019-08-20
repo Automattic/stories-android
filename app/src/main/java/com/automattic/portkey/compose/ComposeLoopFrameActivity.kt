@@ -342,8 +342,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             if (isCanceled) {
                 // remove any pending callback if video was cancelled
                 timesUpHandler.removeCallbacksAndMessages(null)
-                // TODO CANCEL, DON'T SAVE VIDEO
-                showToast("VIDEO CANCELLED")
+                showToast("GESTURE CANCELLED, VIDEO SAVED")
             } else {
                 showToast("VIDEO SAVED")
             }
