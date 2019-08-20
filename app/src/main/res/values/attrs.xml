@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="VideoRecordingControlView">
+        <attr name="strokeThickness" format="integer" />
+        <attr name="strokeFillColor" format="integer" />
+        <attr name="strokeProgressColor" format="integer" />
+    </declare-styleable>
+</resources>

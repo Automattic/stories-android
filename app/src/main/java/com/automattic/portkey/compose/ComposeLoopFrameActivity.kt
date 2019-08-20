@@ -47,6 +47,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     private lateinit var backgroundSurfaceManager: BackgroundSurfaceManager
     private var progressDialog: ProgressDialog? = null
     private val CAMERA_PREVIEW_LAUNCH_DELAY = 500L
+    private val CAMERA_VIDEO_RECORD_MAX_LENGTH_MS = 30000L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -158,6 +159,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                         }
                         override fun onHoldingGestureStart() {
                             startRecordingVideo()
+                            camera_capture_button.startProgressingAnimation(CAMERA_VIDEO_RECORD_MAX_LENGTH_MS)
                             Toast.makeText(
                                 this@ComposeLoopFrameActivity, "VIDEO STARTED", Toast.LENGTH_SHORT).show()
                         }

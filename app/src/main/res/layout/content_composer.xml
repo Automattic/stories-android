@@ -19,8 +19,9 @@
         app:layout_constraintTop_toTopOf="parent"
         app:photo_src="@drawable/background" />
 
-    <ImageButton
+    <com.automattic.portkey.compose.VideoRecordingControlView
         android:id="@+id/camera_capture_button"
+        android:theme="@style/Widget.AppCompat.Button"
         android:layout_width="@dimen/round_button_large"
         android:layout_height="@dimen/round_button_large"
         android:layout_marginBottom="@dimen/shutter_button_margin"
@@ -29,6 +30,9 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:strokeThickness="16"
+        app:strokeFillColor="@color/white"
+        app:strokeProgressColor="@color/loop_magenta"
         android:contentDescription="@string/capture_button_alt" />
 
     <!-- this will hold the thumbnail img for the picture taken  -->
