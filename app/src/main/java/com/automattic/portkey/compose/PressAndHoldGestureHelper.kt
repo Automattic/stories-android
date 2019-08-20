@@ -32,15 +32,6 @@ class PressAndHoldGestureHelper(
     override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
         val action: Int = motionEvent.actionMasked
         when (action) {
-            MotionEvent.ACTION_MOVE -> {
-                // if finger is moving out of the bounds of the button, issue a cancel call before
-                // it gets run in the handler
-                if (!holding) {
-                    if (!isPointWithinView(view, motionEvent.rawX.toInt(), motionEvent.rawY.toInt())) {
-                        handler.removeCallbacksAndMessages(null)
-                    }
-                }
-            }
             MotionEvent.ACTION_DOWN -> {
                 // here start a timer, and if no CANCEL or UP event passes
                 // before the timer ellapses, then trigger the HOLD action
@@ -50,6 +41,15 @@ class PressAndHoldGestureHelper(
                     handler.removeCallbacksAndMessages(null)
                 }
                 handler.postDelayed(runnable, initialWait)
+            }
+            MotionEvent.ACTION_MOVE -> {
+                // if finger is moving out of the bounds of the button, issue a cancel call before
+                // it gets run in the handler
+                if (!holding) {
+                    if (!isPointWithinView(view, motionEvent.rawX.toInt(), motionEvent.rawY.toInt())) {
+                        handler.removeCallbacksAndMessages(null)
+                    }
+                }
             }
             MotionEvent.ACTION_CANCEL -> {
                 if (holding) {
