@@ -146,7 +146,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     private fun addClickListeners() {
-        camera_capture_button.apply {
+        camera_capture_button.
             setOnTouchListener(
                 PressAndHoldGestureHelper(
                     PressAndHoldGestureHelper.CLICK_LENGTH,
@@ -177,7 +177,6 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                         }
                     })
             )
-        }
 
         gallery_upload_img.setOnClickListener {
             // TODO implement tapping on thumbnail
