@@ -39,7 +39,10 @@ class PressAndHoldGestureHelper(
                     // remove any pending callback if a new ACTION_DOWN event
                     // arrives before the runnable gets run
                     handler.removeCallbacksAndMessages(null)
+                } else {
+                    undoAnimation(view)
                 }
+                startAnimation(view)
                 handler.postDelayed(runnable, initialWait)
             }
             MotionEvent.ACTION_MOVE -> {
@@ -47,6 +50,7 @@ class PressAndHoldGestureHelper(
                 // it gets run in the handler
                 if (!holding) {
                     if (!isPointWithinView(view, motionEvent.rawX.toInt(), motionEvent.rawY.toInt())) {
+                        undoAnimation(view)
                         handler.removeCallbacksAndMessages(null)
                     }
                 }
@@ -54,15 +58,13 @@ class PressAndHoldGestureHelper(
             MotionEvent.ACTION_CANCEL -> {
                 if (holding) {
                     holding = false
-                    if (isPointWithinView(view, motionEvent.rawX.toInt(), motionEvent.rawY.toInt())) {
-                        pressAndHoldGestureListener?.onHoldingGestureEnd()
-                    } else {
-                        canceled = true
-                        pressAndHoldGestureListener?.onHoldingGestureCanceled()
-                    }
+                    canceled = true
+                    undoAnimation(view)
+                    pressAndHoldGestureListener?.onHoldingGestureCanceled()
                 }
             }
             MotionEvent.ACTION_UP -> {
+                undoAnimation(view)
                 if (holding) {
                     holding = false
                     if (isPointWithinView(view, motionEvent.rawX.toInt(), motionEvent.rawY.toInt())) {
@@ -89,6 +91,15 @@ class PressAndHoldGestureHelper(
     private fun isPointWithinView(view: View, x: Int, y: Int): Boolean {
         val outRect = Rect(view.left, view.top, view.right, view.bottom)
         return outRect.contains(x, y)
+    }
+
+    private fun startAnimation(view: View) {
+        view.animate().scaleXBy(0.3f).scaleYBy(0.3f).duration = initialWait
+    }
+
+    private fun undoAnimation(view: View) {
+        view.clearAnimation()
+        view.animate().scaleX(1.0f).scaleY(1.0f).duration = initialWait / 4
     }
 
     companion object {
