@@ -305,6 +305,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             // strat progressing animation
             camera_capture_button.startProgressingAnimation(CAMERA_VIDEO_RECORD_MAX_LENGTH_MS)
             backgroundSurfaceManager.startRecordingVideo()
+            hideUIControls()
             showToast("VIDEO STARTED")
         }
     }
@@ -319,6 +320,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 .scaleY(1.0f)
                 .duration = PressAndHoldGestureHelper.CLICK_LENGTH / 4
             backgroundSurfaceManager.stopRecordingVideo()
+            showUIControls()
             if (isCanceled) {
                 // remove any pending callback if video was cancelled
                 timesUpHandler.removeCallbacksAndMessages(null)
@@ -498,5 +500,27 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             this@ComposeLoopFrameActivity, message, Toast.LENGTH_SHORT)
         toast.setGravity(Gravity.TOP, 0, 0)
         toast.show()
+    }
+
+    private fun hideUIControls() {
+        camera_flash_button.visibility = View.INVISIBLE
+        label_flash.visibility = View.INVISIBLE
+
+        camera_flip_button.visibility = View.INVISIBLE
+        label_flip.visibility = View.INVISIBLE
+
+        gallery_upload_img.visibility = View.INVISIBLE
+        gallery_upload.visibility = View.INVISIBLE
+    }
+
+    private fun showUIControls() {
+        camera_flash_button.visibility = View.VISIBLE
+        label_flash.visibility = View.VISIBLE
+
+        camera_flip_button.visibility = View.VISIBLE
+        label_flip.visibility = View.VISIBLE
+
+        gallery_upload_img.visibility = View.VISIBLE
+        gallery_upload.visibility = View.VISIBLE
     }
 }
