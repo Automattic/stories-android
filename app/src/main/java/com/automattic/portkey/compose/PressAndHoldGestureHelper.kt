@@ -14,6 +14,7 @@ interface PressAndHoldGestureListener {
 
 class PressAndHoldGestureHelper(
     val initialWait: Long,
+    val animateControl: Boolean = true,
     val pressAndHoldGestureListener: PressAndHoldGestureListener?
 ) : View.OnTouchListener {
     private var holding = false
@@ -94,12 +95,16 @@ class PressAndHoldGestureHelper(
     }
 
     private fun startAnimation(view: View) {
-        view.animate().scaleXBy(0.3f).scaleYBy(0.3f).duration = initialWait
+        if (animateControl) {
+            view.animate().scaleXBy(0.3f).scaleYBy(0.3f).duration = initialWait
+        }
     }
 
     private fun undoAnimation(view: View) {
-        view.clearAnimation()
-        view.animate().scaleX(1.0f).scaleY(1.0f).duration = initialWait / 4
+        if (animateControl) {
+            view.clearAnimation()
+            view.animate().scaleX(1.0f).scaleY(1.0f).duration = initialWait / 4
+        }
     }
 
     companion object {

@@ -148,29 +148,34 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     private fun addClickListeners() {
         camera_capture_button.apply {
             setOnTouchListener(
-                PressAndHoldGestureHelper(PressAndHoldGestureHelper.CLICK_LENGTH,
-                object : PressAndHoldGestureListener {
-                    override fun onClickGesture() {
-                        if (!backgroundSurfaceManager.cameraRecording()) {
-                            takeStillPicture()
+                PressAndHoldGestureHelper(
+                    PressAndHoldGestureHelper.CLICK_LENGTH,
+                    true,
+                    object : PressAndHoldGestureListener {
+                        override fun onClickGesture() {
+                            if (!backgroundSurfaceManager.cameraRecording()) {
+                                takeStillPicture()
+                            }
                         }
-                    }
-                    override fun onHoldingGestureStart() {
-                        startRecordingVideo()
-                        Toast.makeText(this@ComposeLoopFrameActivity, "VIDEO STARTED", Toast.LENGTH_SHORT).show()
-                    }
+                        override fun onHoldingGestureStart() {
+                            startRecordingVideo()
+                            Toast.makeText(
+                                this@ComposeLoopFrameActivity, "VIDEO STARTED", Toast.LENGTH_SHORT).show()
+                        }
 
-                    override fun onHoldingGestureEnd() {
-                        stopRecordingVideo()
-                        Toast.makeText(this@ComposeLoopFrameActivity, "VIDEO SAVED", Toast.LENGTH_SHORT).show()
-                    }
+                        override fun onHoldingGestureEnd() {
+                            stopRecordingVideo()
+                            Toast.makeText(
+                                this@ComposeLoopFrameActivity, "VIDEO SAVED", Toast.LENGTH_SHORT).show()
+                        }
 
-                    override fun onHoldingGestureCanceled() {
-                        stopRecordingVideo()
-                        // TODO CANCEL, DON'T SAVE VIDEO
-                        Toast.makeText(this@ComposeLoopFrameActivity, "VIDEO CANCELLED", Toast.LENGTH_SHORT).show()
-                    }
-                })
+                        override fun onHoldingGestureCanceled() {
+                            stopRecordingVideo()
+                            // TODO CANCEL, DON'T SAVE VIDEO
+                            Toast.makeText(
+                                this@ComposeLoopFrameActivity, "VIDEO CANCELLED", Toast.LENGTH_SHORT).show()
+                        }
+                    })
             )
         }
 
