@@ -98,9 +98,11 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             object : FlashSupportChangeListener {
                 override fun onFlashSupportChanged(isSupported: Boolean) {
                     if (isSupported) {
-                        camera_flash_group.visibility = View.VISIBLE
+                        camera_flash_button.visibility = View.VISIBLE
+                        label_flash.visibility = View.VISIBLE
                     } else {
-                        camera_flash_group.visibility = View.GONE
+                        camera_flash_button.visibility = View.INVISIBLE
+                        label_flash.visibility = View.INVISIBLE
                     }
                 }
             },
