@@ -146,8 +146,8 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     private fun addClickListeners() {
-        camera_capture_button.
-            setOnTouchListener(
+        camera_capture_button
+            .setOnTouchListener(
                 PressAndHoldGestureHelper(
                     PressAndHoldGestureHelper.CLICK_LENGTH,
                     object : PressAndHoldGestureListener {
