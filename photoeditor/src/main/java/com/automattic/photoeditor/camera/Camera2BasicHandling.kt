@@ -85,7 +85,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
         override fun onSurfaceTextureUpdated(texture: SurfaceTexture) = Unit
     }
 
-    private var onImageCapturedListener: ImageCaptureListener? = null
+    private var imageCapturedListener: ImageCaptureListener? = null
 
     /**
      * ID of the current [CameraDevice].
@@ -150,7 +150,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
      * still image is ready to be saved.
      */
     private val onImageAvailableListener = ImageReader.OnImageAvailableListener {
-        backgroundHandler?.post(ImageSaver(it.acquireNextImage(), currentFile!!, onImageCapturedListener))
+        backgroundHandler?.post(ImageSaver(it.acquireNextImage(), currentFile!!, imageCapturedListener))
     }
 
     /**
@@ -644,7 +644,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
                     failure: CaptureFailure
                 ) {
                     super.onCaptureFailed(session, request, failure)
-                    onImageCapturedListener?.onError(failure.toString(), null)
+                    imageCapturedListener?.onError(failure.toString(), null)
                 }
             }
 
@@ -655,7 +655,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
             }
         } catch (e: CameraAccessException) {
             Log.e(TAG, e.toString())
-            onImageCapturedListener?.onError(e.message!!, e)
+            imageCapturedListener?.onError(e.message.orEmpty(), e)
         }
     }
 
@@ -820,11 +820,11 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
         captureSession = null
     }
 
-    override fun takePicture(listener: ImageCaptureListener) {
+    override fun takePicture(onImageCapturedListener: ImageCaptureListener) {
         // Create output file to hold the image
         currentFile = FileUtils.getLoopFrameFile(false, "orig_")
         currentFile?.createNewFile()
-        onImageCapturedListener = listener
+        imageCapturedListener = onImageCapturedListener
         lockFocus()
     }
 
