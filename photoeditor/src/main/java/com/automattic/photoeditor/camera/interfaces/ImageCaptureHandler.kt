@@ -1,8 +1,6 @@
 
 package com.automattic.photoeditor.camera.interfaces
 
-import androidx.annotation.NonNull
-import androidx.annotation.Nullable
 import java.io.File
 
 interface ImageCaptureHandler {
@@ -10,9 +8,9 @@ interface ImageCaptureHandler {
 }
 
 interface ImageCaptureListener {
-    fun onImageSaved(@NonNull file: File)
+    fun onImageSaved(file: File)
     fun onError(
-        @NonNull message: String,
-        @Nullable cause: Throwable?
+        message: String,
+        cause: Throwable?
     )
 }
