@@ -10,11 +10,12 @@ interface PressAndHoldGestureListener {
     fun onHoldingGestureStart()
     fun onHoldingGestureEnd()
     fun onHoldingGestureCanceled()
+    fun onStartDetectionWait()
+    fun onTouchEventDetectionEnd()
 }
 
 class PressAndHoldGestureHelper(
     val initialWait: Long,
-    val animateControl: Boolean = true,
     val pressAndHoldGestureListener: PressAndHoldGestureListener?
 ) : View.OnTouchListener {
     private var holding = false
@@ -41,9 +42,9 @@ class PressAndHoldGestureHelper(
                     // arrives before the runnable gets run
                     handler.removeCallbacksAndMessages(null)
                 } else {
-                    undoAnimation(view)
+                    pressAndHoldGestureListener?.onTouchEventDetectionEnd()
                 }
-                startAnimation(view)
+                pressAndHoldGestureListener?.onStartDetectionWait()
                 handler.postDelayed(runnable, initialWait)
             }
             MotionEvent.ACTION_MOVE -> {
@@ -51,7 +52,7 @@ class PressAndHoldGestureHelper(
                 // it gets run in the handler
                 if (!holding) {
                     if (!isPointWithinView(view, motionEvent.rawX.toInt(), motionEvent.rawY.toInt())) {
-                        undoAnimation(view)
+                        pressAndHoldGestureListener?.onTouchEventDetectionEnd()
                         handler.removeCallbacksAndMessages(null)
                     }
                 }
@@ -60,12 +61,12 @@ class PressAndHoldGestureHelper(
                 if (holding) {
                     holding = false
                     canceled = true
-                    undoAnimation(view)
+                    pressAndHoldGestureListener?.onTouchEventDetectionEnd()
                     pressAndHoldGestureListener?.onHoldingGestureCanceled()
                 }
             }
             MotionEvent.ACTION_UP -> {
-                undoAnimation(view)
+                pressAndHoldGestureListener?.onTouchEventDetectionEnd()
                 if (holding) {
                     holding = false
                     if (isPointWithinView(view, motionEvent.rawX.toInt(), motionEvent.rawY.toInt())) {
@@ -92,19 +93,6 @@ class PressAndHoldGestureHelper(
     private fun isPointWithinView(view: View, x: Int, y: Int): Boolean {
         val outRect = Rect(view.left, view.top, view.right, view.bottom)
         return outRect.contains(x, y)
-    }
-
-    private fun startAnimation(view: View) {
-        if (animateControl) {
-            view.animate().scaleXBy(0.3f).scaleYBy(0.3f).duration = initialWait
-        }
-    }
-
-    private fun undoAnimation(view: View) {
-        if (animateControl) {
-            view.clearAnimation()
-            view.animate().scaleX(1.0f).scaleY(1.0f).duration = initialWait / 4
-        }
     }
 
     companion object {

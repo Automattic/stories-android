@@ -150,7 +150,6 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             setOnTouchListener(
                 PressAndHoldGestureHelper(
                     PressAndHoldGestureHelper.CLICK_LENGTH,
-                    true,
                     object : PressAndHoldGestureListener {
                         override fun onClickGesture() {
                             if (!backgroundSurfaceManager.cameraRecording()) {
@@ -174,6 +173,27 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                             // TODO CANCEL, DON'T SAVE VIDEO
                             Toast.makeText(
                                 this@ComposeLoopFrameActivity, "VIDEO CANCELLED", Toast.LENGTH_SHORT).show()
+                        }
+
+                        override fun onStartDetectionWait() {
+                            // when the wait to see whether this is a "press and hold" gesture starts,
+                            // start the animation to grow the capture button radius
+                            camera_capture_button
+                                .animate()
+                                .scaleXBy(0.3f)
+                                .scaleYBy(0.3f)
+                                .duration = PressAndHoldGestureHelper.CLICK_LENGTH
+                        }
+
+                        override fun onTouchEventDetectionEnd() {
+                            // when gesture detection ends, we're good to
+                            // get the capture button shape as it originally was (idle state)
+                            camera_capture_button.clearAnimation()
+                            camera_capture_button
+                                .animate()
+                                .scaleX(1.0f)
+                                .scaleY(1.0f)
+                                .duration = PressAndHoldGestureHelper.CLICK_LENGTH / 4
                         }
                     })
             )
