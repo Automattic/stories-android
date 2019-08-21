@@ -189,7 +189,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                             // start the animation to grow the capture button radius
                             camera_capture_button
                                 .animate()
-                                .scaleXBy(0.3f) // from 80dp to 120dp as per designs
+                                .scaleXBy(0.3f) // scale up by 30%
                                 .scaleYBy(0.3f)
                                 .duration = PressAndHoldGestureHelper.CLICK_LENGTH
                         }
