@@ -7,11 +7,12 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.automattic.portkey.R
+import com.automattic.portkey.util.INVALID_RESOURCE_ID
 import kotlinx.android.synthetic.main.intro_title_template_view.*
 
 class IntroPagerTitleFragment : Fragment() {
-    private var titleText: Int = 0
-    private var promoText: Int = 0
+    private var titleText: Int = INVALID_RESOURCE_ID
+    private var promoText: Int = INVALID_RESOURCE_ID
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
