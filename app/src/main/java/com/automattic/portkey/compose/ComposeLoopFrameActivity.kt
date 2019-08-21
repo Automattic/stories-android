@@ -247,6 +247,22 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             // click listener here
             launchCameraPreview()
         }
+
+
+        sound_button_group.setOnClickListener {
+            // TODO implement sound or...??
+            Toast.makeText(this, "not implemented yet", Toast.LENGTH_SHORT).show()
+        }
+
+        text_add_button_group.setOnClickListener {
+            // TODO implement TEXT
+            Toast.makeText(this, "not implemented yet", Toast.LENGTH_SHORT).show()
+        }
+
+        stickers_button_group.setOnClickListener {
+            // TODO implement STICKERS (actually, EMOJI only for DEMO 1)
+            Toast.makeText(this, "not implemented yet", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun testBrush() {

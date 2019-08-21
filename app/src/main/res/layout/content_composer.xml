@@ -90,7 +90,7 @@
             android:visibility="visible"
             app:constraint_referenced_ids="camera_flash_button,label_flash" />
 
-        <ImageButton
+        <ImageView
             android:id="@+id/camera_flash_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -133,7 +133,7 @@
             android:visibility="visible"
             app:constraint_referenced_ids="camera_flip_button,label_flip"/>
 
-        <ImageButton
+        <ImageView
             android:id="@+id/camera_flip_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -176,9 +176,12 @@
             android:orientation="vertical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/top_button_group_margin"
+            android:paddingRight="@dimen/top_button_group_margin"
+            android:paddingBottom="@dimen/top_button_group_margin"
             android:layout_marginLeft="@dimen/top_button_group_margin"
             >
-            <ImageButton
+            <ImageView
                 android:id="@+id/sound_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -204,9 +207,12 @@
             android:orientation="vertical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/top_button_group_margin"
+            android:paddingRight="@dimen/top_button_group_margin"
+            android:paddingBottom="@dimen/top_button_group_margin"
             android:layout_marginLeft="@dimen/top_button_group_margin"
             >
-            <ImageButton
+            <ImageView
                 android:id="@+id/text_add_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -232,9 +238,11 @@
             android:orientation="vertical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/top_button_group_margin"
+            android:paddingBottom="@dimen/top_button_group_margin"
             android:layout_marginLeft="@dimen/top_button_group_margin"
             >
-            <ImageButton
+            <ImageView
                 android:id="@+id/stickers_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
