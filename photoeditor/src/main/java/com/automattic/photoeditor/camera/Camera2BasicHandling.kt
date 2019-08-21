@@ -49,13 +49,14 @@ import android.util.SparseIntArray
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.R
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState
+import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.AUTO
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.OFF
+import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.ON
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
 import com.automattic.photoeditor.camera.interfaces.camera2LensFacingFromPortkeyCameraSelection
@@ -515,8 +516,8 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
                                 // Auto focus should be continuous for camera preview.
                                 previewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
                                         CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
-                                // Flash is automatically enabled when necessary.
-                                setAutoFlash(previewRequestBuilder)
+                                // set flash mode
+                                setCamera2FlashModeFromPortkeyRequestedFlashMode(previewRequestBuilder)
 
                                 // Finally, we start displaying the camera preview.
                                 previewRequest = previewRequestBuilder.build()
@@ -596,6 +597,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
             // This is how to tell the camera to trigger.
             previewRequestBuilder.set(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER,
                     CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER_START)
+            setCamera2FlashModeFromPortkeyRequestedFlashMode(previewRequestBuilder)
             // Tell #captureCallback to wait for the precapture sequence to be set.
             state = STATE_WAITING_PRECAPTURE
             captureSession?.capture(previewRequestBuilder.build(), captureCallback,
@@ -629,7 +631,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
                 // Use the same AE and AF modes as the preview.
                 set(CaptureRequest.CONTROL_AF_MODE,
                         CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
-            }.also { setAutoFlash(it) }
+            }.also { setCamera2FlashModeFromPortkeyRequestedFlashMode(it) }
 
             val captureCallback = object : CameraCaptureSession.CaptureCallback() {
                 override fun onCaptureCompleted(
@@ -671,7 +673,8 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
             // Reset the auto-focus trigger
             previewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
                     CameraMetadata.CONTROL_AF_TRIGGER_CANCEL)
-            setAutoFlash(previewRequestBuilder)
+            // set flash mode
+            setCamera2FlashModeFromPortkeyRequestedFlashMode(previewRequestBuilder)
             captureSession?.capture(previewRequestBuilder.build(), captureCallback,
                     backgroundHandler)
             // After this, the camera will go back to the normal state of preview.
@@ -697,10 +700,16 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
 //        }
     }
 
-    private fun setAutoFlash(requestBuilder: CaptureRequest.Builder) {
+    private fun setCamera2FlashModeFromPortkeyRequestedFlashMode(requestBuilder: CaptureRequest.Builder) {
         if (flashSupported) {
-            requestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
+            when (currentFlashState.currentFlashState()) {
+                AUTO -> requestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
                     CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH)
+                ON -> requestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
+                    CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH)
+                OFF -> requestBuilder.set(CaptureRequest.FLASH_MODE,
+                    CaptureRequest.FLASH_MODE_OFF)
+            }
         }
     }
 
@@ -783,8 +792,8 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
                             // Auto focus should be continuous for camera preview.
                             previewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
                                 CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
-                            // Flash is automatically enabled when necessary.
-                            setAutoFlash(previewRequestBuilder)
+                            // set flash mode
+                            setCamera2FlashModeFromPortkeyRequestedFlashMode(previewRequestBuilder)
 
                             // Finally, we start displaying the camera preview.
                             previewRequest = previewRequestBuilder.build()
@@ -850,26 +859,24 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
         return portkeyCameraSelectionFromCamera2LensFacing(lensFacing)
     }
 
+    override fun isFlashAvailable(): Boolean {
+        return flashSupported
+    }
+
     override fun advanceFlashState() {
-        // TODO implement
-        Toast.makeText(context, "not implemented yet", Toast.LENGTH_SHORT).show()
+        super.advanceFlashState()
+        if (active) {
+            windDown()
+            startUp()
+        }
     }
 
     override fun setFlashState(flashIndicatorState: FlashIndicatorState) {
-        // TODO implement
-        Toast.makeText(context, "not implemented yet", Toast.LENGTH_SHORT).show()
-    }
-
-    override fun isFlashAvailable(): Boolean {
-        // TODO implement
-        Toast.makeText(context, "not implemented yet", Toast.LENGTH_SHORT).show()
-        return true
-    }
-
-    override fun currentFlashState(): FlashIndicatorState {
-        // TODO implement
-        Toast.makeText(context, "not implemented yet", Toast.LENGTH_SHORT).show()
-        return OFF
+        super.setFlashState(flashIndicatorState)
+        if (active) {
+            windDown()
+            startUp()
+        }
     }
 
     companion object {

@@ -35,7 +35,6 @@ import java.io.File
 import java.io.IOException
 import android.content.Context
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
-import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.Companion
 
 fun Group.setAllOnClickListener(listener: View.OnClickListener?) {
     referencedIds.forEach { id ->
@@ -436,16 +435,16 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
     private fun saveCameraSelectionPref() {
         val sharedPref = getPreferences(Context.MODE_PRIVATE)
-        with (sharedPref.edit()) {
-            putInt(getString(com.automattic.portkey.R.string.pref_camera_selection), cameraSelection.id)
+        with(sharedPref.edit()) {
+            putInt(getString(string.pref_camera_selection), cameraSelection.id)
             commit()
         }
     }
 
     private fun saveFlashModeSelectionPref() {
         val sharedPref = getPreferences(Context.MODE_PRIVATE)
-        with (sharedPref.edit()) {
-            putInt(getString(com.automattic.portkey.R.string.pref_flash_mode_selection), flashModeSelection.id)
+        with(sharedPref.edit()) {
+            putInt(getString(string.pref_flash_mode_selection), flashModeSelection.id)
             commit()
         }
     }
