@@ -13,7 +13,7 @@
     <dimen name="top_button_group_margin">16dp</dimen>
     <dimen name="margin_among_buttons">25dp</dimen>
 
-    <dimen name="shutter_button_margin">45dp</dimen>
+    <dimen name="shutter_button_margin">68dp</dimen>
     <dimen name="normal_button_medium_round_corner">32dp</dimen>
 
     <dimen name="gradient_top_height">72dp</dimen>
