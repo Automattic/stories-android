@@ -40,7 +40,7 @@ class VideoRecordingControlView @JvmOverloads constructor(
     init {
         if (attrs != null) {
             val ta = context.obtainStyledAttributes(attrs, R.styleable.VideoRecordingControlView)
-            strokeWidth = ta.getInt(R.styleable.VideoRecordingControlView_strokeThickness, strokeWidth)
+            strokeWidth = ta.getDimensionPixelSize(R.styleable.VideoRecordingControlView_strokeThickness, strokeWidth)
             strokeFillColor = ta.getColor(R.styleable.VideoRecordingControlView_strokeFillColor, strokeFillColor)
             strokeProgressColor =
                 ta.getColor(R.styleable.VideoRecordingControlView_strokeProgressColor, strokeProgressColor)
@@ -72,7 +72,7 @@ class VideoRecordingControlView @JvmOverloads constructor(
             super.onDraw(canvas)
             return
         }
-        viewCanvas!!.drawColor(0, PorterDuff.Mode.CLEAR)
+        viewCanvas!!.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
 
         if (circleSweepAngle > 0f) {
             viewCanvas?.apply {
@@ -88,10 +88,6 @@ class VideoRecordingControlView @JvmOverloads constructor(
         }
 
         canvas.drawBitmap(bitmap!!, 0f, 0f, null)
-    }
-
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        super.onMeasure(widthMeasureSpec, widthMeasureSpec) // Trick to make the view square
     }
 
     fun startProgressingAnimation(waitTimeMs: Long) {

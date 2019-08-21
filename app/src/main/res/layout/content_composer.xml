@@ -26,11 +26,11 @@
         android:layout_height="@dimen/round_button_large"
         android:layout_marginBottom="@dimen/shutter_button_margin"
         android:scaleType="fitCenter"
-        android:background="@drawable/ic_shutter_ellipse"
+        android:background="@drawable/ic_shutter_white"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:strokeThickness="16"
+        app:strokeThickness="@dimen/round_button_circle_stroke"
         app:strokeFillColor="@color/white"
         app:strokeProgressColor="@color/loop_magenta"
         android:contentDescription="@string/capture_button_alt" />
