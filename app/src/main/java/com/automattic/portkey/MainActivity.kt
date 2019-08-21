@@ -6,7 +6,6 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.Navigation
 import com.automattic.portkey.intro.IntroActivity
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionListener {
@@ -26,8 +25,6 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
         }
 
         fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
             Navigation.findNavController(this, R.id.nav_host_fragment)
                 .navigate(R.id.action_mainFragment_to_composeLoopFrameActivity)
         }
