@@ -16,8 +16,14 @@ interface CameraFlashSupportQuery {
     fun isFlashAvailable(): Boolean
 }
 
-enum class FlashIndicatorState {
-    ON, OFF, AUTO
+enum class FlashIndicatorState(val id: Int) {
+    OFF(0),
+    AUTO(1),
+    ON(2);
+
+    companion object {
+        fun valueOf(value: Int): FlashIndicatorState? = values().find { it.id == value }
+    }
 }
 
 class CameraFlashStateKeeper : CameraFlashStateHandler {

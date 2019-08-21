@@ -19,10 +19,13 @@ import androidx.camera.core.Preview
 import androidx.camera.core.PreviewConfig
 import androidx.camera.core.VideoCapture
 import androidx.camera.core.VideoCaptureConfig
+import com.automattic.photoeditor.camera.interfaces.CameraSelection
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
+import com.automattic.photoeditor.camera.interfaces.cameraXLensFacingFromPortkeyCameraSelection
 import com.automattic.photoeditor.camera.interfaces.cameraXflashModeFromPortkeyFlashState
+import com.automattic.photoeditor.camera.interfaces.portkeyCameraSelectionFromCameraXLensFacing
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.io.File
@@ -187,27 +190,39 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     }
 
     @SuppressLint("RestrictedApi")
-    override fun flipCamera() {
+    override fun flipCamera(): CameraSelection {
         lensFacing = if (CameraX.LensFacing.FRONT == lensFacing) {
             CameraX.LensFacing.BACK
         } else {
             CameraX.LensFacing.FRONT
         }
-        try {
-            // Only bind use cases if we can query a camera with this orientation
-            val cameraId = CameraX.getCameraWithLensFacing(lensFacing)
+        if (active) {
+            try {
+                // Only bind use cases if we can query a camera with this orientation
+                val cameraId = CameraX.getCameraWithLensFacing(lensFacing)
 
-            // retrieve flash availability for this camera
-            cameraId?.let {
-                updateFlashSupported(cameraId)
+                // retrieve flash availability for this camera
+                cameraId?.let {
+                    updateFlashSupported(cameraId)
+                }
+
+                // Unbind all use cases and bind them again with the new lens facing configuration
+                CameraX.unbindAll()
+                startCamera()
+            } catch (exc: Exception) {
+                // Do nothing
+                // TODO error handling here
             }
-
-            // Unbind all use cases and bind them again with the new lens facing configuration
-            CameraX.unbindAll()
-            startCamera()
-        } catch (exc: Exception) {
-            // Do nothing
         }
+        return portkeyCameraSelectionFromCameraXLensFacing(lensFacing)
+    }
+
+    override fun selectCamera(cameraSelection: CameraSelection) {
+        lensFacing = cameraXLensFacingFromPortkeyCameraSelection(cameraSelection)
+    }
+
+    override fun currentCamera(): CameraSelection {
+        return portkeyCameraSelectionFromCameraXLensFacing(lensFacing)
     }
 
     override fun advanceFlashState() {
@@ -219,8 +234,10 @@ class CameraXBasicHandling : VideoRecorderFragment() {
 
     override fun setFlashState(flashIndicatorState: FlashIndicatorState) {
         super.setFlashState(flashIndicatorState)
-        imageCapture.let {
-            it.flashMode = cameraXflashModeFromPortkeyFlashState(currentFlashState.currentFlashState())
+        if (active) {
+            imageCapture.let {
+                it.flashMode = cameraXflashModeFromPortkeyFlashState(currentFlashState.currentFlashState())
+            }
         }
     }
 

@@ -9,7 +9,7 @@ import kotlin.properties.Delegates
 abstract class VideoRecorderFragment : Fragment(),
     VideoRecorderHandler,
     ImageCaptureHandler,
-    CameraFlipHandler,
+    CameraSelectionHandler,
     CameraFlashStateHandler,
     CameraFlashSupportQuery,
     SurfaceFragmentHandler {
