@@ -13,8 +13,10 @@
     <string name="capture_button_alt">Capture</string>
     <string name="flip_button_alt">Flip camera</string>
     <string name="flash_button_alt">Flash</string>
+    <string name="stickers_button_alt">Stickers</string>
     <string name="label_control_flip_camera">Flip</string>
     <string name="label_control_flash">Flash</string>
+    <string name="label_control_stickers">Stickers</string>
 
 
     <!--preference keys-->

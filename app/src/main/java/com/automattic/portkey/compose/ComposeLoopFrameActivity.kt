@@ -575,6 +575,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
         // show proper edit mode controls
         close_button.visibility = View.VISIBLE
+        edit_mode_controls.visibility = View.VISIBLE
     }
 
     private fun hideEditModeUIControls() {
@@ -584,6 +585,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
         // hide proper edit mode controls
         close_button.visibility = View.INVISIBLE
+        edit_mode_controls.visibility = View.INVISIBLE
     }
 
     private fun updateFlashModeSelectionIcon() {
