@@ -13,9 +13,7 @@ import androidx.core.content.ContextCompat
 import com.automattic.photoeditor.OnPhotoEditorListener
 import com.automattic.photoeditor.PhotoEditor
 import com.automattic.photoeditor.SaveSettings
-import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.AUTO
-import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.OFF
-import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.ON
+import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment.FlashSupportChangeListener
 import com.automattic.photoeditor.state.BackgroundSurfaceManager
@@ -35,6 +33,9 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.content_composer.*
 import java.io.File
 import java.io.IOException
+import android.content.Context
+import com.automattic.photoeditor.camera.interfaces.CameraSelection
+import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.Companion
 
 fun Group.setAllOnClickListener(listener: View.OnClickListener?) {
     referencedIds.forEach { id ->
@@ -47,6 +48,8 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     private lateinit var backgroundSurfaceManager: BackgroundSurfaceManager
     private var progressDialog: ProgressDialog? = null
     private val CAMERA_PREVIEW_LAUNCH_DELAY = 500L
+    private var cameraSelection = CameraSelection.BACK
+    private var flashModeSelection = FlashIndicatorState.OFF
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -111,6 +114,19 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         // add click listeners
         addClickListeners()
 
+        if (savedInstanceState == null) {
+            // check camera selection, flash state from preferences
+            cameraSelection =
+                CameraSelection.valueOf(
+                    getPreferences(Context.MODE_PRIVATE).getInt(getString(R.string.pref_camera_selection), 0))!!
+            flashModeSelection =
+                FlashIndicatorState.valueOf(
+                    getPreferences(Context.MODE_PRIVATE).getInt(getString(R.string.pref_flash_mode_selection), 0))!!
+
+            // also, update the UI
+            updateFlashModeSelectionIcon()
+        }
+
         photoEditorView.postDelayed({
             launchCameraPreview()
         }, CAMERA_PREVIEW_LAUNCH_DELAY)
@@ -156,7 +172,8 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
         camera_flip_group.setAllOnClickListener(object : View.OnClickListener {
             override fun onClick(v: View) {
-                backgroundSurfaceManager.flipCamera()
+                cameraSelection = backgroundSurfaceManager.flipCamera()
+                saveCameraSelectionPref()
             }
         })
 
@@ -164,12 +181,9 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         photoEditorView.postDelayed({
             camera_flash_group.setAllOnClickListener(object : View.OnClickListener {
                 override fun onClick(v: View) {
-                    val flashState = backgroundSurfaceManager.switchFlashState()
-                    when (flashState) {
-                        AUTO -> camera_flash_button.background = getDrawable(R.drawable.ic_flash_auto_black_24dp)
-                        ON -> camera_flash_button.background = getDrawable(R.drawable.ic_flash_on_black_24dp)
-                        OFF -> camera_flash_button.background = getDrawable(R.drawable.ic_flash_off_black_24dp)
-                    }
+                    flashModeSelection = backgroundSurfaceManager.switchFlashState()
+                    updateFlashModeSelectionIcon()
+                    saveFlashModeSelectionPref()
                 }
             })
         }, CAMERA_PREVIEW_LAUNCH_DELAY)
@@ -215,6 +229,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             return
         }
 
+        // set the correct camera as selected by the user last time they used the app
+        backgroundSurfaceManager.selectCamera(cameraSelection)
+        // same goes for flash state
+        backgroundSurfaceManager.setFlashState(flashModeSelection)
         backgroundSurfaceManager.switchCameraPreviewOn()
     }
 
@@ -402,6 +420,33 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             } else {
                 Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    private fun updateFlashModeSelectionIcon() {
+        when (flashModeSelection) {
+            FlashIndicatorState.AUTO ->
+                camera_flash_button.background = getDrawable(R.drawable.ic_flash_auto_black_24dp)
+            FlashIndicatorState.ON ->
+                camera_flash_button.background = getDrawable(R.drawable.ic_flash_on_black_24dp)
+            FlashIndicatorState.OFF ->
+                camera_flash_button.background = getDrawable(R.drawable.ic_flash_off_black_24dp)
+        }
+    }
+
+    private fun saveCameraSelectionPref() {
+        val sharedPref = getPreferences(Context.MODE_PRIVATE)
+        with (sharedPref.edit()) {
+            putInt(getString(com.automattic.portkey.R.string.pref_camera_selection), cameraSelection.id)
+            commit()
+        }
+    }
+
+    private fun saveFlashModeSelectionPref() {
+        val sharedPref = getPreferences(Context.MODE_PRIVATE)
+        with (sharedPref.edit()) {
+            putInt(getString(com.automattic.portkey.R.string.pref_flash_mode_selection), flashModeSelection.id)
+            commit()
         }
     }
 }

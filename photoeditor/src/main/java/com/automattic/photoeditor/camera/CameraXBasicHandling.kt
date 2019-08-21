@@ -196,20 +196,23 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         } else {
             CameraX.LensFacing.FRONT
         }
-        try {
-            // Only bind use cases if we can query a camera with this orientation
-            val cameraId = CameraX.getCameraWithLensFacing(lensFacing)
+        if (active) {
+            try {
+                // Only bind use cases if we can query a camera with this orientation
+                val cameraId = CameraX.getCameraWithLensFacing(lensFacing)
 
-            // retrieve flash availability for this camera
-            cameraId?.let {
-                updateFlashSupported(cameraId)
+                // retrieve flash availability for this camera
+                cameraId?.let {
+                    updateFlashSupported(cameraId)
+                }
+
+                // Unbind all use cases and bind them again with the new lens facing configuration
+                CameraX.unbindAll()
+                startCamera()
+            } catch (exc: Exception) {
+                // Do nothing
+                // TODO error handling here
             }
-
-            // Unbind all use cases and bind them again with the new lens facing configuration
-            CameraX.unbindAll()
-            startCamera()
-        } catch (exc: Exception) {
-            // Do nothing
         }
         return portkeyCameraSelectionFromCameraXLensFacing(lensFacing)
     }
@@ -231,8 +234,10 @@ class CameraXBasicHandling : VideoRecorderFragment() {
 
     override fun setFlashState(flashIndicatorState: FlashIndicatorState) {
         super.setFlashState(flashIndicatorState)
-        imageCapture.let {
-            it.flashMode = cameraXflashModeFromPortkeyFlashState(currentFlashState.currentFlashState())
+        if (active) {
+            imageCapture.let {
+                it.flashMode = cameraXflashModeFromPortkeyFlashState(currentFlashState.currentFlashState())
+            }
         }
     }
 
