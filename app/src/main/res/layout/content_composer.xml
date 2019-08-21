@@ -166,22 +166,51 @@
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/top_button_group_margin"
         android:orientation="horizontal"
+        android:visibility="invisible"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:visibility="invisible"
         android:animateLayoutChanges="true">
+
+        <LinearLayout
+            android:id="@+id/text_add_button_group"
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/top_button_group_margin"
+            >
+            <ImageButton
+                android:id="@+id/text_add_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/ic_text_fields_black_24dp"
+                android:backgroundTint="@color/white"
+                android:contentDescription="@string/text_button_alt"
+                android:scaleType="fitCenter"
+                />
+
+            <TextView
+                android:id="@+id/label_text_add"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/label_control_text"
+                android:textColor="@color/white"
+                android:textSize="@dimen/normal_button_font_size"/>
+        </LinearLayout>
 
         <LinearLayout
             android:id="@+id/stickers_button_group"
             android:orientation="vertical"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/top_button_group_margin"
+            >
             <ImageButton
                 android:id="@+id/stickers_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="2dp"
-                android:layout_marginStart="8dp"
+                android:layout_gravity="center_horizontal"
                 android:background="@drawable/ic_stickers"
                 android:backgroundTint="@color/white"
                 android:contentDescription="@string/stickers_button_alt"
@@ -192,10 +221,12 @@
                 android:id="@+id/label_stickers"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
                 android:text="@string/label_control_stickers"
                 android:textColor="@color/white"
                 android:textSize="@dimen/normal_button_font_size"/>
         </LinearLayout>
+
     </LinearLayout>
 
     <!-- bottom gradient  -->
