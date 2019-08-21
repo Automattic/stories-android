@@ -28,7 +28,7 @@ class IntroPagerFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         with(view) {
-            view.setBackgroundColor(ContextCompat.getColor(context, android.R.color.white))
+            setBackgroundColor(ContextCompat.getColor(context, android.R.color.white))
             promo_text.setText(promoText)
         }
     }
