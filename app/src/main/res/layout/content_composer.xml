@@ -67,7 +67,7 @@
     <View
         android:id="@+id/gradient_top"
         android:layout_width="0dp"
-        android:layout_height="72dp"
+        android:layout_height="100dp"
         android:background="@drawable/top_gradient"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
