@@ -31,8 +31,6 @@ import com.automattic.portkey.R.color
 import com.automattic.portkey.R.layout
 import com.automattic.portkey.R.string
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.CenterCrop
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.google.android.material.snackbar.Snackbar
 
 import kotlinx.android.synthetic.main.content_composer.*
@@ -244,6 +242,11 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 }
             })
         }, CAMERA_PREVIEW_LAUNCH_DELAY)
+
+        close_button.setOnClickListener {
+            // click listener here
+            launchCameraPreview()
+        }
     }
 
     private fun testBrush() {
@@ -286,6 +289,8 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             return
         }
 
+        hideEditModeUIControls()
+
         // set the correct camera as selected by the user last time they used the app
         backgroundSurfaceManager.selectCamera(cameraSelection)
         // same goes for flash state
@@ -297,7 +302,8 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         backgroundSurfaceManager.switchVideoPlayerOn()
     }
 
-    private fun testStaticBackground() {
+    private fun showStaticBackground() {
+        showEditModeUIControls()
         backgroundSurfaceManager.switchStaticImageBackgroundModeOn()
     }
 
@@ -306,10 +312,14 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         backgroundSurfaceManager.takePicture(object : ImageCaptureListener {
             override fun onImageSaved(file: File) {
                 runOnUiThread {
+//                    Glide.with(this@ComposeLoopFrameActivity)
+//                        .load(file)
+//                        .transform(CenterCrop(), RoundedCorners(16))
+//                        .into(gallery_upload_img)
                     Glide.with(this@ComposeLoopFrameActivity)
                         .load(file)
-                        .transform(CenterCrop(), RoundedCorners(16))
-                        .into(gallery_upload_img)
+                        .into(photoEditorView.source)
+                    showStaticBackground()
                 }
 
                 showToast("IMAGE SAVED")
@@ -328,7 +338,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             // strat progressing animation
             camera_capture_button.startProgressingAnimation(CAMERA_VIDEO_RECORD_MAX_LENGTH_MS)
             backgroundSurfaceManager.startRecordingVideo()
-            hideUIControls()
+            hideVideoUIControls()
             showToast("VIDEO STARTED")
             vibrate()
         }
@@ -355,7 +365,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 .scaleY(1.0f)
                 .duration = PressAndHoldGestureHelper.CLICK_LENGTH / 4
             backgroundSurfaceManager.stopRecordingVideo()
-            showUIControls()
+            showVideoUIControls()
             if (isCanceled) {
                 // remove any pending callback if video was cancelled
                 timesUpHandler.removeCallbacksAndMessages(null)
@@ -536,7 +546,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         toast.show()
     }
 
-    private fun hideUIControls() {
+    private fun hideVideoUIControls() {
         camera_flash_button.visibility = View.INVISIBLE
         label_flash.visibility = View.INVISIBLE
 
@@ -547,7 +557,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         gallery_upload.visibility = View.INVISIBLE
     }
 
-    private fun showUIControls() {
+    private fun showVideoUIControls() {
         camera_flash_button.visibility = View.VISIBLE
         label_flash.visibility = View.VISIBLE
 
@@ -556,6 +566,24 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
         gallery_upload_img.visibility = View.VISIBLE
         gallery_upload.visibility = View.VISIBLE
+    }
+
+    private fun showEditModeUIControls() {
+        // hide capturing mode controls
+        hideVideoUIControls()
+        camera_capture_button.visibility = View.INVISIBLE
+
+        // show proper edit mode controls
+        close_button.visibility = View.VISIBLE
+    }
+
+    private fun hideEditModeUIControls() {
+        // show capturing mode controls
+        showVideoUIControls()
+        camera_capture_button.visibility = View.VISIBLE
+
+        // hide proper edit mode controls
+        close_button.visibility = View.INVISIBLE
     }
 
     private fun updateFlashModeSelectionIcon() {

@@ -170,4 +170,16 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"/>
 
+    <ImageButton
+        android:id="@+id/close_button"
+        android:visibility="invisible"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/top_button_group_margin"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:background="@drawable/ic_close_black_24dp"
+        android:backgroundTint="@color/white"
+        />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
