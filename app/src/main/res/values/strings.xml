@@ -21,4 +21,13 @@
     <string name="text_placeholder">your text here</string>
 
     <string name="main_placeholder">Expect a list of Loops to be shown on this screen</string>
+
+    <!-- Intro -->
+    <string name="get_started">Get Started</string>
+
+    <string name="intro_title_text">Loop</string>
+    <string name="intro_promo_text_share">Save and share all the things that make you, you.</string>
+    <string name="intro_promo_text_create">Create a Loop story with photos, video, audio, links, music, and more.</string>
+    <string name="intro_promo_text_organize">Organize your Loops by topic and add to them over time. They don\'t disappear.</string>
+    <string name="intro_promo_text_control">You have full control over who can see your loops.</string>
 </resources>

@@ -21,4 +21,20 @@
         <item name="android:textColorPrimary">#FFFFFF</item>
         <item name="android:textSize">14sp</item>
     </style>
+
+    <!-- Intro -->
+    <style name="Portkey.Button.Intro" parent="Widget.AppCompat.Button.Colored">
+        <item name="colorButtonNormal">@color/loop_magenta</item>
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+
+    <style name="IntroTheme.PromoText.Title" parent="TextAppearance.AppCompat.Title">
+        <item name="android:gravity">center</item>
+        <item name="android:lineSpacingExtra">2dp</item>
+        <item name="android:textSize">48sp</item>
+    </style>
+    <style name="IntroTheme.PromoText" parent="TextAppearance.AppCompat.Title">
+        <item name="android:gravity">center</item>
+        <item name="android:lineSpacingExtra">2dp</item>
+    </style>
 </resources>
