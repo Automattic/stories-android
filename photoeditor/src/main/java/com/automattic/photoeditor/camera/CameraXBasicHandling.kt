@@ -19,10 +19,13 @@ import androidx.camera.core.Preview
 import androidx.camera.core.PreviewConfig
 import androidx.camera.core.VideoCapture
 import androidx.camera.core.VideoCaptureConfig
+import com.automattic.photoeditor.camera.interfaces.CameraSelection
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
+import com.automattic.photoeditor.camera.interfaces.cameraXLensFacingFromPortkeyCameraSelection
 import com.automattic.photoeditor.camera.interfaces.cameraXflashModeFromPortkeyFlashState
+import com.automattic.photoeditor.camera.interfaces.portkeyCameraSelectionFromCameraXLensFacing
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.io.File
@@ -187,7 +190,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     }
 
     @SuppressLint("RestrictedApi")
-    override fun flipCamera() {
+    override fun flipCamera(): CameraSelection {
         lensFacing = if (CameraX.LensFacing.FRONT == lensFacing) {
             CameraX.LensFacing.BACK
         } else {
@@ -208,7 +211,13 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         } catch (exc: Exception) {
             // Do nothing
         }
+        return portkeyCameraSelectionFromCameraXLensFacing(lensFacing)
     }
+
+    override fun selectCamera(cameraSelection: CameraSelection) {
+        lensFacing = cameraXLensFacingFromPortkeyCameraSelection(cameraSelection)
+    }
+
 
     override fun advanceFlashState() {
         super.advanceFlashState()

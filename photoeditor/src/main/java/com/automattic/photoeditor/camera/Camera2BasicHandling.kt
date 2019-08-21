@@ -53,10 +53,13 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.R
+import com.automattic.photoeditor.camera.interfaces.CameraSelection
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.OFF
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
+import com.automattic.photoeditor.camera.interfaces.camera2LensFacingFromPortkeyCameraSelection
+import com.automattic.photoeditor.camera.interfaces.portkeyCameraSelectionFromCamera2LensFacing
 import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.io.IOException
@@ -828,7 +831,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
         lockFocus()
     }
 
-    override fun flipCamera() {
+    override fun flipCamera() : CameraSelection {
         lensFacing = if (CameraMetadata.LENS_FACING_FRONT == lensFacing) {
             CameraMetadata.LENS_FACING_BACK
         } else {
@@ -836,6 +839,11 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
         }
         windDown()
         startUp()
+        return portkeyCameraSelectionFromCamera2LensFacing(lensFacing)
+    }
+
+    override fun selectCamera(cameraSelection: CameraSelection) {
+        lensFacing = camera2LensFacingFromPortkeyCameraSelection(cameraSelection)
     }
 
     override fun advanceFlashState() {
