@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/margin_extra_large"
-        tools:text="Loop"/>
+        tools:text="@string/intro_title_text"/>
 
     <TextView
         style="@style/IntroTheme.PromoText"
@@ -21,7 +21,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minLines="3"
-        tools:text="Save and share all the things that make you, you."
+        tools:text="@string/intro_promo_text_share"
         android:layout_marginStart="@dimen/promo_message_side_margin_size"
         android:layout_marginEnd="@dimen/promo_message_side_margin_size"/>
 </LinearLayout>

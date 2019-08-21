@@ -21,7 +21,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/promo_image_screen_text_margin_top"
         android:minLines="3"
-        tools:text="Save and share all the things that make you, you."
+        tools:text="@string/intro_promo_text_create"
         android:layout_marginStart="@dimen/promo_message_side_margin_size"
         android:layout_marginEnd="@dimen/promo_message_side_margin_size"/>
 </LinearLayout>
