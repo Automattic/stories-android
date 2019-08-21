@@ -16,6 +16,9 @@ import androidx.lifecycle.OnLifecycleEvent
 import com.automattic.photoeditor.camera.Camera2BasicHandling
 import com.automattic.photoeditor.camera.CameraXBasicHandling
 import com.automattic.photoeditor.camera.VideoPlayingBasicHandling
+import com.automattic.photoeditor.camera.interfaces.CameraSelection
+import com.automattic.photoeditor.camera.interfaces.CameraSelection.BACK
+import com.automattic.photoeditor.camera.interfaces.CameraSelection.valueOf
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
@@ -100,6 +103,7 @@ class BackgroundSurfaceManager(
         outState?.putBoolean(KEY_IS_CAMERA_VISIBLE, isCameraVisible)
         outState?.putBoolean(KEY_IS_VIDEO_PLAYER_VISIBLE, isVideoPlayerVisible)
         outState?.putBoolean(KEY_IS_CAMERA_RECORDING, isCameraRecording)
+        outState?.putInt(KEY_CAMERA_SELECTION, cameraBasicHandler.currentCamera().id)
     }
 
     fun cameraVisible(): Boolean {
@@ -134,10 +138,11 @@ class BackgroundSurfaceManager(
         videoPlayerHandling.deactivate()
     }
 
-    fun flipCamera() {
+    fun flipCamera(): CameraSelection {
         if (isCameraVisible) {
-            cameraBasicHandler.flipCamera()
+            return cameraBasicHandler.flipCamera()
         }
+        return BACK // default
     }
 
     fun switchFlashState(): FlashIndicatorState {
@@ -221,6 +226,9 @@ class BackgroundSurfaceManager(
             isCameraVisible = savedInstanceState.getBoolean(KEY_IS_CAMERA_VISIBLE)
             isVideoPlayerVisible = savedInstanceState.getBoolean(KEY_IS_VIDEO_PLAYER_VISIBLE)
             isCameraRecording = savedInstanceState.getBoolean(KEY_IS_CAMERA_RECORDING)
+            CameraSelection.valueOf(savedInstanceState.getInt(KEY_CAMERA_SELECTION))?.let {
+                cameraBasicHandler.selectCamera(it)
+            }
         }
     }
 
@@ -285,5 +293,7 @@ class BackgroundSurfaceManager(
         private const val KEY_VIDEOPLAYER_HANDLING_FRAGMENT_TAG = "VIDEOPLAYER_TAG"
         private const val KEY_IS_VIDEO_PLAYER_VISIBLE = "key_is_video_player_visible"
         private const val KEY_IS_CAMERA_RECORDING = "key_is_camera_recording"
+        private const val KEY_CAMERA_SELECTION = "key_camera_selection"
+        private const val KEY_FLASH_SELECTION = "key_flash_selection"
     }
 }

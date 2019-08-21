@@ -218,6 +218,9 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         lensFacing = cameraXLensFacingFromPortkeyCameraSelection(cameraSelection)
     }
 
+    override fun currentCamera(): CameraSelection {
+        return portkeyCameraSelectionFromCameraXLensFacing(lensFacing)
+    }
 
     override fun advanceFlashState() {
         super.advanceFlashState()

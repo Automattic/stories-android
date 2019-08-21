@@ -5,13 +5,18 @@ import android.hardware.camera2.CameraMetadata
 import androidx.camera.core.CameraX.LensFacing
 
 interface CameraSelectionHandler {
-    fun flipCamera() : CameraSelection
+    fun flipCamera(): CameraSelection
     fun selectCamera(camera: CameraSelection)
+    fun currentCamera(): CameraSelection
 }
 
-enum class CameraSelection {
-    BACK,
-    FRONT
+enum class CameraSelection(val id: Int) {
+    BACK(0),
+    FRONT(1);
+
+    companion object {
+        fun valueOf(value: Int): CameraSelection? = values().find { it.id == value }
+    }
 }
 
 // helper method to get CameraX lens facing from portkey's CameraSelection

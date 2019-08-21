@@ -831,7 +831,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
         lockFocus()
     }
 
-    override fun flipCamera() : CameraSelection {
+    override fun flipCamera(): CameraSelection {
         lensFacing = if (CameraMetadata.LENS_FACING_FRONT == lensFacing) {
             CameraMetadata.LENS_FACING_BACK
         } else {
@@ -844,6 +844,10 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
 
     override fun selectCamera(cameraSelection: CameraSelection) {
         lensFacing = camera2LensFacingFromPortkeyCameraSelection(cameraSelection)
+    }
+
+    override fun currentCamera(): CameraSelection {
+        return portkeyCameraSelectionFromCamera2LensFacing(lensFacing)
     }
 
     override fun advanceFlashState() {
