@@ -95,14 +95,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="2dp"
-            android:layout_marginLeft="4dp"
-            android:layout_marginStart="4dp"
+            android:layout_marginStart="8dp"
             android:background="@drawable/ic_flash_off_black_24dp"
             android:backgroundTint="@color/white"
             android:contentDescription="@string/flash_button_alt"
             android:scaleType="fitCenter"
             app:layout_constraintBottom_toTopOf="@+id/label_flash"
-            app:layout_constraintStart_toStartOf="@+id/label_flash"/>
+            app:layout_constraintStart_toStartOf="parent"/>
 
         <TextView
             android:id="@+id/label_flash"
@@ -112,7 +111,8 @@
             android:textColor="@color/white"
             android:textSize="@dimen/normal_button_font_size"
             app:layout_constraintBottom_toBottomOf="parent"
-            />
+            app:layout_constraintEnd_toEndOf="@+id/camera_flash_button"
+            app:layout_constraintStart_toStartOf="@+id/camera_flash_button"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
