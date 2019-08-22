@@ -21,7 +21,6 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
     private var listener: EmojiListener? = null
 
     private val bottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {
-
         override fun onStateChanged(bottomSheet: View, newState: Int) {
             if (newState == BottomSheetBehavior.STATE_HIDDEN) {
                 dismiss()
@@ -44,7 +43,7 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
         (params.behavior as? BottomSheetBehavior)?.setBottomSheetCallback(bottomSheetBehaviorCallback)
 
         (contentView.parent as View).setBackgroundColor(resources.getColor(android.R.color.transparent))
-        contentView.rvEmoji.layoutManager = GridLayoutManager(activity, 5)
+        contentView.rvEmoji.layoutManager = GridLayoutManager(activity, COLUMNS)
         contentView.rvEmoji.adapter = EmojiAdapter()
     }
 
@@ -53,7 +52,6 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
     }
 
     inner class EmojiAdapter : RecyclerView.Adapter<EmojiAdapter.ViewHolder>() {
-
         internal var emojisList = PhotoEditor.getEmojis(activity!!)
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -81,5 +79,9 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
                 }
             }
         }
+    }
+
+    companion object {
+        const val COLUMNS = 6
     }
 }

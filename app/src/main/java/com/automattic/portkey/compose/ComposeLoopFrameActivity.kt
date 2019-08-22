@@ -285,7 +285,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         }
 
         stickers_button_group.setOnClickListener {
-            emojiPickerFragment.show(supportFragmentManager, emojiPickerFragment.getTag());
+            emojiPickerFragment.show(supportFragmentManager, emojiPickerFragment.getTag())
         }
     }
 
