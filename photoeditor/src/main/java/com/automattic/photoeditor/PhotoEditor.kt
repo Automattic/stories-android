@@ -287,6 +287,13 @@ class PhotoEditor private constructor(builder: Builder) :
 
         textRootView.setOnTouchListener(multiTouchListenerInstance)
         addViewToParent(textRootView, ViewType.TEXT)
+
+        // now open TextEditor right away
+        if (mOnPhotoEditorListener != null) {
+            val textInput = textInputTv.text.toString()
+            val currentTextColor = textInputTv.currentTextColor
+            mOnPhotoEditorListener!!.onEditTextChangeListener(textRootView, textInput, currentTextColor)
+        }
     }
 
     /**
