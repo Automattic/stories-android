@@ -294,7 +294,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
     private fun addNewText() {
         photoEditor.addText(
-            text = getString(string.text_placeholder),
+            "",
             colorCodeTextView = ContextCompat.getColor(baseContext, color.text_color_white), fontSizeSp = 24f)
     }
 
