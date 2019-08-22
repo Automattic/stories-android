@@ -12,6 +12,9 @@
     <dimen name="normal_button_font_size">13sp</dimen>
     <dimen name="top_button_group_margin">16dp</dimen>
     <dimen name="margin_among_buttons">25dp</dimen>
+    <dimen name="color_picker_background_size">34dp</dimen>
+    <dimen name="color_picker_filler_size">28dp</dimen>
+    <dimen name="color_picker_item_margin">12dp</dimen>
 
     <dimen name="shutter_button_margin">68dp</dimen>
     <dimen name="normal_button_medium_round_corner">32dp</dimen>

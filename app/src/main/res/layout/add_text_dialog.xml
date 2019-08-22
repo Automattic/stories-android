@@ -38,6 +38,7 @@
         android:id="@+id/add_text_color_picker_relative_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="@dimen/color_picker_item_margin"
         android:layout_alignParentBottom="true">
 
         <androidx.recyclerview.widget.RecyclerView
@@ -47,7 +48,7 @@
             android:orientation="horizontal"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             tools:background="@android:color/black"
-            tools:listitem="@layout/color_picker_item_list" />
+            tools:listitem="@layout/color_picker_list_item" />
 
     </RelativeLayout>
 

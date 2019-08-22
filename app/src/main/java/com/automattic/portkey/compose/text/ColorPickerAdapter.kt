@@ -1,21 +1,17 @@
 package com.automattic.portkey.compose.text
 
 import android.content.Context
-import android.graphics.Color
-import android.graphics.Rect
-import android.graphics.drawable.Drawable
-import android.graphics.drawable.LayerDrawable
-import android.graphics.drawable.ShapeDrawable
-import android.graphics.drawable.shapes.OvalShape
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.automattic.portkey.R
-import kotlinx.android.synthetic.main.color_picker_item_list.view.*
+import kotlinx.android.synthetic.main.color_picker_list_item.view.*
 
 import java.util.ArrayList
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.GradientDrawable
+import com.automattic.portkey.R
 
 /**
  * Created by Ahmed Adel on 5/8/17.
@@ -30,38 +26,23 @@ class ColorPickerAdapter internal constructor(private val context: Context, priv
     internal constructor(context: Context) : this(context, getDefaultColors(context))
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(context).inflate(R.layout.color_picker_item_list, parent, false)
+        val view = LayoutInflater.from(context).inflate(R.layout.color_picker_list_item, parent, false)
         return ViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.colorPickerViewRef.setBackgroundColor(colorPickerColors[position])
+        val background = holder.colorPickerActualColorViewRef.getBackground()
+        if (background is GradientDrawable) {
+            background.setColor(colorPickerColors[position])
+        } else if (background is ColorDrawable) {
+            background.color = colorPickerColors[position]
+        }
+
+        holder.colorPickerActualColorViewRef.background = background
     }
 
     override fun getItemCount(): Int {
         return colorPickerColors.size
-    }
-
-    private fun buildColorPickerView(view: View, colorCode: Int) {
-        view.visibility = View.VISIBLE
-
-        val biggerCircle = ShapeDrawable(OvalShape())
-        biggerCircle.intrinsicHeight = 20
-        biggerCircle.intrinsicWidth = 20
-        biggerCircle.bounds = Rect(0, 0, 20, 20)
-        biggerCircle.paint.color = colorCode
-
-        val smallerCircle = ShapeDrawable(OvalShape())
-        smallerCircle.intrinsicHeight = 5
-        smallerCircle.intrinsicWidth = 5
-        smallerCircle.bounds = Rect(0, 0, 5, 5)
-        smallerCircle.paint.color = Color.WHITE
-        smallerCircle.setPadding(10, 10, 10, 10)
-        val drawables = arrayOf<Drawable>(smallerCircle, biggerCircle)
-
-        val layerDrawable = LayerDrawable(drawables)
-
-        view.setBackgroundDrawable(layerDrawable)
     }
 
     fun setOnColorPickerClickListener(onColorPickerClickListener: OnColorPickerClickListener) {
@@ -69,10 +50,10 @@ class ColorPickerAdapter internal constructor(private val context: Context, priv
     }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        var colorPickerViewRef: View
+        var colorPickerActualColorViewRef: View
 
         init {
-            colorPickerViewRef = itemView.color_picker_view
+            colorPickerActualColorViewRef = itemView.color_picker_view_actual_color
 
             itemView.setOnClickListener {
                 onColorPickerClickListener?.let {
