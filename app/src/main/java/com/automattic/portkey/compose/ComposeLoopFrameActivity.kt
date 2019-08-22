@@ -527,8 +527,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     private fun showToast(message: String) {
-        val toast = Toast.makeText(
-            this@ComposeLoopFrameActivity, message, Toast.LENGTH_SHORT)
+        val toast = Toast.makeText(this, message, Toast.LENGTH_SHORT)
         toast.setGravity(Gravity.TOP, 0, 0)
         toast.show()
     }
