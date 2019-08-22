@@ -318,7 +318,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     private fun showStaticBackground() {
-        showEditModeUIControls()
+        showEditModeUIControls(true)
         backgroundSurfaceManager.switchStaticImageBackgroundModeOn()
     }
 
@@ -583,7 +583,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         gallery_upload.visibility = View.VISIBLE
     }
 
-    private fun showEditModeUIControls() {
+    private fun showEditModeUIControls(noSound: Boolean) {
         // hide capturing mode controls
         hideVideoUIControls()
         camera_capture_button.visibility = View.INVISIBLE
@@ -591,6 +591,12 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         // show proper edit mode controls
         close_button.visibility = View.VISIBLE
         edit_mode_controls.visibility = View.VISIBLE
+
+        if (noSound) {
+            sound_button_group.visibility = View.INVISIBLE
+        } else {
+            sound_button_group.visibility = View.VISIBLE
+        }
     }
 
     private fun hideEditModeUIControls() {
