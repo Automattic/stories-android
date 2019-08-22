@@ -38,6 +38,7 @@ import java.io.File
 import java.io.IOException
 import android.view.Gravity
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
+import com.automattic.portkey.compose.text.TextEditorDialogFragment
 
 fun Group.setAllOnClickListener(listener: View.OnClickListener?) {
     referencedIds.forEach { id ->

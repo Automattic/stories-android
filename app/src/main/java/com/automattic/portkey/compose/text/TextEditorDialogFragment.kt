@@ -1,4 +1,4 @@
-package com.automattic.portkey.compose
+package com.automattic.portkey.compose.text
 
 import android.content.Context
 import android.graphics.drawable.ColorDrawable
@@ -46,7 +46,7 @@ class TextEditorDialogFragment : DialogFragment() {
         super.onViewCreated(view, savedInstanceState)
         inputMethodManager = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
 
-        //Setup the color picker for text color
+        // Setup the color picker for text color
         val addTextColorPickerRecyclerView = view.add_text_color_picker_recycler_view
         val layoutManager = LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
         addTextColorPickerRecyclerView.layoutManager = layoutManager
@@ -101,7 +101,9 @@ class TextEditorDialogFragment : DialogFragment() {
                     putString(EXTRA_INPUT_TEXT, inputText)
                     putInt(EXTRA_COLOR_CODE, colorCode)
                 }
-                show(appCompatActivity.supportFragmentManager, TAG)
+                show(appCompatActivity.supportFragmentManager,
+                    TAG
+                )
             }
         }
     }
