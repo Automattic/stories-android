@@ -217,8 +217,8 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         return portkeyCameraSelectionFromCameraXLensFacing(lensFacing)
     }
 
-    override fun selectCamera(cameraSelection: CameraSelection) {
-        lensFacing = cameraXLensFacingFromPortkeyCameraSelection(cameraSelection)
+    override fun selectCamera(camera: CameraSelection) {
+        lensFacing = cameraXLensFacingFromPortkeyCameraSelection(camera)
     }
 
     override fun currentCamera(): CameraSelection {
@@ -227,17 +227,13 @@ class CameraXBasicHandling : VideoRecorderFragment() {
 
     override fun advanceFlashState() {
         super.advanceFlashState()
-        imageCapture.let {
-            it.flashMode = cameraXflashModeFromPortkeyFlashState(currentFlashState.currentFlashState())
-        }
+        imageCapture.flashMode = cameraXflashModeFromPortkeyFlashState(currentFlashState.currentFlashState())
     }
 
     override fun setFlashState(flashIndicatorState: FlashIndicatorState) {
         super.setFlashState(flashIndicatorState)
         if (active) {
-            imageCapture.let {
-                it.flashMode = cameraXflashModeFromPortkeyFlashState(currentFlashState.currentFlashState())
-            }
+            imageCapture.flashMode = cameraXflashModeFromPortkeyFlashState(currentFlashState.currentFlashState())
         }
     }
 
