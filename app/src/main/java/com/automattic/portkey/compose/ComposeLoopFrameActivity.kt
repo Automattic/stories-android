@@ -69,14 +69,21 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             .build() // build photo editor sdk
 
         photoEditor.setOnPhotoEditorListener(object : OnPhotoEditorListener {
-            override fun onEditTextChangeListener(rootView: View, text: String, colorCode: Int) {
+            override fun onEditTextChangeListener(rootView: View, text: String, colorCode: Int, isJustAdded: Boolean) {
                 editModeHideAllUIControlsBeforeTextEditDialog()
+                if (isJustAdded) {
+                    // hide new text views
+                    rootView.visibility = View.GONE
+                }
                 val textEditorDialogFragment = TextEditorDialogFragment.show(
                     this@ComposeLoopFrameActivity,
                     text,
                     colorCode)
                 textEditorDialogFragment.setOnTextEditorListener(object : TextEditorDialogFragment.TextEditor {
                     override fun onDone(inputText: String, colorCode: Int) {
+                        // make sure to set it to visible, as newly added views are originally hidden until
+                        // proper text is set
+                        rootView.visibility = View.VISIBLE
                         photoEditor.editText(rootView, inputText, colorCode)
                         // TODO hardcoded noSound parameter here
                         editModeRestoreAllUIControlsAfterTextEditDialog(false)
