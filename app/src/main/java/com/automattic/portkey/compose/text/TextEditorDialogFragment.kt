@@ -12,8 +12,10 @@ import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.automattic.portkey.R
 import kotlinx.android.synthetic.main.add_text_dialog.*
+import kotlinx.android.synthetic.main.add_text_dialog.view.*
 
 /**
  * Created by Burhanuddin Rashid on 1/16/2018.
@@ -43,6 +45,21 @@ class TextEditorDialogFragment : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         inputMethodManager = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+
+        //Setup the color picker for text color
+        val addTextColorPickerRecyclerView = view.add_text_color_picker_recycler_view
+        val layoutManager = LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
+        addTextColorPickerRecyclerView.layoutManager = layoutManager
+        addTextColorPickerRecyclerView.setHasFixedSize(true)
+        activity?.let {
+            val colorPickerAdapter = ColorPickerAdapter(it)
+            //This listener will change the text color when clicked on any color from picker
+            colorPickerAdapter.setOnColorPickerClickListener { colorCode ->
+                this.colorCode = colorCode
+                add_text_edit_text?.setTextColor(colorCode)
+            }
+            addTextColorPickerRecyclerView.adapter = colorPickerAdapter
+        }
 
         arguments?.let {
             add_text_edit_text?.setText(it.getString(EXTRA_INPUT_TEXT))
