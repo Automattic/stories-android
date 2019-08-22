@@ -78,6 +78,7 @@ class PressAndHoldGestureHelper(
                 } else {
                     if (isPointWithinView(view, motionEvent.rawX.toInt(), motionEvent.rawY.toInt())) {
                         pressAndHoldGestureListener?.onClickGesture()
+                        view.performClick()
                     } else {
                         canceled = true
                     }
