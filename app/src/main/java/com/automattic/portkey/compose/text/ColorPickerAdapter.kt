@@ -57,7 +57,7 @@ class ColorPickerAdapter internal constructor(private val context: Context, priv
 
             itemView.setOnClickListener {
                 onColorPickerClickListener?.let {
-                    it (colorPickerColors[adapterPosition])
+                    it(colorPickerColors[adapterPosition])
                 }
             }
         }
