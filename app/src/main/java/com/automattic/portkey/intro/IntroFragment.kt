@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.automattic.portkey.AppPrefs
 import com.automattic.portkey.MainActivity
 import com.automattic.portkey.R.layout
 import kotlinx.android.synthetic.main.fragment_intro.*
@@ -19,6 +20,7 @@ class IntroFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         get_started_button.setOnClickListener {
+            AppPrefs.setIntroRequired(false)
             startActivity(Intent(activity, MainActivity::class.java))
             activity?.finish()
         }

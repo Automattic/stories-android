@@ -20,7 +20,6 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
 
         if (AppPrefs.isIntroRequired()) {
             startActivity(Intent(this, IntroActivity::class.java))
-            AppPrefs.setIntroRequired(false)
             finish()
         }
 
