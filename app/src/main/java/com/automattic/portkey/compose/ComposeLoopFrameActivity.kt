@@ -6,15 +6,16 @@ import android.app.ProgressDialog
 import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.constraintlayout.widget.Group
 import androidx.core.content.ContextCompat
 import com.automattic.photoeditor.OnPhotoEditorListener
 import com.automattic.photoeditor.PhotoEditor
 import com.automattic.photoeditor.SaveSettings
+import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
+import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment.FlashSupportChangeListener
 import com.automattic.photoeditor.state.BackgroundSurfaceManager
 import com.automattic.photoeditor.util.FileUtils.Companion.getLoopFrameFile
 import com.automattic.photoeditor.util.PermissionUtils
@@ -22,28 +23,36 @@ import com.automattic.photoeditor.views.ViewType
 import com.automattic.portkey.BuildConfig
 import com.automattic.portkey.R
 import com.automattic.portkey.R.color
-import com.automattic.portkey.R.id
 import com.automattic.portkey.R.layout
 import com.automattic.portkey.R.string
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.activity_composer.*
 
-import kotlinx.android.synthetic.main.activity_main.toolbar
 import kotlinx.android.synthetic.main.content_composer.*
 import java.io.File
 import java.io.IOException
+import android.content.Context
+import com.automattic.photoeditor.camera.interfaces.CameraSelection
+
+fun Group.setAllOnClickListener(listener: View.OnClickListener?) {
+    referencedIds.forEach { id ->
+        rootView.findViewById<View>(id).setOnClickListener(listener)
+    }
+}
 
 class ComposeLoopFrameActivity : AppCompatActivity() {
     private lateinit var photoEditor: PhotoEditor
     private lateinit var backgroundSurfaceManager: BackgroundSurfaceManager
     private var progressDialog: ProgressDialog? = null
+    private val CAMERA_PREVIEW_LAUNCH_DELAY = 500L
+    private var cameraSelection = CameraSelection.BACK
+    private var flashModeSelection = FlashIndicatorState.OFF
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(layout.activity_composer)
-        setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         photoEditor = PhotoEditor.Builder(this, photoEditorView)
             .setPinchTextScalable(true) // set flag to make text scalable when pinch
@@ -58,7 +67,6 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 textEditorDialogFragment.setOnTextEditorListener(object : TextEditorDialogFragment.TextEditor {
                     override fun onDone(inputText: String, colorCode: Int) {
                         photoEditor.editText(rootView, inputText, colorCode)
-                        txtCurrentTool.setText(string.label_tool_text)
                     }
                 })
             }
@@ -89,9 +97,38 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             lifecycle,
             photoEditorView,
             supportFragmentManager,
+            object : FlashSupportChangeListener {
+                override fun onFlashSupportChanged(isSupported: Boolean) {
+                    if (isSupported) {
+                        camera_flash_group.visibility = View.VISIBLE
+                    } else {
+                        camera_flash_group.visibility = View.GONE
+                    }
+                }
+            },
             BuildConfig.USE_CAMERAX)
 
         lifecycle.addObserver(backgroundSurfaceManager)
+
+        // add click listeners
+        addClickListeners()
+
+        if (savedInstanceState == null) {
+            // check camera selection, flash state from preferences
+            cameraSelection =
+                CameraSelection.valueOf(
+                    getPreferences(Context.MODE_PRIVATE).getInt(getString(R.string.pref_camera_selection), 0))!!
+            flashModeSelection =
+                FlashIndicatorState.valueOf(
+                    getPreferences(Context.MODE_PRIVATE).getInt(getString(R.string.pref_flash_mode_selection), 0))!!
+
+            // also, update the UI
+            updateFlashModeSelectionIcon()
+        }
+
+        photoEditorView.postDelayed({
+            launchCameraPreview()
+        }, CAMERA_PREVIEW_LAUNCH_DELAY)
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -103,7 +140,6 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         super.onResume()
         // Before setting full screen flags, we must wait a bit to let UI settle; otherwise, we may
         // be trying to set app to immersive mode before it's ready and the flags do not stick
-        // This example uses decor view, but you can use any visible view.
         photoEditorView.postDelayed({
                 hideSystemUI(window)
         }, IMMERSIVE_FLAG_TIMEOUT)
@@ -122,86 +158,53 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-
-        // test actions just to test photoEditor module integration
-        return when (item.itemId) {
-            id.action_brush -> {
-                testBrush()
-                true
-            }
-            id.action_eraser -> {
-                testEraser()
-                true
-            }
-            id.action_text -> {
-                testText()
-                true
-            }
-            id.action_emoji -> {
-                testEmoji()
-                true
-            }
-            id.action_sticker -> {
-                testSticker()
-                true
-            }
-
-            id.action_bkg_camera_preview -> {
-                testCameraPreview()
-                true
-            }
-            id.action_bkg_static -> {
-                testStaticBackground()
-                true
-            }
-            id.action_bkg_play_video -> {
-                testPlayVideo()
-                true
-            }
-            id.action_bkg_take_picture -> {
-                testTakeStillPicture()
-                true
-            }
-
-            id.action_save -> {
-                saveLoopFrame()
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
+    private fun addClickListeners() {
+        camera_capture_button.setOnClickListener {
+            // capture still image
+            takeStillPicture()
         }
+
+        gallery_upload_img.setOnClickListener {
+            // TODO implement tapping on thumbnail
+            Toast.makeText(this, "not implemented yet", Toast.LENGTH_SHORT).show()
+        }
+
+        camera_flip_group.setAllOnClickListener(object : View.OnClickListener {
+            override fun onClick(v: View) {
+                cameraSelection = backgroundSurfaceManager.flipCamera()
+                saveCameraSelectionPref()
+            }
+        })
+
+        // attach listener a bit delayed as we need to have cameraBasicHandling created first
+        photoEditorView.postDelayed({
+            camera_flash_group.setAllOnClickListener(object : View.OnClickListener {
+                override fun onClick(v: View) {
+                    flashModeSelection = backgroundSurfaceManager.switchFlashState()
+                    updateFlashModeSelectionIcon()
+                    saveFlashModeSelectionPref()
+                }
+            })
+        }, CAMERA_PREVIEW_LAUNCH_DELAY)
     }
 
     private fun testBrush() {
-        txtCurrentTool.setText(string.label_tool_brush)
         photoEditor.setBrushDrawingMode(true)
         photoEditor.brushColor = ContextCompat.getColor(baseContext, color.red)
     }
 
     private fun testEraser() {
-        txtCurrentTool.setText(string.label_tool_eraser)
         photoEditor.setBrushDrawingMode(false)
         photoEditor.brushEraser()
     }
 
     private fun testText() {
-        txtCurrentTool.setText("")
         photoEditor.addText(
             text = getString(string.text_placeholder),
             colorCodeTextView = ContextCompat.getColor(baseContext, color.white))
     }
 
     private fun testEmoji() {
-        txtCurrentTool.setText("")
         val emojisList = PhotoEditor.getEmojis(this)
         // get some random emoji
         val randomEmojiPos = (0..emojisList.size).shuffled().first()
@@ -209,11 +212,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     private fun testSticker() {
-        txtCurrentTool.setText("")
         photoEditor.addNewImageView(true, Uri.parse("https://i.giphy.com/Ok4HaWlYrewuY.gif"))
     }
 
-    private fun testCameraPreview() {
+    private fun launchCameraPreview() {
         if (!PermissionUtils.checkPermission(this, Manifest.permission.RECORD_AUDIO) ||
             !PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) ||
             !PermissionUtils.checkPermission(this, Manifest.permission.CAMERA)) {
@@ -226,30 +228,29 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             return
         }
 
-        txtCurrentTool.setText(string.main_test_camera_preview)
+        // set the correct camera as selected by the user last time they used the app
+        backgroundSurfaceManager.selectCamera(cameraSelection)
+        // same goes for flash state
+        backgroundSurfaceManager.setFlashState(flashModeSelection)
         backgroundSurfaceManager.switchCameraPreviewOn()
     }
 
     private fun testPlayVideo() {
-        txtCurrentTool.setText(string.main_test_play_video)
         backgroundSurfaceManager.switchVideoPlayerOn()
     }
 
     private fun testStaticBackground() {
-        txtCurrentTool.setText(string.main_test_static_background)
         backgroundSurfaceManager.switchStaticImageBackgroundModeOn()
     }
 
-    private fun testTakeStillPicture() {
-        txtCurrentTool.setText(string.main_test_take_picture)
+    private fun takeStillPicture() {
         backgroundSurfaceManager.takePicture(object : ImageCaptureListener {
             override fun onImageSaved(file: File) {
                 runOnUiThread {
                     Glide.with(this@ComposeLoopFrameActivity)
                         .load(file)
-                        .into(photoEditorView.source)
-
-                    backgroundSurfaceManager.switchStaticImageBackgroundModeOn()
+                        .transform(CenterCrop(), RoundedCorners(16))
+                        .into(gallery_upload_img)
                 }
             }
             override fun onError(message: String, cause: Throwable?) {
@@ -418,6 +419,33 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             } else {
                 Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    private fun updateFlashModeSelectionIcon() {
+        when (flashModeSelection) {
+            FlashIndicatorState.AUTO ->
+                camera_flash_button.background = getDrawable(R.drawable.ic_flash_auto_black_24dp)
+            FlashIndicatorState.ON ->
+                camera_flash_button.background = getDrawable(R.drawable.ic_flash_on_black_24dp)
+            FlashIndicatorState.OFF ->
+                camera_flash_button.background = getDrawable(R.drawable.ic_flash_off_black_24dp)
+        }
+    }
+
+    private fun saveCameraSelectionPref() {
+        val sharedPref = getPreferences(Context.MODE_PRIVATE)
+        with(sharedPref.edit()) {
+            putInt(getString(string.pref_camera_selection), cameraSelection.id)
+            commit()
+        }
+    }
+
+    private fun saveFlashModeSelectionPref() {
+        val sharedPref = getPreferences(Context.MODE_PRIVATE)
+        with(sharedPref.edit()) {
+            putInt(getString(string.pref_flash_mode_selection), flashModeSelection.id)
+            commit()
         }
     }
 }

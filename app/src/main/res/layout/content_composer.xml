@@ -5,9 +5,8 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        tools:showIn="@layout/activity_main"
-        tools:context=".MainActivity">
+        tools:showIn="@layout/activity_composer"
+        tools:context=".compose.ComposeLoopFrameActivity">
 
     <com.automattic.photoeditor.views.PhotoEditorView
         android:id="@+id/photoEditorView"
@@ -18,5 +17,145 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:photo_src="@drawable/background" />
+
+    <ImageButton
+        android:id="@+id/camera_capture_button"
+        android:layout_width="@dimen/round_button_large"
+        android:layout_height="@dimen/round_button_large"
+        android:layout_marginBottom="@dimen/shutter_button_margin"
+        android:scaleType="fitCenter"
+        android:background="@drawable/ic_shutter"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:contentDescription="@string/capture_button_alt" />
+
+    <!-- this will hold the thumbnail img for the picture taken  -->
+    <ImageView
+        android:id="@+id/gallery_upload_img"
+        android:layout_width="@dimen/normal_button_medium_round_corner"
+        android:layout_height="@dimen/normal_button_medium_round_corner"
+        android:layout_marginBottom="71dp"
+        android:background="@drawable/ic_gallery_upload"
+        android:contentDescription="@string/capture_button_alt"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.2"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"/>
+
+    <!-- this is just the border  -->
+    <ImageView
+        android:id="@+id/gallery_upload"
+        android:layout_width="@dimen/normal_button_medium"
+        android:layout_height="@dimen/normal_button_medium"
+        android:layout_marginBottom="71dp"
+        android:background="@drawable/ic_gallery_upload"
+        android:contentDescription="@string/capture_button_alt"
+        android:scaleType="fitCenter"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.2"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"/>
+
+    <!-- top gradient  -->
+    <View
+        android:id="@+id/gradient_top"
+        android:layout_width="0dp"
+        android:layout_height="72dp"
+        android:background="@drawable/top_gradient"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/top_button_group_margin"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/camera_flash_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="visible"
+            app:constraint_referenced_ids="camera_flash_button,label_flash" />
+
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/camera_flip_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="visible"
+            app:constraint_referenced_ids="camera_flip_button,label_flip" />
+
+        <ImageButton
+            android:id="@+id/camera_flash_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="2dp"
+            android:layout_marginLeft="4dp"
+            android:layout_marginStart="4dp"
+            android:background="@drawable/ic_flash_off_black_24dp"
+            android:backgroundTint="@color/white"
+            android:contentDescription="@string/flash_button_alt"
+            android:scaleType="fitCenter"
+            app:layout_constraintBottom_toTopOf="@+id/label_flash"
+            app:layout_constraintStart_toStartOf="@+id/label_flash"/>
+
+        <TextView
+            android:id="@+id/label_flash"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="52dp"
+            android:layout_marginRight="52dp"
+            android:text="@string/label_control_flash"
+            android:textColor="@color/white"
+            android:textSize="@dimen/normal_button_font_size"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+
+        <ImageButton
+            android:id="@+id/camera_flip_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="1dp"
+            android:layout_marginRight="1dp"
+            android:background="@drawable/ic_cameraflip"
+            android:backgroundTint="@color/white"
+            android:contentDescription="@string/flip_button_alt"
+            android:scaleType="fitCenter"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <TextView
+            android:id="@+id/label_flip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="1dp"
+            android:layout_marginStart="1dp"
+            android:layout_marginTop="2dp"
+            android:text="@string/label_control_flip_camera"
+            android:textColor="@color/white"
+            android:textSize="@dimen/normal_button_font_size"
+            app:layout_constraintStart_toStartOf="@+id/camera_flip_button"
+            app:layout_constraintTop_toBottomOf="@+id/camera_flip_button"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- bottom gradient  -->
+    <View
+        android:id="@+id/gradient_bottom"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/gradient_bottom_height"
+        android:background="@drawable/bottom_gradient"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

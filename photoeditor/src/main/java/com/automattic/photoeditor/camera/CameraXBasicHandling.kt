@@ -1,6 +1,9 @@
 package com.automattic.photoeditor.camera
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraManager
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
@@ -16,19 +19,23 @@ import androidx.camera.core.Preview
 import androidx.camera.core.PreviewConfig
 import androidx.camera.core.VideoCapture
 import androidx.camera.core.VideoCaptureConfig
+import com.automattic.photoeditor.camera.interfaces.CameraSelection
+import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
+import com.automattic.photoeditor.camera.interfaces.cameraXLensFacingFromPortkeyCameraSelection
+import com.automattic.photoeditor.camera.interfaces.cameraXflashModeFromPortkeyFlashState
+import com.automattic.photoeditor.camera.interfaces.portkeyCameraSelectionFromCameraXLensFacing
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.io.File
+import java.lang.Exception
 
 class CameraXBasicHandling : VideoRecorderFragment() {
     private lateinit var videoCapture: VideoCapture
     private lateinit var videoPreview: Preview
     private lateinit var imageCapture: ImageCapture
     private var lensFacing = CameraX.LensFacing.BACK
-
-    private var active: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,6 +79,12 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         val screenAspectRatio = Rational(metrics.widthPixels, metrics.heightPixels)
         Log.d(TAG, "Screen metrics: ${metrics.widthPixels} x ${metrics.heightPixels}")
 
+        // retrieve flash availability for this camera
+        val cameraId = CameraX.getCameraWithLensFacing(lensFacing)
+        cameraId?.let {
+            updateFlashSupported(cameraId)
+        }
+
         // Create configuration object for the preview use case
         val previewConfig = PreviewConfig.Builder().apply {
             setLensFacing(lensFacing)
@@ -87,6 +100,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         // Set up the capture use case to allow users to take photos
         val imageCaptureConfig = ImageCaptureConfig.Builder().apply {
             setLensFacing(lensFacing)
+            setFlashMode(cameraXflashModeFromPortkeyFlashState(currentFlashState.currentFlashState()))
             setCaptureMode(CaptureMode.MIN_LATENCY)
             // We request aspect ratio but no resolution to match preview config but letting
             // CameraX optimize for whatever specific resolution best fits requested capture mode
@@ -100,6 +114,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
 
         // Create a configuration object for the video capture use case
         val videoCaptureConfig = VideoCaptureConfig.Builder().apply {
+            setLensFacing(lensFacing)
             setTargetRotation(textureView.display.rotation)
         }.build()
         videoCapture = VideoCapture(videoCaptureConfig)
@@ -174,6 +189,65 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         }, metadata)
     }
 
+    @SuppressLint("RestrictedApi")
+    override fun flipCamera(): CameraSelection {
+        lensFacing = if (CameraX.LensFacing.FRONT == lensFacing) {
+            CameraX.LensFacing.BACK
+        } else {
+            CameraX.LensFacing.FRONT
+        }
+        if (active) {
+            try {
+                // Only bind use cases if we can query a camera with this orientation
+                val cameraId = CameraX.getCameraWithLensFacing(lensFacing)
+
+                // retrieve flash availability for this camera
+                cameraId?.let {
+                    updateFlashSupported(cameraId)
+                }
+
+                // Unbind all use cases and bind them again with the new lens facing configuration
+                CameraX.unbindAll()
+                startCamera()
+            } catch (exc: Exception) {
+                // Do nothing
+                // TODO error handling here
+            }
+        }
+        return portkeyCameraSelectionFromCameraXLensFacing(lensFacing)
+    }
+
+    override fun selectCamera(camera: CameraSelection) {
+        lensFacing = cameraXLensFacingFromPortkeyCameraSelection(camera)
+    }
+
+    override fun currentCamera(): CameraSelection {
+        return portkeyCameraSelectionFromCameraXLensFacing(lensFacing)
+    }
+
+    override fun advanceFlashState() {
+        super.advanceFlashState()
+        imageCapture.flashMode = cameraXflashModeFromPortkeyFlashState(currentFlashState.currentFlashState())
+    }
+
+    override fun setFlashState(flashIndicatorState: FlashIndicatorState) {
+        super.setFlashState(flashIndicatorState)
+        if (active) {
+            imageCapture.flashMode = cameraXflashModeFromPortkeyFlashState(currentFlashState.currentFlashState())
+        }
+    }
+
+    override fun isFlashAvailable(): Boolean {
+        return flashSupported
+    }
+
+    private fun updateFlashSupported(cameraId: String) {
+        val cameraManager = activity?.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        val characteristics = cameraManager.getCameraCharacteristics(cameraId)
+        flashSupported =
+            characteristics.get(CameraCharacteristics.FLASH_INFO_AVAILABLE) == true
+    }
+
     companion object {
         private val instance = CameraXBasicHandling()
 
@@ -182,8 +256,12 @@ class CameraXBasicHandling : VideoRecorderFragment() {
          */
         private val TAG = "CameraXBasicHandling"
 
-        @JvmStatic fun getInstance(textureView: AutoFitTextureView): CameraXBasicHandling {
+        @JvmStatic fun getInstance(
+            textureView: AutoFitTextureView,
+            flashSupportChangeListener: FlashSupportChangeListener
+        ): CameraXBasicHandling {
             instance.textureView = textureView
+            instance.flashSupportChangeListener = flashSupportChangeListener
             return instance
         }
     }
