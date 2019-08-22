@@ -97,6 +97,6 @@ class PressAndHoldGestureHelper(
 
     companion object {
         // time that needs to pass at first for the "hold" gesture to be detected as an actual hold
-        val CLICK_LENGTH = 400L
+        const val CLICK_LENGTH = 400L
     }
 }
