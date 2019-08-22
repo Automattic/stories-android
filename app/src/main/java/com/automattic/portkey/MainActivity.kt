@@ -18,9 +18,9 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-        if (isFirstLaunch) {
+        if (AppPrefs.isIntroRequired()) {
             startActivity(Intent(this, IntroActivity::class.java))
-            isFirstLaunch = false
+            AppPrefs.setIntroRequired(false)
             finish()
         }
 
@@ -32,8 +32,4 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
 
     override fun onSupportNavigateUp() =
         Navigation.findNavController(this, R.id.nav_host_fragment).navigateUp()
-
-    companion object {
-        private var isFirstLaunch = true
-    }
 }
