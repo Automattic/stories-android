@@ -129,6 +129,10 @@ class BackgroundSurfaceManager(
         photoEditorView.turnTextureViewOff()
     }
 
+    fun preTurnTextureViewOn() {
+        photoEditorView.turnTextureViewOn()
+    }
+
     fun switchCameraPreviewOn() {
         isCameraVisible = true
         isVideoPlayerVisible = false

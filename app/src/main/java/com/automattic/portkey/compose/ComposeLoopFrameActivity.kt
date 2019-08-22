@@ -3,8 +3,13 @@ package com.automattic.portkey.compose
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.ProgressDialog
+import android.content.Context
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.VibrationEffect
+import android.os.Vibrator
 import androidx.appcompat.app.AppCompatActivity
 import android.view.View
 import android.widget.Toast
@@ -33,7 +38,7 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.content_composer.*
 import java.io.File
 import java.io.IOException
-import android.content.Context
+import android.view.Gravity
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
 
 fun Group.setAllOnClickListener(listener: View.OnClickListener?) {
@@ -46,7 +51,12 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     private lateinit var photoEditor: PhotoEditor
     private lateinit var backgroundSurfaceManager: BackgroundSurfaceManager
     private var progressDialog: ProgressDialog? = null
-    private val CAMERA_PREVIEW_LAUNCH_DELAY = 500L
+
+    private val timesUpRunnable = Runnable {
+        stopRecordingVideo(false) // time's up, it's not a cancellation
+    }
+    private val timesUpHandler = Handler()
+
     private var cameraSelection = CameraSelection.BACK
     private var flashModeSelection = FlashIndicatorState.OFF
 
@@ -100,9 +110,11 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             object : FlashSupportChangeListener {
                 override fun onFlashSupportChanged(isSupported: Boolean) {
                     if (isSupported) {
-                        camera_flash_group.visibility = View.VISIBLE
+                        camera_flash_button.visibility = View.VISIBLE
+                        label_flash.visibility = View.VISIBLE
                     } else {
-                        camera_flash_group.visibility = View.GONE
+                        camera_flash_button.visibility = View.INVISIBLE
+                        label_flash.visibility = View.INVISIBLE
                     }
                 }
             },
@@ -112,6 +124,9 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
         // add click listeners
         addClickListeners()
+
+        // small tweak to make sure to not show the background image for the static image background mode
+        backgroundSurfaceManager.preTurnTextureViewOn()
 
         if (savedInstanceState == null) {
             // check camera selection, flash state from preferences
@@ -159,10 +174,50 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     private fun addClickListeners() {
-        camera_capture_button.setOnClickListener {
-            // capture still image
-            takeStillPicture()
-        }
+        camera_capture_button
+            .setOnTouchListener(
+                PressAndHoldGestureHelper(
+                    PressAndHoldGestureHelper.CLICK_LENGTH,
+                    object : PressAndHoldGestureListener {
+                        override fun onClickGesture() {
+                            if (!backgroundSurfaceManager.cameraRecording()) {
+                                takeStillPicture()
+                            }
+                        }
+                        override fun onHoldingGestureStart() {
+                            startRecordingVideo()
+                        }
+
+                        override fun onHoldingGestureEnd() {
+                            stopRecordingVideo(false)
+                        }
+
+                        override fun onHoldingGestureCanceled() {
+                            stopRecordingVideo(true)
+                        }
+
+                        override fun onStartDetectionWait() {
+                            // when the wait to see whether this is a "press and hold" gesture starts,
+                            // start the animation to grow the capture button radius
+                            camera_capture_button
+                                .animate()
+                                .scaleXBy(0.3f) // scale up by 30%
+                                .scaleYBy(0.3f)
+                                .duration = PressAndHoldGestureHelper.CLICK_LENGTH
+                        }
+
+                        override fun onTouchEventDetectionEnd() {
+                            // when gesture detection ends, we're good to
+                            // get the capture button shape as it originally was (idle state)
+                            camera_capture_button.clearAnimation()
+                            camera_capture_button
+                                .animate()
+                                .scaleX(1.0f)
+                                .scaleY(1.0f)
+                                .duration = PressAndHoldGestureHelper.CLICK_LENGTH / 4
+                        }
+                    })
+            )
 
         gallery_upload_img.setOnClickListener {
             // TODO implement tapping on thumbnail
@@ -244,6 +299,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     private fun takeStillPicture() {
+        camera_capture_button.startProgressingAnimation(CAMERA_STILL_PICTURE_ANIM_MS)
         backgroundSurfaceManager.takePicture(object : ImageCaptureListener {
             override fun onImageSaved(file: File) {
                 runOnUiThread {
@@ -252,11 +308,59 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                         .transform(CenterCrop(), RoundedCorners(16))
                         .into(gallery_upload_img)
                 }
+
+                showToast("IMAGE SAVED")
             }
             override fun onError(message: String, cause: Throwable?) {
                 // TODO implement error handling
+                showToast("ERROR SAVING IMAGE")
             }
         })
+    }
+
+    private fun startRecordingVideo() {
+        if (!backgroundSurfaceManager.cameraRecording()) {
+            // force stop recording video after maximum time limit reached
+            timesUpHandler.postDelayed(timesUpRunnable, CAMERA_VIDEO_RECORD_MAX_LENGTH_MS)
+            // strat progressing animation
+            camera_capture_button.startProgressingAnimation(CAMERA_VIDEO_RECORD_MAX_LENGTH_MS)
+            backgroundSurfaceManager.startRecordingVideo()
+            hideUIControls()
+            showToast("VIDEO STARTED")
+            vibrate()
+        }
+    }
+
+    private fun vibrate() {
+        val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        // Vibrate for 500 milliseconds
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE))
+        } else {
+            // deprecated in API 26
+            vibrator.vibrate(100)
+        }
+    }
+
+    private fun stopRecordingVideo(isCanceled: Boolean) {
+        if (backgroundSurfaceManager.cameraRecording()) {
+            camera_capture_button.stopProgressingAnimation()
+            camera_capture_button.clearAnimation()
+            camera_capture_button
+                .animate()
+                .scaleX(1.0f)
+                .scaleY(1.0f)
+                .duration = PressAndHoldGestureHelper.CLICK_LENGTH / 4
+            backgroundSurfaceManager.stopRecordingVideo()
+            showUIControls()
+            if (isCanceled) {
+                // remove any pending callback if video was cancelled
+                timesUpHandler.removeCallbacksAndMessages(null)
+                showToast("GESTURE CANCELLED, VIDEO SAVED")
+            } else {
+                showToast("VIDEO SAVED")
+            }
+        }
     }
 
     // this one saves one composed unit: ether an Image or a Video
@@ -422,6 +526,34 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         }
     }
 
+    private fun showToast(message: String) {
+        val toast = Toast.makeText(this, message, Toast.LENGTH_SHORT)
+        toast.setGravity(Gravity.TOP, 0, 0)
+        toast.show()
+    }
+
+    private fun hideUIControls() {
+        camera_flash_button.visibility = View.INVISIBLE
+        label_flash.visibility = View.INVISIBLE
+
+        camera_flip_button.visibility = View.INVISIBLE
+        label_flip.visibility = View.INVISIBLE
+
+        gallery_upload_img.visibility = View.INVISIBLE
+        gallery_upload.visibility = View.INVISIBLE
+    }
+
+    private fun showUIControls() {
+        camera_flash_button.visibility = View.VISIBLE
+        label_flash.visibility = View.VISIBLE
+
+        camera_flip_button.visibility = View.VISIBLE
+        label_flip.visibility = View.VISIBLE
+
+        gallery_upload_img.visibility = View.VISIBLE
+        gallery_upload.visibility = View.VISIBLE
+    }
+
     private fun updateFlashModeSelectionIcon() {
         when (flashModeSelection) {
             FlashIndicatorState.AUTO ->
@@ -447,5 +579,11 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             putInt(getString(string.pref_flash_mode_selection), flashModeSelection.id)
             commit()
         }
+    }
+
+    companion object {
+        private const val CAMERA_PREVIEW_LAUNCH_DELAY = 500L
+        private const val CAMERA_VIDEO_RECORD_MAX_LENGTH_MS = 10000L
+        private const val CAMERA_STILL_PICTURE_ANIM_MS = 300L
     }
 }
