@@ -227,17 +227,13 @@ class CameraXBasicHandling : VideoRecorderFragment() {
 
     override fun advanceFlashState() {
         super.advanceFlashState()
-        imageCapture.let {
-            it.flashMode = cameraXflashModeFromPortkeyFlashState(currentFlashState.currentFlashState())
-        }
+        imageCapture.flashMode = cameraXflashModeFromPortkeyFlashState(currentFlashState.currentFlashState())
     }
 
     override fun setFlashState(flashIndicatorState: FlashIndicatorState) {
         super.setFlashState(flashIndicatorState)
         if (active) {
-            imageCapture.let {
-                it.flashMode = cameraXflashModeFromPortkeyFlashState(currentFlashState.currentFlashState())
-            }
+            imageCapture.flashMode = cameraXflashModeFromPortkeyFlashState(currentFlashState.currentFlashState())
         }
     }
 
