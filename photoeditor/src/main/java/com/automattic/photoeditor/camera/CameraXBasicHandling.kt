@@ -217,8 +217,8 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         return portkeyCameraSelectionFromCameraXLensFacing(lensFacing)
     }
 
-    override fun selectCamera(cameraSelection: CameraSelection) {
-        lensFacing = cameraXLensFacingFromPortkeyCameraSelection(cameraSelection)
+    override fun selectCamera(camera: CameraSelection) {
+        lensFacing = cameraXLensFacingFromPortkeyCameraSelection(camera)
     }
 
     override fun currentCamera(): CameraSelection {
