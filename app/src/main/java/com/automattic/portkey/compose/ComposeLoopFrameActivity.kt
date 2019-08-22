@@ -38,6 +38,8 @@ import java.io.File
 import java.io.IOException
 import android.view.Gravity
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
+import com.automattic.portkey.compose.emoji.EmojiPickerFragment
+import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
 
 fun Group.setAllOnClickListener(listener: View.OnClickListener?) {
     referencedIds.forEach { id ->
@@ -58,6 +60,8 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     private var cameraSelection = CameraSelection.BACK
     private var flashModeSelection = FlashIndicatorState.OFF
     private val FRAGMENT_DIALOG = "dialog"
+
+    private lateinit var emojiPickerFragment: EmojiPickerFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -120,6 +124,13 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             BuildConfig.USE_CAMERAX)
 
         lifecycle.addObserver(backgroundSurfaceManager)
+
+        emojiPickerFragment = EmojiPickerFragment()
+        emojiPickerFragment.setEmojiListener(object: EmojiListener {
+            override fun onEmojiClick(emojiUnicode: String) {
+                photoEditor.addEmoji(emojiUnicode)
+            }
+        })
 
         // add click listeners
         addClickListeners()
@@ -274,8 +285,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         }
 
         stickers_button_group.setOnClickListener {
-            // TODO implement STICKERS (actually, EMOJI only for DEMO 1)
-            Toast.makeText(this, "not implemented yet", Toast.LENGTH_SHORT).show()
+            emojiPickerFragment.show(supportFragmentManager, emojiPickerFragment.getTag());
         }
     }
 
