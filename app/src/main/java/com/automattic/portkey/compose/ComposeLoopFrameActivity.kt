@@ -49,9 +49,6 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     private lateinit var photoEditor: PhotoEditor
     private lateinit var backgroundSurfaceManager: BackgroundSurfaceManager
     private var progressDialog: ProgressDialog? = null
-    private val CAMERA_PREVIEW_LAUNCH_DELAY = 500L
-    private val CAMERA_VIDEO_RECORD_MAX_LENGTH_MS = 10000L
-    private val CAMERA_STILL_PICTURE_ANIM_MS = 300L
 
     private val timesUpRunnable = Runnable {
         stopRecordingVideo(false) // time's up, it's not a cancellation
@@ -565,8 +562,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     private fun showToast(message: String) {
-        val toast = Toast.makeText(
-            this@ComposeLoopFrameActivity, message, Toast.LENGTH_SHORT)
+        val toast = Toast.makeText(this, message, Toast.LENGTH_SHORT)
         toast.setGravity(Gravity.TOP, 0, 0)
         toast.show()
     }
@@ -644,5 +640,11 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             putInt(getString(string.pref_flash_mode_selection), flashModeSelection.id)
             commit()
         }
+    }
+
+    companion object {
+        private const val CAMERA_PREVIEW_LAUNCH_DELAY = 500L
+        private const val CAMERA_VIDEO_RECORD_MAX_LENGTH_MS = 10000L
+        private const val CAMERA_STILL_PICTURE_ANIM_MS = 300L
     }
 }
