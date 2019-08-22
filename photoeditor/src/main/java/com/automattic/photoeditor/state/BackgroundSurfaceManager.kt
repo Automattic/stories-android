@@ -16,8 +16,12 @@ import androidx.lifecycle.OnLifecycleEvent
 import com.automattic.photoeditor.camera.Camera2BasicHandling
 import com.automattic.photoeditor.camera.CameraXBasicHandling
 import com.automattic.photoeditor.camera.VideoPlayingBasicHandling
+import com.automattic.photoeditor.camera.interfaces.CameraSelection
+import com.automattic.photoeditor.camera.interfaces.CameraSelection.BACK
+import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
+import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment.FlashSupportChangeListener
 import com.automattic.photoeditor.state.BackgroundSurfaceManager.SurfaceHandlerType.CAMERA2
 import com.automattic.photoeditor.state.BackgroundSurfaceManager.SurfaceHandlerType.CAMERAX
 import com.automattic.photoeditor.state.BackgroundSurfaceManager.SurfaceHandlerType.VIDEOPLAYER
@@ -29,6 +33,7 @@ class BackgroundSurfaceManager(
     private val lifeCycle: Lifecycle,
     private val photoEditorView: PhotoEditorView,
     private val supportFragmentManager: FragmentManager,
+    private val flashSupportChangeListener: FlashSupportChangeListener,
     private val useCameraX: Boolean
 ) : LifecycleObserver {
     private lateinit var cameraBasicHandler: VideoRecorderFragment
@@ -97,6 +102,8 @@ class BackgroundSurfaceManager(
         outState?.putBoolean(KEY_IS_CAMERA_VISIBLE, isCameraVisible)
         outState?.putBoolean(KEY_IS_VIDEO_PLAYER_VISIBLE, isVideoPlayerVisible)
         outState?.putBoolean(KEY_IS_CAMERA_RECORDING, isCameraRecording)
+        outState?.putInt(KEY_CAMERA_SELECTION, cameraBasicHandler.currentCamera().id)
+        outState?.putInt(KEY_FLASH_MODE_SELECTION, cameraBasicHandler.currentFlashState().id)
     }
 
     fun cameraVisible(): Boolean {
@@ -122,22 +129,43 @@ class BackgroundSurfaceManager(
         photoEditorView.turnTextureViewOff()
     }
 
+    fun preTurnTextureViewOn() {
+        photoEditorView.turnTextureViewOn()
+    }
+
     fun switchCameraPreviewOn() {
+        isCameraVisible = true
+        isVideoPlayerVisible = false
+        // now, start showing camera preview
+        photoEditorView.turnTextureViewOn()
+        cameraBasicHandler.activate()
+        videoPlayerHandling.deactivate()
+    }
+
+    fun flipCamera(): CameraSelection {
         if (isCameraVisible) {
-            // camera preview is ON
-            if (!isCameraRecording) {
-                startRecordingVideo()
-            } else {
-                stopRecordingVideo()
-            }
-        } else {
-            isCameraVisible = true
-            isVideoPlayerVisible = false
-            // now, start playing video
-            photoEditorView.turnTextureViewOn()
-            cameraBasicHandler.activate()
-            videoPlayerHandling.deactivate()
+            return cameraBasicHandler.flipCamera()
         }
+        return BACK // default
+    }
+
+    fun selectCamera(cameraSelection: CameraSelection) {
+        cameraBasicHandler.selectCamera(cameraSelection)
+    }
+
+    fun switchFlashState(): FlashIndicatorState {
+        if (isCameraVisible) {
+            cameraBasicHandler.advanceFlashState()
+        }
+        return cameraBasicHandler.currentFlashState()
+    }
+
+    fun setFlashState(flashIndicatorState: FlashIndicatorState) {
+        cameraBasicHandler.setFlashState(flashIndicatorState)
+    }
+
+    fun isFlashAvailable(): Boolean {
+        return cameraBasicHandler.isFlashAvailable()
     }
 
     fun switchVideoPlayerOn() {
@@ -180,17 +208,21 @@ class BackgroundSurfaceManager(
     }
 
     fun startRecordingVideo() {
-        // let's start recording
-        isCameraRecording = true
-        // TODO txtRecording.visibility = View.VISIBLE
-        cameraBasicHandler.startRecordingVideo()
+        if (isCameraVisible) {
+            // let's start recording
+            isCameraRecording = true
+            // TODO txtRecording.visibility = View.VISIBLE
+            cameraBasicHandler.startRecordingVideo()
+        }
     }
 
     fun stopRecordingVideo() {
-        // stop recording
-        isCameraRecording = false
-        // TODO txtRecording.visibility = View.GONE
-        cameraBasicHandler.stopRecordingVideo()
+        if (isCameraRecording) {
+            // stop recording
+            isCameraRecording = false
+            // TODO txtRecording.visibility = View.GONE
+            cameraBasicHandler.stopRecordingVideo()
+        }
     }
 
     fun takePicture(listener: ImageCaptureListener) {
@@ -206,6 +238,12 @@ class BackgroundSurfaceManager(
             isCameraVisible = savedInstanceState.getBoolean(KEY_IS_CAMERA_VISIBLE)
             isVideoPlayerVisible = savedInstanceState.getBoolean(KEY_IS_VIDEO_PLAYER_VISIBLE)
             isCameraRecording = savedInstanceState.getBoolean(KEY_IS_CAMERA_RECORDING)
+            CameraSelection.valueOf(savedInstanceState.getInt(KEY_CAMERA_SELECTION))?.let {
+                cameraBasicHandler.selectCamera(it)
+            }
+            FlashIndicatorState.valueOf(savedInstanceState.getInt(KEY_FLASH_MODE_SELECTION))?.let {
+                cameraBasicHandler.setFlashState(it)
+            }
         }
     }
 
@@ -214,7 +252,8 @@ class BackgroundSurfaceManager(
             CAMERAX -> {
                 val cameraFragment = supportFragmentManager.findFragmentByTag(KEY_CAMERA_HANDLING_FRAGMENT_TAG)
                 if (cameraFragment == null) {
-                    cameraBasicHandler = CameraXBasicHandling.getInstance(photoEditorView.textureView)
+                    cameraBasicHandler = CameraXBasicHandling.getInstance(photoEditorView.textureView,
+                        flashSupportChangeListener)
                     supportFragmentManager
                         .beginTransaction().add(cameraBasicHandler, KEY_CAMERA_HANDLING_FRAGMENT_TAG).commit()
                 } else {
@@ -222,13 +261,15 @@ class BackgroundSurfaceManager(
                     cameraBasicHandler = cameraFragment as CameraXBasicHandling
                     // the photoEditorView layout has been recreated so, re-assign its TextureView
                     cameraBasicHandler.textureView = photoEditorView.textureView
+                    cameraBasicHandler.flashSupportChangeListener = flashSupportChangeListener
                 }
             }
             CAMERA2 -> {
                 // ask FragmentManager to add the headless fragment so it receives the Activity's lifecycle callback calls
                 val cameraFragment = supportFragmentManager.findFragmentByTag(KEY_CAMERA_HANDLING_FRAGMENT_TAG)
                 if (cameraFragment == null) {
-                    cameraBasicHandler = Camera2BasicHandling.getInstance(photoEditorView.textureView)
+                    cameraBasicHandler = Camera2BasicHandling.getInstance(photoEditorView.textureView,
+                        flashSupportChangeListener)
                     supportFragmentManager
                         .beginTransaction().add(cameraBasicHandler, KEY_CAMERA_HANDLING_FRAGMENT_TAG).commit()
                 } else {
@@ -236,6 +277,7 @@ class BackgroundSurfaceManager(
                     cameraBasicHandler = cameraFragment as Camera2BasicHandling
                     // the photoEditorView layout has been recreated so, re-assign its TextureView
                     cameraBasicHandler.textureView = photoEditorView.textureView
+                    cameraBasicHandler.flashSupportChangeListener = flashSupportChangeListener
                 }
                 // add camera handling texture listener
                 photoEditorView.listeners.add((cameraBasicHandler as Camera2BasicHandling).surfaceTextureListener)
@@ -266,5 +308,7 @@ class BackgroundSurfaceManager(
         private const val KEY_VIDEOPLAYER_HANDLING_FRAGMENT_TAG = "VIDEOPLAYER_TAG"
         private const val KEY_IS_VIDEO_PLAYER_VISIBLE = "key_is_video_player_visible"
         private const val KEY_IS_CAMERA_RECORDING = "key_is_camera_recording"
+        private const val KEY_CAMERA_SELECTION = "key_camera_selection"
+        private const val KEY_FLASH_MODE_SELECTION = "key_flash_mode_selection"
     }
 }

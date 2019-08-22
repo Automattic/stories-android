@@ -42,6 +42,7 @@ import android.media.MediaRecorder
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
+import android.util.DisplayMetrics
 import android.util.Log
 import android.util.Size
 import android.util.SparseIntArray
@@ -51,8 +52,15 @@ import android.view.View
 import androidx.core.content.ContextCompat
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.R
+import com.automattic.photoeditor.camera.interfaces.CameraSelection
+import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState
+import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.AUTO
+import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.OFF
+import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.ON
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
+import com.automattic.photoeditor.camera.interfaces.camera2LensFacingFromPortkeyCameraSelection
+import com.automattic.photoeditor.camera.interfaces.portkeyCameraSelectionFromCamera2LensFacing
 import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.io.IOException
@@ -87,8 +95,6 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
      * ID of the current [CameraDevice].
      */
     private lateinit var cameraId: String
-
-    private var active: Boolean = false
 
     /**
      * A [CameraCaptureSession] for camera preview.
@@ -174,14 +180,11 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
     private val cameraOpenCloseLock = Semaphore(1)
 
     /**
-     * Whether the current camera device supports Flash or not.
-     */
-    private var flashSupported = false
-
-    /**
      * Orientation of the camera sensor
      */
     private var sensorOrientation = 0
+
+    private var lensFacing = CameraMetadata.LENS_FACING_BACK
 
     /*
     * Media recorder
@@ -308,10 +311,8 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
             for (cameraId in manager.cameraIdList) {
                 val characteristics = manager.getCameraCharacteristics(cameraId)
 
-                // We don't use a front facing camera in this sample.
                 val cameraDirection = characteristics.get(CameraCharacteristics.LENS_FACING)
-                if (cameraDirection != null &&
-                        cameraDirection == CameraCharacteristics.LENS_FACING_FRONT) {
+                if (cameraDirection != null && lensFacing != cameraDirection) {
                     continue
                 }
 
@@ -335,8 +336,9 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
                 sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION) ?: continue
                 val swappedDimensions = areDimensionsSwapped(displayRotation)
 
-                val displaySize = Point()
-                activity?.windowManager?.defaultDisplay?.getSize(displaySize)
+                val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
+                val displaySize = Point(metrics.widthPixels, metrics.heightPixels)
+
                 val rotatedPreviewWidth = if (swappedDimensions) height else width
                 val rotatedPreviewHeight = if (swappedDimensions) width else height
                 var maxPreviewWidth = if (swappedDimensions) displaySize.y else displaySize.x
@@ -514,8 +516,8 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
                                 // Auto focus should be continuous for camera preview.
                                 previewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
                                         CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
-                                // Flash is automatically enabled when necessary.
-                                setAutoFlash(previewRequestBuilder)
+                                // set flash mode
+                                setCamera2FlashModeFromPortkeyRequestedFlashMode(previewRequestBuilder)
 
                                 // Finally, we start displaying the camera preview.
                                 previewRequest = previewRequestBuilder.build()
@@ -595,6 +597,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
             // This is how to tell the camera to trigger.
             previewRequestBuilder.set(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER,
                     CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER_START)
+            setCamera2FlashModeFromPortkeyRequestedFlashMode(previewRequestBuilder)
             // Tell #captureCallback to wait for the precapture sequence to be set.
             state = STATE_WAITING_PRECAPTURE
             captureSession?.capture(previewRequestBuilder.build(), captureCallback,
@@ -628,7 +631,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
                 // Use the same AE and AF modes as the preview.
                 set(CaptureRequest.CONTROL_AF_MODE,
                         CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
-            }.also { setAutoFlash(it) }
+            }.also { setCamera2FlashModeFromPortkeyRequestedFlashMode(it) }
 
             val captureCallback = object : CameraCaptureSession.CaptureCallback() {
                 override fun onCaptureCompleted(
@@ -670,7 +673,8 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
             // Reset the auto-focus trigger
             previewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
                     CameraMetadata.CONTROL_AF_TRIGGER_CANCEL)
-            setAutoFlash(previewRequestBuilder)
+            // set flash mode
+            setCamera2FlashModeFromPortkeyRequestedFlashMode(previewRequestBuilder)
             captureSession?.capture(previewRequestBuilder.build(), captureCallback,
                     backgroundHandler)
             // After this, the camera will go back to the normal state of preview.
@@ -696,10 +700,16 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
 //        }
     }
 
-    private fun setAutoFlash(requestBuilder: CaptureRequest.Builder) {
+    private fun setCamera2FlashModeFromPortkeyRequestedFlashMode(requestBuilder: CaptureRequest.Builder) {
         if (flashSupported) {
-            requestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
+            when (currentFlashState.currentFlashState()) {
+                AUTO -> requestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
                     CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH)
+                ON -> requestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
+                    CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH)
+                OFF -> requestBuilder.set(CaptureRequest.FLASH_MODE,
+                    CaptureRequest.FLASH_MODE_OFF)
+            }
         }
     }
 
@@ -782,8 +792,8 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
                             // Auto focus should be continuous for camera preview.
                             previewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
                                 CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
-                            // Flash is automatically enabled when necessary.
-                            setAutoFlash(previewRequestBuilder)
+                            // set flash mode
+                            setCamera2FlashModeFromPortkeyRequestedFlashMode(previewRequestBuilder)
 
                             // Finally, we start displaying the camera preview.
                             previewRequest = previewRequestBuilder.build()
@@ -828,6 +838,45 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
         currentFile?.createNewFile()
         imageCapturedListener = onImageCapturedListener
         lockFocus()
+    }
+
+    override fun flipCamera(): CameraSelection {
+        lensFacing = if (CameraMetadata.LENS_FACING_FRONT == lensFacing) {
+            CameraMetadata.LENS_FACING_BACK
+        } else {
+            CameraMetadata.LENS_FACING_FRONT
+        }
+        windDown()
+        startUp()
+        return portkeyCameraSelectionFromCamera2LensFacing(lensFacing)
+    }
+
+    override fun selectCamera(camera: CameraSelection) {
+        lensFacing = camera2LensFacingFromPortkeyCameraSelection(camera)
+    }
+
+    override fun currentCamera(): CameraSelection {
+        return portkeyCameraSelectionFromCamera2LensFacing(lensFacing)
+    }
+
+    override fun isFlashAvailable(): Boolean {
+        return flashSupported
+    }
+
+    override fun advanceFlashState() {
+        super.advanceFlashState()
+        if (active) {
+            windDown()
+            startUp()
+        }
+    }
+
+    override fun setFlashState(flashIndicatorState: FlashIndicatorState) {
+        super.setFlashState(flashIndicatorState)
+        if (active) {
+            windDown()
+            startUp()
+        }
     }
 
     companion object {
@@ -946,8 +995,12 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
             }
         }
 
-        @JvmStatic fun getInstance(textureView: AutoFitTextureView): Camera2BasicHandling {
+        @JvmStatic fun getInstance(
+            textureView: AutoFitTextureView,
+            flashSupportChangeListener: FlashSupportChangeListener
+        ): Camera2BasicHandling {
             instance.textureView = textureView
+            instance.flashSupportChangeListener = flashSupportChangeListener
             return instance
         }
     }
