@@ -60,6 +60,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
     private var cameraSelection = CameraSelection.BACK
     private var flashModeSelection = FlashIndicatorState.OFF
+    private val FRAGMENT_DIALOG = "dialog"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -244,10 +245,19 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         }, CAMERA_PREVIEW_LAUNCH_DELAY)
 
         close_button.setOnClickListener {
-            // click listener here
-            launchCameraPreview()
+            // add discard dialog
+            if (photoEditor.anyViewsAdded()) {
+                // show dialog
+                DiscardDialog.newInstance(getString(string.dialog_discard_message), object : DiscardOk {
+                    override fun discardOkClicked() {
+                        photoEditor.clearAllViews()
+                        launchCameraPreview()
+                    }
+                }).show(supportFragmentManager, FRAGMENT_DIALOG)
+            } else {
+                launchCameraPreview()
+            }
         }
-
 
         sound_button_group.setOnClickListener {
             // TODO implement sound or...??

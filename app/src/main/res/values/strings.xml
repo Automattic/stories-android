@@ -22,6 +22,7 @@
     <string name="label_control_text">Text</string>
     <string name="label_control_sound">Sound</string>
 
+    <string name="dialog_discard_message">Are you sure you want to discard your Loop?</string>
 
     <!--preference keys-->
     <string name="pref_camera_selection" translatable="false">pref_camera_selection</string>

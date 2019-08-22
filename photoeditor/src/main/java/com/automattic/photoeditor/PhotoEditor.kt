@@ -1044,6 +1044,10 @@ class PhotoEditor private constructor(builder: Builder) :
         return false
     }
 
+    fun anyViewsAdded(): Boolean {
+        return (addedViews.size > 0)
+    }
+
     /**
      * Builder pattern to define [PhotoEditor] Instance
      */
