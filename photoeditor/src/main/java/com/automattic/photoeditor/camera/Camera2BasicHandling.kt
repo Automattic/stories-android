@@ -851,8 +851,8 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
         return portkeyCameraSelectionFromCamera2LensFacing(lensFacing)
     }
 
-    override fun selectCamera(cameraSelection: CameraSelection) {
-        lensFacing = camera2LensFacingFromPortkeyCameraSelection(cameraSelection)
+    override fun selectCamera(camera: CameraSelection) {
+        lensFacing = camera2LensFacingFromPortkeyCameraSelection(camera)
     }
 
     override fun currentCamera(): CameraSelection {
