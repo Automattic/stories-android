@@ -255,8 +255,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         }
 
         text_add_button_group.setOnClickListener {
-            // TODO implement TEXT
-            Toast.makeText(this, "not implemented yet", Toast.LENGTH_SHORT).show()
+            addNewText()
         }
 
         stickers_button_group.setOnClickListener {
@@ -275,7 +274,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         photoEditor.brushEraser()
     }
 
-    private fun testText() {
+    private fun addNewText() {
         photoEditor.addText(
             text = getString(string.text_placeholder),
             colorCodeTextView = ContextCompat.getColor(baseContext, color.white))
