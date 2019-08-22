@@ -126,7 +126,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         lifecycle.addObserver(backgroundSurfaceManager)
 
         emojiPickerFragment = EmojiPickerFragment()
-        emojiPickerFragment.setEmojiListener(object: EmojiListener {
+        emojiPickerFragment.setEmojiListener(object : EmojiListener {
             override fun onEmojiClick(emojiUnicode: String) {
                 photoEditor.addEmoji(emojiUnicode)
             }
