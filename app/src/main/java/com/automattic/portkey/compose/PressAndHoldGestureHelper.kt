@@ -32,8 +32,7 @@ class PressAndHoldGestureHelper(
     }
 
     override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
-        val action: Int = motionEvent.actionMasked
-        when (action) {
+        when (motionEvent.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 // here start a timer, and if no CANCEL or UP event passes
                 // before the timer ellapses, then trigger the HOLD action
