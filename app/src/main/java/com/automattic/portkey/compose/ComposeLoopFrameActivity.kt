@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.text.TextUtils
 import androidx.appcompat.app.AppCompatActivity
 import android.view.View
 import android.widget.Toast
@@ -38,6 +39,7 @@ import java.io.File
 import java.io.IOException
 import android.view.Gravity
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
+import com.automattic.photoeditor.views.ViewType.TEXT
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
 
 fun Group.setAllOnClickListener(listener: View.OnClickListener?) {
@@ -84,7 +86,12 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                         // make sure to set it to visible, as newly added views are originally hidden until
                         // proper text is set
                         rootView.visibility = View.VISIBLE
-                        photoEditor.editText(rootView, inputText, colorCode)
+                        if (TextUtils.isEmpty(inputText)) {
+                            // just remove the view here, we don't need it - also don't  add to the `redo` stack
+                            photoEditor.viewUndo(rootView, TEXT, false)
+                        } else {
+                            photoEditor.editText(rootView, inputText, colorCode)
+                        }
                         // TODO hardcoded noSound parameter here
                         editModeRestoreAllUIControlsAfterTextEditDialog(false)
                     }

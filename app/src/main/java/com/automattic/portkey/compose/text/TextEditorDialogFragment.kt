@@ -73,9 +73,7 @@ class TextEditorDialogFragment : DialogFragment() {
             inputMethodManager?.hideSoftInputFromWindow(textView.windowToken, 0)
             dismiss()
             val inputText = add_text_edit_text?.text.toString()
-            if (!TextUtils.isEmpty(inputText)) {
-                textEditor?.onDone(inputText, colorCode)
-            }
+            textEditor?.onDone(inputText, colorCode)
         }
     }
 

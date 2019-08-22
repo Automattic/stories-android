@@ -486,12 +486,12 @@ class PhotoEditor private constructor(builder: Builder) :
         }
     }*/
 
-    private fun viewUndo(removedView: View, viewType: ViewType) {
+    fun viewUndo(removedView: View, viewType: ViewType, addToRedoList: Boolean = true) {
         if (addedViews.size > 0) {
             if (addedViews.containsView(removedView)) {
                 parentView.removeView(removedView)
                 val removedViewWithData = addedViews.removeView(removedView)
-                if (removedViewWithData != null) {
+                if (removedViewWithData != null && addToRedoList) {
                     redoViews.add(removedViewWithData)
                 }
                 if (mOnPhotoEditorListener != null) {
