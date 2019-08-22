@@ -73,6 +73,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
         photoEditor.setOnPhotoEditorListener(object : OnPhotoEditorListener {
             override fun onEditTextChangeListener(rootView: View, text: String, colorCode: Int) {
+                editModeHideAllUIControlsBeforeTextEditDialog()
                 val textEditorDialogFragment = TextEditorDialogFragment.show(
                     this@ComposeLoopFrameActivity,
                     text,
@@ -80,6 +81,8 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 textEditorDialogFragment.setOnTextEditorListener(object : TextEditorDialogFragment.TextEditor {
                     override fun onDone(inputText: String, colorCode: Int) {
                         photoEditor.editText(rootView, inputText, colorCode)
+                        // TODO hardcoded noSound parameter here
+                        editModeRestoreAllUIControlsAfterTextEditDialog(false)
                     }
                 })
             }
@@ -618,6 +621,25 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         // hide proper edit mode controls
         close_button.visibility = View.INVISIBLE
         edit_mode_controls.visibility = View.INVISIBLE
+    }
+
+    private fun editModeHideAllUIControlsBeforeTextEditDialog() {
+        // momentarily hide proper edit mode controls
+        close_button.visibility = View.INVISIBLE
+        edit_mode_controls.visibility = View.INVISIBLE
+        sound_button_group.visibility = View.INVISIBLE
+    }
+
+    private fun editModeRestoreAllUIControlsAfterTextEditDialog(noSound: Boolean) {
+        // momentarily hide proper edit mode controls
+        close_button.visibility = View.VISIBLE
+        edit_mode_controls.visibility = View.VISIBLE
+
+        if (noSound) {
+            sound_button_group.visibility = View.INVISIBLE
+        } else {
+            sound_button_group.visibility = View.VISIBLE
+        }
     }
 
     private fun updateFlashModeSelectionIcon() {
