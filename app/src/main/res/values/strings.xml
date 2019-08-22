@@ -1,18 +1,6 @@
 <resources>
     <string name="app_name">portkey</string>
 
-    <string name="main_test_brush">Test Brush</string>
-    <string name="main_test_eraser">Test Eraser</string>
-    <string name="main_test_emoji">Test emoji</string>
-    <string name="main_test_text">Test text</string>
-    <string name="main_test_sticker">Test sticker</string>
-    <string name="main_test_camera_preview">Camera preview</string>
-    <string name="main_test_static_background">Static bkg</string>
-    <string name="main_test_play_video">Play video</string>
-    <string name="main_test_take_picture">Take picture</string>
-    <string name="main_test_save">Save</string>
-
-
     <string name="label_tool_text">Text tool</string>
     <string name="label_tool_emoji">Emoji tool</string>
     <string name="label_tool_brush">Brush tool</string>
@@ -21,4 +9,15 @@
     <string name="text_placeholder">your text here</string>
 
     <string name="main_placeholder">Expect a list of Loops to be shown on this screen</string>
+
+    <string name="capture_button_alt">Capture</string>
+    <string name="flip_button_alt">Flip camera</string>
+    <string name="flash_button_alt">Flash</string>
+    <string name="label_control_flip_camera">Flip</string>
+    <string name="label_control_flash">Flash</string>
+
+
+    <!--preference keys-->
+    <string name="pref_camera_selection" translatable="false">pref_camera_selection</string>
+    <string name="pref_flash_mode_selection" translatable="false">pref_flash_mode_selection</string>
 </resources>
