@@ -172,6 +172,14 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         }
     }
 
+    override fun onBackPressed() {
+        if (!backgroundSurfaceManager.cameraVisible()) {
+            close_button.performClick()
+        } else {
+            super.onBackPressed()
+        }
+    }
+
     private fun addClickListeners() {
         camera_capture_button
             .setOnTouchListener(
@@ -368,7 +376,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
     private fun vibrate() {
         val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-        // Vibrate for 500 milliseconds
+        // Vibrate for 100 milliseconds
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             vibrator.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE))
         } else {
