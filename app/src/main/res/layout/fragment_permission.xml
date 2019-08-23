@@ -30,15 +30,14 @@
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/turn_on_permissions_button"
         android:theme="@style/Portkey.Button.Intro"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="@dimen/button_height"
         android:textAllCaps="false"
         android:layout_marginBottom="@dimen/margin_medium"
-        android:layout_marginStart="@dimen/permission_screen_button_margin"
-        android:layout_marginEnd="@dimen/permission_screen_button_margin"
         android:text="@string/permissions_turn_on"
         app:layout_constraintTop_toBottomOf="@id/permissions_message"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"/>
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintWidth_percent="0.5"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
