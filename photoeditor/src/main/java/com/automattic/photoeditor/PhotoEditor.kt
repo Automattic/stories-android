@@ -24,6 +24,8 @@ import androidx.annotation.ColorInt
 import androidx.annotation.IntRange
 import androidx.annotation.RequiresPermission
 import androidx.annotation.UiThread
+import androidx.emoji.text.EmojiCompat
+import androidx.emoji.text.EmojiCompat.InitCallback
 import com.automattic.photoeditor.views.ViewType.BRUSH_DRAWING
 import com.automattic.photoeditor.views.ViewType.STICKER_ANIMATED
 import com.automattic.photoeditor.gesture.MultiTouchListener
@@ -50,6 +52,7 @@ import java.io.FileOutputStream
 import java.util.ArrayList
 import kotlinx.android.synthetic.main.view_photo_editor_text.view.*
 import java.io.FileInputStream
+import java.lang.ref.WeakReference
 
 /**
  *
@@ -355,9 +358,27 @@ class PhotoEditor private constructor(builder: Builder) :
 
         if (emojiTypeface != null) {
             emojiTextView.typeface = emojiTypeface
+            emojiTextView.text = emojiName
+        } else {
+            // if user did not set a specific emojiTypface, use EmojiCompat to process
+            // the string and make sure we have an emoji that can be rendered
+            EmojiCompat.get().registerInitCallback(object: EmojiCompat.InitCallback() {
+                val regularTextViewRef = WeakReference(emojiTextView)
+                override fun onInitialized() {
+                    val regularTextView = regularTextViewRef.get()
+                    if (regularTextView != null) {
+                        val compat = EmojiCompat.get()
+                        regularTextView.text = compat.process(emojiName)
+                    }
+                }
+
+                override fun onFailed(throwable: Throwable?) {
+                    // just fallback to setting the text
+                    emojiTextView.text = emojiName
+                }
+            })
         }
         emojiTextView.textSize = 56f
-        emojiTextView.text = emojiName
 
         // hide cross and background borders for now
         imgClose.visibility = View.GONE
@@ -417,7 +438,7 @@ class PhotoEditor private constructor(builder: Builder) :
                 val txtTextEmoji = rootView.tvPhotoEditorText
                 if (txtTextEmoji != null) {
                     if (mDefaultEmojiTypeface != null) {
-                        txtTextEmoji.typeface = mDefaultEmojiTypeface
+                         txtTextEmoji.typeface = mDefaultEmojiTypeface
                     }
                     txtTextEmoji.gravity = Gravity.CENTER
                     txtTextEmoji.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
