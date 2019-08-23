@@ -362,7 +362,7 @@ class PhotoEditor private constructor(builder: Builder) :
         } else {
             // if user did not set a specific emojiTypeface, use EmojiCompat to process
             // the string and make sure we have an emoji that can be rendered
-            EmojiCompat.get().registerInitCallback(object: EmojiCompat.InitCallback() {
+            EmojiCompat.get().registerInitCallback(object : EmojiCompat.InitCallback() {
                 val regularTextViewRef = WeakReference(emojiTextView)
                 override fun onInitialized() {
                     val regularTextView = regularTextViewRef.get()
@@ -427,7 +427,7 @@ class PhotoEditor private constructor(builder: Builder) :
                 rootView = layoutInflater.inflate(R.layout.view_photo_editor_text, null)
                 if (rootView.tvPhotoEditorText != null && mDefaultTextTypeface != null) {
                     rootView.tvPhotoEditorText.gravity = Gravity.CENTER
-                    if (mDefaultEmojiTypeface != null) {
+                    if (mDefaultTextTypeface != null) {
                         rootView.tvPhotoEditorText.typeface = mDefaultTextTypeface
                     }
                 }
@@ -438,7 +438,7 @@ class PhotoEditor private constructor(builder: Builder) :
                 val txtTextEmoji = rootView.tvPhotoEditorText
                 if (txtTextEmoji != null) {
                     if (mDefaultEmojiTypeface != null) {
-                         txtTextEmoji.typeface = mDefaultEmojiTypeface
+                        txtTextEmoji.typeface = mDefaultEmojiTypeface
                     }
                     txtTextEmoji.gravity = Gravity.CENTER
                     txtTextEmoji.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
