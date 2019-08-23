@@ -76,7 +76,7 @@ class PhotoEditor private constructor(builder: Builder) :
     private var mOnPhotoEditorListener: OnPhotoEditorListener? = null
     private val isTextPinchZoomable: Boolean
     private val mDefaultTextTypeface: Typeface?
-    private val mDefaultEmojiTypeface: Typeface?
+    private var mDefaultEmojiTypeface: Typeface?
 
     /**
      * Create a new instance and scalable touchview
@@ -1008,6 +1008,10 @@ class PhotoEditor private constructor(builder: Builder) :
      */
     fun setOnPhotoEditorListener(onPhotoEditorListener: OnPhotoEditorListener) {
         this.mOnPhotoEditorListener = onPhotoEditorListener
+    }
+
+    fun setDefaultEmojiTypeface(typeFace: Typeface) {
+        mDefaultEmojiTypeface = typeFace
     }
 
     override fun onViewAdd(brushDrawingView: BrushDrawingView) {
