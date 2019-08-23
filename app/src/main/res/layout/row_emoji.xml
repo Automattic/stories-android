@@ -9,6 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="4dp"
+        android:fontFamily="@font/noto_sans"
         android:padding="2dp"
         android:textColor="#FFFFFF"
         android:textSize="35sp"/>
