@@ -22,6 +22,6 @@
         android:layout_height="wrap_content"
         android:minLines="3"
         tools:text="@string/intro_promo_text_share"
-        android:layout_marginStart="@dimen/promo_message_side_margin_size"
-        android:layout_marginEnd="@dimen/promo_message_side_margin_size"/>
+        android:layout_marginStart="@dimen/intro_message_side_margin_size"
+        android:layout_marginEnd="@dimen/intro_message_side_margin_size"/>
 </LinearLayout>

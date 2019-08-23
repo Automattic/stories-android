@@ -11,7 +11,8 @@ import com.automattic.portkey.AppPrefs
 import com.automattic.portkey.MainActivity
 import com.automattic.portkey.R
 
-class IntroActivity : AppCompatActivity(), IntroFragment.OnFragmentInteractionListener {
+class IntroActivity : AppCompatActivity(), IntroFragment.OnFragmentInteractionListener,
+    PermissionRequestFragment.OnFragmentInteractionListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_intro)
@@ -27,10 +28,22 @@ class IntroActivity : AppCompatActivity(), IntroFragment.OnFragmentInteractionLi
     override fun onGetStartedPressed() {
         AppPrefs.setIntroRequired(false)
         if (PermissionUtils.allRequiredPermissionsGranted(this)) {
-            startActivity(Intent(this, MainActivity::class.java))
-            finish()
+            launchMainActivity()
         } else {
-            // TODO Show permissions request screen
+            window.statusBarColor = ContextCompat.getColor(this, android.R.color.black)
+            showFragment(PermissionRequestFragment(), PermissionRequestFragment.TAG)
+        }
+    }
+
+    override fun onTurnOnPermissionsPressed() {
+        PermissionUtils.requestAllRequiredPermissions(this)
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        if (PermissionUtils.allRequiredPermissionsGranted(this)) {
+            launchMainActivity()
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
     }
 
@@ -38,5 +51,10 @@ class IntroActivity : AppCompatActivity(), IntroFragment.OnFragmentInteractionLi
         val fragmentTransaction = supportFragmentManager.beginTransaction()
         fragmentTransaction.replace(R.id.fragment_container, fragment, tag)
         fragmentTransaction.commit()
+    }
+
+    private fun launchMainActivity() {
+        startActivity(Intent(this, MainActivity::class.java))
+        finish()
     }
 }

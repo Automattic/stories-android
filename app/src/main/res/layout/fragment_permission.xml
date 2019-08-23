@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              android:background="@color/black"
+              android:layout_centerInParent="true"
+              android:gravity="center_horizontal|center_vertical"
+              tools:context=".intro.PermissionRequestFragment">
+
+    <TextView
+        style="@style/IntroTheme.PromoText"
+        android:textColor="@color/white"
+        android:id="@+id/permissions_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minLines="3"
+        android:text="@string/permissions_message"
+        android:layout_marginStart="@dimen/intro_message_side_margin_size"
+        android:layout_marginEnd="@dimen/intro_message_side_margin_size"/>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/turn_on_permissions_button"
+        android:theme="@style/Portkey.Button.Intro"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/button_height"
+        android:textAllCaps="false"
+        android:layout_marginBottom="@dimen/margin_medium"
+        android:layout_marginStart="@dimen/permission_screen_button_margin"
+        android:layout_marginEnd="@dimen/permission_screen_button_margin"
+        android:text="@string/permissions_turn_on"/>
+</LinearLayout>
