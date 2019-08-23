@@ -4,12 +4,15 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.ProgressDialog
 import android.content.Context
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.os.HandlerThread
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import android.view.View
 import android.widget.Toast
@@ -37,7 +40,10 @@ import kotlinx.android.synthetic.main.content_composer.*
 import java.io.File
 import java.io.IOException
 import android.view.Gravity
+import androidx.core.provider.FontRequest
+import androidx.core.provider.FontsContractCompat
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
+import com.automattic.portkey.R.array
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
 
@@ -48,6 +54,7 @@ fun Group.setAllOnClickListener(listener: View.OnClickListener?) {
 }
 
 class ComposeLoopFrameActivity : AppCompatActivity() {
+    private var fontHandler: Handler? = null
     private lateinit var photoEditor: PhotoEditor
     private lateinit var backgroundSurfaceManager: BackgroundSurfaceManager
     private var progressDialog: ProgressDialog? = null
@@ -70,6 +77,9 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         photoEditor = PhotoEditor.Builder(this, photoEditorView)
             .setPinchTextScalable(true) // set flag to make text scalable when pinch
             .build() // build photo editor sdk
+
+        // make sure to load emoji font and set it as the default emoji typeface to use in PhotoEditor library
+        emojiFontLoadRequest(photoEditor)
 
         photoEditor.setOnPhotoEditorListener(object : OnPhotoEditorListener {
             override fun onEditTextChangeListener(rootView: View, text: String, colorCode: Int) {
@@ -660,9 +670,42 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         }
     }
 
+    private fun emojiFontLoadRequest(photoEditor: PhotoEditor) {
+        val fontRequest = FontRequest("com.google.android.gms.fonts",
+            "com.google.android.gms",
+            "name=Noto Color Emoji Compat",
+            array.com_google_android_gms_fonts_certs)
+
+        val toolbarFontCallback = object : FontsContractCompat.FontRequestCallback() {
+            override fun onTypefaceRetrieved(typeface: Typeface) {
+                photoEditor.setDefaultEmojiTypeface(typeface)
+            }
+
+            override fun onTypefaceRequestFailed(reason: Int) {
+                Log.w(TAG, "Failed to fetch Toolbar font: $reason")
+            }
+        }
+
+        // Start async fetch on the handler thread
+        FontsContractCompat.requestFont(
+            this, fontRequest, toolbarFontCallback,
+            getFontHandlerThread()!!
+        )
+    }
+
+    private fun getFontHandlerThread(): Handler? {
+        if (fontHandler == null) {
+            val handlerThread = HandlerThread("fonts")
+            handlerThread.start()
+            fontHandler = Handler(handlerThread.looper)
+        }
+        return fontHandler
+    }
+
     companion object {
         private const val CAMERA_PREVIEW_LAUNCH_DELAY = 500L
         private const val CAMERA_VIDEO_RECORD_MAX_LENGTH_MS = 10000L
         private const val CAMERA_STILL_PICTURE_ANIM_MS = 300L
+        private const val TAG = "ComposeLoopFrame"
     }
 }
