@@ -20,7 +20,6 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        initEmojiCompat()
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
@@ -33,32 +32,6 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
             Navigation.findNavController(this, R.id.nav_host_fragment)
                 .navigate(R.id.action_mainFragment_to_composeLoopFrameActivity)
         }
-    }
-
-    // TODO move this method to the Application instance once we have it
-    private fun initEmojiCompat() {
-        val config: EmojiCompat.Config
-
-        // Use a downloadable font for EmojiCompat
-        val fontRequest = FontRequest(
-            "com.google.android.gms.fonts",
-            "com.google.android.gms",
-            "Noto Color Emoji Compat",
-            R.array.com_google_android_gms_fonts_certs
-        )
-        config = FontRequestEmojiCompatConfig(applicationContext, fontRequest)
-
-        config.registerInitCallback(object : EmojiCompat.InitCallback() {
-            override fun onInitialized() {
-                Log.d(TAG, "EmojiCompat initialized")
-            }
-
-            override fun onFailed(throwable: Throwable?) {
-                Log.d(TAG, "EmojiCompat initialization failed", throwable)
-            }
-        })
-
-        EmojiCompat.init(config)
     }
 
     override fun onSupportNavigateUp() =
