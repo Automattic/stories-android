@@ -6,31 +6,26 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.automattic.portkey.R.layout
-import kotlinx.android.synthetic.main.fragment_intro.*
+import com.automattic.portkey.R
+import kotlinx.android.synthetic.main.fragment_permission.*
 
-class IntroFragment : Fragment() {
+class PermissionRequestFragment : Fragment() {
     interface OnFragmentInteractionListener {
-        fun onGetStartedPressed()
+        fun onTurnOnPermissionsPressed()
     }
 
     private var listener: OnFragmentInteractionListener? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(layout.fragment_intro, container, false)
+        return inflater.inflate(R.layout.fragment_permission, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        get_started_button.setOnClickListener {
-            listener?.onGetStartedPressed()
+        turn_on_permissions_button.setOnClickListener {
+            listener?.onTurnOnPermissionsPressed()
         }
-
-        intro_pager.adapter = IntroPagerAdapter(childFragmentManager)
-
-        // Using a TabLayout for simulating a page indicator strip
-        tab_layout_indicator.setupWithViewPager(intro_pager, true)
     }
 
     override fun onAttach(context: Context) {
@@ -48,6 +43,6 @@ class IntroFragment : Fragment() {
     }
 
     companion object {
-        val TAG: String = IntroFragment::class.java.simpleName
+        val TAG: String = PermissionRequestFragment::class.java.simpleName
     }
 }

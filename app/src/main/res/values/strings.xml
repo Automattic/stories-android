@@ -25,6 +25,8 @@
     <string name="intro_promo_text_organize">Organize your Loops by topic and add to them over time. They don\'t disappear.</string>
     <string name="intro_promo_text_control">You have full control over who can see your loops.</string>
 
+    <string name="permissions_message">Allow Loop to access your camera, microphone, and local storage.</string>
+    <string name="permissions_turn_on">Turn On</string>
 
     <!--preference keys-->
     <string name="pref_camera_selection" translatable="false">pref_camera_selection</string>
