@@ -30,4 +30,8 @@ class IntroFragment : Fragment() {
         // Using a TabLayout for simulating a page indicator strip
         tab_layout_indicator.setupWithViewPager(intro_pager, true)
     }
+
+    companion object {
+        val TAG: String = IntroFragment::class.java.simpleName
+    }
 }
