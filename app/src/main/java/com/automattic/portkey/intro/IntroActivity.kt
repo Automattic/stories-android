@@ -17,7 +17,6 @@ class IntroActivity : AppCompatActivity(), IntroFragment.OnFragmentInteractionLi
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_intro)
 
-        setSupportActionBar(toolbar)
         window.statusBarColor = ContextCompat.getColor(this, android.R.color.white)
         showFragment(IntroFragment(), IntroFragment.TAG)
     }
