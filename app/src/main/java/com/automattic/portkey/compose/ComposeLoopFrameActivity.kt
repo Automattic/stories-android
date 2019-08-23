@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.text.TextUtils
 import androidx.appcompat.app.AppCompatActivity
 import android.view.View
 import android.widget.Toast
@@ -38,6 +39,8 @@ import java.io.File
 import java.io.IOException
 import android.view.Gravity
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
+import com.automattic.photoeditor.views.ViewType.TEXT
+import com.automattic.portkey.compose.text.TextEditorDialogFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
 
@@ -72,14 +75,29 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             .build() // build photo editor sdk
 
         photoEditor.setOnPhotoEditorListener(object : OnPhotoEditorListener {
-            override fun onEditTextChangeListener(rootView: View, text: String, colorCode: Int) {
+            override fun onEditTextChangeListener(rootView: View, text: String, colorCode: Int, isJustAdded: Boolean) {
+                editModeHideAllUIControlsBeforeTextEditDialog()
+                if (isJustAdded) {
+                    // hide new text views
+                    rootView.visibility = View.GONE
+                }
                 val textEditorDialogFragment = TextEditorDialogFragment.show(
                     this@ComposeLoopFrameActivity,
                     text,
                     colorCode)
                 textEditorDialogFragment.setOnTextEditorListener(object : TextEditorDialogFragment.TextEditor {
                     override fun onDone(inputText: String, colorCode: Int) {
-                        photoEditor.editText(rootView, inputText, colorCode)
+                        // make sure to set it to visible, as newly added views are originally hidden until
+                        // proper text is set
+                        rootView.visibility = View.VISIBLE
+                        if (TextUtils.isEmpty(inputText)) {
+                            // just remove the view here, we don't need it - also don't  add to the `redo` stack
+                            photoEditor.viewUndo(rootView, TEXT, false)
+                        } else {
+                            photoEditor.editText(rootView, inputText, colorCode)
+                        }
+                        // TODO hardcoded noSound parameter here
+                        editModeRestoreAllUIControlsAfterTextEditDialog(false)
                     }
                 })
             }
@@ -301,8 +319,8 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
     private fun addNewText() {
         photoEditor.addText(
-            text = getString(string.text_placeholder),
-            colorCodeTextView = ContextCompat.getColor(baseContext, color.white))
+            "",
+            colorCodeTextView = ContextCompat.getColor(baseContext, color.text_color_white), fontSizeSp = 24f)
     }
 
     private fun testEmoji() {
@@ -631,6 +649,25 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         // hide proper edit mode controls
         close_button.visibility = View.INVISIBLE
         edit_mode_controls.visibility = View.INVISIBLE
+    }
+
+    private fun editModeHideAllUIControlsBeforeTextEditDialog() {
+        // momentarily hide proper edit mode controls
+        close_button.visibility = View.INVISIBLE
+        edit_mode_controls.visibility = View.INVISIBLE
+        sound_button_group.visibility = View.INVISIBLE
+    }
+
+    private fun editModeRestoreAllUIControlsAfterTextEditDialog(noSound: Boolean) {
+        // momentarily hide proper edit mode controls
+        close_button.visibility = View.VISIBLE
+        edit_mode_controls.visibility = View.VISIBLE
+
+        if (noSound) {
+            sound_button_group.visibility = View.INVISIBLE
+        } else {
+            sound_button_group.visibility = View.VISIBLE
+        }
     }
 
     private fun updateFlashModeSelectionIcon() {

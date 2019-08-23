@@ -52,7 +52,6 @@ class BackgroundSurfaceManager(
     fun onCreate(source: LifecycleOwner) {
         // clear surfaceTexture listeners
         photoEditorView.listeners.clear()
-        getStateFromBundle()
 
         // add fragments
         if (useCameraX) {
@@ -61,6 +60,9 @@ class BackgroundSurfaceManager(
             addHandlerFragmentOrFindByTag(CAMERA2)
         }
         addHandlerFragmentOrFindByTag(VIDEOPLAYER)
+
+        // important: only retrieve state after having restored fragments with addHandlerFragmentOrFindByTag as above
+        getStateFromBundle()
 
         if (isCameraVisible || isVideoPlayerVisible) { photoEditorView.toggleTextureView() }
     }
