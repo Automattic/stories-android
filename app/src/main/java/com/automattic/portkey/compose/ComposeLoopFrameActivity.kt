@@ -41,6 +41,8 @@ import android.view.Gravity
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
 import com.automattic.photoeditor.views.ViewType.TEXT
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
+import com.automattic.portkey.compose.emoji.EmojiPickerFragment
+import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
 
 fun Group.setAllOnClickListener(listener: View.OnClickListener?) {
     referencedIds.forEach { id ->
@@ -61,6 +63,8 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     private var cameraSelection = CameraSelection.BACK
     private var flashModeSelection = FlashIndicatorState.OFF
     private val FRAGMENT_DIALOG = "dialog"
+
+    private lateinit var emojiPickerFragment: EmojiPickerFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -139,6 +143,13 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
         lifecycle.addObserver(backgroundSurfaceManager)
 
+        emojiPickerFragment = EmojiPickerFragment()
+        emojiPickerFragment.setEmojiListener(object : EmojiListener {
+            override fun onEmojiClick(emojiUnicode: String) {
+                photoEditor.addEmoji(emojiUnicode)
+            }
+        })
+
         // add click listeners
         addClickListeners()
 
@@ -187,6 +198,14 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             backgroundSurfaceManager.switchCameraPreviewOn()
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        }
+    }
+
+    override fun onBackPressed() {
+        if (!backgroundSurfaceManager.cameraVisible()) {
+            close_button.performClick()
+        } else {
+            super.onBackPressed()
         }
     }
 
@@ -284,8 +303,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         }
 
         stickers_button_group.setOnClickListener {
-            // TODO implement STICKERS (actually, EMOJI only for DEMO 1)
-            Toast.makeText(this, "not implemented yet", Toast.LENGTH_SHORT).show()
+            emojiPickerFragment.show(supportFragmentManager, emojiPickerFragment.getTag())
         }
     }
 
@@ -386,7 +404,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
     private fun vibrate() {
         val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-        // Vibrate for 500 milliseconds
+        // Vibrate for 100 milliseconds
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             vibrator.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE))
         } else {

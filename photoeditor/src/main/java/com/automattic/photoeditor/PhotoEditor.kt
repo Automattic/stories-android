@@ -357,16 +357,19 @@ class PhotoEditor private constructor(builder: Builder) :
         emojiTextView.textSize = 56f
         emojiTextView.text = emojiName
 
+        // hide cross and background borders for now
+        imgClose.visibility = View.GONE
+        frmBorder.setBackgroundResource(0)
+
         val multiTouchListenerInstance = newMultiTouchListener
         multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
             override fun onClick() {
-                val isBackgroundVisible = frmBorder.tag != null && frmBorder.tag as Boolean
-                frmBorder.setBackgroundResource(if (isBackgroundVisible) 0 else R.drawable.rounded_border_tv)
-                imgClose.visibility = if (isBackgroundVisible) View.GONE else View.VISIBLE
-                frmBorder.tag = !isBackgroundVisible
             }
 
-            override fun onLongClick() {}
+            override fun onLongClick() {
+                // TODO implement the DELETE action (hide every other view, allow this view to be dragged to the trash
+                // bin)
+            }
         })
         emojiRootView.setOnTouchListener(multiTouchListenerInstance)
         addViewToParent(emojiRootView, ViewType.EMOJI)
