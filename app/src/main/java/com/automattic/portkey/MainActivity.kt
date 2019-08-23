@@ -4,14 +4,10 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.emoji.text.EmojiCompat
 import androidx.navigation.Navigation
 import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.portkey.intro.IntroActivity
 import kotlinx.android.synthetic.main.activity_main.*
-import androidx.emoji.text.FontRequestEmojiCompatConfig
-import android.util.Log
-import androidx.core.provider.FontRequest
 
 class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionListener {
     override fun onFragmentInteraction(uri: Uri) {
@@ -36,8 +32,4 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
 
     override fun onSupportNavigateUp() =
         Navigation.findNavController(this, R.id.nav_host_fragment).navigateUp()
-
-    companion object {
-        private val TAG = "MainActivity"
-    }
 }
