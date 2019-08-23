@@ -274,9 +274,7 @@ class PhotoEditor private constructor(builder: Builder) :
             override fun onClick() {
                 val textInput = textInputTv.text.toString()
                 val currentTextColor = textInputTv.currentTextColor
-                if (mOnPhotoEditorListener != null) {
-                    mOnPhotoEditorListener!!.onEditTextChangeListener(textRootView, textInput, currentTextColor)
-                }
+                mOnPhotoEditorListener?.onEditTextChangeListener(textRootView, textInput, currentTextColor, false)
             }
 
             override fun onLongClick() {
@@ -292,7 +290,7 @@ class PhotoEditor private constructor(builder: Builder) :
         if (mOnPhotoEditorListener != null) {
             val textInput = textInputTv.text.toString()
             val currentTextColor = textInputTv.currentTextColor
-            mOnPhotoEditorListener!!.onEditTextChangeListener(textRootView, textInput, currentTextColor)
+            mOnPhotoEditorListener!!.onEditTextChangeListener(textRootView, textInput, currentTextColor, true)
         }
     }
 
@@ -491,12 +489,12 @@ class PhotoEditor private constructor(builder: Builder) :
         }
     }*/
 
-    private fun viewUndo(removedView: View, viewType: ViewType) {
+    fun viewUndo(removedView: View, viewType: ViewType, addToRedoList: Boolean = true) {
         if (addedViews.size > 0) {
             if (addedViews.containsView(removedView)) {
                 parentView.removeView(removedView)
                 val removedViewWithData = addedViews.removeView(removedView)
-                if (removedViewWithData != null) {
+                if (removedViewWithData != null && addToRedoList) {
                     redoViews.add(removedViewWithData)
                 }
                 if (mOnPhotoEditorListener != null) {
