@@ -81,7 +81,13 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
         }
 
         override fun onSurfaceTextureSizeChanged(texture: SurfaceTexture, width: Int, height: Int) {
-            configureTransform(width, height)
+            // only try running configureTransform if the surface has already been initialized
+            // and it has changed its size while already live. configureTransform() can only
+            // be run once surface is stable so, on all other cases let's just wait for startUp()
+            // to run the full process.
+            if (textureView.isAvailable && active) {
+                configureTransform(width, height)
+            }
         }
 
         override fun onSurfaceTextureDestroyed(texture: SurfaceTexture) = true
