@@ -1,8 +1,8 @@
 package com.automattic.portkey
 
-import androidx.multidex.MultiDexApplication
+import android.app.Application
 
-class Portkey : MultiDexApplication() {
+class Portkey : Application() {
     override fun onCreate() {
         super.onCreate()
 
