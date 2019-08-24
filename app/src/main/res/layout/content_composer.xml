@@ -288,4 +288,22 @@
         android:backgroundTint="@color/white"
         />
 
+    <Button
+        android:id="@+id/save_button"
+        android:visibility="invisible"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/save_button_bottom_margin"
+        android:layout_marginRight="@dimen/save_button_right_margin"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:background="@drawable/save_button_background"
+        android:drawableLeft="@drawable/ic_file_download_black_24dp"
+        android:drawableTint="@color/white"
+        android:text="@string/label_control_save"
+        android:textAllCaps="false"
+        android:textColor="@color/text_color_white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
