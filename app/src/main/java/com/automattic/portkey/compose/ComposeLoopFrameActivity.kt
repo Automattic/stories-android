@@ -305,6 +305,11 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         stickers_button_group.setOnClickListener {
             emojiPickerFragment.show(supportFragmentManager, emojiPickerFragment.getTag())
         }
+
+        save_button.setOnClickListener {
+            // TODO implement save
+            Toast.makeText(this, "not implemented yet", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun testBrush() {
@@ -633,6 +638,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         // show proper edit mode controls
         close_button.visibility = View.VISIBLE
         edit_mode_controls.visibility = View.VISIBLE
+        save_button.visibility = View.VISIBLE
 
         if (noSound) {
             sound_button_group.visibility = View.INVISIBLE
@@ -649,6 +655,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         // hide proper edit mode controls
         close_button.visibility = View.INVISIBLE
         edit_mode_controls.visibility = View.INVISIBLE
+        save_button.visibility = View.INVISIBLE
     }
 
     private fun editModeHideAllUIControlsBeforeTextEditDialog() {
