@@ -22,6 +22,9 @@
     <string name="label_control_text">Text</string>
     <string name="label_control_sound">Sound</string>
     <string name="label_control_save">Save</string>
+    <string name="label_control_saving">Saving...</string>
+    <string name="label_snackbar_loop_saved">Loop saved to photos.</string>
+    <string name="label_snackbar_share">SHARE</string>
 
     <string name="dialog_discard_message">Are you sure you want to discard your Loop?</string>
 

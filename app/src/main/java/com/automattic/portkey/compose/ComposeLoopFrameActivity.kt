@@ -76,7 +76,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
         photoEditor.setOnPhotoEditorListener(object : OnPhotoEditorListener {
             override fun onEditTextChangeListener(rootView: View, text: String, colorCode: Int, isJustAdded: Boolean) {
-                editModeHideAllUIControlsBeforeTextEditDialog()
+                editModeHideAllUIControls()
                 if (isJustAdded) {
                     // hide new text views
                     rootView.visibility = View.GONE
@@ -97,7 +97,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                             photoEditor.editText(rootView, inputText, colorCode)
                         }
                         // TODO hardcoded noSound parameter here
-                        editModeRestoreAllUIControlsAfterTextEditDialog(false)
+                        editModeRestoreAllUIControls(false)
                     }
                 })
             }
@@ -307,8 +307,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         }
 
         save_button.setOnClickListener {
-            // TODO implement save
-            Toast.makeText(this, "not implemented yet", Toast.LENGTH_SHORT).show()
+            saveLoopFrame()
         }
     }
 
@@ -470,8 +469,9 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 photoEditor.saveAsFile(file.absolutePath, saveSettings, object : PhotoEditor.OnSaveListener {
                     override fun onSuccess(imagePath: String) {
                         hideLoading()
-                        showSnackbar("Image Saved Successfully")
-                        photoEditorView.source.setImageURI(Uri.fromFile(File(imagePath)))
+                        showSnackbar(getString(R.string.label_snackbar_loop_saved))
+                        hideEditModeUIControls()
+                        backgroundSurfaceManager.switchCameraPreviewOn()
                     }
 
                     override fun onFailure(exception: Exception) {
@@ -574,21 +574,21 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     protected fun showLoading(message: String) {
-        runOnUiThread {
-            progressDialog = ProgressDialog(this)
-            progressDialog!!.setMessage(message)
-            progressDialog!!.setProgressStyle(ProgressDialog.STYLE_SPINNER)
-            progressDialog!!.setCancelable(false)
-            progressDialog!!.show()
-        }
+        editModeHideAllUIControls()
+        save_button.isEnabled = false
+        save_button.setText(R.string.label_control_saving)
+        save_button.background = getDrawable(R.drawable.save_button_background_disabled)
+        save_button.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0)
     }
 
     protected fun hideLoading() {
-        runOnUiThread {
-            if (progressDialog != null) {
-                progressDialog!!.dismiss()
-            }
-        }
+        editModeRestoreAllUIControls(false)
+        save_button.isEnabled = true
+        save_button.setText(R.string.label_control_save)
+        // had to set background manually, setting isEnabled to true / false didn't really change the background in the
+        // save_button_background selector resource.
+        save_button.background = getDrawable(R.drawable.save_button_background_enabled)
+        save_button.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_file_download_black_24dp, 0, 0, 0)
     }
 
     protected fun showSnackbar(message: String) {
@@ -658,14 +658,14 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         save_button.visibility = View.INVISIBLE
     }
 
-    private fun editModeHideAllUIControlsBeforeTextEditDialog() {
+    private fun editModeHideAllUIControls() {
         // momentarily hide proper edit mode controls
         close_button.visibility = View.INVISIBLE
         edit_mode_controls.visibility = View.INVISIBLE
         sound_button_group.visibility = View.INVISIBLE
     }
 
-    private fun editModeRestoreAllUIControlsAfterTextEditDialog(noSound: Boolean) {
+    private fun editModeRestoreAllUIControls(noSound: Boolean) {
         // momentarily hide proper edit mode controls
         close_button.visibility = View.VISIBLE
         edit_mode_controls.visibility = View.VISIBLE

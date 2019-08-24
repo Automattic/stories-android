@@ -297,7 +297,7 @@
         android:layout_marginRight="@dimen/save_button_right_margin"
         android:paddingStart="20dp"
         android:paddingEnd="20dp"
-        android:background="@drawable/save_button_background"
+        android:background="@drawable/save_button_background_enabled"
         android:drawableLeft="@drawable/ic_file_download_black_24dp"
         android:drawableTint="@color/white"
         android:text="@string/label_control_save"
