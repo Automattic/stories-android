@@ -97,17 +97,23 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                             photoEditor.editText(rootView, inputText, colorCode)
                         }
                         // TODO hardcoded noSound parameter here
-                        editModeRestoreAllUIControls(false)
+                        editModeRestoreAllUIControls(true)
                     }
                 })
             }
 
             override fun onAddViewListener(viewType: ViewType, numberOfAddedViews: Int) {
-                // no op
+                // only show save button if any views have been added
+                save_button.visibility = View.VISIBLE
             }
 
             override fun onRemoveViewListener(viewType: ViewType, numberOfAddedViews: Int) {
-                // no op
+                if (photoEditor.anyViewsAdded()) {
+                    // only show save button if any views have been added
+                    save_button.visibility = View.VISIBLE
+                } else {
+                    save_button.visibility = View.INVISIBLE
+                }
             }
 
             override fun onStartViewChangeListener(viewType: ViewType) {
@@ -638,7 +644,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         // show proper edit mode controls
         close_button.visibility = View.VISIBLE
         edit_mode_controls.visibility = View.VISIBLE
-        save_button.visibility = View.VISIBLE
+        if (photoEditor.anyViewsAdded()) {
+            // only show save button if any views have been added
+            save_button.visibility = View.VISIBLE
+        }
 
         if (noSound) {
             sound_button_group.visibility = View.INVISIBLE
