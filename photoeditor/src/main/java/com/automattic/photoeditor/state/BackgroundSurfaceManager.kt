@@ -201,6 +201,14 @@ class BackgroundSurfaceManager(
         videoPlayerHandling.activate()
     }
 
+    fun videoPlayerMute() {
+        videoPlayerHandling.mute()
+    }
+
+    fun videoPlayerUnmute() {
+        videoPlayerHandling.unmute()
+    }
+
     private fun cameraXAwareSurfaceDeactivator() {
         cameraBasicHandler.deactivate()
         if (useCameraX) {

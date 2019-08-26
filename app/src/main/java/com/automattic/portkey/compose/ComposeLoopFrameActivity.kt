@@ -88,6 +88,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
     private var cameraSelection = CameraSelection.BACK
     private var flashModeSelection = FlashIndicatorState.OFF
+    private var videoPlayerMuted = false
     private val FRAGMENT_DIALOG = "dialog"
 
     private lateinit var emojiPickerFragment: EmojiPickerFragment
@@ -326,8 +327,15 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         }
 
         sound_button_group.setOnClickListener {
-            // TODO implement sound or...??
-            Toast.makeText(this, "not implemented yet", Toast.LENGTH_SHORT).show()
+            if (videoPlayerMuted) {
+                backgroundSurfaceManager.videoPlayerUnmute()
+                videoPlayerMuted = false
+                sound_button.background = getDrawable(R.drawable.ic_volume_up_black_24dp)
+            } else {
+                backgroundSurfaceManager.videoPlayerMute()
+                videoPlayerMuted = true
+                sound_button.background = getDrawable(R.drawable.ic_volume_mute_black_24dp)
+            }
         }
 
         text_add_button_group.setOnClickListener {
