@@ -581,20 +581,12 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
     protected fun showLoading(message: String) {
         editModeHideAllUIControls()
-        save_button.isEnabled = false
-        save_button.setText(R.string.label_control_saving)
-        save_button.background = getDrawable(R.drawable.save_button_background_disabled)
-        save_button.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0)
+        save_button.setSaving(true)
     }
 
     protected fun hideLoading() {
         editModeRestoreAllUIControls(false)
-        save_button.isEnabled = true
-        save_button.setText(R.string.label_control_save)
-        // had to set background manually, setting isEnabled to true / false didn't really change the background in the
-        // save_button_background selector resource.
-        save_button.background = getDrawable(R.drawable.save_button_background_enabled)
-        save_button.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_file_download_black_24dp, 0, 0, 0)
+        save_button.setSaving(false)
     }
 
     protected fun showSnackbar(message: String) {

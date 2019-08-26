@@ -288,21 +288,13 @@
         android:backgroundTint="@color/white"
         />
 
-    <Button
+    <com.automattic.portkey.compose.SaveButton
         android:id="@+id/save_button"
         android:visibility="invisible"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/save_button_bottom_margin"
-        android:layout_marginRight="@dimen/save_button_right_margin"
-        android:paddingStart="20dp"
-        android:paddingEnd="20dp"
-        android:background="@drawable/save_button_background_enabled"
-        android:drawableLeft="@drawable/ic_file_download_black_24dp"
-        android:drawableTint="@color/white"
-        android:text="@string/label_control_save"
-        android:textAllCaps="false"
-        android:textColor="@color/text_color_white"
+        android:layout_marginEnd="@dimen/save_button_right_margin"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"/>
 
