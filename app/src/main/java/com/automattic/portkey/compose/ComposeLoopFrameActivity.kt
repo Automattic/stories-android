@@ -2,7 +2,6 @@ package com.automattic.portkey.compose
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.ProgressDialog
 import android.content.Context
 import android.net.Uri
 import android.os.Build
@@ -40,6 +39,7 @@ import java.io.IOException
 import android.view.Gravity
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
+import androidx.core.view.updateMargins
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
 import com.automattic.photoeditor.views.ViewType.TEXT
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
@@ -53,19 +53,22 @@ fun Group.setAllOnClickListener(listener: View.OnClickListener?) {
 }
 
 fun Snackbar.config(context: Context){
-    val params = this.view.layoutParams as ViewGroup.MarginLayoutParams
-    params.setMargins(12, 12, 12, 12)
-    this.view.layoutParams = params
-
     this.view.background = context.getDrawable(R.drawable.snackbar_background)
+    ViewCompat.setOnApplyWindowInsetsListener(view) { v, insets ->
+        v.setPadding(v.paddingLeft, v.paddingTop, v.paddingRight, v.paddingTop)
 
+        val params = v.layoutParams as ViewGroup.MarginLayoutParams
+        params.setMargins(12, 12, 12, 12)
+        v.layoutParams = params
+
+        insets
+    }
     ViewCompat.setElevation(this.view, 6f)
 }
 
 class ComposeLoopFrameActivity : AppCompatActivity() {
     private lateinit var photoEditor: PhotoEditor
     private lateinit var backgroundSurfaceManager: BackgroundSurfaceManager
-    private var progressDialog: ProgressDialog? = null
 
     private val timesUpRunnable = Runnable {
         stopRecordingVideo(false) // time's up, it's not a cancellation
@@ -608,7 +611,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 val snackbar = Snackbar.make(view, message, Snackbar.LENGTH_LONG)
                 snackbar.config(this)
                 snackbar.setAction(R.string.label_snackbar_share, { shareAction() })
-                snackbar.show();
+                snackbar.show()
             } else {
                 Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
             }
