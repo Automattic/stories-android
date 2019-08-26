@@ -571,7 +571,19 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                         override fun onSuccess(imagePath: String) {
                             runOnUiThread {
                                 hideLoading()
-                                showSnackbar("Video Saved Successfully")
+                                photoEditor.clearAllViews()
+                                sendNewLoopReadyBroadcast(file)
+                                showSnackbar(
+                                    getString(R.string.label_snackbar_loop_saved),
+                                    getString(R.string.label_snackbar_share),
+                                    object : OnClickListener {
+                                        override fun onClick(p0: View?) {
+                                            shareAction(file)
+                                        }
+                                    }
+                                )
+                                hideEditModeUIControls()
+                                backgroundSurfaceManager.switchCameraPreviewOn()
                             }
                         }
 
