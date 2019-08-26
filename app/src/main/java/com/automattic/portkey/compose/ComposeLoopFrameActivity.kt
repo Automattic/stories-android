@@ -3,6 +3,9 @@ package com.automattic.portkey.compose
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
+import android.hardware.Camera
+import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -38,6 +41,8 @@ import java.io.IOException
 import android.view.Gravity
 import android.view.View.OnClickListener
 import android.view.ViewGroup
+import android.webkit.MimeTypeMap
+import androidx.core.content.FileProvider
 import androidx.core.view.ViewCompat
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
 import com.automattic.photoeditor.views.ViewType.TEXT
@@ -493,12 +498,13 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 photoEditor.saveAsFile(file.absolutePath, saveSettings, object : PhotoEditor.OnSaveListener {
                     override fun onSuccess(imagePath: String) {
                         hideLoading()
+                        sendNewLoopReadyBroadcast(file)
                         showSnackbar(
                             getString(R.string.label_snackbar_loop_saved),
                             getString(R.string.label_snackbar_share),
                             object : OnClickListener {
                                 override fun onClick(p0: View?) {
-                                    shareAction()
+                                    shareAction(file)
                                 }
                             }
                         )
@@ -524,7 +530,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         if (PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             showLoading("Saving...")
             try {
-                val file = getLoopFrameFile(this,true)
+                val file = getLoopFrameFile(this, true)
                 file.createNewFile()
 
                 val saveSettings = SaveSettings.Builder()
@@ -567,7 +573,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         if (PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             showLoading("Saving...")
             try {
-                val file = getLoopFrameFile(this,true, "tmp")
+                val file = getLoopFrameFile(this, true, "tmp")
                 file.createNewFile()
 
                 val saveSettings = SaveSettings.Builder()
@@ -736,9 +742,37 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         }
     }
 
-    private fun shareAction() {
-        // TODO here implement SHARING
-        showToast("not implemented yet")
+    private fun shareAction(mediaFile: File) {
+        val apkURI = FileProvider.getUriForFile(
+            this,
+            applicationContext.packageName + ".provider", mediaFile)
+        val shareIntent: Intent = Intent().apply {
+            action = Intent.ACTION_SEND
+            setDataAndType(apkURI, "image/jpeg")
+            putExtra(Intent.EXTRA_STREAM, apkURI)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        startActivity(Intent.createChooser(shareIntent, resources.getText(R.string.label_share_to)))
+    }
+
+    private fun sendNewLoopReadyBroadcast(mediaFile: File) {
+        // Implicit broadcasts will be ignored for devices running API
+        // level >= 24, so if you only target 24+ you can remove this statement
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            if (mediaFile.extension.startsWith("jpg")) {
+                sendBroadcast(Intent(Camera.ACTION_NEW_PICTURE, Uri.fromFile(mediaFile)))
+            } else {
+                sendBroadcast(Intent(Camera.ACTION_NEW_VIDEO, Uri.fromFile(mediaFile)))
+            }
+        }
+
+        // If the folder selected is an external media directory, this is unnecessary
+        // but otherwise other apps will not be able to access our images unless we
+        // scan them using [MediaScannerConnection]
+        val mimeType = MimeTypeMap.getSingleton()
+            .getMimeTypeFromExtension(mediaFile.extension)
+        MediaScannerConnection.scanFile(
+            this, arrayOf(mediaFile.absolutePath), arrayOf(mimeType), null)
     }
 
     companion object {

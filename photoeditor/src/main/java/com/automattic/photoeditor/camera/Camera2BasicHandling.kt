@@ -734,7 +734,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
         /**
         * create video output file
         */
-        currentFile = FileUtils.getLoopFrameFile(activity,true, "orig_")
+        currentFile = FileUtils.getLoopFrameFile(activity, true, "orig_")
         currentFile?.createNewFile()
 
         /**
