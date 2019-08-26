@@ -22,6 +22,7 @@ import androidx.camera.core.VideoCaptureConfig
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
+import com.automattic.photoeditor.camera.interfaces.VideoRecorderFinished
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
 import com.automattic.photoeditor.camera.interfaces.cameraXLensFacingFromPortkeyCameraSelection
 import com.automattic.photoeditor.camera.interfaces.cameraXflashModeFromPortkeyFlashState
@@ -147,7 +148,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     }
 
     @SuppressLint("RestrictedApi")
-    override fun startRecordingVideo() {
+    override fun startRecordingVideo(finishedListener: VideoRecorderFinished?) {
         activity?.let {
             currentFile = FileUtils.getLoopFrameFile(it, true, "orig_")
         }
@@ -156,9 +157,11 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         videoCapture.startRecording(currentFile, object : VideoCapture.OnVideoSavedListener {
             override fun onVideoSaved(file: File?) {
                 Log.i(tag, "Video File : $file")
+                finishedListener?.onVideoSaved(file)
             }
             override fun onError(useCaseError: VideoCapture.UseCaseError?, message: String?, cause: Throwable?) {
                 Log.i(tag, "Video Error: $message")
+                finishedListener?.onError(message, cause)
             }
         })
     }

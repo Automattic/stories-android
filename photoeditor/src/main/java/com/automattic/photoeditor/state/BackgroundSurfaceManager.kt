@@ -20,6 +20,7 @@ import com.automattic.photoeditor.camera.interfaces.CameraSelection
 import com.automattic.photoeditor.camera.interfaces.CameraSelection.BACK
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
+import com.automattic.photoeditor.camera.interfaces.VideoRecorderFinished
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment.FlashSupportChangeListener
 import com.automattic.photoeditor.state.BackgroundSurfaceManager.SurfaceHandlerType.CAMERA2
@@ -140,8 +141,8 @@ class BackgroundSurfaceManager(
         isVideoPlayerVisible = false
         // now, start showing camera preview
         photoEditorView.turnTextureViewOn()
-        cameraBasicHandler.activate()
         videoPlayerHandling.deactivate()
+        cameraBasicHandler.activate()
     }
 
     fun flipCamera(): CameraSelection {
@@ -209,12 +210,12 @@ class BackgroundSurfaceManager(
         }
     }
 
-    fun startRecordingVideo() {
+    fun startRecordingVideo(finishedListener: VideoRecorderFinished? = null) {
         if (isCameraVisible) {
             // let's start recording
             isCameraRecording = true
             // TODO txtRecording.visibility = View.VISIBLE
-            cameraBasicHandler.startRecordingVideo()
+            cameraBasicHandler.startRecordingVideo(finishedListener)
         }
     }
 

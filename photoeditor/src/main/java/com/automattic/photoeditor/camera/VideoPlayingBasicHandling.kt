@@ -124,6 +124,7 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler {
                 mediaPlayer = MediaPlayer().apply {
                     setDataSource(inputStream.getFD())
                     setSurface(s)
+                    setLooping(true)
                     prepare()
                     // TODO check whether we want fine grained error handling by setting these listeners
     //                setOnBufferingUpdateListener(this)

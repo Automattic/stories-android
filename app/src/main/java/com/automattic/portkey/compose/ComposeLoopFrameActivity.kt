@@ -45,6 +45,7 @@ import android.webkit.MimeTypeMap
 import androidx.core.content.FileProvider
 import androidx.core.view.ViewCompat
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
+import com.automattic.photoeditor.camera.interfaces.VideoRecorderFinished
 import com.automattic.photoeditor.views.ViewType.TEXT
 import com.automattic.portkey.R
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
@@ -391,7 +392,8 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         backgroundSurfaceManager.switchCameraPreviewOn()
     }
 
-    private fun testPlayVideo() {
+    private fun showPlayVideo() {
+        showEditModeUIControls(false)
         backgroundSurfaceManager.switchVideoPlayerOn()
     }
 
@@ -430,7 +432,21 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             timesUpHandler.postDelayed(timesUpRunnable, CAMERA_VIDEO_RECORD_MAX_LENGTH_MS)
             // strat progressing animation
             camera_capture_button.startProgressingAnimation(CAMERA_VIDEO_RECORD_MAX_LENGTH_MS)
-            backgroundSurfaceManager.startRecordingVideo()
+            backgroundSurfaceManager.startRecordingVideo(object : VideoRecorderFinished {
+                override fun onVideoSaved(file: File?) {
+                    runOnUiThread {
+                        // now start playing the video we just recorded
+                        showPlayVideo()
+                    }
+                }
+
+                override fun onError(message: String?, cause: Throwable?) {
+                    // TODO implement error handling
+                    runOnUiThread {
+                        showToast("Video could not be saved: " + message)
+                    }
+                }
+            })
             hideVideoUIControls()
             showToast("VIDEO STARTED")
             vibrate()
@@ -546,18 +562,24 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                     saveSettings,
                     object : PhotoEditor.OnSaveWithCancelListener {
                     override fun onCancel(noAddedViews: Boolean) {
-                            hideLoading()
-                            showSnackbar("No views added - original video saved")
+                            runOnUiThread {
+                                hideLoading()
+                                showSnackbar("No views added - original video saved")
+                            }
                         }
 
                         override fun onSuccess(imagePath: String) {
-                            hideLoading()
-                            showSnackbar("Video Saved Successfully")
+                            runOnUiThread {
+                                hideLoading()
+                                showSnackbar("Video Saved Successfully")
+                            }
                         }
 
                         override fun onFailure(exception: Exception) {
-                            hideLoading()
-                            showSnackbar("Failed to save Video")
+                            runOnUiThread {
+                                hideLoading()
+                                showSnackbar("Failed to save Video")
+                            }
                         }
                     })
             } catch (e: IOException) {
