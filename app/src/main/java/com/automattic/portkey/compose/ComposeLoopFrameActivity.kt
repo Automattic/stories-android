@@ -54,6 +54,9 @@ fun Group.setAllOnClickListener(listener: View.OnClickListener?) {
 
 fun Snackbar.config(context: Context){
     this.view.background = context.getDrawable(R.drawable.snackbar_background)
+
+    // Workaround to adjust Snackbar position as otherwise it appears with a height above the navigation bar
+    // This should be fixed in 'com.google.android.material:material:1.1.0' when it comes out of alpha
     ViewCompat.setOnApplyWindowInsetsListener(view) { v, insets ->
         v.setPadding(v.paddingLeft, v.paddingTop, v.paddingRight, v.paddingTop)
 
