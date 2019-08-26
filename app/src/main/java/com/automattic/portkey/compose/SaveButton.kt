@@ -9,9 +9,7 @@ import androidx.core.content.ContextCompat.getDrawable
 import com.automattic.portkey.R
 import kotlinx.android.synthetic.main.content_save_button.view.*
 
-
-
-class SaveButton : FrameLayout{
+class SaveButton : FrameLayout {
     private var savingState = false
     private var saveButtonClickListener: OnClickListener? = null
 

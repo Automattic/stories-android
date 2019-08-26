@@ -52,7 +52,7 @@ fun Group.setAllOnClickListener(listener: View.OnClickListener?) {
     }
 }
 
-fun Snackbar.config(context: Context){
+fun Snackbar.config(context: Context) {
     this.view.background = context.getDrawable(R.drawable.snackbar_background)
 
     // Workaround to adjust Snackbar position as otherwise it appears with a height above the navigation bar
@@ -496,7 +496,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                         showSnackbar(
                             getString(R.string.label_snackbar_loop_saved),
                             getString(R.string.label_snackbar_share),
-                            object: OnClickListener {
+                            object : OnClickListener {
                                 override fun onClick(p0: View?) {
                                     shareAction()
                                 }
