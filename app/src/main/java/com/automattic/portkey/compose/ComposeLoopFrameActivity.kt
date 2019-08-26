@@ -481,7 +481,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     private fun saveImage() {
         if (PermissionUtils.checkAndRequestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             showLoading("Saving...")
-            val file = getLoopFrameFile(false)
+            val file = getLoopFrameFile(this, false)
             try {
                 file.createNewFile()
 
@@ -524,7 +524,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         if (PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             showLoading("Saving...")
             try {
-                val file = getLoopFrameFile(true)
+                val file = getLoopFrameFile(this,true)
                 file.createNewFile()
 
                 val saveSettings = SaveSettings.Builder()
@@ -567,7 +567,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         if (PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             showLoading("Saving...")
             try {
-                val file = getLoopFrameFile(true, "tmp")
+                val file = getLoopFrameFile(this,true, "tmp")
                 file.createNewFile()
 
                 val saveSettings = SaveSettings.Builder()
