@@ -538,6 +538,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 photoEditor.saveAsFile(file.absolutePath, saveSettings, object : PhotoEditor.OnSaveListener {
                     override fun onSuccess(imagePath: String) {
                         hideLoading()
+                        deleteCapturedMedia(currentOriginalCapturedFile)
                         sendNewLoopReadyBroadcast(file)
                         showSnackbar(
                             getString(R.string.label_snackbar_loop_saved),
@@ -593,6 +594,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                         override fun onSuccess(imagePath: String) {
                             runOnUiThread {
                                 hideLoading()
+                                deleteCapturedMedia(currentOriginalCapturedFile)
                                 photoEditor.clearAllViews()
                                 sendNewLoopReadyBroadcast(file)
                                 showSnackbar(
