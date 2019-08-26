@@ -38,6 +38,8 @@ import kotlinx.android.synthetic.main.content_composer.*
 import java.io.File
 import java.io.IOException
 import android.view.Gravity
+import android.view.ViewGroup
+import androidx.core.view.ViewCompat
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
 import com.automattic.photoeditor.views.ViewType.TEXT
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
@@ -48,6 +50,16 @@ fun Group.setAllOnClickListener(listener: View.OnClickListener?) {
     referencedIds.forEach { id ->
         rootView.findViewById<View>(id).setOnClickListener(listener)
     }
+}
+
+fun Snackbar.config(context: Context){
+    val params = this.view.layoutParams as ViewGroup.MarginLayoutParams
+    params.setMargins(12, 12, 12, 12)
+    this.view.layoutParams = params
+
+    this.view.background = context.getDrawable(R.drawable.snackbar_background)
+
+    ViewCompat.setElevation(this.view, 6f)
 }
 
 class ComposeLoopFrameActivity : AppCompatActivity() {
@@ -593,7 +605,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         runOnUiThread {
             val view = findViewById<View>(android.R.id.content)
             if (view != null) {
-                Snackbar.make(view, message, Snackbar.LENGTH_SHORT).show()
+                val snackbar = Snackbar.make(view, message, Snackbar.LENGTH_LONG)
+                snackbar.config(this)
+                snackbar.setAction(R.string.label_snackbar_share, { shareAction() })
+                snackbar.show();
             } else {
                 Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
             }
@@ -703,6 +718,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             putInt(getString(string.pref_flash_mode_selection), flashModeSelection.id)
             commit()
         }
+    }
+
+    private fun shareAction() {
+        // TODO here implement SHARING
     }
 
     companion object {
