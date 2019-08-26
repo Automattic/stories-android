@@ -80,6 +80,7 @@ fun Snackbar.config(context: Context) {
 class ComposeLoopFrameActivity : AppCompatActivity() {
     private lateinit var photoEditor: PhotoEditor
     private lateinit var backgroundSurfaceManager: BackgroundSurfaceManager
+    private var currentOriginalCapturedFile: File? = null
 
     private val timesUpRunnable = Runnable {
         stopRecordingVideo(false) // time's up, it's not a cancellation
@@ -319,9 +320,11 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                     override fun discardOkClicked() {
                         photoEditor.clearAllViews()
                         launchCameraPreview()
+                        deleteCapturedMedia(currentOriginalCapturedFile)
                     }
                 }).show(supportFragmentManager, FRAGMENT_DIALOG)
             } else {
+                deleteCapturedMedia(currentOriginalCapturedFile)
                 launchCameraPreview()
             }
         }
@@ -348,6 +351,15 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
         save_button.setOnClickListener {
             saveLoopFrame()
+        }
+    }
+
+    private fun deleteCapturedMedia(mediaFile: File?) {
+        mediaFile?.let {
+            val apkURI = FileProvider.getUriForFile(
+                this,
+                applicationContext.packageName + ".provider", it)
+            contentResolver.delete(apkURI, null, null);
         }
     }
 
@@ -423,6 +435,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                         .load(file)
                         .into(photoEditorView.source)
                     showStaticBackground()
+                    currentOriginalCapturedFile = file
                 }
 
                 showToast("IMAGE SAVED")
@@ -442,6 +455,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             camera_capture_button.startProgressingAnimation(CAMERA_VIDEO_RECORD_MAX_LENGTH_MS)
             backgroundSurfaceManager.startRecordingVideo(object : VideoRecorderFinished {
                 override fun onVideoSaved(file: File?) {
+                    currentOriginalCapturedFile = file
                     runOnUiThread {
                         // now start playing the video we just recorded
                         showPlayVideo()
