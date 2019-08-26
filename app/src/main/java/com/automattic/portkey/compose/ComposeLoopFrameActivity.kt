@@ -50,6 +50,8 @@ import com.automattic.portkey.R
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 
 fun Group.setAllOnClickListener(listener: View.OnClickListener?) {
     referencedIds.forEach { id ->
@@ -403,10 +405,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         backgroundSurfaceManager.takePicture(object : ImageCaptureListener {
             override fun onImageSaved(file: File) {
                 runOnUiThread {
-//                    Glide.with(this@ComposeLoopFrameActivity)
-//                        .load(file)
-//                        .transform(CenterCrop(), RoundedCorners(16))
-//                        .into(gallery_upload_img)
+                    Glide.with(this@ComposeLoopFrameActivity)
+                        .load(file)
+                        .transform(CenterCrop(), RoundedCorners(16))
+                        .into(gallery_upload_img)
                     Glide.with(this@ComposeLoopFrameActivity)
                         .load(file)
                         .into(photoEditorView.source)
