@@ -26,7 +26,6 @@ import com.automattic.photoeditor.util.FileUtils.Companion.getLoopFrameFile
 import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.ViewType
 import com.automattic.portkey.BuildConfig
-import com.automattic.portkey.R
 import com.automattic.portkey.R.color
 import com.automattic.portkey.R.layout
 import com.automattic.portkey.R.string
@@ -37,11 +36,12 @@ import kotlinx.android.synthetic.main.content_composer.*
 import java.io.File
 import java.io.IOException
 import android.view.Gravity
+import android.view.View.OnClickListener
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
-import androidx.core.view.updateMargins
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
 import com.automattic.photoeditor.views.ViewType.TEXT
+import com.automattic.portkey.R
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
@@ -490,7 +490,15 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 photoEditor.saveAsFile(file.absolutePath, saveSettings, object : PhotoEditor.OnSaveListener {
                     override fun onSuccess(imagePath: String) {
                         hideLoading()
-                        showSnackbar(getString(R.string.label_snackbar_loop_saved))
+                        showSnackbar(
+                            getString(R.string.label_snackbar_loop_saved),
+                            getString(R.string.label_snackbar_share),
+                            object: OnClickListener {
+                                override fun onClick(p0: View?) {
+                                    shareAction()
+                                }
+                            }
+                        )
                         hideEditModeUIControls()
                         backgroundSurfaceManager.switchCameraPreviewOn()
                     }
@@ -604,13 +612,15 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         save_button.setSaving(false)
     }
 
-    protected fun showSnackbar(message: String) {
+    protected fun showSnackbar(message: String, actionLabel: String? = null, listener: OnClickListener? = null) {
         runOnUiThread {
             val view = findViewById<View>(android.R.id.content)
             if (view != null) {
                 val snackbar = Snackbar.make(view, message, Snackbar.LENGTH_LONG)
                 snackbar.config(this)
-                snackbar.setAction(R.string.label_snackbar_share, { shareAction() })
+                actionLabel?.let {
+                    snackbar.setAction(it, listener)
+                }
                 snackbar.show()
             } else {
                 Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
@@ -725,6 +735,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
     private fun shareAction() {
         // TODO here implement SHARING
+        showToast("not implemented yet")
     }
 
     companion object {
