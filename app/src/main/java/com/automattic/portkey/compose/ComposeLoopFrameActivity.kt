@@ -359,7 +359,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             val apkURI = FileProvider.getUriForFile(
                 this,
                 applicationContext.packageName + ".provider", it)
-            contentResolver.delete(apkURI, null, null);
+            contentResolver.delete(apkURI, null, null)
         }
     }
 
