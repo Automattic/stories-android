@@ -17,10 +17,11 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:photo_src="@drawable/background" />
+         />
 
     <com.automattic.portkey.compose.VideoRecordingControlView
         android:id="@+id/camera_capture_button"
+        android:visibility="invisible"
         android:theme="@style/Widget.AppCompat.Button"
         android:layout_width="@dimen/round_button_large"
         android:layout_height="@dimen/round_button_large"
@@ -43,6 +44,7 @@
         android:background="@drawable/ic_gallery_upload"
         android:contentDescription="@string/capture_button_alt"
         android:scaleType="centerCrop"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="@+id/camera_capture_button"
         app:layout_constraintHorizontal_bias="0.2"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -57,6 +59,7 @@
         android:background="@drawable/ic_gallery_upload"
         android:contentDescription="@string/capture_button_alt"
         android:scaleType="fitCenter"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="@+id/camera_capture_button"
         app:layout_constraintHorizontal_bias="0.2"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -87,7 +90,7 @@
             android:id="@+id/camera_flash_group"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:visibility="visible"
+            android:visibility="invisible"
             app:constraint_referenced_ids="camera_flash_button,label_flash" />
 
         <ImageView
@@ -130,7 +133,7 @@
             android:id="@+id/camera_flip_group"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:visibility="visible"
+            android:visibility="invisible"
             app:constraint_referenced_ids="camera_flip_button,label_flip"/>
 
         <ImageView
