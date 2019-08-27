@@ -188,10 +188,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         // add click listeners
         addClickListeners()
 
-        // small tweak to make sure to not show the background image for the static image background mode
-        backgroundSurfaceManager.preTurnTextureViewOn()
-
         if (savedInstanceState == null) {
+            // small tweak to make sure to not show the background image for the static image background mode
+            backgroundSurfaceManager.preTurnTextureViewOn()
+
             // check camera selection, flash state from preferences
             cameraSelection =
                 CameraSelection.valueOf(
@@ -202,11 +202,27 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
             // also, update the UI
             updateFlashModeSelectionIcon()
-        }
 
-        photoEditorView.postDelayed({
-            launchCameraPreview()
-        }, CAMERA_PREVIEW_LAUNCH_DELAY)
+            photoEditorView.postDelayed({
+                launchCameraPreview()
+            }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
+        } else {
+            currentOriginalCapturedFile =
+                savedInstanceState.getSerializable(STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE) as File?
+
+            photoEditorView.postDelayed({
+                if (backgroundSurfaceManager.videoPlayerVisible()) {
+                    showPlayVideo(currentOriginalCapturedFile)
+                } else if (backgroundSurfaceManager.cameraVisible()) {
+                    launchCameraPreview()
+                } else {
+                    Glide.with(this@ComposeLoopFrameActivity)
+                        .load(currentOriginalCapturedFile)
+                        .into(photoEditorView.source)
+                    showStaticBackground()
+                }
+            }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
+        }
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -225,6 +241,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         backgroundSurfaceManager.saveStateToBundle(outState)
+        outState.putSerializable(STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE, currentOriginalCapturedFile)
         super.onSaveInstanceState(outState)
     }
 
@@ -311,7 +328,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                     saveFlashModeSelectionPref()
                 }
             })
-        }, CAMERA_PREVIEW_LAUNCH_DELAY)
+        }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
 
         close_button.setOnClickListener {
             // add discard dialog
@@ -321,11 +338,11 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                     override fun discardOkClicked() {
                         photoEditor.clearAllViews()
                         launchCameraPreview()
-                        deleteCapturedMedia(currentOriginalCapturedFile)
+                        deleteCapturedMedia()
                     }
                 }).show(supportFragmentManager, FRAGMENT_DIALOG)
             } else {
-                deleteCapturedMedia(currentOriginalCapturedFile)
+                deleteCapturedMedia()
                 launchCameraPreview()
             }
         }
@@ -355,13 +372,15 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         }
     }
 
-    private fun deleteCapturedMedia(mediaFile: File?) {
-        mediaFile?.let {
+    private fun deleteCapturedMedia() {
+        currentOriginalCapturedFile?.let {
             val apkURI = FileProvider.getUriForFile(
                 this,
                 applicationContext.packageName + ".provider", it)
             contentResolver.delete(apkURI, null, null)
         }
+        // reset
+        currentOriginalCapturedFile = null
     }
 
     private fun testBrush() {
@@ -413,9 +432,9 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         backgroundSurfaceManager.switchCameraPreviewOn()
     }
 
-    private fun showPlayVideo() {
+    private fun showPlayVideo(videoFile: File? = null) {
         showEditModeUIControls(false)
-        backgroundSurfaceManager.switchVideoPlayerOn()
+        backgroundSurfaceManager.switchVideoPlayerOn(videoFile)
     }
 
     private fun showStaticBackground() {
@@ -539,7 +558,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 photoEditor.saveAsFile(file.absolutePath, saveSettings, object : PhotoEditor.OnSaveListener {
                     override fun onSuccess(imagePath: String) {
                         hideLoading()
-                        deleteCapturedMedia(currentOriginalCapturedFile)
+                        deleteCapturedMedia()
                         sendNewLoopReadyBroadcast(file)
                         showSnackbar(
                             getString(R.string.label_snackbar_loop_saved),
@@ -595,7 +614,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                         override fun onSuccess(imagePath: String) {
                             runOnUiThread {
                                 hideLoading()
-                                deleteCapturedMedia(currentOriginalCapturedFile)
+                                deleteCapturedMedia()
                                 photoEditor.clearAllViews()
                                 sendNewLoopReadyBroadcast(file)
                                 showSnackbar(
@@ -854,8 +873,9 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     companion object {
-        private const val CAMERA_PREVIEW_LAUNCH_DELAY = 500L
+        private const val SURFACE_MANAGER_READY_LAUNCH_DELAY = 500L
         private const val CAMERA_VIDEO_RECORD_MAX_LENGTH_MS = 10000L
         private const val CAMERA_STILL_PICTURE_ANIM_MS = 300L
+        private const val STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE = "key_current_original_captured_file"
     }
 }

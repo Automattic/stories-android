@@ -171,7 +171,7 @@ class BackgroundSurfaceManager(
         return cameraBasicHandler.isFlashAvailable()
     }
 
-    fun switchVideoPlayerOn() {
+    fun switchVideoPlayerOn(videoFile: File? = null) {
         // in case the Camera was being visible, set if off
         isVideoPlayerVisible = true
         if (isCameraVisible) {
@@ -196,6 +196,10 @@ class BackgroundSurfaceManager(
                 cameraXAwareSurfaceDeactivator() // keep visible as we're going to render video from player
                 videoPlayerHandling.currentFile = cameraBasicHandler.currentFile
             }
+        } else {
+            // if coming from Activity restart, use the passed parameter
+            videoPlayerHandling.currentFile = videoFile
+            cameraBasicHandler.currentFile = videoFile
         }
         photoEditorView.turnTextureViewOn()
         videoPlayerHandling.activate()
