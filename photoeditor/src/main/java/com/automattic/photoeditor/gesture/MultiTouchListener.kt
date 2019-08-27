@@ -23,7 +23,8 @@ internal class MultiTouchListener(
     private val parentView: RelativeLayout,
     private val photoEditImageView: ImageView,
     private val mIsTextPinchZoomable: Boolean,
-    private val mOnPhotoEditorListener: OnPhotoEditorListener?
+    private val mOnPhotoEditorListener: OnPhotoEditorListener?,
+    private var onMultiTouchListener: OnMultiTouchListener? = null
 ) : OnTouchListener {
     private val mGestureListener: GestureDetector
     private val isRotateEnabled = true
@@ -41,7 +42,7 @@ internal class MultiTouchListener(
     private val location = IntArray(2)
     private var outRect: Rect? = null
 
-    private var onMultiTouchListener: OnMultiTouchListener? = null
+    // private var onMultiTouchListener: OnMultiTouchListener? = null
     private var mOnGestureControl: OnGestureControl? = null
 
     init {
@@ -191,7 +192,7 @@ internal class MultiTouchListener(
         internal var maximumScale: Float = 0.toFloat()
     }
 
-    internal interface OnMultiTouchListener {
+    interface OnMultiTouchListener {
         fun onEditTextClickListener(text: String, colorCode: Int)
 
         fun onRemoveViewListener(removedView: View)

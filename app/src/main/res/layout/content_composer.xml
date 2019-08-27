@@ -36,6 +36,23 @@
         app:strokeProgressColor="@color/loop_magenta"
         android:contentDescription="@string/capture_button_alt" />
 
+
+    <!-- this is the delete view  -->
+    <ImageView
+        android:id="@+id/delete_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="120dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/ic_delete_black_24dp"
+        android:contentDescription="@string/capture_button_alt"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintHorizontal_bias="0.1"
+        />
+
     <!-- this will hold the thumbnail img for the picture taken  -->
     <ImageView
         android:id="@+id/gallery_upload_img"

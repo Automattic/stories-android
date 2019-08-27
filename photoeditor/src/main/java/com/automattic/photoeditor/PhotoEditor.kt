@@ -27,6 +27,7 @@ import androidx.annotation.UiThread
 import com.automattic.photoeditor.views.ViewType.BRUSH_DRAWING
 import com.automattic.photoeditor.views.ViewType.STICKER_ANIMATED
 import com.automattic.photoeditor.gesture.MultiTouchListener
+import com.automattic.photoeditor.gesture.MultiTouchListener.OnMultiTouchListener
 import com.automattic.photoeditor.util.BitmapUtil
 import com.automattic.photoeditor.views.PhotoEditorView
 import com.automattic.photoeditor.views.ViewType
@@ -89,7 +90,18 @@ class PhotoEditor private constructor(builder: Builder) :
             parentView,
             imageView,
             isTextPinchZoomable,
-            mOnPhotoEditorListener
+            mOnPhotoEditorListener,
+            object : OnMultiTouchListener {
+                override fun onEditTextClickListener(text: String, colorCode: Int) {
+                    // no op
+                }
+
+                override fun onRemoveViewListener(removedView: View) {
+                    // here do actually remove the view
+                    val viewType = removedView.tag as ViewType
+                    viewUndo(removedView, viewType)
+                }
+            }
         )
 
     /**
@@ -1074,7 +1086,7 @@ class PhotoEditor private constructor(builder: Builder) :
             brushDrawingView = parentView.brush
         }
 
-        internal fun setDeleteView(deleteView: View): Builder {
+        fun setDeleteView(deleteView: View): Builder {
             this.deleteView = deleteView
             return this
         }
