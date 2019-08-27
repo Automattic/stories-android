@@ -101,6 +101,10 @@ class PhotoEditor private constructor(builder: Builder) :
                     val viewType = removedView.tag as ViewType
                     viewUndo(removedView, viewType)
                 }
+
+                override fun onRemoveViewReadyListener(removedView: View, ready: Boolean) {
+                    mOnPhotoEditorListener?.onRemoveViewReadyListener(removedView, ready)
+                }
             }
         )
 

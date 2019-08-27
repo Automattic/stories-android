@@ -96,6 +96,9 @@ internal class MultiTouchListener(
                             currY - mPrevY
                         )
                     }
+                    if (onMultiTouchListener != null && deleteView != null) {
+                        onMultiTouchListener!!.onRemoveViewReadyListener(view, isViewInBounds(deleteView, x, y))
+                    }
                 }
             }
             MotionEvent.ACTION_CANCEL -> mActivePointerId =
@@ -196,6 +199,8 @@ internal class MultiTouchListener(
         fun onEditTextClickListener(text: String, colorCode: Int)
 
         fun onRemoveViewListener(removedView: View)
+
+        fun onRemoveViewReadyListener(removedView: View, ready: Boolean)
     }
 
     internal interface OnGestureControl {

@@ -157,6 +157,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             override fun onRemoveViewListener(numberOfAddedViews: Int) {
                 // no op
             }
+
+            override fun onRemoveViewReadyListener(removedView: View, ready: Boolean) {
+                delete_view.setReadyForDelete(ready)
+            }
         })
 
         backgroundSurfaceManager = BackgroundSurfaceManager(
