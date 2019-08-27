@@ -39,6 +39,7 @@ import kotlinx.android.synthetic.main.content_composer.*
 import java.io.File
 import java.io.IOException
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View.OnClickListener
 import android.view.ViewGroup
 import android.webkit.MimeTypeMap
@@ -674,11 +675,13 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     protected fun showLoading(message: String) {
         editModeHideAllUIControls()
         save_button.setSaving(true)
+        blockTouchOnPhotoEditor()
     }
 
     protected fun hideLoading() {
         editModeRestoreAllUIControls(false)
         save_button.setSaving(false)
+        releaseTouchOnPhotoEditor()
     }
 
     protected fun showSnackbar(message: String, actionLabel: String? = null, listener: OnClickListener? = null) {
@@ -833,6 +836,21 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             .getMimeTypeFromExtension(mediaFile.extension)
         MediaScannerConnection.scanFile(
             this, arrayOf(mediaFile.absolutePath), arrayOf(mimeType), null)
+    }
+
+    private fun blockTouchOnPhotoEditor() {
+        translucent_view.visibility = View.VISIBLE
+        translucent_view.setOnTouchListener(object : View.OnTouchListener {
+            override fun onTouch(p0: View?, p1: MotionEvent?): Boolean {
+                // no op
+                return true
+            }
+        })
+    }
+
+    private fun releaseTouchOnPhotoEditor() {
+        translucent_view.visibility = View.GONE
+        translucent_view.setOnTouchListener(null)
     }
 
     companion object {
