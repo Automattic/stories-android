@@ -152,13 +152,12 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
     }
 
     override fun mute() {
-        mediaPlayer?.setVolume(0f,0f)
+        mediaPlayer?.setVolume(0f, 0f)
     }
 
     override fun unmute() {
-        mediaPlayer?.setVolume(1f,1f)
+        mediaPlayer?.setVolume(1f, 1f)
     }
-
 
     companion object {
         private val instance = VideoPlayingBasicHandling()
