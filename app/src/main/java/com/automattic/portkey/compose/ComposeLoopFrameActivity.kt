@@ -463,6 +463,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                         .into(gallery_upload_img)
                     Glide.with(this@ComposeLoopFrameActivity)
                         .load(file)
+                        .transform(CenterCrop())
                         .into(photoEditorView.source)
                     showStaticBackground()
                     currentOriginalCapturedFile = file
