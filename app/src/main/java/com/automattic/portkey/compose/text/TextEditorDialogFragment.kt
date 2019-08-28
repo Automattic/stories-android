@@ -1,12 +1,11 @@
 package com.automattic.portkey.compose.text
 
-import android.content.Context
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
+import android.view.WindowManager
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -21,7 +20,6 @@ import kotlinx.android.synthetic.main.add_text_dialog.view.*
  */
 
 class TextEditorDialogFragment : DialogFragment() {
-    private var inputMethodManager: InputMethodManager? = null
     private var colorCode: Int = 0
     private var textEditor: TextEditor? = null
 
@@ -34,6 +32,7 @@ class TextEditorDialogFragment : DialogFragment() {
         dialog?.apply {
             window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             window?.setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
+            window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
         }
     }
 
@@ -43,7 +42,6 @@ class TextEditorDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        inputMethodManager = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
 
         // Setup the color picker for text color
         val addTextColorPickerRecyclerView = view.add_text_color_picker_recycler_view
@@ -65,12 +63,11 @@ class TextEditorDialogFragment : DialogFragment() {
             colorCode = it.getInt(EXTRA_COLOR_CODE)
             add_text_edit_text?.setTextColor(colorCode)
         }
-        inputMethodManager?.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0)
         add_text_edit_text?.requestFocus()
 
         // Make a callback on activity when user is done with text editing
         add_text_done_tv?.setOnClickListener { textView ->
-            inputMethodManager?.hideSoftInputFromWindow(textView.windowToken, 0)
+            dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
             dismiss()
             val inputText = add_text_edit_text?.text.toString()
             textEditor?.onDone(inputText, colorCode)
