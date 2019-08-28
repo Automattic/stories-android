@@ -17,7 +17,18 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-         />
+        android:animateLayoutChanges="true">
+
+        <!-- this is the delete view  -->
+        <com.automattic.portkey.compose.DeleteButton
+            android:id="@+id/delete_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="@dimen/shutter_button_margin"/>
+
+    </com.automattic.photoeditor.views.PhotoEditorView>
 
     <com.automattic.portkey.compose.VideoRecordingControlView
         android:id="@+id/camera_capture_button"
@@ -36,18 +47,6 @@
         app:strokeProgressColor="@color/loop_magenta"
         android:contentDescription="@string/capture_button_alt" />
 
-
-    <!-- this is the delete view  -->
-    <com.automattic.portkey.compose.DeleteButton
-        android:id="@+id/delete_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="@dimen/shutter_button_margin"
-        />
 
     <!-- this will hold the thumbnail img for the picture taken  -->
     <ImageView
