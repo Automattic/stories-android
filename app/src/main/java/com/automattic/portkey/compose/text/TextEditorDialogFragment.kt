@@ -67,7 +67,7 @@ class TextEditorDialogFragment : DialogFragment() {
 
         // Make a callback on activity when user is done with text editing
         add_text_done_tv?.setOnClickListener { textView ->
-            dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+            dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
             dismiss()
             val inputText = add_text_edit_text?.text.toString()
             textEditor?.onDone(inputText, colorCode)
