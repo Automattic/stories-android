@@ -35,7 +35,7 @@
         android:background="@null"
         android:gravity="center"
         android:inputType="textMultiLine"
-        android:textSize="40sp" />
+        android:textSize="@dimen/editor_initial_text_size" />
 
     <RelativeLayout
         android:id="@+id/add_text_color_picker_relative_layout"

@@ -401,9 +401,12 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     private fun addNewText() {
+        val dp = resources.getDimension(R.dimen.editor_initial_text_size) / getResources().getDisplayMetrics().density
         photoEditor.addText(
             "",
-            colorCodeTextView = ContextCompat.getColor(baseContext, color.text_color_white), fontSizeSp = 24f)
+            colorCodeTextView = ContextCompat.getColor(baseContext, color.text_color_white),
+            fontSizeSp = dp
+        )
     }
 
     private fun testEmoji() {
