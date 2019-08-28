@@ -580,7 +580,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                         deleteCapturedMedia()
                         sendNewLoopReadyBroadcast(file)
                         showSnackbar(
-                            getString(R.string.label_snackbar_loop_saved),
+                            getString(R.string.label_snackbar_loop_frame_saved),
                             getString(R.string.label_snackbar_share),
                             object : OnClickListener {
                                 override fun onClick(p0: View?) {
@@ -637,7 +637,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                                 photoEditor.clearAllViews()
                                 sendNewLoopReadyBroadcast(file)
                                 showSnackbar(
-                                    getString(R.string.label_snackbar_loop_saved),
+                                    getString(R.string.label_snackbar_loop_frame_saved),
                                     getString(R.string.label_snackbar_share),
                                     object : OnClickListener {
                                         override fun onClick(p0: View?) {

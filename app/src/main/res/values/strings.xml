@@ -24,7 +24,7 @@
     <string name="label_control_sound_off">Sound off</string>
     <string name="label_control_save">Save</string>
     <string name="label_control_saving">Saving...</string>
-    <string name="label_snackbar_loop_saved">Loop saved to photos.</string>
+    <string name="label_snackbar_loop_frame_saved">Saved to photos</string>
     <string name="label_snackbar_share">SHARE</string>
     <string name="label_share_to">Share to</string>
     <string name="label_delete">Delete</string>
