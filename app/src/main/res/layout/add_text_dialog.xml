@@ -17,7 +17,7 @@
         android:layout_margin="20dp"
         android:background="@drawable/rounded_border_text_view"
         android:padding="10dp"
-        android:text="Done"
+        android:text="@string/label_done"
         android:textAllCaps="false"
         android:textColor="@color/white"
         android:textSize="15sp" />

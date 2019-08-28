@@ -28,6 +28,7 @@
     <string name="label_snackbar_share">SHARE</string>
     <string name="label_share_to">Share to</string>
     <string name="label_delete">Delete</string>
+    <string name="label_done">Done</string>
 
     <string name="dialog_discard_message">Are you sure you want to discard your Loop?</string>
 
