@@ -357,10 +357,12 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 backgroundSurfaceManager.videoPlayerUnmute()
                 videoPlayerMuted = false
                 sound_button.background = getDrawable(R.drawable.ic_volume_up_black_24dp)
+                label_sound.text = getString(R.string.label_control_sound_on)
             } else {
                 backgroundSurfaceManager.videoPlayerMute()
                 videoPlayerMuted = true
                 sound_button.background = getDrawable(R.drawable.ic_volume_mute_black_24dp)
+                label_sound.text = getString(R.string.label_control_sound_off)
             }
         }
 

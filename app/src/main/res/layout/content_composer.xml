@@ -213,7 +213,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:text="@string/label_control_sound"
+                android:text="@string/label_control_sound_on"
                 android:textColor="@color/white"
                 android:textSize="@dimen/normal_button_font_size"/>
         </LinearLayout>
