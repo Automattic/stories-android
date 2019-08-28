@@ -278,7 +278,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                             }
                         }
                         override fun onHoldingGestureStart() {
-                            startRecordingVideo()
+                            startRecordingVideoAfterVibrationIndication()
                         }
 
                         override fun onHoldingGestureEnd() {
@@ -472,6 +472,17 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         })
     }
 
+    private fun startRecordingVideoAfterVibrationIndication() {
+        if (!backgroundSurfaceManager.cameraRecording()) {
+            timesUpHandler.postDelayed({
+                startRecordingVideo()
+            }, VIBRATION_INDICATION_LENGTH_MS)
+            hideVideoUIControls()
+            showToast("VIDEO STARTED")
+            vibrate()
+        }
+    }
+
     private fun startRecordingVideo() {
         if (!backgroundSurfaceManager.cameraRecording()) {
             // force stop recording video after maximum time limit reached
@@ -494,9 +505,6 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                     }
                 }
             })
-            hideVideoUIControls()
-            showToast("VIDEO STARTED")
-            vibrate()
         }
     }
 
@@ -504,10 +512,11 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
         // Vibrate for 100 milliseconds
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibrator.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE))
+            vibrator.vibrate(VibrationEffect.createOneShot(
+                VIBRATION_INDICATION_LENGTH_MS, VibrationEffect.DEFAULT_AMPLITUDE))
         } else {
             // deprecated in API 26
-            vibrator.vibrate(100)
+            vibrator.vibrate(VIBRATION_INDICATION_LENGTH_MS)
         }
     }
 
@@ -882,5 +891,6 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         private const val CAMERA_VIDEO_RECORD_MAX_LENGTH_MS = 10000L
         private const val CAMERA_STILL_PICTURE_ANIM_MS = 300L
         private const val STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE = "key_current_original_captured_file"
+        private const val VIBRATION_INDICATION_LENGTH_MS = 100L
     }
 }
