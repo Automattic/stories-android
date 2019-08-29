@@ -223,6 +223,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 } else {
                     Glide.with(this@ComposeLoopFrameActivity)
                         .load(currentOriginalCapturedFile)
+                        .transform(CenterCrop())
                         .into(photoEditorView.source)
                     showStaticBackground()
                 }
