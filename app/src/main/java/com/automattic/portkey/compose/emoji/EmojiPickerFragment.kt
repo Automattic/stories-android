@@ -17,6 +17,8 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.android.synthetic.main.fragment_bottom_sticker_emoji_dialog.view.*
 import kotlinx.android.synthetic.main.row_emoji.view.*
 
+
+
 class EmojiPickerFragment : BottomSheetDialogFragment() {
     private var listener: EmojiListener? = null
 
@@ -41,6 +43,7 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
         val params = (contentView.parent as View).layoutParams as CoordinatorLayout.LayoutParams
 
         (params.behavior as? BottomSheetBehavior)?.setBottomSheetCallback(bottomSheetBehaviorCallback)
+        (params.behavior as? BottomSheetBehavior)?.state = BottomSheetBehavior.STATE_EXPANDED
 
         (contentView.parent as View).setBackgroundColor(resources.getColor(android.R.color.transparent))
         contentView.rvEmoji.layoutManager = GridLayoutManager(activity, COLUMNS)
