@@ -17,8 +17,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.android.synthetic.main.fragment_bottom_sticker_emoji_dialog.view.*
 import kotlinx.android.synthetic.main.row_emoji.view.*
 
-
-
 class EmojiPickerFragment : BottomSheetDialogFragment() {
     private var listener: EmojiListener? = null
 
