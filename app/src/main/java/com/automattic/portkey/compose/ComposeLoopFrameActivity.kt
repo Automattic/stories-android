@@ -329,9 +329,8 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                     })
             )
 
-        gallery_upload_img.setOnClickListener {
-            // TODO implement tapping on thumbnail
-            Toast.makeText(this, "not implemented yet", Toast.LENGTH_SHORT).show()
+        container_gallery_upload.setOnClickListener {
+            Toast.makeText(this@ComposeLoopFrameActivity, "not implemented yet", Toast.LENGTH_SHORT).show()
         }
 
         camera_flip_group.setAllOnClickListener(object : View.OnClickListener {
@@ -769,8 +768,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         camera_flip_button.visibility = View.INVISIBLE
         label_flip.visibility = View.INVISIBLE
 
-        gallery_upload_img.visibility = View.INVISIBLE
-        gallery_upload.visibility = View.INVISIBLE
+        container_gallery_upload.visibility = View.INVISIBLE
     }
 
     private fun showVideoUIControls() {
@@ -780,8 +778,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         camera_flip_button.visibility = View.VISIBLE
         label_flip.visibility = View.VISIBLE
 
-        gallery_upload_img.visibility = View.VISIBLE
-        gallery_upload.visibility = View.VISIBLE
+        container_gallery_upload.visibility = View.VISIBLE
     }
 
     private fun showEditModeUIControls(noSound: Boolean) {
