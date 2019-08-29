@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.graphics.Point
 import android.hardware.Camera
 import android.media.MediaScannerConnection
 import android.net.Uri
@@ -13,6 +14,7 @@ import android.os.Handler
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.text.TextUtils
+import android.view.GestureDetector
 import androidx.appcompat.app.AppCompatActivity
 import android.view.View
 import android.widget.Toast
@@ -44,6 +46,7 @@ import android.view.View.OnClickListener
 import android.view.ViewGroup
 import android.webkit.MimeTypeMap
 import androidx.core.content.FileProvider
+import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.ViewCompat
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFinished
@@ -94,6 +97,9 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     private val FRAGMENT_DIALOG = "dialog"
 
     private lateinit var emojiPickerFragment: EmojiPickerFragment
+    private lateinit var swipeDetector: GestureDetectorCompat
+    private var screenSizeX: Int = 0
+    private var screenSizeY: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -190,8 +196,13 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             }
         })
 
+        // calculate screen size, used to detect swipe from bottom
+        calculateScreenSize()
+
         // add click listeners
         addClickListeners()
+
+        swipeDetector = GestureDetectorCompat(this, FlingGestureListener())
 
         if (savedInstanceState == null) {
             // small tweak to make sure to not show the background image for the static image background mode
@@ -265,6 +276,11 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         } else {
             super.onBackPressed()
         }
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        swipeDetector.onTouchEvent(event)
+        return super.onTouchEvent(event)
     }
 
     private fun addClickListeners() {
@@ -893,11 +909,51 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         translucent_view.setOnTouchListener(null)
     }
 
+    private fun calculateScreenSize() {
+        val display = windowManager.defaultDisplay
+        val size = Point()
+        display.getSize(size)
+        screenSizeX = size.x
+        screenSizeY = size.y
+    }
+
+    private inner class FlingGestureListener : GestureDetector.SimpleOnGestureListener() {
+        override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
+            // only care about this in edit mode
+            if (edit_mode_controls.visibility != View.VISIBLE) {
+                return false
+            }
+
+            e1?.let {
+                e2?.let {
+                    if (e1.getY() - e2.getY() > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
+                        // Bottom to top
+                        val ycoordStart = e1.getY()
+                        if ((screenSizeY - ycoordStart) < SWIPE_MIN_DISTANCE_FROM_BOTTOM) {
+                            // if swipe started as close as bottom of the screen as possible, then interpret this
+                            // as a swipe from bottom of the screen gesture
+                            emojiPickerFragment.show(supportFragmentManager, emojiPickerFragment.getTag())
+                        }
+                        return false
+                    } else if (e2.getY() - e1.getY() > SWIPE_MIN_DISTANCE &&
+                        Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
+                        // Top to bottom
+                        return false
+                    }
+                }
+            }
+            return super.onFling(e1, e2, velocityX, velocityY)
+        }
+    }
+
     companion object {
         private const val SURFACE_MANAGER_READY_LAUNCH_DELAY = 500L
         private const val CAMERA_VIDEO_RECORD_MAX_LENGTH_MS = 10000L
         private const val CAMERA_STILL_PICTURE_ANIM_MS = 300L
         private const val STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE = "key_current_original_captured_file"
         private const val VIBRATION_INDICATION_LENGTH_MS = 100L
+        private const val SWIPE_MIN_DISTANCE = 120
+        private const val SWIPE_MIN_DISTANCE_FROM_BOTTOM = 80
+        private const val SWIPE_THRESHOLD_VELOCITY = 200
     }
 }
