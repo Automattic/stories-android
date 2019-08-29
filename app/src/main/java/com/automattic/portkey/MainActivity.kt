@@ -25,9 +25,15 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
         }
 
         fab.setOnClickListener { view ->
+            fab.isEnabled = false
             Navigation.findNavController(this, R.id.nav_host_fragment)
                 .navigate(R.id.action_mainFragment_to_composeLoopFrameActivity)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        fab.isEnabled = true
     }
 
     override fun onSupportNavigateUp() =
