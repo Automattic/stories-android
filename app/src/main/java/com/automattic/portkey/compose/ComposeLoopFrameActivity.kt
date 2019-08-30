@@ -55,6 +55,7 @@ import com.automattic.portkey.R
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
+import com.automattic.portkey.util.CrashLoggingUtils
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 
@@ -95,6 +96,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(layout.activity_composer)
+
+        CrashLoggingUtils.log("WE WERE HERE")
+
+        CrashLoggingUtils.log(Exception("TEST"))
 
         photoEditor = PhotoEditor.Builder(this, photoEditorView)
             .setPinchTextScalable(true) // set flag to make text scalable when pinch
