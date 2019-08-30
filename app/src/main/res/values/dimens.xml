@@ -31,7 +31,6 @@
     <dimen name="delete_button_right_margin">16dp</dimen>
     <dimen name="delete_button_height">32dp</dimen>
     <dimen name="delete_button_width">82dp</dimen>
-    <dimen name="delete_button_icon_size">18dp</dimen>
 
     <dimen name="save_button_bottom_margin">16dp</dimen>
     <dimen name="save_button_right_margin">16dp</dimen>
