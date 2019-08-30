@@ -27,7 +27,7 @@
     <dimen name="shutter_button_margin">68dp</dimen>
     <dimen name="normal_button_medium_round_corner">32dp</dimen>
 
-    <dimen name="delete_button_bottom_margin">24dp</dimen>
+    <dimen name="delete_button_bottom_margin">18dp</dimen>
     <dimen name="delete_button_right_margin">16dp</dimen>
     <dimen name="delete_button_height">32dp</dimen>
     <dimen name="delete_button_width">82dp</dimen>
