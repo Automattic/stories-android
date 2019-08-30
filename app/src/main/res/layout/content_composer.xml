@@ -26,7 +26,8 @@
             android:layout_height="wrap_content"
             android:visibility="gone"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="@dimen/shutter_button_margin"/>
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="@dimen/delete_button_bottom_margin"/>
 
     </com.automattic.photoeditor.views.PhotoEditorView>
 
