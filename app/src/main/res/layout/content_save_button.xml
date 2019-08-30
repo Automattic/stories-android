@@ -3,7 +3,6 @@
     android:id="@+id/save_button"
     android:layout_width="@dimen/save_button_total_width"
     android:layout_height="@dimen/save_button_total_height"
-    android:background="@drawable/save_button_background_enabled"
     android:gravity="center"
     >
 
