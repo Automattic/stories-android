@@ -103,7 +103,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
         photoEditor.setOnPhotoEditorListener(object : OnPhotoEditorListener {
             override fun onEditTextChangeListener(rootView: View, text: String, colorCode: Int, isJustAdded: Boolean) {
-                editModeHideAllUIControls()
+                editModeHideAllUIControls(false)
                 if (isJustAdded) {
                     // hide new text views
                     rootView.visibility = View.GONE
@@ -123,8 +123,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                         } else {
                             photoEditor.editText(rootView, inputText, colorCode)
                         }
-                        // TODO hardcoded noSound parameter here
-                        editModeRestoreAllUIControls(true)
+                        editModeRestoreAllUIControls()
                     }
                 })
             }
@@ -135,20 +134,16 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             }
 
             override fun onRemoveViewListener(viewType: ViewType, numberOfAddedViews: Int) {
-                if (photoEditor.anyViewsAdded()) {
-                    // only show save button if any views have been added
-                    save_button.visibility = View.VISIBLE
-                } else {
-                    save_button.visibility = View.INVISIBLE
-                }
+                showSaveButtonIfViewsAdded()
             }
 
             override fun onStartViewChangeListener(viewType: ViewType) {
-                // no op
+                // in this case, also hide the SAVE button
+                editModeHideAllUIControls(true)
             }
 
             override fun onStopViewChangeListener(viewType: ViewType) {
-                // no op
+                editModeRestoreAllUIControls()
             }
 
             override fun onRemoveViewListener(numberOfAddedViews: Int) {
@@ -717,13 +712,13 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     protected fun showLoading(message: String) {
-        editModeHideAllUIControls()
+        editModeHideAllUIControls(false)
         save_button.setSaving(true)
         blockTouchOnPhotoEditor()
     }
 
     protected fun hideLoading() {
-        editModeRestoreAllUIControls(false)
+        editModeRestoreAllUIControls()
         save_button.setSaving(false)
         releaseTouchOnPhotoEditor()
     }
@@ -799,22 +794,39 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         save_button.visibility = View.INVISIBLE
     }
 
-    private fun editModeHideAllUIControls() {
+    private fun editModeHideAllUIControls(hideSaveButton: Boolean) {
         // momentarily hide proper edit mode controls
         close_button.visibility = View.INVISIBLE
         edit_mode_controls.visibility = View.INVISIBLE
         sound_button_group.visibility = View.INVISIBLE
+        if (hideSaveButton) {
+            save_button.visibility = View.INVISIBLE
+        }
     }
 
-    private fun editModeRestoreAllUIControls(noSound: Boolean) {
+    private fun editModeRestoreAllUIControls() {
         // momentarily hide proper edit mode controls
         close_button.visibility = View.VISIBLE
         edit_mode_controls.visibility = View.VISIBLE
 
+        // restore Save button if it was hidden before
+        showSaveButtonIfViewsAdded()
+
+        // noSound parameter here should be true if video player is off
+        val noSound = !backgroundSurfaceManager.videoPlayerVisible()
         if (noSound) {
             sound_button_group.visibility = View.INVISIBLE
         } else {
             sound_button_group.visibility = View.VISIBLE
+        }
+    }
+
+    private fun showSaveButtonIfViewsAdded() {
+        if (photoEditor.anyViewsAdded()) {
+            // only show save button if any views have been added
+            save_button.visibility = View.VISIBLE
+        } else {
+            save_button.visibility = View.INVISIBLE
         }
     }
 
