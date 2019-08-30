@@ -97,10 +97,6 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(layout.activity_composer)
 
-        CrashLoggingUtils.log("WE WERE HERE")
-
-        CrashLoggingUtils.log(Exception("TEST"))
-
         photoEditor = PhotoEditor.Builder(this, photoEditorView)
             .setPinchTextScalable(true) // set flag to make text scalable when pinch
             .setDeleteView(delete_view)
