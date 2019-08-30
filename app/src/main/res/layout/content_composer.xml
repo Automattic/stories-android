@@ -149,34 +149,26 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/containerFlipButton"
+    <LinearLayout
+        android:id="@+id/camera_flip_group"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:animateLayoutChanges="true"
+        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="@+id/camera_capture_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/camera_capture_button"
         app:layout_constraintTop_toTopOf="@+id/camera_capture_button">
 
-        <androidx.constraintlayout.widget.Group
-            android:id="@+id/camera_flip_group"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="invisible"
-            app:constraint_referenced_ids="camera_flip_button,label_flip"/>
-
         <ImageView
             android:id="@+id/camera_flip_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="@dimen/normal_button_medium"
+            android:layout_height="@dimen/normal_button_medium"
             android:background="@drawable/ic_cameraflip_2"
             android:backgroundTint="@color/white"
             android:contentDescription="@string/flip_button_alt"
             android:scaleType="fitCenter"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+            android:layout_gravity="center_horizontal"/>
 
         <TextView
             android:id="@+id/label_flip"
@@ -186,10 +178,8 @@
             android:text="@string/label_control_flip_camera"
             android:textColor="@color/white"
             android:textSize="@dimen/normal_button_font_size"
-            app:layout_constraintEnd_toEndOf="@+id/camera_flip_button"
-            app:layout_constraintStart_toStartOf="@+id/camera_flip_button"
-            app:layout_constraintTop_toBottomOf="@+id/camera_flip_button"/>
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            android:layout_gravity="center_horizontal"/>
+    </LinearLayout>
 
 
     <!--edit mode controls-->

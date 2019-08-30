@@ -333,12 +333,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             Toast.makeText(this@ComposeLoopFrameActivity, "not implemented yet", Toast.LENGTH_SHORT).show()
         }
 
-        camera_flip_group.setAllOnClickListener(object : View.OnClickListener {
-            override fun onClick(v: View) {
-                cameraSelection = backgroundSurfaceManager.flipCamera()
-                saveCameraSelectionPref()
-            }
-        })
+        camera_flip_group.setOnClickListener {
+            cameraSelection = backgroundSurfaceManager.flipCamera()
+            saveCameraSelectionPref()
+        }
 
         // attach listener a bit delayed as we need to have cameraBasicHandling created first
         photoEditorView.postDelayed({
