@@ -763,8 +763,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         camera_flash_button.visibility = View.INVISIBLE
         label_flash.visibility = View.INVISIBLE
 
-        camera_flip_button.visibility = View.INVISIBLE
-        label_flip.visibility = View.INVISIBLE
+        camera_flip_group.visibility = View.INVISIBLE
 
         container_gallery_upload.visibility = View.INVISIBLE
     }
@@ -773,8 +772,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         camera_flash_button.visibility = View.VISIBLE
         label_flash.visibility = View.VISIBLE
 
-        camera_flip_button.visibility = View.VISIBLE
-        label_flip.visibility = View.VISIBLE
+        camera_flip_group.visibility = View.VISIBLE
 
         container_gallery_upload.visibility = View.VISIBLE
     }
