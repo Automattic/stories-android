@@ -761,7 +761,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
         mediaRecorder.prepare()
     }
 
-    private fun findCamcorderProfile() : CamcorderProfile {
+    private fun findCamcorderProfile(): CamcorderProfile {
         for (quality in CAMCORDER_QUALITIES) {
             if (CamcorderProfile.hasProfile(cameraId.toInt(), quality)) {
                 return CamcorderProfile.get(quality)
