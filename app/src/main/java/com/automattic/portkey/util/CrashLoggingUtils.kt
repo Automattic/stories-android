@@ -8,7 +8,7 @@ import io.sentry.event.BreadcrumbBuilder
 
 class CrashLoggingUtils {
     companion object {
-        @JvmStatic  fun shouldEnableCrashLogging(context: android.content.Context): Boolean {
+        @JvmStatic fun shouldEnableCrashLogging(context: android.content.Context): Boolean {
             return AppPrefs.isCrashLoggingEnabled()
         }
 
@@ -16,7 +16,6 @@ class CrashLoggingUtils {
             Sentry.init(BuildConfig.SENTRY_DSN, AndroidSentryClientFactory(context))
             Sentry.getContext().addTag("version", BuildConfig.VERSION_NAME)
         }
-
 
         @JvmStatic fun startCrashLogging(context: android.content.Context) {
             if (shouldEnableCrashLogging(context)) {

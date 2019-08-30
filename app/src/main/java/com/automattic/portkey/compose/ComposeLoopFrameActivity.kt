@@ -55,7 +55,6 @@ import com.automattic.portkey.R
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
-import com.automattic.portkey.util.CrashLoggingUtils
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 
