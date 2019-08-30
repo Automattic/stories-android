@@ -2,7 +2,7 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
     <solid android:color="@color/black_transp_delete" />
     <stroke
-        android:width="@dimen/round_button_circle_stroke"
+        android:width="@dimen/delete_button_border_stroke"
         android:color="#ffffff"/>
     <corners android:radius="48dp" />
 </shape>

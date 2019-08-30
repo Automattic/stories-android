@@ -11,6 +11,7 @@
     <dimen name="round_button_medium">64dp</dimen>
     <dimen name="round_button_large">92dp</dimen>
     <dimen name="round_button_circle_stroke">4dp</dimen>
+    <dimen name="delete_button_border_stroke">2dp</dimen>
 
     <dimen name="normal_button_small">24dp</dimen>
     <dimen name="normal_button_medium">32dp</dimen>
@@ -27,10 +28,17 @@
     <dimen name="normal_button_medium_round_corner">32dp</dimen>
 
     <dimen name="delete_button_bottom_margin">24dp</dimen>
+    <dimen name="delete_button_right_margin">16dp</dimen>
+    <dimen name="delete_button_height">32dp</dimen>
+    <dimen name="delete_button_width">82dp</dimen>
+    <dimen name="delete_button_icon_size">18dp</dimen>
+
     <dimen name="save_button_bottom_margin">16dp</dimen>
     <dimen name="save_button_right_margin">16dp</dimen>
-    <dimen name="save_button_height">48dp</dimen>
+    <!--<dimen name="save_button_height">48dp</dimen>-->
     <dimen name="save_button_text_width">72dp</dimen>
+    <dimen name="save_button_total_width">100dp</dimen>
+    <dimen name="save_button_total_height">40dp</dimen>
 
     <dimen name="editor_initial_text_size">40sp</dimen>
 
