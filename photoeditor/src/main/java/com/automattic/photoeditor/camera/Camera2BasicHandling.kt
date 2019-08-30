@@ -742,7 +742,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
         * set output file in media recorder
         */
         mediaRecorder.setOutputFile(currentFile?.getAbsolutePath())
-        val profile: CamcorderProfile = CamcorderProfile.get(CamcorderProfile.QUALITY_480P)
+        val profile: CamcorderProfile = findCamcorderProfile()
         mediaRecorder.setVideoFrameRate(profile.videoFrameRate)
         mediaRecorder.setVideoSize(profile.videoFrameWidth, profile.videoFrameHeight)
         mediaRecorder.setVideoEncodingBitRate(profile.videoBitRate)
@@ -759,6 +759,15 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
                 mediaRecorder.setOrientationHint(INVERSE_ORIENTATIONS.get(rotation))
         }
         mediaRecorder.prepare()
+    }
+
+    private fun findCamcorderProfile() : CamcorderProfile {
+        for (quality in CAMCORDER_QUALITIES) {
+            if (CamcorderProfile.hasProfile(cameraId.toInt(), quality)) {
+                return CamcorderProfile.get(quality)
+            }
+        }
+        return CamcorderProfile.get(0)
     }
 
     /**
@@ -810,15 +819,18 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
                             mediaRecorder.start()
                         } catch (e: CameraAccessException) {
                             Log.e(TAG, e.toString())
+                            finishedListener?.onError(e.toString(), e)
                         }
                     }
 
                     override fun onConfigureFailed(session: CameraCaptureSession) {
-                        // TODO: capture error, inform the user about it
+                        Log.e(TAG, "CameraCaptureSession.onConfigureFailed")
+                        finishedListener?.onError("CameraCaptureSession.onConfigureFailed", null)
                     }
                 }, null)
         } catch (e: CameraAccessException) {
             Log.e(TAG, e.toString())
+            finishedListener?.onError(e.toString(), e)
         }
     }
 
@@ -898,6 +910,18 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
         private val SENSOR_ORIENTATION_DEFAULT_DEGREES = 90
         private val SENSOR_ORIENTATION_INVERSE_DEGREES = 270
         private val instance = Camera2BasicHandling()
+
+        /** Camcorder profiles quality list */
+        private val CAMCORDER_QUALITIES: IntArray = intArrayOf(
+                CamcorderProfile.QUALITY_2160P,
+                CamcorderProfile.QUALITY_1080P,
+                CamcorderProfile.QUALITY_720P,
+                CamcorderProfile.QUALITY_480P,
+                CamcorderProfile.QUALITY_QVGA,
+                CamcorderProfile.QUALITY_QCIF,
+                CamcorderProfile.QUALITY_CIF,
+                CamcorderProfile.QUALITY_LOW
+        )
 
         init {
             ORIENTATIONS.append(Surface.ROTATION_0, 90)
