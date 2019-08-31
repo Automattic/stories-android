@@ -136,7 +136,8 @@ class CameraXBasicHandling : VideoRecorderFragment() {
             textureView.surfaceTexture = it.surfaceTexture
         }
 
-        // Bind use cases to lifecycle
+        // we used to bind all use cases to lifecycle on start
+        // DON'T do this, may end up with this: https://github.com/Automattic/portkey-android/issues/50
         // CameraX.bindToLifecycle(activity, videoPreview, videoCapture, imageCapture)
 
         // image capture only
