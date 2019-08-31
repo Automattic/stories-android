@@ -226,7 +226,6 @@ class BackgroundSurfaceManager(
         if (isCameraVisible) {
             // let's start recording
             isCameraRecording = true
-            // TODO txtRecording.visibility = View.VISIBLE
             cameraBasicHandler.startRecordingVideo(finishedListener)
         }
     }
@@ -235,7 +234,6 @@ class BackgroundSurfaceManager(
         if (isCameraRecording) {
             // stop recording
             isCameraRecording = false
-            // TODO txtRecording.visibility = View.GONE
             cameraBasicHandler.stopRecordingVideo()
         }
     }
