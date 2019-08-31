@@ -152,23 +152,28 @@ class CameraXBasicHandling : VideoRecorderFragment() {
 
         // ubind this use case for now, we'll re-bind later
         imageCapture?.let {
+            imageCapture?.clear()
             if (CameraX.isBound(imageCapture)) {
                 CameraX.unbind(imageCapture)
             }
         }
 
-        if (videoCapture == null) {
-            val videoCaptureConfig = VideoCaptureConfig.Builder().apply {
-                setLensFacing(lensFacing)
-                setTargetRotation(textureView.display.rotation)
-            }.build()
-            videoCapture = VideoCapture(videoCaptureConfig)
+        // if a previous instance exists, request to release muxer and buffers
+        videoCapture?.let {
+            if (CameraX.isBound(videoCapture)) {
+                CameraX.unbind(videoCapture)
+            }
+            videoCapture?.clear()
         }
 
+        val videoCaptureConfig = VideoCaptureConfig.Builder().apply {
+            setLensFacing(lensFacing)
+            setTargetRotation(textureView.display.rotation)
+        }.build()
+        videoCapture = VideoCapture(videoCaptureConfig)
+
         // video capture only
-        if (!CameraX.isBound(videoCapture)) {
-            CameraX.bindToLifecycle(activity, videoCapture)
-        }
+        CameraX.bindToLifecycle(activity, videoCapture)
 
         videoCapture?.startRecording(currentFile, object : VideoCapture.OnVideoSavedListener {
             override fun onVideoSaved(file: File?) {
