@@ -276,11 +276,13 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                     PressAndHoldGestureHelper.CLICK_LENGTH,
                     object : PressAndHoldGestureListener {
                         override fun onClickGesture() {
+                            timesUpHandler.removeCallbacksAndMessages(null)
                             if (!backgroundSurfaceManager.cameraRecording()) {
                                 takeStillPicture()
                             }
                         }
                         override fun onHoldingGestureStart() {
+                            timesUpHandler.removeCallbacksAndMessages(null)
                             startRecordingVideoAfterVibrationIndication()
                         }
 
@@ -527,6 +529,11 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     private fun stopRecordingVideo(isCanceled: Boolean) {
+        if (isCanceled) {
+            // remove any pending callback if video was cancelled
+            timesUpHandler.removeCallbacksAndMessages(null)
+        }
+
         if (backgroundSurfaceManager.cameraRecording()) {
             camera_capture_button.stopProgressingAnimation()
             camera_capture_button.clearAnimation()
@@ -538,8 +545,6 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             backgroundSurfaceManager.stopRecordingVideo()
             showVideoUIControls()
             if (isCanceled) {
-                // remove any pending callback if video was cancelled
-                timesUpHandler.removeCallbacksAndMessages(null)
                 showToast("GESTURE CANCELLED, VIDEO SAVED")
             } else {
                 showToast("VIDEO SAVED")
