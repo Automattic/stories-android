@@ -151,17 +151,24 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         currentFile?.createNewFile()
 
         // ubind this use case for now, we'll re-bind later
-        CameraX.unbind(imageCapture)
+        imageCapture?.let {
+            if (CameraX.isBound(imageCapture)) {
+                CameraX.unbind(imageCapture)
+            }
+        }
 
-        // Create a configuration object for the video capture use case
-        val videoCaptureConfig = VideoCaptureConfig.Builder().apply {
-            setLensFacing(lensFacing)
-            setTargetRotation(textureView.display.rotation)
-        }.build()
-        videoCapture = VideoCapture(videoCaptureConfig)
+        if (videoCapture == null) {
+            val videoCaptureConfig = VideoCaptureConfig.Builder().apply {
+                setLensFacing(lensFacing)
+                setTargetRotation(textureView.display.rotation)
+            }.build()
+            videoCapture = VideoCapture(videoCaptureConfig)
+        }
 
         // video capture only
-        CameraX.bindToLifecycle(activity, videoCapture)
+        if (!CameraX.isBound(videoCapture)) {
+            CameraX.bindToLifecycle(activity, videoCapture)
+        }
 
         videoCapture?.startRecording(currentFile, object : VideoCapture.OnVideoSavedListener {
             override fun onVideoSaved(file: File?) {
@@ -178,10 +185,6 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     @SuppressLint("RestrictedApi")
     override fun stopRecordingVideo() {
         videoCapture?.stopRecording()
-        CameraX.unbind(videoCapture)
-
-        // rebind capture only so we leave it ready for still image capture
-        CameraX.bindToLifecycle(activity, imageCapture)
     }
 
     override fun takePicture(onImageCapturedListener: ImageCaptureListener) {
@@ -193,6 +196,11 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         val metadata = Metadata().apply {
             // Mirror image when using the front camera
             isReversedHorizontal = lensFacing == CameraX.LensFacing.FRONT
+        }
+
+        // image capture only
+        if (!CameraX.isBound(imageCapture)) {
+            CameraX.bindToLifecycle(activity, imageCapture)
         }
 
         // Setup image capture listener which is triggered after photo has been taken
