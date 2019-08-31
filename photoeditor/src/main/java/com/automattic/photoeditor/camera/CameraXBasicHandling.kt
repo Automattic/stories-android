@@ -33,9 +33,9 @@ import java.io.File
 import java.lang.Exception
 
 class CameraXBasicHandling : VideoRecorderFragment() {
-    private lateinit var videoCapture: VideoCapture
+    private var videoCapture: VideoCapture? = null
     private lateinit var videoPreview: Preview
-    private lateinit var imageCapture: ImageCapture
+    private var imageCapture: ImageCapture? = null
     private var lensFacing = CameraX.LensFacing.BACK
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,8 +67,8 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     @SuppressLint("RestrictedApi")
     private fun windDown() {
         videoPreview.clear()
-        videoCapture.clear()
-        imageCapture.clear()
+        videoCapture?.clear()
+        imageCapture?.clear()
         CameraX.unbindAll()
     }
 
@@ -113,12 +113,12 @@ class CameraXBasicHandling : VideoRecorderFragment() {
 
         imageCapture = ImageCapture(imageCaptureConfig)
 
-        // Create a configuration object for the video capture use case
-        val videoCaptureConfig = VideoCaptureConfig.Builder().apply {
-            setLensFacing(lensFacing)
-            setTargetRotation(textureView.display.rotation)
-        }.build()
-        videoCapture = VideoCapture(videoCaptureConfig)
+//        // Create a configuration object for the video capture use case
+//        val videoCaptureConfig = VideoCaptureConfig.Builder().apply {
+//            setLensFacing(lensFacing)
+//            setTargetRotation(textureView.display.rotation)
+//        }.build()
+//        videoCapture = VideoCapture(videoCaptureConfig)
 
         videoPreview.setOnPreviewOutputUpdateListener {
             // if, for whatever reason a pre-existing surfaceTexture was being used,
@@ -144,7 +144,10 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         }
 
         // Bind use cases to lifecycle
-        CameraX.bindToLifecycle(activity, videoPreview, videoCapture, imageCapture)
+        // CameraX.bindToLifecycle(activity, videoPreview, videoCapture, imageCapture)
+
+        // image capture only
+        CameraX.bindToLifecycle(activity, videoPreview, imageCapture)
     }
 
     @SuppressLint("RestrictedApi")
@@ -154,7 +157,21 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         }
         currentFile?.createNewFile()
 
-        videoCapture.startRecording(currentFile, object : VideoCapture.OnVideoSavedListener {
+        // ubind this use case for now, we'll re-bind later
+        CameraX.unbind(imageCapture)
+
+        // Create a configuration object for the video capture use case
+        val videoCaptureConfig = VideoCaptureConfig.Builder().apply {
+            setLensFacing(lensFacing)
+            setTargetRotation(textureView.display.rotation)
+        }.build()
+        videoCapture = VideoCapture(videoCaptureConfig)
+
+        // video capture only
+        CameraX.bindToLifecycle(activity, videoCapture)
+
+
+        videoCapture?.startRecording(currentFile, object : VideoCapture.OnVideoSavedListener {
             override fun onVideoSaved(file: File?) {
                 Log.i(tag, "Video File : $file")
                 finishedListener?.onVideoSaved(file)
@@ -168,7 +185,11 @@ class CameraXBasicHandling : VideoRecorderFragment() {
 
     @SuppressLint("RestrictedApi")
     override fun stopRecordingVideo() {
-        videoCapture.stopRecording()
+        videoCapture?.stopRecording()
+        CameraX.unbind(videoCapture)
+
+        // rebind capture only so we leave it ready for still image capture
+        CameraX.bindToLifecycle(activity, imageCapture)
     }
 
     override fun takePicture(onImageCapturedListener: ImageCaptureListener) {
@@ -183,7 +204,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         }
 
         // Setup image capture listener which is triggered after photo has been taken
-        imageCapture.takePicture(currentFile, object : ImageCapture.OnImageSavedListener {
+        imageCapture?.takePicture(currentFile, object : ImageCapture.OnImageSavedListener {
             override fun onImageSaved(file: File) {
                 onImageCapturedListener.onImageSaved(file)
             }
@@ -232,13 +253,13 @@ class CameraXBasicHandling : VideoRecorderFragment() {
 
     override fun advanceFlashState() {
         super.advanceFlashState()
-        imageCapture.flashMode = cameraXflashModeFromPortkeyFlashState(currentFlashState.currentFlashState())
+        imageCapture?.flashMode = cameraXflashModeFromPortkeyFlashState(currentFlashState.currentFlashState())
     }
 
     override fun setFlashState(flashIndicatorState: FlashIndicatorState) {
         super.setFlashState(flashIndicatorState)
         if (active) {
-            imageCapture.flashMode = cameraXflashModeFromPortkeyFlashState(currentFlashState.currentFlashState())
+            imageCapture?.flashMode = cameraXflashModeFromPortkeyFlashState(currentFlashState.currentFlashState())
         }
     }
 
