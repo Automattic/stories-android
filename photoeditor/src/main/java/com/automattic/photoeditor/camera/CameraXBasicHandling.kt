@@ -113,13 +113,6 @@ class CameraXBasicHandling : VideoRecorderFragment() {
 
         imageCapture = ImageCapture(imageCaptureConfig)
 
-//        // Create a configuration object for the video capture use case
-//        val videoCaptureConfig = VideoCaptureConfig.Builder().apply {
-//            setLensFacing(lensFacing)
-//            setTargetRotation(textureView.display.rotation)
-//        }.build()
-//        videoCapture = VideoCapture(videoCaptureConfig)
-
         videoPreview.setOnPreviewOutputUpdateListener {
             // if, for whatever reason a pre-existing surfaceTexture was being used,
             // then call `release()`  on it, as per docs
@@ -169,7 +162,6 @@ class CameraXBasicHandling : VideoRecorderFragment() {
 
         // video capture only
         CameraX.bindToLifecycle(activity, videoCapture)
-
 
         videoCapture?.startRecording(currentFile, object : VideoCapture.OnVideoSavedListener {
             override fun onVideoSaved(file: File?) {
