@@ -484,15 +484,15 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                         .into(photoEditorView.source)
                     showStaticBackground()
                     currentOriginalCapturedFile = file
+                    waitToReenableCapture()
                 }
 
                 showToast("IMAGE SAVED")
-                cameraOperationInCourse = false
             }
             override fun onError(message: String, cause: Throwable?) {
                 // TODO implement error handling
                 showToast("ERROR SAVING IMAGE")
-                cameraOperationInCourse = false
+                waitToReenableCapture()
             }
         })
     }
@@ -515,6 +515,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             return
         }
 
+        cameraOperationInCourse = true
         // force stop recording video after maximum time limit reached
         timesUpHandler.postDelayed(timesUpRunnable, CAMERA_VIDEO_RECORD_MAX_LENGTH_MS)
         // strat progressing animation
@@ -526,7 +527,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                     // now start playing the video we just recorded
                     showPlayVideo()
                 }
-                cameraOperationInCourse = false
+                waitToReenableCapture()
             }
 
             override fun onError(message: String?, cause: Throwable?) {
@@ -534,7 +535,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 runOnUiThread {
                     showToast("Video could not be saved: " + message)
                 }
-                cameraOperationInCourse = false
+                waitToReenableCapture()
             }
         })
     }
@@ -573,6 +574,13 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 showToast("VIDEO SAVED")
             }
         }
+    }
+
+    // artificial wait to re-enable capture mode
+    private fun waitToReenableCapture() {
+        timesUpHandler.postDelayed({
+            cameraOperationInCourse = false
+        }, CAMERA_STILL_PICTURE_WAIT_FOR_NEXT_CAPTURE_MS)
     }
 
     // this one saves one composed unit: ether an Image or a Video
@@ -974,6 +982,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         private const val SURFACE_MANAGER_READY_LAUNCH_DELAY = 500L
         private const val CAMERA_VIDEO_RECORD_MAX_LENGTH_MS = 10000L
         private const val CAMERA_STILL_PICTURE_ANIM_MS = 300L
+        private const val CAMERA_STILL_PICTURE_WAIT_FOR_NEXT_CAPTURE_MS = 1000L
         private const val STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE = "key_current_original_captured_file"
         private const val VIBRATION_INDICATION_LENGTH_MS = 100L
         private const val SWIPE_MIN_DISTANCE = 120
