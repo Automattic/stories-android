@@ -32,6 +32,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/add_text_done_tv"
+        android:textCursorDrawable="@null"
         android:background="@null"
         android:gravity="center"
         android:inputType="textMultiLine"
