@@ -16,6 +16,8 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 import kotlinx.android.synthetic.main.fragment_bottom_sticker_emoji_dialog.view.*
 import kotlinx.android.synthetic.main.row_emoji.view.*
+import com.automattic.portkey.compose.hideStatusBar
+
 
 class EmojiPickerFragment : BottomSheetDialogFragment() {
     private var listener: EmojiListener? = null
@@ -38,6 +40,11 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
 
     interface EmojiListener {
         fun onEmojiClick(emojiUnicode: String)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        hideStatusBar(dialog?.window!!)
     }
 
     @SuppressLint("RestrictedApi")
