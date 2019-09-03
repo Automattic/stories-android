@@ -10,8 +10,8 @@ android {
         applicationId "com.automattic.portkey"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 6
-        versionName "1.0.0.6-camerax"
+        versionCode 7
+        versionName "1.0.0.7-camerax"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
