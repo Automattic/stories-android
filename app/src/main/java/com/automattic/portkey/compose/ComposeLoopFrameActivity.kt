@@ -51,6 +51,7 @@ import androidx.core.view.ViewCompat
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFinished
 import com.automattic.photoeditor.views.ViewType.TEXT
+import com.automattic.portkey.Portkey
 import com.automattic.portkey.R
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment
@@ -96,6 +97,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(layout.activity_composer)
+
+        addInsetTopMargin(edit_mode_controls.layoutParams, (application as Portkey).getStatusBarHeight())
+        addInsetTopMargin(close_button.layoutParams, (application as Portkey).getStatusBarHeight())
+        addInsetTopMargin(control_flash_group.layoutParams, (application as Portkey).getStatusBarHeight())
 
         photoEditor = PhotoEditor.Builder(this, photoEditorView)
             .setPinchTextScalable(true) // set flag to make text scalable when pinch
