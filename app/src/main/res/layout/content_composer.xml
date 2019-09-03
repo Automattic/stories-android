@@ -110,7 +110,7 @@
         />
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/linearLayout"
+        android:id="@+id/control_flash_group"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/top_button_group_margin"
@@ -192,6 +192,7 @@
         android:layout_margin="@dimen/top_button_group_margin"
         android:orientation="horizontal"
         android:visibility="invisible"
+        android:fitsSystemWindows="true"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:animateLayoutChanges="true">

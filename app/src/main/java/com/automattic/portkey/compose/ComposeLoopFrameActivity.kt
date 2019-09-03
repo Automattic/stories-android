@@ -57,6 +57,7 @@ import com.automattic.portkey.compose.emoji.EmojiPickerFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import kotlinx.android.synthetic.main.activity_composer.*
 
 fun Group.setAllOnClickListener(listener: View.OnClickListener?) {
     referencedIds.forEach { id ->
@@ -96,6 +97,15 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(layout.activity_composer)
+
+        ViewCompat.setOnApplyWindowInsetsListener(compose_loop_frame_layout) { view, insets ->
+            // set insetTop as margin to all controls appearing at the top of the screen
+            setInsetTopMargin(edit_mode_controls.layoutParams, insets.systemWindowInsetTop)
+            setInsetTopMargin(close_button.layoutParams, insets.systemWindowInsetTop)
+            setInsetTopMargin(control_flash_group.layoutParams, insets.systemWindowInsetTop)
+            // view.onApplyWindowInsets(insets)
+            insets // .consumeSystemWindowInsets()
+        }
 
         photoEditor = PhotoEditor.Builder(this, photoEditorView)
             .setPinchTextScalable(true) // set flag to make text scalable when pinch

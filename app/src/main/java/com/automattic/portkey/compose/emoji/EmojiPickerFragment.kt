@@ -18,7 +18,6 @@ import kotlinx.android.synthetic.main.fragment_bottom_sticker_emoji_dialog.view.
 import kotlinx.android.synthetic.main.row_emoji.view.*
 import com.automattic.portkey.compose.hideStatusBar
 
-
 class EmojiPickerFragment : BottomSheetDialogFragment() {
     private var listener: EmojiListener? = null
 

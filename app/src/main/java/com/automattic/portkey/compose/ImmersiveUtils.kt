@@ -1,7 +1,10 @@
 package com.automattic.portkey.compose
 
 import android.view.View
+import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams
 import android.view.Window
+import kotlinx.android.synthetic.main.content_composer.*
 
 const val IMMERSIVE_FLAG_TIMEOUT = 500L
 /** Combination of all flags required to put activity into immersive mode */
@@ -27,4 +30,10 @@ fun showSystemUI(window: Window) {
     window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
             or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
             or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
+}
+
+fun setInsetTopMargin(layoutParams: LayoutParams, insetTopMargin: Int) {
+    if (layoutParams is ViewGroup.MarginLayoutParams) {
+        layoutParams.topMargin = insetTopMargin
+    }
 }
