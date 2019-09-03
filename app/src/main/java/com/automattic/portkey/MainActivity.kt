@@ -19,6 +19,13 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
+        activity_main.setOnApplyWindowInsetsListener { view, insets ->
+            // remember the insetTop as margin to all controls appearing at the top of the screen for full screen
+            // screens (i.e. ComposeLoopFrameActivity)
+            (application as Portkey).setStatusBarHeight(insets.systemWindowInsetTop)
+            view.onApplyWindowInsets(insets)
+        }
+
         if (AppPrefs.isIntroRequired() || !PermissionUtils.allRequiredPermissionsGranted(this)) {
             startActivity(Intent(this, IntroActivity::class.java))
             finish()
