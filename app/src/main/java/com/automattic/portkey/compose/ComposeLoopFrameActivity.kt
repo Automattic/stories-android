@@ -2,6 +2,7 @@ package com.automattic.portkey.compose
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.ActivityOptions
 import android.content.Context
 import android.content.Intent
 import android.hardware.Camera
@@ -58,7 +59,6 @@ import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
 import com.automattic.portkey.compose.photopicker.MediaBrowserType
 import com.automattic.portkey.compose.photopicker.PhotoPickerActivity
 import com.automattic.portkey.compose.photopicker.PhotoPickerFragment
-import com.automattic.portkey.compose.photopicker.RequestCodes
 import com.automattic.portkey.util.getDisplayPixelSize
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
@@ -403,7 +403,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     private fun showMediaPicker() {
         val intent = Intent(this@ComposeLoopFrameActivity, PhotoPickerActivity::class.java)
         intent.putExtra(PhotoPickerFragment.ARG_BROWSER_TYPE, MediaBrowserType.PORTKEY_PICKER)
-        startActivityForResult(intent, RequestCodes.PHOTO_PICKER)
+
+        startActivity(intent,
+            ActivityOptions.makeSceneTransitionAnimation(this).toBundle())
+//        startActivityForResult(intent, RequestCodes.PHOTO_PICKER)
     }
 
     private fun deleteCapturedMedia() {
