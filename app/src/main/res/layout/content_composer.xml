@@ -320,7 +320,7 @@
         android:layout_height="@dimen/save_button_total_height"
         android:layout_marginBottom="@dimen/save_button_bottom_margin"
         android:layout_marginEnd="@dimen/save_button_right_margin"
-        android:visibility="gone"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"/>
 
