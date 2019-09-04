@@ -337,10 +337,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             )
 
         container_gallery_upload.setOnClickListener {
-            // Toast.makeText(this@ComposeLoopFrameActivity, "not implemented yet", Toast.LENGTH_SHORT).show()
-            val intent = Intent(this@ComposeLoopFrameActivity, PhotoPickerActivity::class.java)
-            intent.putExtra(PhotoPickerFragment.ARG_BROWSER_TYPE, MediaBrowserType.PORTKEY_PICKER)
-            startActivityForResult(intent, RequestCodes.PHOTO_PICKER)
+            showMediaPicker()
         }
 
         camera_flip_group.setOnClickListener {
@@ -401,6 +398,12 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         save_button.setOnClickListener {
             saveLoopFrame()
         }
+    }
+
+    private fun showMediaPicker() {
+        val intent = Intent(this@ComposeLoopFrameActivity, PhotoPickerActivity::class.java)
+        intent.putExtra(PhotoPickerFragment.ARG_BROWSER_TYPE, MediaBrowserType.PORTKEY_PICKER)
+        startActivityForResult(intent, RequestCodes.PHOTO_PICKER)
     }
 
     private fun deleteCapturedMedia() {
@@ -961,11 +964,6 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
     private inner class FlingGestureListener : GestureDetector.SimpleOnGestureListener() {
         override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
-            // only care about this in edit mode
-            if (edit_mode_controls.visibility != View.VISIBLE) {
-                return false
-            }
-
             e1?.let {
                 e2?.let {
                     if (e1.getY() - e2.getY() > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
@@ -974,7 +972,14 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                         if ((screenSizeY - ycoordStart) < SWIPE_MIN_DISTANCE_FROM_BOTTOM) {
                             // if swipe started as close as bottom of the screen as possible, then interpret this
                             // as a swipe from bottom of the screen gesture
-                            emojiPickerFragment.show(supportFragmentManager, emojiPickerFragment.getTag())
+
+                            // in edit mode, show Emoji picker
+                            if (edit_mode_controls.visibility == View.VISIBLE) {
+                                emojiPickerFragment.show(supportFragmentManager, emojiPickerFragment.getTag())
+                            } else {
+                                // in capture mode, show media picker
+                                showMediaPicker()
+                            }
                         }
                         return false
                     } else if (e2.getY() - e1.getY() > SWIPE_MIN_DISTANCE &&
