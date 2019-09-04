@@ -68,8 +68,10 @@ public class PhotoPickerActivity extends AppCompatActivity
         // inside your activity (if you did not enable transitions in your theme)
         getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
 
-        // set an exit transition
+        // set an enter transition (slide up from bottom)
         getWindow().setEnterTransition(new Slide(Gravity.BOTTOM));
+        // set exit transition (slide down from top)
+        getWindow().setExitTransition(new Slide(Gravity.TOP));
 
         setContentView(R.layout.photo_picker_activity);
 
