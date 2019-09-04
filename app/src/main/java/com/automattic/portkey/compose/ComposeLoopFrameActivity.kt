@@ -56,6 +56,11 @@ import com.automattic.portkey.R
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
+import com.automattic.portkey.compose.photopicker.MediaBrowserType
+import com.automattic.portkey.compose.photopicker.PhotoPickerActivity
+import com.automattic.portkey.compose.photopicker.PhotoPickerFragment
+import com.automattic.portkey.compose.photopicker.RequestCodes
+import com.automattic.portkey.util.getDisplayPixelSize
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 
@@ -333,7 +338,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             )
 
         container_gallery_upload.setOnClickListener {
-            Toast.makeText(this@ComposeLoopFrameActivity, "not implemented yet", Toast.LENGTH_SHORT).show()
+            // Toast.makeText(this@ComposeLoopFrameActivity, "not implemented yet", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this@ComposeLoopFrameActivity, PhotoPickerActivity::class.java)
+            intent.putExtra(PhotoPickerFragment.ARG_BROWSER_TYPE, MediaBrowserType.PORTKEY_PICKER)
+            startActivityForResult(intent, RequestCodes.PHOTO_PICKER)
         }
 
         camera_flip_group.setOnClickListener {
@@ -947,9 +955,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     private fun calculateScreenSize() {
-        val display = windowManager.defaultDisplay
-        val size = Point()
-        display.getSize(size)
+        val size = getDisplayPixelSize(this)
         screenSizeX = size.x
         screenSizeY = size.y
     }
