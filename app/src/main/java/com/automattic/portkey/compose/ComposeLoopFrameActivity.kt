@@ -4,7 +4,6 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.graphics.Point
 import android.hardware.Camera
 import android.media.MediaScannerConnection
 import android.net.Uri
