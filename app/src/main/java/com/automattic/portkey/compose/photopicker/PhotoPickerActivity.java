@@ -6,8 +6,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.transition.Slide;
+import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.Gravity;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.Window;
 
 import androidx.annotation.NonNull;
@@ -15,6 +17,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GestureDetectorCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -42,6 +45,8 @@ public class PhotoPickerActivity extends AppCompatActivity
 
     // note that the local post id isn't required (default value is EMPTY_LOCAL_POST_ID)
     private Integer mLocalPostId;
+
+    private GestureDetectorCompat mSwipeDetector;
 
     public enum PhotoPickerMediaSource {
         ANDROID_CAMERA,
@@ -74,6 +79,8 @@ public class PhotoPickerActivity extends AppCompatActivity
         getWindow().setExitTransition(new Slide(Gravity.TOP));
 
         setContentView(R.layout.photo_picker_activity);
+
+        mSwipeDetector = new GestureDetectorCompat(this, new FlingGestureListener());
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         // toolbar.setNavigationIcon(R.drawable.ic_close_white_24dp);
@@ -142,6 +149,12 @@ public class PhotoPickerActivity extends AppCompatActivity
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        mSwipeDetector.onTouchEvent(event);
+        return super.onTouchEvent(event);
     }
 
     @Override
@@ -304,6 +317,23 @@ public class PhotoPickerActivity extends AppCompatActivity
                 break;
             case GIPHY:
                 break;
+        }
+    }
+
+    private class FlingGestureListener extends SimpleOnGestureListener {
+        private static final int SWIPE_MIN_DISTANCE = 120;
+        private static final int SWIPE_THRESHOLD_VELOCITY = 200;
+
+        @Override public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            if (e1 != null && e2 != null) {
+                if (e2.getY() - e1.getY() > SWIPE_MIN_DISTANCE &&
+                    Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
+                    // Top to bottom
+                    finish();
+                    return false;
+                }
+            }
+            return super.onFling(e1, e2, velocityX, velocityY);
         }
     }
 }

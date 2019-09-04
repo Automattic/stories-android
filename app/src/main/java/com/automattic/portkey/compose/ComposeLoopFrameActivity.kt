@@ -2,6 +2,7 @@ package com.automattic.portkey.compose
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.ActivityOptions
 import android.content.Context
 import android.content.Intent
@@ -14,6 +15,7 @@ import android.os.Handler
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.text.TextUtils
+import android.util.Log
 import android.view.GestureDetector
 import androidx.appcompat.app.AppCompatActivity
 import android.view.View
@@ -58,7 +60,9 @@ import com.automattic.portkey.compose.emoji.EmojiPickerFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
 import com.automattic.portkey.compose.photopicker.MediaBrowserType
 import com.automattic.portkey.compose.photopicker.PhotoPickerActivity
+import com.automattic.portkey.compose.photopicker.PhotoPickerActivity.PhotoPickerMediaSource
 import com.automattic.portkey.compose.photopicker.PhotoPickerFragment
+import com.automattic.portkey.compose.photopicker.RequestCodes
 import com.automattic.portkey.util.getDisplayPixelSize
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
@@ -279,6 +283,33 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         return super.onTouchEvent(event)
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        when (requestCode) {
+            RequestCodes.PHOTO_PICKER -> if (resultCode == Activity.RESULT_OK && data != null) {
+                val strMediaUri = data.getStringExtra(PhotoPickerActivity.EXTRA_MEDIA_URI)
+                if (strMediaUri == null) {
+                    Log.e("Composer", "Can't resolve picked image")
+                    return
+                }
+                val source = PhotoPickerMediaSource.fromString(
+                    data.getStringExtra(PhotoPickerActivity.EXTRA_MEDIA_SOURCE)
+                )
+                val imageUri = Uri.parse(strMediaUri)
+                if (imageUri != null) {
+                    // TODO decide whether the picked media is a VIDEO or an IMAGE
+                    // assuming image for now
+                    Glide.with(this@ComposeLoopFrameActivity)
+                        .load(imageUri)
+                        .transform(CenterCrop())
+                        .into(photoEditorView.source)
+                    showStaticBackground()
+                }
+            }
+        }
+    }
+
     private fun addClickListeners() {
         camera_capture_button
             .setOnTouchListener(
@@ -404,9 +435,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         val intent = Intent(this@ComposeLoopFrameActivity, PhotoPickerActivity::class.java)
         intent.putExtra(PhotoPickerFragment.ARG_BROWSER_TYPE, MediaBrowserType.PORTKEY_PICKER)
 
-        startActivity(intent,
+        startActivityForResult(
+            intent,
+            RequestCodes.PHOTO_PICKER,
             ActivityOptions.makeSceneTransitionAnimation(this).toBundle())
-//        startActivityForResult(intent, RequestCodes.PHOTO_PICKER)
     }
 
     private fun deleteCapturedMedia() {
