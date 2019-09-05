@@ -31,6 +31,8 @@ import com.automattic.photoeditor.camera.interfaces.VideoPlayerSoundOnOffHandler
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.io.FileInputStream
 import java.io.IOException
+import android.media.MediaMetadataRetriever
+import android.graphics.Matrix
 
 class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlayerSoundOnOffHandler {
     // holds the File handle to the current video file to be played
@@ -49,8 +51,9 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
         }
 
         override fun onSurfaceTextureSizeChanged(texture: SurfaceTexture, width: Int, height: Int) {
-            // TODO figure out what to do here
-            // configureTransform(width, height)
+            if (currentExternalUri != null && videoHeight > 0 && videoWidth > 0) {
+                updateTextureViewSizeForCropping(width, height)
+            }
         }
 
         override fun onSurfaceTextureDestroyed(texture: SurfaceTexture) = true
@@ -66,6 +69,9 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
     private var active: Boolean = false
 
     private var mediaPlayer: MediaPlayer? = null
+
+    private var videoWidth: Float = 0f
+    private var videoHeight: Float = 0f
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -146,6 +152,8 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
             }
 
             currentExternalUri?.let {
+                calculateVideoSize(it)
+                updateTextureViewSizeForCropping(textureView.measuredWidth, textureView.measuredHeight)
                 mediaPlayer = MediaPlayer().apply {
                     setDataSource(context!!, currentExternalUri!!)
                     setSurface(s)
@@ -183,13 +191,56 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
         mediaPlayer?.setVolume(1f, 1f)
     }
 
+    private fun calculateVideoSize(videoUri: Uri) {
+        try {
+            val metadataRetriever = MediaMetadataRetriever()
+            metadataRetriever.setDataSource(context, videoUri)
+            val height = metadataRetriever
+                .extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)
+            val width = metadataRetriever
+                .extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)
+            videoHeight = java.lang.Float.parseFloat(height)
+            videoWidth = java.lang.Float.parseFloat(width)
+        } catch (e: IOException) {
+            Log.d(TAG, e.message)
+        } catch (e: NumberFormatException) {
+            Log.d(TAG, e.message)
+        }
+    }
+
+    private fun updateTextureViewSizeForCropping(viewWidth: Int, viewHeight: Int) {
+        var scaleX = 1.0f
+        var scaleY = 1.0f
+
+        if (videoWidth > viewWidth && videoHeight > viewHeight) {
+            scaleX = videoWidth / viewWidth
+            scaleY = videoHeight / viewHeight
+        } else if (videoWidth < viewWidth && videoHeight < viewHeight) {
+            scaleY = viewWidth / videoWidth
+            scaleX = viewHeight / videoHeight
+        } else if (viewWidth > videoWidth) {
+            scaleY = viewWidth / videoWidth / (viewHeight / videoHeight)
+        } else if (viewHeight > videoHeight) {
+            scaleX = viewHeight / videoHeight / (viewWidth / videoWidth)
+        }
+
+        // pivot on center
+        val pivotPointX = viewWidth / 2
+        val pivotPointY = viewHeight / 2
+
+        val matrix = Matrix()
+        matrix.setScale(scaleX, scaleY, pivotPointX.toFloat(), pivotPointY.toFloat())
+
+        textureView.setTransform(matrix)
+    }
+
     companion object {
         private val instance = VideoPlayingBasicHandling()
 
         /**
          * Tag for the [Log].
          */
-        private val TAG = "VideoPlayingBasicHandling"
+        private val TAG = "VideoPlayingBasic"
 
         @JvmStatic fun getInstance(textureView: AutoFitTextureView): VideoPlayingBasicHandling {
             instance.textureView = textureView
