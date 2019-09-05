@@ -60,7 +60,6 @@ import com.automattic.portkey.compose.emoji.EmojiPickerFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
 import com.automattic.portkey.compose.photopicker.MediaBrowserType
 import com.automattic.portkey.compose.photopicker.PhotoPickerActivity
-import com.automattic.portkey.compose.photopicker.PhotoPickerActivity.PhotoPickerMediaSource
 import com.automattic.portkey.compose.photopicker.PhotoPickerFragment
 import com.automattic.portkey.compose.photopicker.RequestCodes
 import com.automattic.portkey.util.getDisplayPixelSize
@@ -298,10 +297,8 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
                 // decide whether the picked media is a VIDEO or an IMAGE
                 if (isVideo(strMediaUri)) {
-//                    runOnUiThread {
-                        // now start playing the video we just recorded
-                        showPlayVideo(File(Uri.parse(strMediaUri).path))
-//                    }
+                    // now start playing the video we just recorded
+                    showPlayVideo(Uri.parse(strMediaUri))
                 } else {
                     // assuming image for now
                     Glide.with(this@ComposeLoopFrameActivity)
@@ -510,7 +507,12 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
     private fun showPlayVideo(videoFile: File? = null) {
         showEditModeUIControls(false)
-        backgroundSurfaceManager.switchVideoPlayerOn(videoFile)
+        backgroundSurfaceManager.switchVideoPlayerOnFromFile(videoFile)
+    }
+
+    private fun showPlayVideo(videoUri: Uri) {
+        showEditModeUIControls(false)
+        backgroundSurfaceManager.switchVideoPlayerOnFromUri(videoUri)
     }
 
     private fun showStaticBackground() {

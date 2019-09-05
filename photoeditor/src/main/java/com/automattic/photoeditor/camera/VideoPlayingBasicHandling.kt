@@ -24,6 +24,7 @@ import android.view.TextureView
 import java.io.File
 import android.media.AudioManager
 import android.media.MediaPlayer
+import android.net.Uri
 import androidx.fragment.app.Fragment
 import com.automattic.photoeditor.camera.interfaces.SurfaceFragmentHandler
 import com.automattic.photoeditor.camera.interfaces.VideoPlayerSoundOnOffHandler
@@ -34,6 +35,7 @@ import java.io.IOException
 class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlayerSoundOnOffHandler {
     // holds the File handle to the current video file to be played
     var currentFile: File? = null
+    var currentExternalUri: Uri? = null
 
     /**
      * [TextureView.SurfaceTextureListener] handles several lifecycle events on a
@@ -113,11 +115,17 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
         stopVideoPlay()
     }
 
+    // WARNING: this will take currentFile and play it if not null, or take currentExternalUri and play it if available.
+    // This means currentFile (local file, for videos that were just captured by the app) has precedence.
     fun startVideoPlay(texture: SurfaceTexture) {
         val s = Surface(texture)
         try {
             if (mediaPlayer != null) {
                 stopVideoPlay()
+            }
+
+            if (currentFile != null && currentExternalUri != null) {
+                throw Exception("Can't have both currentFile and currentExternalUri play together")
             }
 
             currentFile?.takeIf { it.exists() }?.let { file ->
@@ -132,6 +140,22 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
     //                setOnCompletionListener(this)
     //                setOnPreparedListener(this)
     //                setOnVideoSizeChangedListener(this)
+                    setAudioStreamType(AudioManager.STREAM_MUSIC)
+                    start()
+                }
+            }
+
+            currentExternalUri?.let {
+                mediaPlayer = MediaPlayer().apply {
+                    setDataSource(context!!, currentExternalUri!!)
+                    setSurface(s)
+                    setLooping(true)
+                    prepare()
+                    // TODO check whether we want fine grained error handling by setting these listeners
+                    //                setOnBufferingUpdateListener(this)
+                    //                setOnCompletionListener(this)
+                    //                setOnPreparedListener(this)
+                    //                setOnVideoSizeChangedListener(this)
                     setAudioStreamType(AudioManager.STREAM_MUSIC)
                     start()
                 }

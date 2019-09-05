@@ -1,5 +1,6 @@
 package com.automattic.photoeditor.state
 
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import androidx.fragment.app.FragmentManager
@@ -171,7 +172,26 @@ class BackgroundSurfaceManager(
         return cameraBasicHandler.isFlashAvailable()
     }
 
-    fun switchVideoPlayerOn(videoFile: File? = null) {
+    fun switchVideoPlayerOnFromFile(videoFile: File? = null) {
+        // if coming from Activity restart, use the passed parameter
+        if (videoFile != null) {
+            videoPlayerHandling.currentFile = videoFile
+            cameraBasicHandler.currentFile = videoFile
+        } else {
+            videoPlayerHandling.currentFile = cameraBasicHandler.currentFile
+        }
+        switchVideoPlayerOn()
+    }
+
+    fun switchVideoPlayerOnFromUri(videoUri: Uri) {
+        // if coming from Activity restart, use the passed parameter
+        videoPlayerHandling.currentExternalUri = videoUri
+        videoPlayerHandling.currentFile = null
+        cameraBasicHandler.currentFile = null
+        switchVideoPlayerOn()
+    }
+
+    private fun switchVideoPlayerOn() {
         // in case the Camera was being visible, set if off
         isVideoPlayerVisible = true
         if (isCameraVisible) {
@@ -185,21 +205,17 @@ class BackgroundSurfaceManager(
                 // wanted (video player) once we're sure video has been successfully saved
                 val handler = Handler()
                 handler.postDelayed({
-                        cameraXAwareSurfaceDeactivator()
-                        videoPlayerHandling.currentFile = cameraBasicHandler.currentFile
-                        photoEditorView.turnTextureViewOn()
-                        videoPlayerHandling.activate()
-                    }, 500
+                    cameraXAwareSurfaceDeactivator()
+                    videoPlayerHandling.currentFile = cameraBasicHandler.currentFile
+                    photoEditorView.turnTextureViewOn()
+                    videoPlayerHandling.activate()
+                }, 500
                 )
                 return
             } else {
                 cameraXAwareSurfaceDeactivator() // keep visible as we're going to render video from player
                 videoPlayerHandling.currentFile = cameraBasicHandler.currentFile
             }
-        } else {
-            // if coming from Activity restart, use the passed parameter
-            videoPlayerHandling.currentFile = videoFile
-            cameraBasicHandler.currentFile = videoFile
         }
         photoEditorView.turnTextureViewOn()
         videoPlayerHandling.activate()
