@@ -876,10 +876,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         // show proper edit mode controls
         close_button.visibility = View.VISIBLE
         edit_mode_controls.visibility = View.VISIBLE
-        if (photoEditor.anyViewsAdded()) {
+//        if (photoEditor.anyViewsAdded()) {
             // only show save button if any views have been added
             save_button.visibility = View.VISIBLE
-        }
+//        }
 
         if (noSound) {
             sound_button_group.visibility = View.INVISIBLE
@@ -927,12 +927,12 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     private fun showSaveButtonIfViewsAdded() {
-        if (photoEditor.anyViewsAdded()) {
+//        if (photoEditor.anyViewsAdded()) {
             // only show save button if any views have been added
             save_button.visibility = View.VISIBLE
-        } else {
-            save_button.visibility = View.INVISIBLE
-        }
+//        } else {
+//            save_button.visibility = View.INVISIBLE
+//        }
     }
 
     private fun updateFlashModeSelectionIcon() {
