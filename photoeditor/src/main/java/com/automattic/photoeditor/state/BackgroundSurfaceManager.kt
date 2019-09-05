@@ -3,6 +3,7 @@ package com.automattic.photoeditor.state
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
+import androidx.core.net.toUri
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.Event.ON_CREATE
@@ -261,7 +262,15 @@ class BackgroundSurfaceManager(
     }
 
     fun getCurrentFile(): File? {
-            return cameraBasicHandler.currentFile
+        return cameraBasicHandler.currentFile
+    }
+
+    fun getCurrentBackgroundMedia(): Uri? {
+        if (videoPlayerHandling.currentExternalUri != null) {
+            return videoPlayerHandling.currentExternalUri
+        } else {
+            return Uri.parse(cameraBasicHandler.currentFile.toString())
+        }
     }
 
     private fun getStateFromBundle() {

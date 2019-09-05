@@ -62,6 +62,7 @@ import com.automattic.portkey.compose.photopicker.MediaBrowserType
 import com.automattic.portkey.compose.photopicker.PhotoPickerActivity
 import com.automattic.portkey.compose.photopicker.PhotoPickerFragment
 import com.automattic.portkey.compose.photopicker.RequestCodes
+import com.automattic.portkey.util.CrashLoggingUtils
 import com.automattic.portkey.util.getDisplayPixelSize
 import com.automattic.portkey.util.isVideo
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
@@ -299,6 +300,8 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 if (isVideo(strMediaUri)) {
                     // now start playing the video we just recorded
                     showPlayVideo(Uri.parse(strMediaUri))
+                    // TODO remove this and support composing a Loop Frame with picked external video
+                    showToast("WARNING: only video captured with Portkey can be saved for now")
                 } else {
                     // assuming image for now
                     Glide.with(this@ComposeLoopFrameActivity)
@@ -643,7 +646,17 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     private fun saveLoopFrame() {
         // check wether we have an Image or a Video, and call its save functionality accordingly
         if (backgroundSurfaceManager.cameraVisible() || backgroundSurfaceManager.videoPlayerVisible()) {
-            saveVideo(backgroundSurfaceManager.getCurrentFile().toString())
+            val currentBkgMedia = backgroundSurfaceManager.getCurrentBackgroundMedia()
+            if (currentBkgMedia != null) {
+                if (backgroundSurfaceManager.getCurrentFile() == null) {
+                    showToast("WARNING: only video captured with Portkey can be saved for now")
+                } else {
+                    saveVideo(currentBkgMedia)
+                }
+            } else {
+                CrashLoggingUtils.log("An error occurred trying to save video, current background media not found")
+                showToast("An error occurred trying to save video, current background media not found")
+            }
         } else {
             // check whether there are any GIF stickers - if there are, we need to produce a video instead
             if (photoEditor.anyStickersAdded()) {
@@ -699,7 +712,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     @SuppressLint("MissingPermission")
-    private fun saveVideo(inputFile: String) {
+    private fun saveVideo(inputFile: Uri) {
         if (PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             showLoading("Saving...")
             try {
@@ -784,7 +797,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                         override fun onSuccess(imagePath: String) {
                             // now save the video with emoji, but using the previously saved video as input
                             hideLoading()
-                            saveVideo(imagePath)
+                            saveVideo(Uri.parse(imagePath))
                             // TODO: delete the temporal video produced originally
                         }
 
