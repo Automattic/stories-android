@@ -21,11 +21,9 @@ import com.automattic.portkey.R;
 import com.automattic.portkey.compose.photopicker.utils.AniUtils;
 import com.bumptech.glide.Glide;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.Locale;
 
 import static androidx.recyclerview.widget.RecyclerView.NO_POSITION;
