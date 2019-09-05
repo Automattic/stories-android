@@ -2,6 +2,7 @@ package com.automattic.portkey.compose.photopicker;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -20,9 +21,11 @@ import com.automattic.portkey.R;
 import com.automattic.portkey.compose.photopicker.utils.AniUtils;
 import com.bumptech.glide.Glide;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Locale;
 
 import static androidx.recyclerview.widget.RecyclerView.NO_POSITION;
@@ -184,6 +187,7 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
         }
 
         holder.mVideoOverlay.setVisibility(item.mIsVideo ? View.VISIBLE : View.GONE);
+        holder.mTxtVideoDuration.setVisibility(item.mIsVideo ? View.VISIBLE : View.GONE);
 
         if (mLoadThumbnails) {
             // mImageManager.load(holder.mImgThumbnail, ImageType.PHOTO, item.mUri.toString(), ScaleType.FIT_CENTER);
@@ -191,6 +195,32 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
                  .load(item.mUri.toString())
                     .fitCenter()
                     .into(holder.mImgThumbnail);
+
+            if (item.mIsVideo) {
+//                SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+//                String duration = sdf.format(new Date(getVideoDuration(item.mUri)));
+                long milliseconds = getVideoDuration(item.mUri);
+                int seconds = (int) (milliseconds / 1000) % 60;
+                int minutes = (int) ((milliseconds / (1000 * 60)) % 60);
+                int hours = (int) ((milliseconds / (1000 * 60 * 60)) % 24);
+                String duration = "";
+                if (hours > 0) {
+                    duration = duration + String.format("%02d", hours) + ":";
+                }
+                if (minutes > 0) {
+                    duration = duration + String.format("%02d", minutes) + ":";
+                } else {
+                    duration = duration + "00:";
+                }
+                if (seconds > 0) {
+                    duration = duration + String.format("%02d", seconds);
+                } else {
+                    duration = duration + "01"; // default to 1 second if even less than a second
+                }
+                holder.mTxtVideoDuration.setText(duration);
+            } else {
+                holder.mTxtVideoDuration.setText("");
+            }
         } else {
             Glide.with(holder.mImgThumbnail.getContext()).clear(holder.mImgThumbnail);
         }
@@ -331,6 +361,7 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
         private final ImageView mImgThumbnail;
         private final TextView mTxtSelectionCount;
         private final ImageView mVideoOverlay;
+        private final TextView mTxtVideoDuration;
 
         ThumbnailViewHolder(View view) {
             super(view);
@@ -338,6 +369,7 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
             mImgThumbnail = view.findViewById(R.id.image_thumbnail);
             mTxtSelectionCount = view.findViewById(R.id.text_selection_count);
             mVideoOverlay = view.findViewById(R.id.image_video_overlay);
+            mTxtVideoDuration = view.findViewById(R.id.text_video_duration);
 
             mImgThumbnail.getLayoutParams().width = mThumbWidth;
             mImgThumbnail.getLayoutParams().height = mThumbHeight;
@@ -404,6 +436,22 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
 //        }).start();
     }
 
+    private long getVideoDuration(Uri videoUri) {
+        MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
+        mediaMetadataRetriever.setDataSource(mContext, videoUri);
+        long durationUs = 0;
+        try {
+            durationUs = Long.parseLong(
+                            mediaMetadataRetriever.extractMetadata(
+                    MediaMetadataRetriever.METADATA_KEY_DURATION));
+        } catch (NumberFormatException e) {
+            durationUs = -1;
+        } finally {
+            mediaMetadataRetriever.release();
+        }
+
+        return durationUs;
+    }
     /*
      * builds the list of media items from the device
      */
