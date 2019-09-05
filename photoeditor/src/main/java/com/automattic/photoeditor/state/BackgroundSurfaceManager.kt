@@ -177,8 +177,10 @@ class BackgroundSurfaceManager(
         if (videoFile != null) {
             videoPlayerHandling.currentFile = videoFile
             cameraBasicHandler.currentFile = videoFile
+            videoPlayerHandling.currentExternalUri = null
         } else {
             videoPlayerHandling.currentFile = cameraBasicHandler.currentFile
+            videoPlayerHandling.currentExternalUri = null
         }
         switchVideoPlayerOn()
     }
