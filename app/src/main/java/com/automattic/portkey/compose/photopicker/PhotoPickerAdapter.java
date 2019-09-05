@@ -102,7 +102,7 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
 
         int displayWidth = getDisplayPixelWidth(mContext);
         int thumbWidth = displayWidth / NUM_COLUMNS;
-        int thumbHeight = (int) (thumbWidth * 0.75f);
+        int thumbHeight = (int) (thumbWidth * 1.75f);
         boolean sizeChanged = thumbWidth != mThumbWidth || thumbHeight != mThumbHeight;
 
         // if thumb sizes have changed (due to device rotation, or never being set), we must
