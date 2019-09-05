@@ -197,8 +197,8 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
     }
 
     private fun calculateVideoSize(videoUri: Uri) {
+        val metadataRetriever = MediaMetadataRetriever()
         try {
-            val metadataRetriever = MediaMetadataRetriever()
             metadataRetriever.setDataSource(context, videoUri)
             val height = metadataRetriever
                 .extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)
@@ -210,6 +210,8 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
             Log.d(TAG, e.message)
         } catch (e: NumberFormatException) {
             Log.d(TAG, e.message)
+        } finally {
+            metadataRetriever.release()
         }
     }
 
