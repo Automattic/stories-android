@@ -64,6 +64,7 @@ import com.automattic.portkey.compose.photopicker.PhotoPickerActivity.PhotoPicke
 import com.automattic.portkey.compose.photopicker.PhotoPickerFragment
 import com.automattic.portkey.compose.photopicker.RequestCodes
 import com.automattic.portkey.util.getDisplayPixelSize
+import com.automattic.portkey.util.isVideo
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 
@@ -290,18 +291,21 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             RequestCodes.PHOTO_PICKER -> if (resultCode == Activity.RESULT_OK && data != null) {
                 val strMediaUri = data.getStringExtra(PhotoPickerActivity.EXTRA_MEDIA_URI)
                 if (strMediaUri == null) {
-                    Log.e("Composer", "Can't resolve picked image")
+                    Log.e("Composer", "Can't resolve picked media")
+                    showToast("Can't resolve picked media")
                     return
                 }
-                val source = PhotoPickerMediaSource.fromString(
-                    data.getStringExtra(PhotoPickerActivity.EXTRA_MEDIA_SOURCE)
-                )
-                val imageUri = Uri.parse(strMediaUri)
-                if (imageUri != null) {
-                    // TODO decide whether the picked media is a VIDEO or an IMAGE
+
+                // decide whether the picked media is a VIDEO or an IMAGE
+                if (isVideo(strMediaUri)) {
+//                    runOnUiThread {
+                        // now start playing the video we just recorded
+                        showPlayVideo(File(Uri.parse(strMediaUri).path))
+//                    }
+                } else {
                     // assuming image for now
                     Glide.with(this@ComposeLoopFrameActivity)
-                        .load(imageUri)
+                        .load(strMediaUri)
                         .transform(CenterCrop())
                         .into(photoEditorView.source)
                     showStaticBackground()
