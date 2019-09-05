@@ -65,6 +65,7 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
      * An [AutoFitTextureView] for camera preview.
      */
     lateinit var textureView: AutoFitTextureView
+    private lateinit var originalMatrix: Matrix
 
     private var active: Boolean = false
 
@@ -98,6 +99,8 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
             mediaPlayer?.release()
             mediaPlayer = null
         }
+        // leave the transform for reusable TextureView as per the original
+        textureView.setTransform(originalMatrix)
     }
 
     override fun activate() {
@@ -136,6 +139,7 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
 
             currentFile?.takeIf { it.exists() }?.let { file ->
                 val inputStream = FileInputStream(file)
+                textureView.setTransform(originalMatrix)
                 mediaPlayer = MediaPlayer().apply {
                     setDataSource(inputStream.getFD())
                     setSurface(s)
@@ -152,6 +156,7 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
             }
 
             currentExternalUri?.let {
+                textureView.setTransform(originalMatrix)
                 calculateVideoSize(it)
                 updateTextureViewSizeForCropping(textureView.measuredWidth, textureView.measuredHeight)
                 mediaPlayer = MediaPlayer().apply {
@@ -244,6 +249,7 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
 
         @JvmStatic fun getInstance(textureView: AutoFitTextureView): VideoPlayingBasicHandling {
             instance.textureView = textureView
+            instance.originalMatrix = textureView.getTransform(null)
             return instance
         }
     }
