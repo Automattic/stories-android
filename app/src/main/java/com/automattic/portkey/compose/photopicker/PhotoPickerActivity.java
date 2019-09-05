@@ -326,8 +326,8 @@ public class PhotoPickerActivity extends AppCompatActivity
 
         @Override public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
             if (e1 != null && e2 != null) {
-                if (e2.getY() - e1.getY() > SWIPE_MIN_DISTANCE &&
-                    Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
+                if (e2.getY() - e1.getY() > SWIPE_MIN_DISTANCE
+                    && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
                     // Top to bottom
                     finish();
                     return false;

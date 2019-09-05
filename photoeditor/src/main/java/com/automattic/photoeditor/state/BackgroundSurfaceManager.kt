@@ -3,7 +3,6 @@ package com.automattic.photoeditor.state
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
-import androidx.core.net.toUri
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.Event.ON_CREATE
