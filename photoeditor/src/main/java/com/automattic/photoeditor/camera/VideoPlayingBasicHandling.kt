@@ -24,13 +24,23 @@ import android.view.TextureView
 import java.io.File
 import android.media.AudioManager
 import android.media.MediaPlayer
+//import android.media.MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
 import android.net.Uri
 import androidx.fragment.app.Fragment
 import com.automattic.photoeditor.camera.interfaces.SurfaceFragmentHandler
 import com.automattic.photoeditor.camera.interfaces.VideoPlayerSoundOnOffHandler
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
+import com.google.android.exoplayer2.C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
 import java.io.FileInputStream
 import java.io.IOException
+import com.google.android.exoplayer2.ExoPlayerFactory
+import com.google.android.exoplayer2.Player.REPEAT_MODE_ONE
+import com.google.android.exoplayer2.Player.RepeatMode
+import com.google.android.exoplayer2.SimpleExoPlayer
+import com.google.android.exoplayer2.source.ProgressiveMediaSource
+import com.google.android.exoplayer2.source.MediaSource
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.util.Util
 
 class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlayerSoundOnOffHandler {
     // holds the File handle to the current video file to be played
@@ -65,7 +75,8 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
 
     private var active: Boolean = false
 
-    private var mediaPlayer: MediaPlayer? = null
+//    private var mediaPlayer: MediaPlayer? = null
+    private var player: SimpleExoPlayer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,12 +96,18 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
 
     fun stopVideoPlay() {
         if (active) {
-            if (mediaPlayer?.isPlaying() == true) {
-                mediaPlayer?.stop()
+            player?.let {
+                it.stop(true)
+                it.release()
+                player = null
             }
-            mediaPlayer?.reset()
-            mediaPlayer?.release()
-            mediaPlayer = null
+            // -----
+//            if (mediaPlayer?.isPlaying() == true) {
+//                mediaPlayer?.stop()
+//            }
+//            mediaPlayer?.reset()
+//            mediaPlayer?.release()
+//            mediaPlayer = null
         }
     }
 
@@ -120,7 +137,11 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
     fun startVideoPlay(texture: SurfaceTexture) {
         val s = Surface(texture)
         try {
-            if (mediaPlayer != null) {
+//            if (mediaPlayer != null) {
+//                stopVideoPlay()
+//            }
+
+            if (player != null) {
                 stopVideoPlay()
             }
 
@@ -129,36 +150,69 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
             }
 
             currentFile?.takeIf { it.exists() }?.let { file ->
-                val inputStream = FileInputStream(file)
-                mediaPlayer = MediaPlayer().apply {
-                    setDataSource(inputStream.getFD())
-                    setSurface(s)
-                    setLooping(true)
-                    prepare()
-                    // TODO check whether we want fine grained error handling by setting these listeners
-    //                setOnBufferingUpdateListener(this)
-    //                setOnCompletionListener(this)
-    //                setOnPreparedListener(this)
-    //                setOnVideoSizeChangedListener(this)
-                    setAudioStreamType(AudioManager.STREAM_MUSIC)
-                    start()
-                }
+//                val inputStream = FileInputStream(file)
+//                mediaPlayer = MediaPlayer().apply {
+//                    setDataSource(inputStream.getFD())
+//                    setSurface(s)
+//                    setLooping(true)
+//                    prepare()
+//                    // TODO check whether we want fine grained error handling by setting these listeners
+//    //                setOnBufferingUpdateListener(this)
+//    //                setOnCompletionListener(this)
+//    //                setOnPreparedListener(this)
+//    //                setOnVideoSizeChangedListener(this)
+//                    setAudioStreamType(AudioManager.STREAM_MUSIC)
+//                    start()
+
+                    player = ExoPlayerFactory.newSimpleInstance(context).apply {
+                        setVideoSurface(s)
+                        val dataSourceFactory = DefaultDataSourceFactory(
+                            context,
+                            Util.getUserAgent(context, "Portkey")
+                        )
+                        // This is the MediaSource representing the media to be played.
+                        val videoSource = ProgressiveMediaSource.Factory(dataSourceFactory)
+                            .createMediaSource(Uri.fromFile(file))
+                        // Prepare the player with the source.
+                        prepare(videoSource)
+                        repeatMode = REPEAT_MODE_ONE
+                        playWhenReady = true
+                    }
+//                }
             }
 
             currentExternalUri?.let {
-                mediaPlayer = MediaPlayer().apply {
-                    setDataSource(context!!, currentExternalUri!!)
-                    setSurface(s)
-                    setLooping(true)
-                    prepare()
-                    // TODO check whether we want fine grained error handling by setting these listeners
-                    //                setOnBufferingUpdateListener(this)
-                    //                setOnCompletionListener(this)
-                    //                setOnPreparedListener(this)
-                    //                setOnVideoSizeChangedListener(this)
-                    setAudioStreamType(AudioManager.STREAM_MUSIC)
-                    start()
-                }
+//                mediaPlayer = MediaPlayer().apply {
+//                    setDataSource(context!!, currentExternalUri!!)
+//                    setVideoScalingMode(VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING)
+//                    setSurface(s)
+//                    setLooping(true)
+//                    prepare()
+//                    // TODO check whether we want fine grained error handling by setting these listeners
+//                    //                setOnBufferingUpdateListener(this)
+//                    //                setOnCompletionListener(this)
+//                    //                setOnPreparedListener(this)
+//                    //                setOnVideoSizeChangedListener(this)
+//                    setAudioStreamType(AudioManager.STREAM_MUSIC)
+//                    start()
+
+                    player = ExoPlayerFactory.newSimpleInstance(context).apply {
+                        setVideoSurface(s)
+                        val dataSourceFactory = DefaultDataSourceFactory(
+                            context,
+                            Util.getUserAgent(context, "Portkey")
+                        )
+                        // This is the MediaSource representing the media to be played.
+                        val videoSource = ProgressiveMediaSource.Factory(dataSourceFactory)
+                            .createMediaSource(currentExternalUri)
+                        // Prepare the player with the source.
+                        prepare(videoSource)
+                        repeatMode = REPEAT_MODE_ONE
+                        videoScalingMode = VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
+                        playWhenReady = true
+                    }
+
+//                }
             }
         } catch (e: IllegalArgumentException) {
             // TODO Auto-generated catch block
@@ -176,11 +230,13 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
     }
 
     override fun mute() {
-        mediaPlayer?.setVolume(0f, 0f)
+//        mediaPlayer?.setVolume(0f, 0f)
+        player?.volume = 0f
     }
 
     override fun unmute() {
-        mediaPlayer?.setVolume(1f, 1f)
+//        mediaPlayer?.setVolume(1f, 1f)
+        player?.volume = 1f
     }
 
     companion object {

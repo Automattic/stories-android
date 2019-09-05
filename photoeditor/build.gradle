@@ -44,6 +44,9 @@ dependencies {
     implementation "androidx.camera:camera-core:${camerax_version}"
     implementation "androidx.camera:camera-camera2:${camerax_version}"
 
+    implementation 'com.google.android.exoplayer:exoplayer-core:2.10.4'
+    implementation 'com.google.android.exoplayer:exoplayer-ui:2.10.4'
+
     implementation 'com.github.bumptech.glide:glide:4.9.0'
     kapt 'com.github.bumptech.glide:compiler:4.9.0'
 
