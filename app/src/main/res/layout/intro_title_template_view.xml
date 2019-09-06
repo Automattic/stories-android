@@ -1,27 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:layout_centerInParent="true"
-    android:gravity="center_horizontal|center_vertical">
+    android:gravity="center_horizontal">
 
-    <TextView
-        style="@style/IntroTheme.PromoText.Title"
-        android:id="@+id/title_text"
+    <ImageView
+        android:id="@+id/background_image"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/margin_extra_large"
-        tools:text="@string/intro_title_text"/>
+        android:layout_height="match_parent"
+        android:layout_marginStart="@dimen/promo_background_image_margin_side"
+        android:layout_marginEnd="@dimen/promo_background_image_margin_side"
+        android:layout_marginBottom="@dimen/promo_background_image_margin_bottom"
+        android:scaleType="centerCrop"
+        tools:src="@drawable/intro01"/>
 
-    <TextView
-        style="@style/IntroTheme.PromoText"
-        android:id="@+id/promo_text"
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:minLines="3"
-        tools:text="@string/intro_promo_text_share"
-        android:layout_marginStart="@dimen/intro_message_side_margin_size"
-        android:layout_marginEnd="@dimen/intro_message_side_margin_size"/>
-</LinearLayout>
+        android:paddingBottom="@dimen/margin_extra_extra_large"
+        android:orientation="vertical"
+        android:layout_gravity="bottom">
+
+        <TextView
+            style="@style/IntroTheme.PromoText.Title"
+            android:id="@+id/title_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:text="@string/intro_title_text"/>
+
+        <TextView
+            style="@style/IntroTheme.PromoText"
+            android:id="@+id/promo_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minLines="3"
+            tools:text="@string/intro_promo_text_share"
+            android:layout_marginStart="@dimen/intro_message_side_margin_size"
+            android:layout_marginEnd="@dimen/intro_message_side_margin_size"/>
+    </LinearLayout>
+</FrameLayout>

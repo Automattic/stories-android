@@ -1,27 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:layout_centerInParent="true"
-    android:gravity="center_horizontal|center_vertical">
+    android:gravity="center_horizontal">
 
-    <View
-        android:id="@+id/view_image"
-        android:layout_width="@dimen/promo_placeholder_image_width"
-        android:layout_height="@dimen/promo_placeholder_image_height"
-        android:layout_gravity="center_horizontal"
-        android:background="@color/lighter_gray" />
-
-    <TextView
-        style="@style/IntroTheme.PromoText"
-        android:id="@+id/promo_text"
+    <ImageView
+        android:id="@+id/background_image"
         android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="@dimen/promo_background_image_margin_side"
+        android:layout_marginEnd="@dimen/promo_background_image_margin_side"
+        android:layout_marginBottom="@dimen/promo_background_image_margin_bottom"
+        android:scaleType="centerCrop"
+        tools:src="@drawable/intro05"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/promo_image_screen_text_margin_top"
-        android:minLines="3"
-        tools:text="@string/intro_promo_text_create"
-        android:layout_marginStart="@dimen/intro_message_side_margin_size"
-        android:layout_marginEnd="@dimen/intro_message_side_margin_size"/>
-</LinearLayout>
+        android:paddingBottom="@dimen/margin_extra_extra_large"
+        android:orientation="vertical"
+        android:layout_gravity="bottom">
+
+        <TextView
+            style="@style/IntroTheme.PromoText"
+            android:id="@+id/promo_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minLines="3"
+            tools:text="@string/intro_promo_text_create"
+            android:layout_marginStart="@dimen/intro_message_side_margin_size"
+            android:layout_marginEnd="@dimen/intro_message_side_margin_size"/>
+    </LinearLayout>
+</FrameLayout>
