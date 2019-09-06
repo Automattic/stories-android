@@ -334,6 +334,7 @@ class BackgroundSurfaceManager(
                     videoPlayerHandling = videoPlayerFragment as VideoPlayingBasicHandling
                     // the photoEditorView layout has been recreated so, re-assign its TextureView
                     videoPlayerHandling.textureView = photoEditorView.textureView
+                    videoPlayerHandling.originalMatrix = photoEditorView.textureView.getTransform(null)
                 }
                 // add video player texture listener
                 photoEditorView.listeners.add(videoPlayerHandling.surfaceTextureListener)
