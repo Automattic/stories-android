@@ -44,7 +44,7 @@ public class PhotoPickerActivity extends AppCompatActivity
     private MediaBrowserType mBrowserType;
 
     // note that the local post id isn't required (default value is EMPTY_LOCAL_POST_ID)
-    private Integer mLocalPostId;
+//    private Integer mLocalPostId;
 
     private GestureDetectorCompat mSwipeDetector;
 
@@ -126,7 +126,7 @@ public class PhotoPickerActivity extends AppCompatActivity
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putSerializable(PhotoPickerFragment.ARG_BROWSER_TYPE, mBrowserType);
-        outState.putInt(LOCAL_POST_ID, mLocalPostId);
+//        outState.putInt(LOCAL_POST_ID, mLocalPostId);
 //        if (mSite != null) {
 //            outState.putSerializable(WordPress.SITE, mSite);
 //        }
