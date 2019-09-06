@@ -10,6 +10,9 @@
         android:id="@+id/background_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginStart="@dimen/promo_background_image_margin_side"
+        android:layout_marginEnd="@dimen/promo_background_image_margin_side"
+        android:layout_marginBottom="@dimen/promo_background_image_margin_bottom"
         android:scaleType="centerCrop"
         tools:src="@drawable/intro01"/>
 
