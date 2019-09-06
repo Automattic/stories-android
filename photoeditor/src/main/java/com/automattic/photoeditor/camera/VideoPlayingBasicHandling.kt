@@ -65,7 +65,7 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
      * An [AutoFitTextureView] for camera preview.
      */
     lateinit var textureView: AutoFitTextureView
-    private lateinit var originalMatrix: Matrix
+    lateinit var originalMatrix: Matrix
 
     private var active: Boolean = false
 
