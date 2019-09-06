@@ -24,7 +24,8 @@ class IntroPagerAdapter(supportFragmentManager: FragmentManager) : FragmentPager
             R.string.intro_promo_text_share,
             R.string.intro_promo_text_create,
             R.string.intro_promo_text_organize,
-            R.string.intro_promo_text_control
+            R.string.intro_promo_text_control,
+            R.string.intro_promo_text_invite
         )
     }
 }

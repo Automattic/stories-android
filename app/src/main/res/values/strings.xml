@@ -38,10 +38,11 @@
     <string name="get_started">Get Started</string>
 
     <string name="intro_title_text">Loop</string>
-    <string name="intro_promo_text_share">Save and share all the things that make you, you.</string>
-    <string name="intro_promo_text_create">Create a Loop story with photos, video, audio, links, music, and more.</string>
-    <string name="intro_promo_text_organize">Organize your Loops by topic and add to them over time. They don\'t disappear.</string>
-    <string name="intro_promo_text_control">You have full control over who can see your loops.</string>
+    <string name="intro_promo_text_share">Create and share stories with the people you care about most.</string>
+    <string name="intro_promo_text_create">Bring your stories to life with stickers, audio, links, music, and more.</string>
+    <string name="intro_promo_text_organize">Group your stories by topic and update them whenever you have a new chapter to add.</string>
+    <string name="intro_promo_text_control">Your stories belong to you, share them only with who you want.</string>
+    <string name="intro_promo_text_invite">Invite others to create stories together.</string>
 
     <string name="permissions_message">Allow Loop to access your camera, microphone, and local storage.</string>
     <string name="permissions_turn_on">Turn On</string>
