@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.automattic.portkey.R
 import com.automattic.portkey.util.INVALID_RESOURCE_ID
+import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.intro_title_template_view.*
 
 class IntroPagerTitleFragment : Fragment() {
@@ -31,7 +32,11 @@ class IntroPagerTitleFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        background_image.setImageResource(backgroundImage)
+        with(view) {
+            Glide.with(context)
+                .load(backgroundImage)
+                .into(background_image)
+        }
         title_text.setText(titleText)
         promo_text.setText(promoText)
     }
