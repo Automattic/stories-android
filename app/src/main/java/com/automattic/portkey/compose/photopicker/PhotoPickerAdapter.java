@@ -436,14 +436,16 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
 
     private long getVideoDuration(Uri videoUri) {
         MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
-        mediaMetadataRetriever.setDataSource(mContext, videoUri);
         long durationUs = 0;
         try {
+            mediaMetadataRetriever.setDataSource(mContext, videoUri);
             durationUs = Long.parseLong(
                             mediaMetadataRetriever.extractMetadata(
                     MediaMetadataRetriever.METADATA_KEY_DURATION));
         } catch (NumberFormatException e) {
             durationUs = -1;
+        } catch (Exception ex) {
+            // catch every other exception... we don't want to crash for this for god's sake
         } finally {
             mediaMetadataRetriever.release();
         }
