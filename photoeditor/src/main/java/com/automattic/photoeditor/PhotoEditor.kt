@@ -836,7 +836,8 @@ class PhotoEditor private constructor(builder: Builder) :
             }
         }
 
-        Mp4Composer(videoInputPath.toString(), videoOutputPath)
+        Mp4Composer(videoInputPath, videoOutputPath)
+            .with(context)
             .size(width, height)
             .fillMode(FillMode.PRESERVE_ASPECT_FIT)
             .filter(GlFilterGroup(filterCollection))
