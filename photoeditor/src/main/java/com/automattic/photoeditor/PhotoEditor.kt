@@ -838,7 +838,11 @@ class PhotoEditor private constructor(builder: Builder) :
 
         Mp4Composer(videoInputPath, videoOutputPath)
             .with(context)
-            .size(width, height)
+//            .size(width, height)
+            // IMPORTANT: as we aim at a WYSIWYG UX, we need to produce a video of size equal to that of the phone
+            // screen, given the user may be seeing a letterbox landscape video and placing emoji / text around
+            // the black parts of the screen.
+            .size(widthParent, heightParent)
             .fillMode(FillMode.PRESERVE_ASPECT_FIT)
             .filter(GlFilterGroup(filterCollection))
             .listener(object : Mp4Composer.Listener {
