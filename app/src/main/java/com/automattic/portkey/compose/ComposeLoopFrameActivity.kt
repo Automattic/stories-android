@@ -300,8 +300,6 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 if (isVideo(strMediaUri)) {
                     // now start playing the video we just recorded
                     showPlayVideo(Uri.parse(strMediaUri))
-                    // TODO remove this and support composing a Loop Frame with picked external video
-                    showToast("WARNING: only video captured with Portkey can be saved for now")
                 } else {
                     // assuming image for now
                     Glide.with(this@ComposeLoopFrameActivity)
@@ -648,11 +646,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         if (backgroundSurfaceManager.cameraVisible() || backgroundSurfaceManager.videoPlayerVisible()) {
             val currentBkgMedia = backgroundSurfaceManager.getCurrentBackgroundMedia()
             if (currentBkgMedia != null) {
-                if (backgroundSurfaceManager.getCurrentFile() == null) {
-                    showToast("WARNING: only video captured with Portkey can be saved for now")
-                } else {
-                    saveVideo(currentBkgMedia)
-                }
+                saveVideo(currentBkgMedia)
             } else {
                 CrashLoggingUtils.log("An error occurred trying to save video, current background media not found")
                 showToast("An error occurred trying to save video, current background media not found")
