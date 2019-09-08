@@ -74,6 +74,7 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
 
     private var videoWidth: Float = 0f
     private var videoHeight: Float = 0f
+    private var videoOrientation: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -158,9 +159,11 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
 
             currentExternalUri?.let {
                 textureView.setTransform(originalMatrix)
-                calculateVideoSize(it)
-                // updateTextureViewSizeForCropping(textureView.measuredWidth, textureView.measuredHeight)
-                updateTextureViewSizeForLetterbox(videoWidth.toInt(), videoHeight.toInt())
+                calculateVideoSizeAndOrientation(it)
+                // only use letterbox for landscape video
+                if (videoOrientation == 0 || videoOrientation == 180) {
+                    updateTextureViewSizeForLetterbox(videoWidth.toInt(), videoHeight.toInt())
+                }
                 mediaPlayer = MediaPlayer().apply {
                     setDataSource(context!!, currentExternalUri!!)
                     setSurface(s)
@@ -198,7 +201,7 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
         mediaPlayer?.setVolume(1f, 1f)
     }
 
-    private fun calculateVideoSize(videoUri: Uri) {
+    private fun calculateVideoSizeAndOrientation(videoUri: Uri) {
         val metadataRetriever = MediaMetadataRetriever()
         try {
             metadataRetriever.setDataSource(context, videoUri)
@@ -206,8 +209,11 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
                 .extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)
             val width = metadataRetriever
                 .extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)
+            var rotation = Integer.valueOf(metadataRetriever
+                .extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION))
             videoHeight = java.lang.Float.parseFloat(height)
             videoWidth = java.lang.Float.parseFloat(width)
+            videoOrientation = rotation
         } catch (e: IOException) {
             Log.d(TAG, e.message)
         } catch (e: NumberFormatException) {
