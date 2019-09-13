@@ -107,7 +107,7 @@ class PhotoEditorView : RelativeLayout {
             adjustViewBounds = true
         }
 
-        val imgSrcParam = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+        val imgSrcParam = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT).apply {
             addRule(CENTER_IN_PARENT, TRUE)
         }
         if (attrs != null) {
@@ -119,7 +119,7 @@ class PhotoEditorView : RelativeLayout {
         }
 
         // Setup Camera preview view
-        val cameraParam = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+        val cameraParam = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT).apply {
             addRule(CENTER_IN_PARENT, TRUE)
         }
         // Setup Camera preview view
@@ -136,7 +136,7 @@ class PhotoEditorView : RelativeLayout {
             id = brushSrcId
         }
         // Align brush to the size of image view
-        val brushParam = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+        val brushParam = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT).apply {
             addRule(CENTER_IN_PARENT, TRUE)
             addRule(ALIGN_TOP, imgSrcId)
             addRule(ALIGN_BOTTOM, imgSrcId)
@@ -146,7 +146,7 @@ class PhotoEditorView : RelativeLayout {
         imageFilterView = ImageFilterView(context)
         imageFilterView.id = glFilterId
         imageFilterView.visibility = View.GONE
-        val imgFilterParam = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+        val imgFilterParam = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT).apply {
             addRule(CENTER_IN_PARENT, TRUE)
             addRule(ALIGN_TOP, imgSrcId)
             addRule(ALIGN_BOTTOM, imgSrcId)
@@ -234,13 +234,13 @@ class PhotoEditorView : RelativeLayout {
     }
 
     internal fun turnTextureViewOn() {
-        backgroundImage.visibility = View.GONE
+        backgroundImage.visibility = View.INVISIBLE
         autoFitTextureView.visibility = View.VISIBLE
     }
 
     internal fun turnTextureViewOff() {
         backgroundImage.visibility = View.VISIBLE
-        autoFitTextureView.visibility = View.GONE
+        autoFitTextureView.visibility = View.INVISIBLE
     }
 
     internal fun toggleTextureView(): Boolean {
@@ -251,8 +251,8 @@ class PhotoEditorView : RelativeLayout {
     }
 
     internal fun turnTextureAndImageViewOff() {
-        backgroundImage.visibility = View.GONE
-        autoFitTextureView.visibility = View.GONE
+        backgroundImage.visibility = View.INVISIBLE
+        autoFitTextureView.visibility = View.INVISIBLE
     }
 
     companion object {
