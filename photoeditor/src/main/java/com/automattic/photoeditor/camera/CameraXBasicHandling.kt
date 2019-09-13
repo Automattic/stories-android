@@ -195,7 +195,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
 
     override fun takePicture(onImageCapturedListener: ImageCaptureListener) {
         // Create output file to hold the image
-        currentFile = FileUtils.getLoopFrameFile(context!!, false, "orig_")
+        currentFile = FileUtils.getCaptureFile(context!!, false, "orig_")
         currentFile?.createNewFile()
 
         // Setup image capture metadata
