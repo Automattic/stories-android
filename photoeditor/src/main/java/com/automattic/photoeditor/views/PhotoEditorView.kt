@@ -265,8 +265,16 @@ class PhotoEditorView : RelativeLayout {
     }
 
     internal fun toggleTextureView(): Boolean {
-        backgroundImage.visibility = autoFitTextureView.visibility.also {
-            autoFitTextureView.visibility = backgroundImage.visibility
+        if (autoFitTextureView.visibility == View.VISIBLE) {
+            autoFitTextureView.visibility = View.GONE // TextureView needs be gone
+        } else {
+            autoFitTextureView.visibility = View.VISIBLE
+        }
+
+        if (backgroundImage.visibility == View.VISIBLE) {
+            backgroundImage.visibility = View.INVISIBLE // but backgroundImage needs be INVISIBLE so its dimens are kept
+        } else {
+            backgroundImage.visibility = View.VISIBLE
         }
         return autoFitTextureView.visibility == View.VISIBLE
     }
