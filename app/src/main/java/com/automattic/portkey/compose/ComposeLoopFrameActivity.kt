@@ -471,13 +471,6 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         )
     }
 
-    private fun testEmoji() {
-        val emojisList = PhotoEditor.getEmojis(this)
-        // get some random emoji
-        val randomEmojiPos = (0..emojisList.size).shuffled().first()
-        photoEditor.addEmoji(emojisList.get(randomEmojiPos))
-    }
-
     private fun testSticker() {
         photoEditor.addNewImageView(true, Uri.parse("https://i.giphy.com/Ok4HaWlYrewuY.gif"))
     }
