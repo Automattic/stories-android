@@ -7,6 +7,7 @@ import android.graphics.SurfaceTexture
 import android.os.Build
 import android.util.AttributeSet
 import android.util.Log
+import android.view.Choreographer
 import android.view.TextureView
 import android.view.TextureView.SurfaceTextureListener
 import android.view.View
@@ -14,6 +15,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import androidx.annotation.RequiresApi
+import androidx.core.view.children
 import com.automattic.photoeditor.views.filter.CustomEffect
 import com.automattic.photoeditor.OnSaveBitmap
 import com.automattic.photoeditor.R.styleable
@@ -171,6 +173,25 @@ class PhotoEditorView : RelativeLayout {
 
         // Add brush view
         addView(brushDrawingView, brushParam)
+
+        addLayoutListener()
+    }
+
+    fun addLayoutListener() {
+        Choreographer.getInstance().postFrameCallback(object : Choreographer.FrameCallback {
+            override fun doFrame(p0: Long) {
+                for (child in children) {
+                    if (child.tag == ViewType.EMOJI || child.tag == ViewType.TEXT) {
+                        child.measure(MeasureSpec.makeMeasureSpec(getMeasuredWidth(), MeasureSpec.EXACTLY),
+                            MeasureSpec.makeMeasureSpec(getMeasuredHeight(), MeasureSpec.EXACTLY))
+                        child.layout(0, 0, child.getMeasuredWidth(), child.getMeasuredHeight())
+                    }
+                }
+
+                viewTreeObserver.dispatchOnGlobalLayout()
+                Choreographer.getInstance().postFrameCallback(this)
+            }
+        })
     }
 
     // added this method as a helper due to the reasons outlined here:
