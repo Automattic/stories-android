@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
 import android.util.Rational
+import android.util.Size
 import android.view.ViewGroup
 import androidx.camera.core.CameraX
 import androidx.camera.core.ImageCapture
@@ -77,6 +78,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     private fun startCamera() {
         // Get screen metrics used to setup camera for full screen resolution
         val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
+        val screenSize = Size(metrics.widthPixels, metrics.heightPixels)
         val screenAspectRatio = Rational(metrics.widthPixels, metrics.heightPixels)
         Log.d(TAG, "Screen metrics: ${metrics.widthPixels} x ${metrics.heightPixels}")
 
@@ -89,8 +91,10 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         // Create configuration object for the preview use case
         val previewConfig = PreviewConfig.Builder().apply {
             setLensFacing(lensFacing)
-            // We request aspect ratio but no r esolution to let CameraX optimize our use cases
+            // We request aspect ratio and aim at having the device's screen size as per resolution,
+            // cameraX is supposed to get us the best match between the two
             setTargetAspectRatio(screenAspectRatio)
+            setTargetResolution(screenSize)
             // Set initial target rotation, we will have to call this again if rotation changes
             // during the lifecycle of this use case
             setTargetRotation(textureView.display.rotation)
