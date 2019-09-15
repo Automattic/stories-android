@@ -1,6 +1,5 @@
 package com.automattic.photoeditor.util
 
-import android.app.Activity
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.ImageFormat
@@ -8,15 +7,10 @@ import android.graphics.Point
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
-import android.hardware.camera2.CameraMetadata
 import android.util.DisplayMetrics
 import android.util.Log
-import android.util.Rational
 import android.util.Size
 import android.view.Surface
-import android.view.TextureView
-import androidx.camera.core.CameraX
-import androidx.core.app.ActivityCompat
 import androidx.fragment.app.FragmentActivity
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.lang.Long
@@ -120,7 +114,8 @@ class CameraUtils {
         fun setupOptimalCameraPreviewSize(
             activity: FragmentActivity,
             textureView: AutoFitTextureView,
-            cameraId: String) : Size {
+            cameraId: String
+        ): Size {
             // Get screen metrics used to setup camera for full screen resolution
             val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
             val displaySize = Point(metrics.widthPixels, metrics.heightPixels)

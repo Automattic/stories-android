@@ -2,10 +2,6 @@ package com.automattic.photoeditor.camera
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.res.Configuration
-import android.graphics.ImageFormat
-import android.graphics.Point
-import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CameraMetadata
@@ -33,18 +29,13 @@ import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
 import com.automattic.photoeditor.camera.interfaces.cameraXLensFacingFromPortkeyCameraSelection
 import com.automattic.photoeditor.camera.interfaces.cameraXflashModeFromPortkeyFlashState
 import com.automattic.photoeditor.camera.interfaces.portkeyCameraSelectionFromCameraXLensFacing
-import com.automattic.photoeditor.util.CameraUtils
 import com.automattic.photoeditor.util.CameraUtils.Companion.MAX_PREVIEW_HEIGHT
 import com.automattic.photoeditor.util.CameraUtils.Companion.MAX_PREVIEW_WIDTH
-import com.automattic.photoeditor.util.CameraUtils.Companion.chooseOptimalSize
 import com.automattic.photoeditor.util.CameraUtils.Companion.setupOptimalCameraPreviewSize
-import com.automattic.photoeditor.util.CameraUtils.CompareSizesByArea
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.io.File
 import java.lang.Exception
-import java.util.Arrays
-import java.util.Collections
 
 class CameraXBasicHandling : VideoRecorderFragment() {
     private var videoCapture: VideoCapture? = null
@@ -102,7 +93,8 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                 val characteristics = manager.getCameraCharacteristics(cameraId)
 
                 val cameraDirection = characteristics.get(CameraCharacteristics.LENS_FACING)
-                if (cameraDirection != null && isCameraFacingBack && cameraDirection != CameraMetadata.LENS_FACING_BACK) {
+                if (cameraDirection != null && isCameraFacingBack &&
+                    cameraDirection != CameraMetadata.LENS_FACING_BACK) {
                     continue
                 }
 
