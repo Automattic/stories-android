@@ -2,8 +2,13 @@ package com.automattic.photoeditor.camera
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.Configuration
+import android.graphics.ImageFormat
+import android.graphics.Point
+import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
+import android.hardware.camera2.CameraMetadata
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
@@ -28,10 +33,15 @@ import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
 import com.automattic.photoeditor.camera.interfaces.cameraXLensFacingFromPortkeyCameraSelection
 import com.automattic.photoeditor.camera.interfaces.cameraXflashModeFromPortkeyFlashState
 import com.automattic.photoeditor.camera.interfaces.portkeyCameraSelectionFromCameraXLensFacing
+import com.automattic.photoeditor.util.CameraUtils
+import com.automattic.photoeditor.util.CameraUtils.Companion.chooseOptimalSize
+import com.automattic.photoeditor.util.CameraUtils.CompareSizesByArea
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.io.File
 import java.lang.Exception
+import java.util.Arrays
+import java.util.Collections
 
 class CameraXBasicHandling : VideoRecorderFragment() {
     private var videoCapture: VideoCapture? = null
@@ -78,9 +88,67 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     private fun startCamera() {
         // Get screen metrics used to setup camera for full screen resolution
         val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
-        val screenSize = Size(metrics.widthPixels, metrics.heightPixels)
+        val displaySize = Point(metrics.widthPixels, metrics.heightPixels)
         val screenAspectRatio = Rational(metrics.widthPixels, metrics.heightPixels)
+        var optimalPreviewSize: Size? = null
         Log.d(TAG, "Screen metrics: ${metrics.widthPixels} x ${metrics.heightPixels}")
+
+        val manager = activity?.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        for (cameraId in manager.cameraIdList) {
+            val characteristics = manager.getCameraCharacteristics(cameraId)
+
+            val cameraDirection = characteristics.get(CameraCharacteristics.LENS_FACING)
+            val isCameraFacingBack = lensFacing == CameraX.LensFacing.BACK
+            if (cameraDirection != null && isCameraFacingBack && cameraDirection != CameraMetadata.LENS_FACING_BACK) {
+                continue
+            }
+
+            val map = characteristics.get(
+                CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP) ?: continue
+
+            // Find out if we need to swap dimension to get the preview size relative to sensor
+            // coordinate.
+            val displayRotation = activity!!.windowManager.defaultDisplay.rotation
+
+            val sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION) ?: continue
+            val swappedDimensions = CameraUtils.areDimensionsSwapped(displayRotation, sensorOrientation)
+
+            val height = textureView.height
+            val width = textureView.width
+            val rotatedPreviewWidth = if (swappedDimensions) height else width
+            val rotatedPreviewHeight = if (swappedDimensions) width else height
+            var maxPreviewWidth = if (swappedDimensions) displaySize.y else displaySize.x
+            var maxPreviewHeight = if (swappedDimensions) displaySize.x else displaySize.y
+
+            if (maxPreviewWidth > CameraUtils.MAX_PREVIEW_WIDTH) maxPreviewWidth =
+                CameraUtils.MAX_PREVIEW_WIDTH
+            if (maxPreviewHeight > CameraUtils.MAX_PREVIEW_HEIGHT) maxPreviewHeight =
+                CameraUtils.MAX_PREVIEW_HEIGHT
+
+            // For still image captures, we use the largest available size.
+            val largest = Collections.max(
+                Arrays.asList(*map.getOutputSizes(ImageFormat.JPEG)),
+                CompareSizesByArea()
+            )
+
+            // Danger, W.R.! Attempting to use too large a preview size could  exceed the camera
+            // bus' bandwidth limitation, resulting in gorgeous previews but the storage of
+            // garbage capture data.
+            optimalPreviewSize = chooseOptimalSize(
+                map.getOutputSizes(SurfaceTexture::class.java),
+                rotatedPreviewWidth, rotatedPreviewHeight,
+                maxPreviewWidth, maxPreviewHeight,
+                largest
+            )
+
+            // We fit the aspect ratio of TextureView to the size of preview we picked.
+            if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                textureView.setAspectRatio(optimalPreviewSize.width, optimalPreviewSize.height)
+
+            } else {
+                textureView.setAspectRatio(optimalPreviewSize.height, optimalPreviewSize.width)
+            }
+        }
 
         // retrieve flash availability for this camera
         val cameraId = CameraX.getCameraWithLensFacing(lensFacing)
@@ -91,10 +159,8 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         // Create configuration object for the preview use case
         val previewConfig = PreviewConfig.Builder().apply {
             setLensFacing(lensFacing)
-            // We request aspect ratio and aim at having the device's screen size as per resolution,
-            // cameraX is supposed to get us the best match between the two
-            // setTargetAspectRatio(screenAspectRatio)
-            setTargetResolution(screenSize)
+            // set our calculated target resolution
+            setTargetResolution(optimalPreviewSize)
             // Set initial target rotation, we will have to call this again if rotation changes
             // during the lifecycle of this use case
             setTargetRotation(textureView.display.rotation)
@@ -145,8 +211,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         // CameraX.bindToLifecycle(activity, videoPreview, videoCapture, imageCapture)
 
         // image capture only
-//        CameraX.bindToLifecycle(activity, videoPreview, imageCapture)
-        CameraX.bindToLifecycle(activity, videoPreview)
+        CameraX.bindToLifecycle(activity, videoPreview, imageCapture)
     }
 
     @SuppressLint("RestrictedApi")

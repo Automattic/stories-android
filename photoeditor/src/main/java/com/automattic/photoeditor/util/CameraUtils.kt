@@ -2,6 +2,9 @@ package com.automattic.photoeditor.util
 
 import android.util.Log
 import android.util.Size
+import android.view.Surface
+import com.automattic.photoeditor.camera.Camera2BasicHandling
+import com.automattic.photoeditor.camera.Camera2BasicHandling.Companion
 import java.lang.Long
 import java.util.Collections
 import java.util.Comparator
@@ -69,6 +72,33 @@ class CameraUtils {
                 Log.e("CameraUtils", "Couldn't find any suitable preview size")
                 return choices[0]
             }
+        }
+
+        /**
+         * Determines if the dimensions are swapped given the phone's current rotation.
+         *
+         * @param displayRotation The current rotation of the display
+         *
+         * @return true if the dimensions are swapped, false otherwise.
+         */
+        fun areDimensionsSwapped(displayRotation: Int, sensorOrientation: Int): Boolean {
+            var swappedDimensions = false
+            when (displayRotation) {
+                Surface.ROTATION_0, Surface.ROTATION_180 -> {
+                    if (sensorOrientation == 90 || sensorOrientation == 270) {
+                        swappedDimensions = true
+                    }
+                }
+                Surface.ROTATION_90, Surface.ROTATION_270 -> {
+                    if (sensorOrientation == 0 || sensorOrientation == 180) {
+                        swappedDimensions = true
+                    }
+                }
+                else -> {
+                    Log.e("CameraUtils", "Display rotation is invalid: $displayRotation")
+                }
+            }
+            return swappedDimensions
         }
     }
 

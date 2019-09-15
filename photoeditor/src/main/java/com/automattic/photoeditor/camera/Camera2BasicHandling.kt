@@ -63,6 +63,7 @@ import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
 import com.automattic.photoeditor.camera.interfaces.camera2LensFacingFromPortkeyCameraSelection
 import com.automattic.photoeditor.camera.interfaces.portkeyCameraSelectionFromCamera2LensFacing
 import com.automattic.photoeditor.util.CameraUtils
+import com.automattic.photoeditor.util.CameraUtils.Companion.areDimensionsSwapped
 import com.automattic.photoeditor.util.CameraUtils.Companion.chooseOptimalSize
 import com.automattic.photoeditor.util.CameraUtils.CompareSizesByArea
 import com.automattic.photoeditor.util.PermissionUtils
@@ -343,7 +344,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
                 val displayRotation = activity!!.windowManager.defaultDisplay.rotation
 
                 sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION) ?: continue
-                val swappedDimensions = areDimensionsSwapped(displayRotation)
+                val swappedDimensions = areDimensionsSwapped(displayRotation, sensorOrientation)
 
                 val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
                 val displaySize = Point(metrics.widthPixels, metrics.heightPixels)
@@ -396,33 +397,6 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
                         FRAGMENT_DIALOG
                     )
         }
-    }
-
-    /**
-     * Determines if the dimensions are swapped given the phone's current rotation.
-     *
-     * @param displayRotation The current rotation of the display
-     *
-     * @return true if the dimensions are swapped, false otherwise.
-     */
-    private fun areDimensionsSwapped(displayRotation: Int): Boolean {
-        var swappedDimensions = false
-        when (displayRotation) {
-            Surface.ROTATION_0, Surface.ROTATION_180 -> {
-                if (sensorOrientation == 90 || sensorOrientation == 270) {
-                    swappedDimensions = true
-                }
-            }
-            Surface.ROTATION_90, Surface.ROTATION_270 -> {
-                if (sensorOrientation == 0 || sensorOrientation == 180) {
-                    swappedDimensions = true
-                }
-            }
-            else -> {
-                Log.e(TAG, "Display rotation is invalid: $displayRotation")
-            }
-        }
-        return swappedDimensions
     }
 
     /**
