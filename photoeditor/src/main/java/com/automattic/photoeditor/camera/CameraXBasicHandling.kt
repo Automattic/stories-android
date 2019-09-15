@@ -93,7 +93,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
             setLensFacing(lensFacing)
             // We request aspect ratio and aim at having the device's screen size as per resolution,
             // cameraX is supposed to get us the best match between the two
-            setTargetAspectRatio(screenAspectRatio)
+            // setTargetAspectRatio(screenAspectRatio)
             setTargetResolution(screenSize)
             // Set initial target rotation, we will have to call this again if rotation changes
             // during the lifecycle of this use case
@@ -145,7 +145,8 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         // CameraX.bindToLifecycle(activity, videoPreview, videoCapture, imageCapture)
 
         // image capture only
-        CameraX.bindToLifecycle(activity, videoPreview, imageCapture)
+//        CameraX.bindToLifecycle(activity, videoPreview, imageCapture)
+        CameraX.bindToLifecycle(activity, videoPreview)
     }
 
     @SuppressLint("RestrictedApi")
