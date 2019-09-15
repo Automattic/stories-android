@@ -1,16 +1,32 @@
 package com.automattic.photoeditor.util
 
+import android.app.Activity
+import android.content.Context
+import android.content.res.Configuration
+import android.graphics.ImageFormat
+import android.graphics.Point
+import android.graphics.SurfaceTexture
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraManager
+import android.hardware.camera2.CameraMetadata
+import android.util.DisplayMetrics
 import android.util.Log
+import android.util.Rational
 import android.util.Size
 import android.view.Surface
-import com.automattic.photoeditor.camera.Camera2BasicHandling
-import com.automattic.photoeditor.camera.Camera2BasicHandling.Companion
+import android.view.TextureView
+import androidx.camera.core.CameraX
+import androidx.core.app.ActivityCompat
+import androidx.fragment.app.FragmentActivity
+import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.lang.Long
+import java.util.Arrays
 import java.util.Collections
 import java.util.Comparator
 
 class CameraUtils {
     companion object {
+        private val TAG = "CameraUtils"
         /**
          * Max preview width that is guaranteed by Camera2 API
          */
@@ -69,7 +85,7 @@ class CameraUtils {
             } else if (notBigEnough.size > 0) {
                 return Collections.max(notBigEnough, CompareSizesByArea())
             } else {
-                Log.e("CameraUtils", "Couldn't find any suitable preview size")
+                Log.e(TAG, "Couldn't find any suitable preview size")
                 return choices[0]
             }
         }
@@ -81,7 +97,7 @@ class CameraUtils {
          *
          * @return true if the dimensions are swapped, false otherwise.
          */
-        fun areDimensionsSwapped(displayRotation: Int, sensorOrientation: Int): Boolean {
+        @JvmStatic fun areDimensionsSwapped(displayRotation: Int, sensorOrientation: Int): Boolean {
             var swappedDimensions = false
             when (displayRotation) {
                 Surface.ROTATION_0, Surface.ROTATION_180 -> {
@@ -95,10 +111,77 @@ class CameraUtils {
                     }
                 }
                 else -> {
-                    Log.e("CameraUtils", "Display rotation is invalid: $displayRotation")
+                    Log.e(TAG, "Display rotation is invalid: $displayRotation")
                 }
             }
             return swappedDimensions
+        }
+
+        fun setupOptimalCameraPreviewSize(
+            activity: FragmentActivity,
+            textureView: AutoFitTextureView,
+            isCameraFacingBack: Boolean) : Size {
+            // Get screen metrics used to setup camera for full screen resolution
+            val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
+            val displaySize = Point(metrics.widthPixels, metrics.heightPixels)
+            var optimalPreviewSize = Size(MAX_PREVIEW_WIDTH, MAX_PREVIEW_HEIGHT)
+            Log.d(TAG, "Screen metrics: ${metrics.widthPixels} x ${metrics.heightPixels}")
+
+            val manager = activity.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+            for (cameraId in manager.cameraIdList) {
+                val characteristics = manager.getCameraCharacteristics(cameraId)
+
+                val cameraDirection = characteristics.get(CameraCharacteristics.LENS_FACING)
+                if (cameraDirection != null && isCameraFacingBack && cameraDirection != CameraMetadata.LENS_FACING_BACK) {
+                    continue
+                }
+
+                val map = characteristics.get(
+                    CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP) ?: continue
+
+                // Find out if we need to swap dimension to get the preview size relative to sensor
+                // coordinate.
+                val displayRotation = activity!!.windowManager.defaultDisplay.rotation
+
+                val sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION) ?: continue
+                val swappedDimensions = CameraUtils.areDimensionsSwapped(displayRotation, sensorOrientation)
+
+                val height = textureView.height
+                val width = textureView.width
+                val rotatedPreviewWidth = if (swappedDimensions) height else width
+                val rotatedPreviewHeight = if (swappedDimensions) width else height
+                var maxPreviewWidth = if (swappedDimensions) displaySize.y else displaySize.x
+                var maxPreviewHeight = if (swappedDimensions) displaySize.x else displaySize.y
+
+                if (maxPreviewWidth > CameraUtils.MAX_PREVIEW_WIDTH) maxPreviewWidth =
+                    CameraUtils.MAX_PREVIEW_WIDTH
+                if (maxPreviewHeight > CameraUtils.MAX_PREVIEW_HEIGHT) maxPreviewHeight =
+                    CameraUtils.MAX_PREVIEW_HEIGHT
+
+                // For still image captures, we use the largest available size.
+                val largest = Collections.max(
+                    Arrays.asList(*map.getOutputSizes(ImageFormat.JPEG)),
+                    CompareSizesByArea()
+                )
+
+                // Danger, W.R.! Attempting to use too large a preview size could  exceed the camera
+                // bus' bandwidth limitation, resulting in gorgeous previews but the storage of
+                // garbage capture data.
+                optimalPreviewSize = chooseOptimalSize(
+                    map.getOutputSizes(SurfaceTexture::class.java),
+                    rotatedPreviewWidth, rotatedPreviewHeight,
+                    maxPreviewWidth, maxPreviewHeight,
+                    largest
+                )
+
+                // We fit the aspect ratio of TextureView to the size of preview we picked.
+                if (activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                    textureView.setAspectRatio(optimalPreviewSize.width, optimalPreviewSize.height)
+                } else {
+                    textureView.setAspectRatio(optimalPreviewSize.height, optimalPreviewSize.width)
+                }
+            }
+            return optimalPreviewSize
         }
     }
 

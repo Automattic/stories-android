@@ -34,7 +34,10 @@ import com.automattic.photoeditor.camera.interfaces.cameraXLensFacingFromPortkey
 import com.automattic.photoeditor.camera.interfaces.cameraXflashModeFromPortkeyFlashState
 import com.automattic.photoeditor.camera.interfaces.portkeyCameraSelectionFromCameraXLensFacing
 import com.automattic.photoeditor.util.CameraUtils
+import com.automattic.photoeditor.util.CameraUtils.Companion.MAX_PREVIEW_HEIGHT
+import com.automattic.photoeditor.util.CameraUtils.Companion.MAX_PREVIEW_WIDTH
 import com.automattic.photoeditor.util.CameraUtils.Companion.chooseOptimalSize
+import com.automattic.photoeditor.util.CameraUtils.Companion.setupOptimalCameraPreviewSize
 import com.automattic.photoeditor.util.CameraUtils.CompareSizesByArea
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
@@ -88,66 +91,13 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     private fun startCamera() {
         // Get screen metrics used to setup camera for full screen resolution
         val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
-        val displaySize = Point(metrics.widthPixels, metrics.heightPixels)
         val screenAspectRatio = Rational(metrics.widthPixels, metrics.heightPixels)
-        var optimalPreviewSize: Size? = null
+        var optimalPreviewSize = Size(MAX_PREVIEW_WIDTH, MAX_PREVIEW_HEIGHT)
         Log.d(TAG, "Screen metrics: ${metrics.widthPixels} x ${metrics.heightPixels}")
 
-        val manager = activity?.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-        for (cameraId in manager.cameraIdList) {
-            val characteristics = manager.getCameraCharacteristics(cameraId)
-
-            val cameraDirection = characteristics.get(CameraCharacteristics.LENS_FACING)
-            val isCameraFacingBack = lensFacing == CameraX.LensFacing.BACK
-            if (cameraDirection != null && isCameraFacingBack && cameraDirection != CameraMetadata.LENS_FACING_BACK) {
-                continue
-            }
-
-            val map = characteristics.get(
-                CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP) ?: continue
-
-            // Find out if we need to swap dimension to get the preview size relative to sensor
-            // coordinate.
-            val displayRotation = activity!!.windowManager.defaultDisplay.rotation
-
-            val sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION) ?: continue
-            val swappedDimensions = CameraUtils.areDimensionsSwapped(displayRotation, sensorOrientation)
-
-            val height = textureView.height
-            val width = textureView.width
-            val rotatedPreviewWidth = if (swappedDimensions) height else width
-            val rotatedPreviewHeight = if (swappedDimensions) width else height
-            var maxPreviewWidth = if (swappedDimensions) displaySize.y else displaySize.x
-            var maxPreviewHeight = if (swappedDimensions) displaySize.x else displaySize.y
-
-            if (maxPreviewWidth > CameraUtils.MAX_PREVIEW_WIDTH) maxPreviewWidth =
-                CameraUtils.MAX_PREVIEW_WIDTH
-            if (maxPreviewHeight > CameraUtils.MAX_PREVIEW_HEIGHT) maxPreviewHeight =
-                CameraUtils.MAX_PREVIEW_HEIGHT
-
-            // For still image captures, we use the largest available size.
-            val largest = Collections.max(
-                Arrays.asList(*map.getOutputSizes(ImageFormat.JPEG)),
-                CompareSizesByArea()
-            )
-
-            // Danger, W.R.! Attempting to use too large a preview size could  exceed the camera
-            // bus' bandwidth limitation, resulting in gorgeous previews but the storage of
-            // garbage capture data.
-            optimalPreviewSize = chooseOptimalSize(
-                map.getOutputSizes(SurfaceTexture::class.java),
-                rotatedPreviewWidth, rotatedPreviewHeight,
-                maxPreviewWidth, maxPreviewHeight,
-                largest
-            )
-
-            // We fit the aspect ratio of TextureView to the size of preview we picked.
-            if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                textureView.setAspectRatio(optimalPreviewSize.width, optimalPreviewSize.height)
-
-            } else {
-                textureView.setAspectRatio(optimalPreviewSize.height, optimalPreviewSize.width)
-            }
+        val isCameraFacingBack = lensFacing == CameraX.LensFacing.BACK
+        activity?.let {
+            optimalPreviewSize = setupOptimalCameraPreviewSize(it, textureView, isCameraFacingBack)
         }
 
         // retrieve flash availability for this camera
