@@ -97,7 +97,24 @@ class CameraXBasicHandling : VideoRecorderFragment() {
 
         val isCameraFacingBack = lensFacing == CameraX.LensFacing.BACK
         activity?.let {
-            optimalPreviewSize = setupOptimalCameraPreviewSize(it, textureView, isCameraFacingBack)
+            val manager = it.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+            for (cameraId in manager.cameraIdList) {
+                val characteristics = manager.getCameraCharacteristics(cameraId)
+
+                val cameraDirection = characteristics.get(CameraCharacteristics.LENS_FACING)
+                if (cameraDirection != null && isCameraFacingBack && cameraDirection != CameraMetadata.LENS_FACING_BACK) {
+                    continue
+                }
+
+                // just make sure we've got characteristics before calling setupOptimalCameraPreviewSize()
+                if (characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP) == null) {
+                    continue
+                }
+
+                optimalPreviewSize = setupOptimalCameraPreviewSize(it, textureView, cameraId)
+
+                break
+            }
         }
 
         // retrieve flash availability for this camera
