@@ -830,9 +830,10 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
     override fun takePicture(onImageCapturedListener: ImageCaptureListener) {
         // Create output file to hold the image
         activity?.let {
-            currentFile = FileUtils.getLoopFrameFile(it, false, "orig_")
+            currentFile = FileUtils.getCaptureFile(context!!, false, "orig_")
         }
         currentFile?.createNewFile()
+
         imageCapturedListener = onImageCapturedListener
         lockFocus()
     }
