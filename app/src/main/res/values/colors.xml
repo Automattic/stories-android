@@ -10,6 +10,17 @@
     <color name="black_transp">#99000000</color>
     <color name="red">#FF0000</color>
 
+    <color name="text_color_white">@color/white</color>
+    <color name="text_color_black">@color/black</color>
+    <color name="text_color_red">#E81A1C</color>
+    <color name="text_color_orange">#F88500</color>
+    <color name="text_color_yellow">#EEBA0C</color>
+    <color name="text_color_green">#007E65</color>
+    <color name="text_color_blue">#2271B1</color>
+    <color name="text_color_violet">#984A9C</color>
+    <color name="text_color_magenta">@color/loop_magenta</color>
+
+
     <color name="loop_magenta">#C9356E</color>
 
     <color name="dark_gray">#51565F</color>

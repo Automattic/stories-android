@@ -90,7 +90,7 @@
             android:visibility="visible"
             app:constraint_referenced_ids="camera_flash_button,label_flash" />
 
-        <ImageButton
+        <ImageView
             android:id="@+id/camera_flash_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -133,7 +133,7 @@
             android:visibility="visible"
             app:constraint_referenced_ids="camera_flip_button,label_flip"/>
 
-        <ImageButton
+        <ImageView
             android:id="@+id/camera_flip_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -159,6 +159,112 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
+    <!--edit mode controls-->
+    <LinearLayout
+        android:id="@+id/edit_mode_controls"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/top_button_group_margin"
+        android:orientation="horizontal"
+        android:visibility="invisible"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:animateLayoutChanges="true">
+
+        <LinearLayout
+            android:id="@+id/sound_button_group"
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/top_button_group_margin"
+            android:paddingRight="@dimen/top_button_group_margin"
+            android:paddingBottom="@dimen/top_button_group_margin"
+            android:layout_marginLeft="@dimen/top_button_group_margin"
+            >
+            <ImageView
+                android:id="@+id/sound_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/ic_volume_up_black_24dp"
+                android:backgroundTint="@color/white"
+                android:contentDescription="@string/sound_button_alt"
+                android:scaleType="fitCenter"
+                />
+
+            <TextView
+                android:id="@+id/label_sound"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/label_control_sound"
+                android:textColor="@color/white"
+                android:textSize="@dimen/normal_button_font_size"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/text_add_button_group"
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/top_button_group_margin"
+            android:paddingRight="@dimen/top_button_group_margin"
+            android:paddingBottom="@dimen/top_button_group_margin"
+            android:layout_marginLeft="@dimen/top_button_group_margin"
+            >
+            <ImageView
+                android:id="@+id/text_add_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/ic_text_fields_black_24dp"
+                android:backgroundTint="@color/white"
+                android:contentDescription="@string/text_button_alt"
+                android:scaleType="fitCenter"
+                />
+
+            <TextView
+                android:id="@+id/label_text_add"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/label_control_text"
+                android:textColor="@color/white"
+                android:textSize="@dimen/normal_button_font_size"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/stickers_button_group"
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/top_button_group_margin"
+            android:paddingBottom="@dimen/top_button_group_margin"
+            android:layout_marginLeft="@dimen/top_button_group_margin"
+            >
+            <ImageView
+                android:id="@+id/stickers_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/ic_stickers"
+                android:backgroundTint="@color/white"
+                android:contentDescription="@string/stickers_button_alt"
+                android:scaleType="fitCenter"
+                />
+
+            <TextView
+                android:id="@+id/label_stickers"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/label_control_stickers"
+                android:textColor="@color/white"
+                android:textSize="@dimen/normal_button_font_size"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
     <!-- bottom gradient  -->
     <View
         android:id="@+id/gradient_bottom"
@@ -169,5 +275,17 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"/>
+
+    <ImageButton
+        android:id="@+id/close_button"
+        android:visibility="invisible"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/top_button_group_margin"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:background="@drawable/ic_close_black_24dp"
+        android:backgroundTint="@color/white"
+        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

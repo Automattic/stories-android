@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.text.TextUtils
 import androidx.appcompat.app.AppCompatActivity
 import android.view.View
 import android.widget.Toast
@@ -31,8 +32,6 @@ import com.automattic.portkey.R.color
 import com.automattic.portkey.R.layout
 import com.automattic.portkey.R.string
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.CenterCrop
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.google.android.material.snackbar.Snackbar
 
 import kotlinx.android.synthetic.main.content_composer.*
@@ -40,6 +39,10 @@ import java.io.File
 import java.io.IOException
 import android.view.Gravity
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
+import com.automattic.photoeditor.views.ViewType.TEXT
+import com.automattic.portkey.compose.text.TextEditorDialogFragment
+import com.automattic.portkey.compose.emoji.EmojiPickerFragment
+import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
 
 fun Group.setAllOnClickListener(listener: View.OnClickListener?) {
     referencedIds.forEach { id ->
@@ -59,6 +62,9 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
     private var cameraSelection = CameraSelection.BACK
     private var flashModeSelection = FlashIndicatorState.OFF
+    private val FRAGMENT_DIALOG = "dialog"
+
+    private lateinit var emojiPickerFragment: EmojiPickerFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,14 +75,29 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             .build() // build photo editor sdk
 
         photoEditor.setOnPhotoEditorListener(object : OnPhotoEditorListener {
-            override fun onEditTextChangeListener(rootView: View, text: String, colorCode: Int) {
+            override fun onEditTextChangeListener(rootView: View, text: String, colorCode: Int, isJustAdded: Boolean) {
+                editModeHideAllUIControlsBeforeTextEditDialog()
+                if (isJustAdded) {
+                    // hide new text views
+                    rootView.visibility = View.GONE
+                }
                 val textEditorDialogFragment = TextEditorDialogFragment.show(
                     this@ComposeLoopFrameActivity,
                     text,
                     colorCode)
                 textEditorDialogFragment.setOnTextEditorListener(object : TextEditorDialogFragment.TextEditor {
                     override fun onDone(inputText: String, colorCode: Int) {
-                        photoEditor.editText(rootView, inputText, colorCode)
+                        // make sure to set it to visible, as newly added views are originally hidden until
+                        // proper text is set
+                        rootView.visibility = View.VISIBLE
+                        if (TextUtils.isEmpty(inputText)) {
+                            // just remove the view here, we don't need it - also don't  add to the `redo` stack
+                            photoEditor.viewUndo(rootView, TEXT, false)
+                        } else {
+                            photoEditor.editText(rootView, inputText, colorCode)
+                        }
+                        // TODO hardcoded noSound parameter here
+                        editModeRestoreAllUIControlsAfterTextEditDialog(false)
                     }
                 })
             }
@@ -121,6 +142,13 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             BuildConfig.USE_CAMERAX)
 
         lifecycle.addObserver(backgroundSurfaceManager)
+
+        emojiPickerFragment = EmojiPickerFragment()
+        emojiPickerFragment.setEmojiListener(object : EmojiListener {
+            override fun onEmojiClick(emojiUnicode: String) {
+                photoEditor.addEmoji(emojiUnicode)
+            }
+        })
 
         // add click listeners
         addClickListeners()
@@ -170,6 +198,14 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             backgroundSurfaceManager.switchCameraPreviewOn()
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        }
+    }
+
+    override fun onBackPressed() {
+        if (!backgroundSurfaceManager.cameraVisible()) {
+            close_button.performClick()
+        } else {
+            super.onBackPressed()
         }
     }
 
@@ -241,6 +277,34 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 }
             })
         }, CAMERA_PREVIEW_LAUNCH_DELAY)
+
+        close_button.setOnClickListener {
+            // add discard dialog
+            if (photoEditor.anyViewsAdded()) {
+                // show dialog
+                DiscardDialog.newInstance(getString(string.dialog_discard_message), object : DiscardOk {
+                    override fun discardOkClicked() {
+                        photoEditor.clearAllViews()
+                        launchCameraPreview()
+                    }
+                }).show(supportFragmentManager, FRAGMENT_DIALOG)
+            } else {
+                launchCameraPreview()
+            }
+        }
+
+        sound_button_group.setOnClickListener {
+            // TODO implement sound or...??
+            Toast.makeText(this, "not implemented yet", Toast.LENGTH_SHORT).show()
+        }
+
+        text_add_button_group.setOnClickListener {
+            addNewText()
+        }
+
+        stickers_button_group.setOnClickListener {
+            emojiPickerFragment.show(supportFragmentManager, emojiPickerFragment.getTag())
+        }
     }
 
     private fun testBrush() {
@@ -253,10 +317,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         photoEditor.brushEraser()
     }
 
-    private fun testText() {
+    private fun addNewText() {
         photoEditor.addText(
-            text = getString(string.text_placeholder),
-            colorCodeTextView = ContextCompat.getColor(baseContext, color.white))
+            "",
+            colorCodeTextView = ContextCompat.getColor(baseContext, color.text_color_white), fontSizeSp = 24f)
     }
 
     private fun testEmoji() {
@@ -283,6 +347,8 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             return
         }
 
+        hideEditModeUIControls()
+
         // set the correct camera as selected by the user last time they used the app
         backgroundSurfaceManager.selectCamera(cameraSelection)
         // same goes for flash state
@@ -294,7 +360,8 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         backgroundSurfaceManager.switchVideoPlayerOn()
     }
 
-    private fun testStaticBackground() {
+    private fun showStaticBackground() {
+        showEditModeUIControls(true)
         backgroundSurfaceManager.switchStaticImageBackgroundModeOn()
     }
 
@@ -303,10 +370,14 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         backgroundSurfaceManager.takePicture(object : ImageCaptureListener {
             override fun onImageSaved(file: File) {
                 runOnUiThread {
+//                    Glide.with(this@ComposeLoopFrameActivity)
+//                        .load(file)
+//                        .transform(CenterCrop(), RoundedCorners(16))
+//                        .into(gallery_upload_img)
                     Glide.with(this@ComposeLoopFrameActivity)
                         .load(file)
-                        .transform(CenterCrop(), RoundedCorners(16))
-                        .into(gallery_upload_img)
+                        .into(photoEditorView.source)
+                    showStaticBackground()
                 }
 
                 showToast("IMAGE SAVED")
@@ -325,7 +396,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             // strat progressing animation
             camera_capture_button.startProgressingAnimation(CAMERA_VIDEO_RECORD_MAX_LENGTH_MS)
             backgroundSurfaceManager.startRecordingVideo()
-            hideUIControls()
+            hideVideoUIControls()
             showToast("VIDEO STARTED")
             vibrate()
         }
@@ -333,7 +404,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
     private fun vibrate() {
         val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-        // Vibrate for 500 milliseconds
+        // Vibrate for 100 milliseconds
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             vibrator.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE))
         } else {
@@ -352,7 +423,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 .scaleY(1.0f)
                 .duration = PressAndHoldGestureHelper.CLICK_LENGTH / 4
             backgroundSurfaceManager.stopRecordingVideo()
-            showUIControls()
+            showVideoUIControls()
             if (isCanceled) {
                 // remove any pending callback if video was cancelled
                 timesUpHandler.removeCallbacksAndMessages(null)
@@ -532,7 +603,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         toast.show()
     }
 
-    private fun hideUIControls() {
+    private fun hideVideoUIControls() {
         camera_flash_button.visibility = View.INVISIBLE
         label_flash.visibility = View.INVISIBLE
 
@@ -543,7 +614,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         gallery_upload.visibility = View.INVISIBLE
     }
 
-    private fun showUIControls() {
+    private fun showVideoUIControls() {
         camera_flash_button.visibility = View.VISIBLE
         label_flash.visibility = View.VISIBLE
 
@@ -552,6 +623,51 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
         gallery_upload_img.visibility = View.VISIBLE
         gallery_upload.visibility = View.VISIBLE
+    }
+
+    private fun showEditModeUIControls(noSound: Boolean) {
+        // hide capturing mode controls
+        hideVideoUIControls()
+        camera_capture_button.visibility = View.INVISIBLE
+
+        // show proper edit mode controls
+        close_button.visibility = View.VISIBLE
+        edit_mode_controls.visibility = View.VISIBLE
+
+        if (noSound) {
+            sound_button_group.visibility = View.INVISIBLE
+        } else {
+            sound_button_group.visibility = View.VISIBLE
+        }
+    }
+
+    private fun hideEditModeUIControls() {
+        // show capturing mode controls
+        showVideoUIControls()
+        camera_capture_button.visibility = View.VISIBLE
+
+        // hide proper edit mode controls
+        close_button.visibility = View.INVISIBLE
+        edit_mode_controls.visibility = View.INVISIBLE
+    }
+
+    private fun editModeHideAllUIControlsBeforeTextEditDialog() {
+        // momentarily hide proper edit mode controls
+        close_button.visibility = View.INVISIBLE
+        edit_mode_controls.visibility = View.INVISIBLE
+        sound_button_group.visibility = View.INVISIBLE
+    }
+
+    private fun editModeRestoreAllUIControlsAfterTextEditDialog(noSound: Boolean) {
+        // momentarily hide proper edit mode controls
+        close_button.visibility = View.VISIBLE
+        edit_mode_controls.visibility = View.VISIBLE
+
+        if (noSound) {
+            sound_button_group.visibility = View.INVISIBLE
+        } else {
+            sound_button_group.visibility = View.VISIBLE
+        }
     }
 
     private fun updateFlashModeSelectionIcon() {

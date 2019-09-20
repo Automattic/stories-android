@@ -83,7 +83,7 @@ class PhotoEditor private constructor(builder: Builder) :
      *
      * @return scalable multitouch listener
      */
-    private val multiTouchListener: MultiTouchListener
+    private val newMultiTouchListener: MultiTouchListener
         get() = MultiTouchListener(
             deleteView,
             parentView,
@@ -172,7 +172,8 @@ class PhotoEditor private constructor(builder: Builder) :
 
         imageView.setImageBitmap(desiredImage)
 
-        multiTouchListener.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
+        val multiTouchListenerInstance = newMultiTouchListener
+        multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
             override fun onClick() {
                 val isBackgroundVisible = frmBorder.tag != null && frmBorder.tag as Boolean
                 frmBorder.setBackgroundResource(if (isBackgroundVisible) 0 else R.drawable.rounded_border_tv)
@@ -183,7 +184,7 @@ class PhotoEditor private constructor(builder: Builder) :
             override fun onLongClick() {}
         })
 
-        imageRootView.setOnTouchListener(multiTouchListener)
+        imageRootView.setOnTouchListener(multiTouchListenerInstance)
 
         addViewToParent(imageRootView, ViewType.IMAGE)
     }
@@ -194,7 +195,8 @@ class PhotoEditor private constructor(builder: Builder) :
         val frmBorder = imageRootView.findViewById<FrameLayout>(R.id.frmBorder)
         val imgClose = imageRootView.findViewById<ImageView>(R.id.imgPhotoEditorClose)
 
-        multiTouchListener.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
+        val multiTouchListenerInstance = newMultiTouchListener
+        multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
             override fun onClick() {
                 val isBackgroundVisible = frmBorder.tag != null && frmBorder.tag as Boolean
                 frmBorder.setBackgroundResource(if (isBackgroundVisible) 0 else R.drawable.rounded_border_tv)
@@ -205,7 +207,7 @@ class PhotoEditor private constructor(builder: Builder) :
             override fun onLongClick() {}
         })
 
-        imageRootView.setOnTouchListener(multiTouchListener)
+        imageRootView.setOnTouchListener(multiTouchListenerInstance)
 
         addViewToParent(imageRootView, if (isAnimated) ViewType.STICKER_ANIMATED else ViewType.IMAGE, uri)
 
@@ -221,7 +223,8 @@ class PhotoEditor private constructor(builder: Builder) :
         val frmBorder = imageRootView.findViewById<FrameLayout>(R.id.frmBorder)
         val imgClose = imageRootView.findViewById<ImageView>(R.id.imgPhotoEditorClose)
 
-        multiTouchListener.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
+        val multiTouchListenerInstance = newMultiTouchListener
+        multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
             override fun onClick() {
                 val isBackgroundVisible = frmBorder.tag != null && frmBorder.tag as Boolean
                 frmBorder.setBackgroundResource(if (isBackgroundVisible) 0 else R.drawable.rounded_border_tv)
@@ -232,7 +235,7 @@ class PhotoEditor private constructor(builder: Builder) :
             override fun onLongClick() {}
         })
 
-        imageRootView.setOnTouchListener(multiTouchListener)
+        imageRootView.setOnTouchListener(multiTouchListenerInstance)
 
         addViewToParent(imageRootView, if (isAnimated) ViewType.STICKER_ANIMATED else ViewType.IMAGE)
 
@@ -255,6 +258,10 @@ class PhotoEditor private constructor(builder: Builder) :
         val imgClose = textRootView.findViewById<ImageView>(R.id.imgPhotoEditorClose)
         val frmBorder = textRootView.findViewById<FrameLayout>(R.id.frmBorder)
 
+        // hide cross and background borders for now
+        imgClose.visibility = View.GONE
+        frmBorder.setBackgroundResource(0)
+
         textInputTv.text = text
         textInputTv.setTextColor(colorCodeTextView)
         textInputTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSizeSp)
@@ -262,25 +269,29 @@ class PhotoEditor private constructor(builder: Builder) :
             textInputTv.typeface = textTypeface
         }
 
-        multiTouchListener.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
+        val multiTouchListenerInstance = newMultiTouchListener
+        multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
             override fun onClick() {
-                val isBackgroundVisible = frmBorder.tag != null && frmBorder.tag as Boolean
-                frmBorder.setBackgroundResource(if (isBackgroundVisible) 0 else R.drawable.rounded_border_tv)
-                imgClose.visibility = if (isBackgroundVisible) View.GONE else View.VISIBLE
-                frmBorder.tag = !isBackgroundVisible
+                val textInput = textInputTv.text.toString()
+                val currentTextColor = textInputTv.currentTextColor
+                mOnPhotoEditorListener?.onEditTextChangeListener(textRootView, textInput, currentTextColor, false)
             }
 
             override fun onLongClick() {
-                val textInput = textInputTv.text.toString()
-                val currentTextColor = textInputTv.currentTextColor
-                if (mOnPhotoEditorListener != null) {
-                    mOnPhotoEditorListener!!.onEditTextChangeListener(textRootView, textInput, currentTextColor)
-                }
+                // TODO implement the DELETE action (hide every other view, allow this view to be dragged to the trash
+                // bin)
             }
         })
 
-        textRootView.setOnTouchListener(multiTouchListener)
+        textRootView.setOnTouchListener(multiTouchListenerInstance)
         addViewToParent(textRootView, ViewType.TEXT)
+
+        // now open TextEditor right away
+        if (mOnPhotoEditorListener != null) {
+            val textInput = textInputTv.text.toString()
+            val currentTextColor = textInputTv.currentTextColor
+            mOnPhotoEditorListener!!.onEditTextChangeListener(textRootView, textInput, currentTextColor, true)
+        }
     }
 
     /**
@@ -346,17 +357,21 @@ class PhotoEditor private constructor(builder: Builder) :
         emojiTextView.textSize = 56f
         emojiTextView.text = emojiName
 
-        multiTouchListener.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
+        // hide cross and background borders for now
+        imgClose.visibility = View.GONE
+        frmBorder.setBackgroundResource(0)
+
+        val multiTouchListenerInstance = newMultiTouchListener
+        multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
             override fun onClick() {
-                val isBackgroundVisible = frmBorder.tag != null && frmBorder.tag as Boolean
-                frmBorder.setBackgroundResource(if (isBackgroundVisible) 0 else R.drawable.rounded_border_tv)
-                imgClose.visibility = if (isBackgroundVisible) View.GONE else View.VISIBLE
-                frmBorder.tag = !isBackgroundVisible
             }
 
-            override fun onLongClick() {}
+            override fun onLongClick() {
+                // TODO implement the DELETE action (hide every other view, allow this view to be dragged to the trash
+                // bin)
+            }
         })
-        emojiRootView.setOnTouchListener(multiTouchListener)
+        emojiRootView.setOnTouchListener(multiTouchListenerInstance)
         addViewToParent(emojiRootView, ViewType.EMOJI)
     }
 
@@ -474,12 +489,12 @@ class PhotoEditor private constructor(builder: Builder) :
         }
     }*/
 
-    private fun viewUndo(removedView: View, viewType: ViewType) {
+    fun viewUndo(removedView: View, viewType: ViewType, addToRedoList: Boolean = true) {
         if (addedViews.size > 0) {
             if (addedViews.containsView(removedView)) {
                 parentView.removeView(removedView)
                 val removedViewWithData = addedViews.removeView(removedView)
-                if (removedViewWithData != null) {
+                if (removedViewWithData != null && addToRedoList) {
                     redoViews.add(removedViewWithData)
                 }
                 if (mOnPhotoEditorListener != null) {
@@ -1028,6 +1043,10 @@ class PhotoEditor private constructor(builder: Builder) :
             }
         }
         return false
+    }
+
+    fun anyViewsAdded(): Boolean {
+        return (addedViews.size > 0)
     }
 
     /**
