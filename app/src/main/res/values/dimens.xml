@@ -25,6 +25,11 @@
     <dimen name="shutter_button_margin">68dp</dimen>
     <dimen name="normal_button_medium_round_corner">32dp</dimen>
 
+    <dimen name="save_button_bottom_margin">68dp</dimen>
+    <dimen name="save_button_right_margin">24dp</dimen>
+    <dimen name="save_button_height">48dp</dimen>
+    <dimen name="save_button_text_width">72dp</dimen>
+
     <dimen name="gradient_top_height">72dp</dimen>
     <dimen name="gradient_bottom_height">152dp</dimen>
 

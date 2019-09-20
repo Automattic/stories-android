@@ -2,8 +2,10 @@ package com.automattic.portkey.compose
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.ProgressDialog
 import android.content.Context
+import android.content.Intent
+import android.hardware.Camera
+import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -27,7 +29,6 @@ import com.automattic.photoeditor.util.FileUtils.Companion.getLoopFrameFile
 import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.ViewType
 import com.automattic.portkey.BuildConfig
-import com.automattic.portkey.R
 import com.automattic.portkey.R.color
 import com.automattic.portkey.R.layout
 import com.automattic.portkey.R.string
@@ -38,11 +39,21 @@ import kotlinx.android.synthetic.main.content_composer.*
 import java.io.File
 import java.io.IOException
 import android.view.Gravity
+import android.view.MotionEvent
+import android.view.View.OnClickListener
+import android.view.ViewGroup
+import android.webkit.MimeTypeMap
+import androidx.core.content.FileProvider
+import androidx.core.view.ViewCompat
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
+import com.automattic.photoeditor.camera.interfaces.VideoRecorderFinished
 import com.automattic.photoeditor.views.ViewType.TEXT
+import com.automattic.portkey.R
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 
 fun Group.setAllOnClickListener(listener: View.OnClickListener?) {
     referencedIds.forEach { id ->
@@ -50,10 +61,27 @@ fun Group.setAllOnClickListener(listener: View.OnClickListener?) {
     }
 }
 
+fun Snackbar.config(context: Context) {
+    this.view.background = context.getDrawable(R.drawable.snackbar_background)
+
+    // Workaround to adjust Snackbar position as otherwise it appears with a height above the navigation bar
+    // This should be fixed in 'com.google.android.material:material:1.1.0' when it comes out of alpha
+    ViewCompat.setOnApplyWindowInsetsListener(view) { v, insets ->
+        v.setPadding(v.paddingLeft, v.paddingTop, v.paddingRight, v.paddingTop)
+
+        val params = v.layoutParams as ViewGroup.MarginLayoutParams
+        params.setMargins(12, 12, 12, 12)
+        v.layoutParams = params
+
+        insets
+    }
+    ViewCompat.setElevation(this.view, 6f)
+}
+
 class ComposeLoopFrameActivity : AppCompatActivity() {
     private lateinit var photoEditor: PhotoEditor
     private lateinit var backgroundSurfaceManager: BackgroundSurfaceManager
-    private var progressDialog: ProgressDialog? = null
+    private var currentOriginalCapturedFile: File? = null
 
     private val timesUpRunnable = Runnable {
         stopRecordingVideo(false) // time's up, it's not a cancellation
@@ -62,6 +90,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
     private var cameraSelection = CameraSelection.BACK
     private var flashModeSelection = FlashIndicatorState.OFF
+    private var videoPlayerMuted = false
     private val FRAGMENT_DIALOG = "dialog"
 
     private lateinit var emojiPickerFragment: EmojiPickerFragment
@@ -76,7 +105,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
         photoEditor.setOnPhotoEditorListener(object : OnPhotoEditorListener {
             override fun onEditTextChangeListener(rootView: View, text: String, colorCode: Int, isJustAdded: Boolean) {
-                editModeHideAllUIControlsBeforeTextEditDialog()
+                editModeHideAllUIControls()
                 if (isJustAdded) {
                     // hide new text views
                     rootView.visibility = View.GONE
@@ -97,17 +126,23 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                             photoEditor.editText(rootView, inputText, colorCode)
                         }
                         // TODO hardcoded noSound parameter here
-                        editModeRestoreAllUIControlsAfterTextEditDialog(false)
+                        editModeRestoreAllUIControls(true)
                     }
                 })
             }
 
             override fun onAddViewListener(viewType: ViewType, numberOfAddedViews: Int) {
-                // no op
+                // only show save button if any views have been added
+                save_button.visibility = View.VISIBLE
             }
 
             override fun onRemoveViewListener(viewType: ViewType, numberOfAddedViews: Int) {
-                // no op
+                if (photoEditor.anyViewsAdded()) {
+                    // only show save button if any views have been added
+                    save_button.visibility = View.VISIBLE
+                } else {
+                    save_button.visibility = View.INVISIBLE
+                }
             }
 
             override fun onStartViewChangeListener(viewType: ViewType) {
@@ -153,10 +188,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         // add click listeners
         addClickListeners()
 
-        // small tweak to make sure to not show the background image for the static image background mode
-        backgroundSurfaceManager.preTurnTextureViewOn()
-
         if (savedInstanceState == null) {
+            // small tweak to make sure to not show the background image for the static image background mode
+            backgroundSurfaceManager.preTurnTextureViewOn()
+
             // check camera selection, flash state from preferences
             cameraSelection =
                 CameraSelection.valueOf(
@@ -167,11 +202,27 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
             // also, update the UI
             updateFlashModeSelectionIcon()
-        }
 
-        photoEditorView.postDelayed({
-            launchCameraPreview()
-        }, CAMERA_PREVIEW_LAUNCH_DELAY)
+            photoEditorView.postDelayed({
+                launchCameraPreview()
+            }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
+        } else {
+            currentOriginalCapturedFile =
+                savedInstanceState.getSerializable(STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE) as File?
+
+            photoEditorView.postDelayed({
+                if (backgroundSurfaceManager.videoPlayerVisible()) {
+                    showPlayVideo(currentOriginalCapturedFile)
+                } else if (backgroundSurfaceManager.cameraVisible()) {
+                    launchCameraPreview()
+                } else {
+                    Glide.with(this@ComposeLoopFrameActivity)
+                        .load(currentOriginalCapturedFile)
+                        .into(photoEditorView.source)
+                    showStaticBackground()
+                }
+            }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
+        }
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -190,6 +241,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         backgroundSurfaceManager.saveStateToBundle(outState)
+        outState.putSerializable(STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE, currentOriginalCapturedFile)
         super.onSaveInstanceState(outState)
     }
 
@@ -276,7 +328,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                     saveFlashModeSelectionPref()
                 }
             })
-        }, CAMERA_PREVIEW_LAUNCH_DELAY)
+        }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
 
         close_button.setOnClickListener {
             // add discard dialog
@@ -286,16 +338,25 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                     override fun discardOkClicked() {
                         photoEditor.clearAllViews()
                         launchCameraPreview()
+                        deleteCapturedMedia()
                     }
                 }).show(supportFragmentManager, FRAGMENT_DIALOG)
             } else {
+                deleteCapturedMedia()
                 launchCameraPreview()
             }
         }
 
         sound_button_group.setOnClickListener {
-            // TODO implement sound or...??
-            Toast.makeText(this, "not implemented yet", Toast.LENGTH_SHORT).show()
+            if (videoPlayerMuted) {
+                backgroundSurfaceManager.videoPlayerUnmute()
+                videoPlayerMuted = false
+                sound_button.background = getDrawable(R.drawable.ic_volume_up_black_24dp)
+            } else {
+                backgroundSurfaceManager.videoPlayerMute()
+                videoPlayerMuted = true
+                sound_button.background = getDrawable(R.drawable.ic_volume_mute_black_24dp)
+            }
         }
 
         text_add_button_group.setOnClickListener {
@@ -305,6 +366,21 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         stickers_button_group.setOnClickListener {
             emojiPickerFragment.show(supportFragmentManager, emojiPickerFragment.getTag())
         }
+
+        save_button.setOnClickListener {
+            saveLoopFrame()
+        }
+    }
+
+    private fun deleteCapturedMedia() {
+        currentOriginalCapturedFile?.let {
+            val apkURI = FileProvider.getUriForFile(
+                this,
+                applicationContext.packageName + ".provider", it)
+            contentResolver.delete(apkURI, null, null)
+        }
+        // reset
+        currentOriginalCapturedFile = null
     }
 
     private fun testBrush() {
@@ -356,8 +432,9 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         backgroundSurfaceManager.switchCameraPreviewOn()
     }
 
-    private fun testPlayVideo() {
-        backgroundSurfaceManager.switchVideoPlayerOn()
+    private fun showPlayVideo(videoFile: File? = null) {
+        showEditModeUIControls(false)
+        backgroundSurfaceManager.switchVideoPlayerOn(videoFile)
     }
 
     private fun showStaticBackground() {
@@ -370,14 +447,15 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         backgroundSurfaceManager.takePicture(object : ImageCaptureListener {
             override fun onImageSaved(file: File) {
                 runOnUiThread {
-//                    Glide.with(this@ComposeLoopFrameActivity)
-//                        .load(file)
-//                        .transform(CenterCrop(), RoundedCorners(16))
-//                        .into(gallery_upload_img)
+                    Glide.with(this@ComposeLoopFrameActivity)
+                        .load(file)
+                        .transform(CenterCrop(), RoundedCorners(16))
+                        .into(gallery_upload_img)
                     Glide.with(this@ComposeLoopFrameActivity)
                         .load(file)
                         .into(photoEditorView.source)
                     showStaticBackground()
+                    currentOriginalCapturedFile = file
                 }
 
                 showToast("IMAGE SAVED")
@@ -395,7 +473,22 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             timesUpHandler.postDelayed(timesUpRunnable, CAMERA_VIDEO_RECORD_MAX_LENGTH_MS)
             // strat progressing animation
             camera_capture_button.startProgressingAnimation(CAMERA_VIDEO_RECORD_MAX_LENGTH_MS)
-            backgroundSurfaceManager.startRecordingVideo()
+            backgroundSurfaceManager.startRecordingVideo(object : VideoRecorderFinished {
+                override fun onVideoSaved(file: File?) {
+                    currentOriginalCapturedFile = file
+                    runOnUiThread {
+                        // now start playing the video we just recorded
+                        showPlayVideo()
+                    }
+                }
+
+                override fun onError(message: String?, cause: Throwable?) {
+                    // TODO implement error handling
+                    runOnUiThread {
+                        showToast("Video could not be saved: " + message)
+                    }
+                }
+            })
             hideVideoUIControls()
             showToast("VIDEO STARTED")
             vibrate()
@@ -453,7 +546,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     private fun saveImage() {
         if (PermissionUtils.checkAndRequestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             showLoading("Saving...")
-            val file = getLoopFrameFile(false)
+            val file = getLoopFrameFile(this, false)
             try {
                 file.createNewFile()
 
@@ -465,8 +558,19 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 photoEditor.saveAsFile(file.absolutePath, saveSettings, object : PhotoEditor.OnSaveListener {
                     override fun onSuccess(imagePath: String) {
                         hideLoading()
-                        showSnackbar("Image Saved Successfully")
-                        photoEditorView.source.setImageURI(Uri.fromFile(File(imagePath)))
+                        deleteCapturedMedia()
+                        sendNewLoopReadyBroadcast(file)
+                        showSnackbar(
+                            getString(R.string.label_snackbar_loop_saved),
+                            getString(R.string.label_snackbar_share),
+                            object : OnClickListener {
+                                override fun onClick(p0: View?) {
+                                    shareAction(file)
+                                }
+                            }
+                        )
+                        hideEditModeUIControls()
+                        backgroundSurfaceManager.switchCameraPreviewOn()
                     }
 
                     override fun onFailure(exception: Exception) {
@@ -487,7 +591,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         if (PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             showLoading("Saving...")
             try {
-                val file = getLoopFrameFile(true)
+                val file = getLoopFrameFile(this, true)
                 file.createNewFile()
 
                 val saveSettings = SaveSettings.Builder()
@@ -501,18 +605,37 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                     saveSettings,
                     object : PhotoEditor.OnSaveWithCancelListener {
                     override fun onCancel(noAddedViews: Boolean) {
-                            hideLoading()
-                            showSnackbar("No views added - original video saved")
+                            runOnUiThread {
+                                hideLoading()
+                                showSnackbar("No views added - original video saved")
+                            }
                         }
 
                         override fun onSuccess(imagePath: String) {
-                            hideLoading()
-                            showSnackbar("Video Saved Successfully")
+                            runOnUiThread {
+                                hideLoading()
+                                deleteCapturedMedia()
+                                photoEditor.clearAllViews()
+                                sendNewLoopReadyBroadcast(file)
+                                showSnackbar(
+                                    getString(R.string.label_snackbar_loop_saved),
+                                    getString(R.string.label_snackbar_share),
+                                    object : OnClickListener {
+                                        override fun onClick(p0: View?) {
+                                            shareAction(file)
+                                        }
+                                    }
+                                )
+                                hideEditModeUIControls()
+                                backgroundSurfaceManager.switchCameraPreviewOn()
+                            }
                         }
 
                         override fun onFailure(exception: Exception) {
-                            hideLoading()
-                            showSnackbar("Failed to save Video")
+                            runOnUiThread {
+                                hideLoading()
+                                showSnackbar("Failed to save Video")
+                            }
                         }
                     })
             } catch (e: IOException) {
@@ -530,7 +653,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         if (PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             showLoading("Saving...")
             try {
-                val file = getLoopFrameFile(true, "tmp")
+                val file = getLoopFrameFile(this, true, "tmp")
                 file.createNewFile()
 
                 val saveSettings = SaveSettings.Builder()
@@ -569,28 +692,27 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     protected fun showLoading(message: String) {
-        runOnUiThread {
-            progressDialog = ProgressDialog(this)
-            progressDialog!!.setMessage(message)
-            progressDialog!!.setProgressStyle(ProgressDialog.STYLE_SPINNER)
-            progressDialog!!.setCancelable(false)
-            progressDialog!!.show()
-        }
+        editModeHideAllUIControls()
+        save_button.setSaving(true)
+        blockTouchOnPhotoEditor()
     }
 
     protected fun hideLoading() {
-        runOnUiThread {
-            if (progressDialog != null) {
-                progressDialog!!.dismiss()
-            }
-        }
+        editModeRestoreAllUIControls(false)
+        save_button.setSaving(false)
+        releaseTouchOnPhotoEditor()
     }
 
-    protected fun showSnackbar(message: String) {
+    protected fun showSnackbar(message: String, actionLabel: String? = null, listener: OnClickListener? = null) {
         runOnUiThread {
             val view = findViewById<View>(android.R.id.content)
             if (view != null) {
-                Snackbar.make(view, message, Snackbar.LENGTH_SHORT).show()
+                val snackbar = Snackbar.make(view, message, Snackbar.LENGTH_LONG)
+                snackbar.config(this)
+                actionLabel?.let {
+                    snackbar.setAction(it, listener)
+                }
+                snackbar.show()
             } else {
                 Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
             }
@@ -633,6 +755,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         // show proper edit mode controls
         close_button.visibility = View.VISIBLE
         edit_mode_controls.visibility = View.VISIBLE
+        if (photoEditor.anyViewsAdded()) {
+            // only show save button if any views have been added
+            save_button.visibility = View.VISIBLE
+        }
 
         if (noSound) {
             sound_button_group.visibility = View.INVISIBLE
@@ -649,16 +775,17 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         // hide proper edit mode controls
         close_button.visibility = View.INVISIBLE
         edit_mode_controls.visibility = View.INVISIBLE
+        save_button.visibility = View.INVISIBLE
     }
 
-    private fun editModeHideAllUIControlsBeforeTextEditDialog() {
+    private fun editModeHideAllUIControls() {
         // momentarily hide proper edit mode controls
         close_button.visibility = View.INVISIBLE
         edit_mode_controls.visibility = View.INVISIBLE
         sound_button_group.visibility = View.INVISIBLE
     }
 
-    private fun editModeRestoreAllUIControlsAfterTextEditDialog(noSound: Boolean) {
+    private fun editModeRestoreAllUIControls(noSound: Boolean) {
         // momentarily hide proper edit mode controls
         close_button.visibility = View.VISIBLE
         edit_mode_controls.visibility = View.VISIBLE
@@ -697,9 +824,58 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         }
     }
 
+    private fun shareAction(mediaFile: File) {
+        val apkURI = FileProvider.getUriForFile(
+            this,
+            applicationContext.packageName + ".provider", mediaFile)
+        val shareIntent: Intent = Intent().apply {
+            action = Intent.ACTION_SEND
+            setDataAndType(apkURI, "image/jpeg")
+            putExtra(Intent.EXTRA_STREAM, apkURI)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        startActivity(Intent.createChooser(shareIntent, resources.getText(R.string.label_share_to)))
+    }
+
+    private fun sendNewLoopReadyBroadcast(mediaFile: File) {
+        // Implicit broadcasts will be ignored for devices running API
+        // level >= 24, so if you only target 24+ you can remove this statement
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            if (mediaFile.extension.startsWith("jpg")) {
+                sendBroadcast(Intent(Camera.ACTION_NEW_PICTURE, Uri.fromFile(mediaFile)))
+            } else {
+                sendBroadcast(Intent(Camera.ACTION_NEW_VIDEO, Uri.fromFile(mediaFile)))
+            }
+        }
+
+        // If the folder selected is an external media directory, this is unnecessary
+        // but otherwise other apps will not be able to access our images unless we
+        // scan them using [MediaScannerConnection]
+        val mimeType = MimeTypeMap.getSingleton()
+            .getMimeTypeFromExtension(mediaFile.extension)
+        MediaScannerConnection.scanFile(
+            this, arrayOf(mediaFile.absolutePath), arrayOf(mimeType), null)
+    }
+
+    private fun blockTouchOnPhotoEditor() {
+        translucent_view.visibility = View.VISIBLE
+        translucent_view.setOnTouchListener(object : View.OnTouchListener {
+            override fun onTouch(p0: View?, p1: MotionEvent?): Boolean {
+                // no op
+                return true
+            }
+        })
+    }
+
+    private fun releaseTouchOnPhotoEditor() {
+        translucent_view.visibility = View.GONE
+        translucent_view.setOnTouchListener(null)
+    }
+
     companion object {
-        private const val CAMERA_PREVIEW_LAUNCH_DELAY = 500L
+        private const val SURFACE_MANAGER_READY_LAUNCH_DELAY = 500L
         private const val CAMERA_VIDEO_RECORD_MAX_LENGTH_MS = 10000L
         private const val CAMERA_STILL_PICTURE_ANIM_MS = 300L
+        private const val STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE = "key_current_original_captured_file"
     }
 }

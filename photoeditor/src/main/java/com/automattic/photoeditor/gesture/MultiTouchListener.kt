@@ -104,9 +104,10 @@ internal class MultiTouchListener(
                 if (deleteView != null && isViewInBounds(deleteView, x, y)) {
                     if (onMultiTouchListener != null)
                         onMultiTouchListener!!.onRemoveViewListener(view)
-                } else if (!isViewInBounds(photoEditImageView, x, y)) {
-                    view.animate().translationY(0f).translationY(0f)
                 }
+//                else if (!isViewInBounds(photoEditImageView, x, y)) {
+//                    view.animate().translationY(0f).translationY(0f)
+//                }
                 if (deleteView != null) {
                     deleteView.visibility = View.GONE
                 }

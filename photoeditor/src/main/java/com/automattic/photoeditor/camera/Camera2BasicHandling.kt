@@ -58,6 +58,7 @@ import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.AUTO
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.OFF
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.ON
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
+import com.automattic.photoeditor.camera.interfaces.VideoRecorderFinished
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
 import com.automattic.photoeditor.camera.interfaces.camera2LensFacingFromPortkeyCameraSelection
 import com.automattic.photoeditor.camera.interfaces.portkeyCameraSelectionFromCamera2LensFacing
@@ -734,7 +735,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
         /**
         * create video output file
         */
-        currentFile = FileUtils.getLoopFrameFile(true, "orig_")
+        currentFile = FileUtils.getLoopFrameFile(activity, true, "orig_")
         currentFile?.createNewFile()
 
         /**
@@ -763,7 +764,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
     /**
      * Creates a new [CameraCaptureSession] for actual video recording.
      */
-    override fun startRecordingVideo() {
+    override fun startRecordingVideo(finishedListener: VideoRecorderFinished?) {
         try {
             closePreviewSession()
             setUpMediaRecorder()
@@ -840,7 +841,9 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
 
     override fun takePicture(onImageCapturedListener: ImageCaptureListener) {
         // Create output file to hold the image
-        currentFile = FileUtils.getLoopFrameFile(false, "orig_")
+        activity?.let {
+            currentFile = FileUtils.getLoopFrameFile(it, false, "orig_")
+        }
         currentFile?.createNewFile()
         imageCapturedListener = onImageCapturedListener
         lockFocus()

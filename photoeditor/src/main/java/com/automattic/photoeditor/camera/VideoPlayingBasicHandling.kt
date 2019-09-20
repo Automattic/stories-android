@@ -26,11 +26,12 @@ import android.media.AudioManager
 import android.media.MediaPlayer
 import androidx.fragment.app.Fragment
 import com.automattic.photoeditor.camera.interfaces.SurfaceFragmentHandler
+import com.automattic.photoeditor.camera.interfaces.VideoPlayerSoundOnOffHandler
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.io.FileInputStream
 import java.io.IOException
 
-class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler {
+class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlayerSoundOnOffHandler {
     // holds the File handle to the current video file to be played
     var currentFile: File? = null
 
@@ -124,6 +125,7 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler {
                 mediaPlayer = MediaPlayer().apply {
                     setDataSource(inputStream.getFD())
                     setSurface(s)
+                    setLooping(true)
                     prepare()
                     // TODO check whether we want fine grained error handling by setting these listeners
     //                setOnBufferingUpdateListener(this)
@@ -147,6 +149,14 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler {
             // TODO Auto-generated catch block
             e.printStackTrace()
         }
+    }
+
+    override fun mute() {
+        mediaPlayer?.setVolume(0f, 0f)
+    }
+
+    override fun unmute() {
+        mediaPlayer?.setVolume(1f, 1f)
     }
 
     companion object {

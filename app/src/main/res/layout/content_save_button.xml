@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/save_button"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/save_button_bottom_margin"
+    android:layout_marginEnd="@dimen/save_button_right_margin"
+    android:orientation="horizontal"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp"
+    android:gravity="center"
+    >
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/save_button_height"
+        android:layout_gravity="center_vertical"
+        >
+        <ProgressBar
+            android:id="@+id/save_button_spinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxHeight="24dp"
+            android:minHeight="24dp"
+            android:minWidth="24dp"
+            android:maxWidth="24dp"
+            android:layout_centerInParent="true"
+            android:indeterminateTintMode="src_atop"
+            android:indeterminateTint="@color/white"
+            android:indeterminate="true" />
+
+        <ImageView
+            android:id="@+id/save_button_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:src="@drawable/ic_save_alt_24px"
+            android:tint="@color/white"/>
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/save_button_text"
+        android:layout_width="@dimen/save_button_text_width"
+        android:layout_height="wrap_content"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_horizontal"
+        android:text="@string/label_control_save"
+        android:textAllCaps="false"
+        android:textColor="@color/text_color_white"
+        />
+
+</LinearLayout>
