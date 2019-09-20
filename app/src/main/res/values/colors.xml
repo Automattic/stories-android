@@ -8,6 +8,7 @@
     <color name="black">#000000</color>
     <color name="grey">#888888</color>
     <color name="black_transp">#99000000</color>
+    <color name="black_transp_delete">#4D000000</color>
     <color name="red">#FF0000</color>
 
     <color name="text_color_white">@color/white</color>

@@ -101,6 +101,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
         photoEditor = PhotoEditor.Builder(this, photoEditorView)
             .setPinchTextScalable(true) // set flag to make text scalable when pinch
+            .setDeleteView(delete_view)
             .build() // build photo editor sdk
 
         photoEditor.setOnPhotoEditorListener(object : OnPhotoEditorListener {
@@ -155,6 +156,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
             override fun onRemoveViewListener(numberOfAddedViews: Int) {
                 // no op
+            }
+
+            override fun onRemoveViewReadyListener(removedView: View, ready: Boolean) {
+                delete_view.setReadyForDelete(ready)
             }
         })
 

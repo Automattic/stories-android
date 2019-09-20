@@ -68,4 +68,6 @@ interface OnPhotoEditorListener {
      * @param viewType enum which define type of view is added
      */
     fun onStopViewChangeListener(viewType: ViewType)
+
+    fun onRemoveViewReadyListener(removedView: View, ready: Boolean)
 }
