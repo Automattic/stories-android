@@ -66,18 +66,9 @@ fun Group.setAllOnClickListener(listener: View.OnClickListener?) {
 
 fun Snackbar.config(context: Context) {
     this.view.background = context.getDrawable(R.drawable.snackbar_background)
-
-    // Workaround to adjust Snackbar position as otherwise it appears with a height above the navigation bar
-    // This should be fixed in 'com.google.android.material:material:1.1.0' when it comes out of alpha
-    ViewCompat.setOnApplyWindowInsetsListener(view) { v, insets ->
-        v.setPadding(v.paddingLeft, v.paddingTop, v.paddingRight, v.paddingTop)
-
-        val params = v.layoutParams as ViewGroup.MarginLayoutParams
-        params.setMargins(12, 12, 12, 12)
-        v.layoutParams = params
-
-        insets
-    }
+    val params = this.view.layoutParams as ViewGroup.MarginLayoutParams
+    params.setMargins(12, 12, 12, 12)
+    this.view.layoutParams = params
     ViewCompat.setElevation(this.view, 6f)
 }
 
@@ -112,7 +103,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
         photoEditor.setOnPhotoEditorListener(object : OnPhotoEditorListener {
             override fun onEditTextChangeListener(rootView: View, text: String, colorCode: Int, isJustAdded: Boolean) {
-                editModeHideAllUIControls()
+                editModeHideAllUIControls(false)
                 if (isJustAdded) {
                     // hide new text views
                     rootView.visibility = View.GONE
@@ -132,8 +123,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                         } else {
                             photoEditor.editText(rootView, inputText, colorCode)
                         }
-                        // TODO hardcoded noSound parameter here
-                        editModeRestoreAllUIControls(true)
+                        editModeRestoreAllUIControls()
                     }
                 })
             }
@@ -144,20 +134,16 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             }
 
             override fun onRemoveViewListener(viewType: ViewType, numberOfAddedViews: Int) {
-                if (photoEditor.anyViewsAdded()) {
-                    // only show save button if any views have been added
-                    save_button.visibility = View.VISIBLE
-                } else {
-                    save_button.visibility = View.INVISIBLE
-                }
+                showSaveButtonIfViewsAdded()
             }
 
             override fun onStartViewChangeListener(viewType: ViewType) {
-                // no op
+                // in this case, also hide the SAVE button
+                editModeHideAllUIControls(true)
             }
 
             override fun onStopViewChangeListener(viewType: ViewType) {
-                // no op
+                editModeRestoreAllUIControls()
             }
 
             override fun onRemoveViewListener(numberOfAddedViews: Int) {
@@ -329,17 +315,14 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                     })
             )
 
-        gallery_upload_img.setOnClickListener {
-            // TODO implement tapping on thumbnail
-            Toast.makeText(this, "not implemented yet", Toast.LENGTH_SHORT).show()
+        container_gallery_upload.setOnClickListener {
+            Toast.makeText(this@ComposeLoopFrameActivity, "not implemented yet", Toast.LENGTH_SHORT).show()
         }
 
-        camera_flip_group.setAllOnClickListener(object : View.OnClickListener {
-            override fun onClick(v: View) {
-                cameraSelection = backgroundSurfaceManager.flipCamera()
-                saveCameraSelectionPref()
-            }
-        })
+        camera_flip_group.setOnClickListener {
+            cameraSelection = backgroundSurfaceManager.flipCamera()
+            saveCameraSelectionPref()
+        }
 
         // attach listener a bit delayed as we need to have cameraBasicHandling created first
         photoEditorView.postDelayed({
@@ -729,13 +712,13 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     protected fun showLoading(message: String) {
-        editModeHideAllUIControls()
+        editModeHideAllUIControls(false)
         save_button.setSaving(true)
         blockTouchOnPhotoEditor()
     }
 
     protected fun hideLoading() {
-        editModeRestoreAllUIControls(false)
+        editModeRestoreAllUIControls()
         save_button.setSaving(false)
         releaseTouchOnPhotoEditor()
     }
@@ -766,22 +749,18 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         camera_flash_button.visibility = View.INVISIBLE
         label_flash.visibility = View.INVISIBLE
 
-        camera_flip_button.visibility = View.INVISIBLE
-        label_flip.visibility = View.INVISIBLE
+        camera_flip_group.visibility = View.INVISIBLE
 
-        gallery_upload_img.visibility = View.INVISIBLE
-        gallery_upload.visibility = View.INVISIBLE
+        container_gallery_upload.visibility = View.INVISIBLE
     }
 
     private fun showVideoUIControls() {
         camera_flash_button.visibility = View.VISIBLE
         label_flash.visibility = View.VISIBLE
 
-        camera_flip_button.visibility = View.VISIBLE
-        label_flip.visibility = View.VISIBLE
+        camera_flip_group.visibility = View.VISIBLE
 
-        gallery_upload_img.visibility = View.VISIBLE
-        gallery_upload.visibility = View.VISIBLE
+        container_gallery_upload.visibility = View.VISIBLE
     }
 
     private fun showEditModeUIControls(noSound: Boolean) {
@@ -815,22 +794,39 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         save_button.visibility = View.INVISIBLE
     }
 
-    private fun editModeHideAllUIControls() {
+    private fun editModeHideAllUIControls(hideSaveButton: Boolean) {
         // momentarily hide proper edit mode controls
         close_button.visibility = View.INVISIBLE
         edit_mode_controls.visibility = View.INVISIBLE
         sound_button_group.visibility = View.INVISIBLE
+        if (hideSaveButton) {
+            save_button.visibility = View.INVISIBLE
+        }
     }
 
-    private fun editModeRestoreAllUIControls(noSound: Boolean) {
+    private fun editModeRestoreAllUIControls() {
         // momentarily hide proper edit mode controls
         close_button.visibility = View.VISIBLE
         edit_mode_controls.visibility = View.VISIBLE
 
+        // restore Save button if it was hidden before
+        showSaveButtonIfViewsAdded()
+
+        // noSound parameter here should be true if video player is off
+        val noSound = !backgroundSurfaceManager.videoPlayerVisible()
         if (noSound) {
             sound_button_group.visibility = View.INVISIBLE
         } else {
             sound_button_group.visibility = View.VISIBLE
+        }
+    }
+
+    private fun showSaveButtonIfViewsAdded() {
+        if (photoEditor.anyViewsAdded()) {
+            // only show save button if any views have been added
+            save_button.visibility = View.VISIBLE
+        } else {
+            save_button.visibility = View.INVISIBLE
         }
     }
 

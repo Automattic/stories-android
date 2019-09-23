@@ -17,13 +17,14 @@
     <string name="text_button_alt">Text</string>
     <string name="sound_button_alt">Sound</string>
     <string name="label_control_flip_camera">Flip</string>
+    <string name="label_control_upload">Upload</string>
     <string name="label_control_flash">Flash</string>
     <string name="label_control_stickers">Stickers</string>
     <string name="label_control_text">Text</string>
     <string name="label_control_sound_on">Sound on</string>
     <string name="label_control_sound_off">Sound off</string>
     <string name="label_control_save">Save</string>
-    <string name="label_control_saving">Saving...</string>
+    <string name="label_control_saving">Saving</string>
     <string name="label_snackbar_loop_frame_saved">Saved to photos</string>
     <string name="label_snackbar_share">SHARE</string>
     <string name="label_share_to">Share to</string>
@@ -47,4 +48,5 @@
     <!--preference keys-->
     <string name="pref_camera_selection" translatable="false">pref_camera_selection</string>
     <string name="pref_flash_mode_selection" translatable="false">pref_flash_mode_selection</string>
+    <string name="pref_key_send_crash" translatable="false">pref_key_send_crash</string>
 </resources>

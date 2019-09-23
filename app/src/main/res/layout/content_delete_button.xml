@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/delete_button"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_marginBottom="@dimen/save_button_bottom_margin"
-    android:layout_marginEnd="@dimen/save_button_right_margin"
+    android:layout_width="@dimen/delete_button_width"
+    android:layout_height="@dimen/delete_button_height"
     android:orientation="horizontal"
-    android:paddingStart="20dp"
-    android:paddingEnd="20dp"
+    android:paddingStart="8dp"
+    android:paddingEnd="8dp"
+    android:paddingTop="4dp"
+    android:paddingBottom="4dp"
     android:gravity="center"
     >
 
     <RelativeLayout
         android:layout_width="wrap_content"
-        android:layout_height="@dimen/save_button_height"
+        android:layout_height="@dimen/delete_button_height"
         android:layout_gravity="center_vertical"
         >
         <ImageView
@@ -25,7 +25,7 @@
     </RelativeLayout>
 
     <TextView
-        android:layout_width="@dimen/save_button_text_width"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
