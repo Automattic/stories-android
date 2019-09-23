@@ -281,6 +281,7 @@ class PhotoEditor private constructor(builder: Builder) :
         textInputTv.text = text
         textInputTv.setTextColor(colorCodeTextView)
         textInputTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSizeSp)
+        textInputTv.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
         if (textTypeface != null) {
             textInputTv.typeface = textTypeface
         }

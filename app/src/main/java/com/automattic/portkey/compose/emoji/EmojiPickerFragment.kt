@@ -16,6 +16,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 import kotlinx.android.synthetic.main.fragment_bottom_sticker_emoji_dialog.view.*
 import kotlinx.android.synthetic.main.row_emoji.view.*
+import com.automattic.portkey.compose.hideStatusBar
 
 class EmojiPickerFragment : BottomSheetDialogFragment() {
     private var listener: EmojiListener? = null
@@ -26,11 +27,23 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
                 dismiss()
             }
         }
-        override fun onSlide(bottomSheet: View, slideOffset: Float) {}
+        override fun onSlide(bottomSheet: View, slideOffset: Float) {
+            // Tweak to make swipe down fully dismiss the view because of this issue:
+            // Swiping down on the sheet, the stickers get stuck half way
+            // down and then you have to swipe again to fully dismiss the view.
+            if (slideOffset < 0.5f) {
+                dismiss()
+            }
+        }
     }
 
     interface EmojiListener {
         fun onEmojiClick(emojiUnicode: String)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        hideStatusBar(dialog?.window!!)
     }
 
     @SuppressLint("RestrictedApi")

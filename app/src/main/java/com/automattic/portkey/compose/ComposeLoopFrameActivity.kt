@@ -51,6 +51,7 @@ import androidx.core.view.ViewCompat
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFinished
 import com.automattic.photoeditor.views.ViewType.TEXT
+import com.automattic.portkey.Portkey
 import com.automattic.portkey.R
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment
@@ -81,6 +82,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         stopRecordingVideo(false) // time's up, it's not a cancellation
     }
     private val timesUpHandler = Handler()
+    private var cameraOperationInCourse = false
 
     private var cameraSelection = CameraSelection.BACK
     private var flashModeSelection = FlashIndicatorState.OFF
@@ -95,6 +97,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(layout.activity_composer)
+
+        addInsetTopMargin(edit_mode_controls.layoutParams, (application as Portkey).getStatusBarHeight())
+        addInsetTopMargin(close_button.layoutParams, (application as Portkey).getStatusBarHeight())
+        addInsetTopMargin(control_flash_group.layoutParams, (application as Portkey).getStatusBarHeight())
 
         photoEditor = PhotoEditor.Builder(this, photoEditorView)
             .setPinchTextScalable(true) // set flag to make text scalable when pinch
@@ -276,11 +282,15 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                     PressAndHoldGestureHelper.CLICK_LENGTH,
                     object : PressAndHoldGestureListener {
                         override fun onClickGesture() {
-                            if (!backgroundSurfaceManager.cameraRecording()) {
-                                takeStillPicture()
+                            if (cameraOperationInCourse) {
+                                showToast("Operation in progress, try again")
+                                return
                             }
+                            timesUpHandler.removeCallbacksAndMessages(null)
+                            takeStillPicture()
                         }
                         override fun onHoldingGestureStart() {
+                            timesUpHandler.removeCallbacksAndMessages(null)
                             startRecordingVideoAfterVibrationIndication()
                         }
 
@@ -293,6 +303,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                         }
 
                         override fun onStartDetectionWait() {
+                            if (cameraOperationInCourse) {
+                                showToast("Operation in progress, try again")
+                                return
+                            }
                             // when the wait to see whether this is a "press and hold" gesture starts,
                             // start the animation to grow the capture button radius
                             camera_capture_button
@@ -303,6 +317,9 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                         }
 
                         override fun onTouchEventDetectionEnd() {
+                            if (cameraOperationInCourse) {
+                                return
+                            }
                             // when gesture detection ends, we're good to
                             // get the capture button shape as it originally was (idle state)
                             camera_capture_button.clearAnimation()
@@ -453,6 +470,11 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     private fun takeStillPicture() {
+        if (backgroundSurfaceManager.cameraRecording() || cameraOperationInCourse) {
+            return
+        }
+
+        cameraOperationInCourse = true
         camera_capture_button.startProgressingAnimation(CAMERA_STILL_PICTURE_ANIM_MS)
         backgroundSurfaceManager.takePicture(object : ImageCaptureListener {
             override fun onImageSaved(file: File) {
@@ -467,6 +489,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                         .into(photoEditorView.source)
                     showStaticBackground()
                     currentOriginalCapturedFile = file
+                    waitToReenableCapture()
                 }
 
                 showToast("IMAGE SAVED")
@@ -474,44 +497,52 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             override fun onError(message: String, cause: Throwable?) {
                 // TODO implement error handling
                 showToast("ERROR SAVING IMAGE")
+                waitToReenableCapture()
             }
         })
     }
 
     private fun startRecordingVideoAfterVibrationIndication() {
-        if (!backgroundSurfaceManager.cameraRecording()) {
-            timesUpHandler.postDelayed({
-                startRecordingVideo()
-            }, VIBRATION_INDICATION_LENGTH_MS)
-            hideVideoUIControls()
-            showToast("VIDEO STARTED")
-            vibrate()
+        if (backgroundSurfaceManager.cameraRecording() || cameraOperationInCourse) {
+            return
         }
+
+        timesUpHandler.postDelayed({
+            startRecordingVideo()
+        }, VIBRATION_INDICATION_LENGTH_MS)
+        hideVideoUIControls()
+        showToast("VIDEO STARTED")
+        vibrate()
     }
 
     private fun startRecordingVideo() {
-        if (!backgroundSurfaceManager.cameraRecording()) {
-            // force stop recording video after maximum time limit reached
-            timesUpHandler.postDelayed(timesUpRunnable, CAMERA_VIDEO_RECORD_MAX_LENGTH_MS)
-            // strat progressing animation
-            camera_capture_button.startProgressingAnimation(CAMERA_VIDEO_RECORD_MAX_LENGTH_MS)
-            backgroundSurfaceManager.startRecordingVideo(object : VideoRecorderFinished {
-                override fun onVideoSaved(file: File?) {
-                    currentOriginalCapturedFile = file
-                    runOnUiThread {
-                        // now start playing the video we just recorded
-                        showPlayVideo()
-                    }
-                }
-
-                override fun onError(message: String?, cause: Throwable?) {
-                    // TODO implement error handling
-                    runOnUiThread {
-                        showToast("Video could not be saved: " + message)
-                    }
-                }
-            })
+        if (backgroundSurfaceManager.cameraRecording()) {
+            return
         }
+
+        cameraOperationInCourse = true
+        // force stop recording video after maximum time limit reached
+        timesUpHandler.postDelayed(timesUpRunnable, CAMERA_VIDEO_RECORD_MAX_LENGTH_MS)
+        // strat progressing animation
+        camera_capture_button.startProgressingAnimation(CAMERA_VIDEO_RECORD_MAX_LENGTH_MS)
+        backgroundSurfaceManager.startRecordingVideo(object : VideoRecorderFinished {
+            override fun onVideoSaved(file: File?) {
+                currentOriginalCapturedFile = file
+                runOnUiThread {
+                    // now start playing the video we just recorded
+                    showPlayVideo()
+                }
+                waitToReenableCapture()
+            }
+
+            override fun onError(message: String?, cause: Throwable?) {
+                // TODO implement error handling
+                runOnUiThread {
+                    showToast("Video could not be saved: " + message)
+                }
+                waitToReenableCapture()
+            }
+        })
     }
 
     private fun vibrate() {
@@ -527,6 +558,11 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     private fun stopRecordingVideo(isCanceled: Boolean) {
+        if (isCanceled) {
+            // remove any pending callback if video was cancelled
+            timesUpHandler.removeCallbacksAndMessages(null)
+        }
+
         if (backgroundSurfaceManager.cameraRecording()) {
             camera_capture_button.stopProgressingAnimation()
             camera_capture_button.clearAnimation()
@@ -538,13 +574,18 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             backgroundSurfaceManager.stopRecordingVideo()
             showVideoUIControls()
             if (isCanceled) {
-                // remove any pending callback if video was cancelled
-                timesUpHandler.removeCallbacksAndMessages(null)
                 showToast("GESTURE CANCELLED, VIDEO SAVED")
             } else {
                 showToast("VIDEO SAVED")
             }
         }
+    }
+
+    // artificial wait to re-enable capture mode
+    private fun waitToReenableCapture() {
+        timesUpHandler.postDelayed({
+            cameraOperationInCourse = false
+        }, CAMERA_STILL_PICTURE_WAIT_FOR_NEXT_CAPTURE_MS)
     }
 
     // this one saves one composed unit: ether an Image or a Video
@@ -946,6 +987,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         private const val SURFACE_MANAGER_READY_LAUNCH_DELAY = 500L
         private const val CAMERA_VIDEO_RECORD_MAX_LENGTH_MS = 10000L
         private const val CAMERA_STILL_PICTURE_ANIM_MS = 300L
+        private const val CAMERA_STILL_PICTURE_WAIT_FOR_NEXT_CAPTURE_MS = 1000L
         private const val STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE = "key_current_original_captured_file"
         private const val VIBRATION_INDICATION_LENGTH_MS = 100L
         private const val SWIPE_MIN_DISTANCE = 120

@@ -17,17 +17,18 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:animateLayoutChanges="true">
+        android:animateLayoutChanges="true"
+        android:background="@color/black"
+        >
 
         <!-- this is the delete view  -->
         <com.automattic.portkey.compose.DeleteButton
             android:id="@+id/delete_view"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:visibility="gone"
             android:layout_centerHorizontal="true"
-            android:layout_alignParentBottom="true"
-            android:layout_marginBottom="@dimen/delete_button_bottom_margin"/>
+            android:layout_alignParentBottom="true"/>
 
     </com.automattic.photoeditor.views.PhotoEditorView>
 
@@ -109,7 +110,7 @@
         />
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/linearLayout"
+        android:id="@+id/control_flash_group"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/top_button_group_margin"
@@ -191,6 +192,7 @@
         android:layout_margin="@dimen/top_button_group_margin"
         android:orientation="horizontal"
         android:visibility="invisible"
+        android:fitsSystemWindows="true"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:animateLayoutChanges="true">

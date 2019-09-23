@@ -28,7 +28,7 @@
     <string name="label_snackbar_loop_frame_saved">Saved to photos</string>
     <string name="label_snackbar_share">SHARE</string>
     <string name="label_share_to">Share to</string>
-    <string name="label_delete">Delete</string>
+    <string name="label_remove">Drag here to remove</string>
     <string name="label_done">Done</string>
 
     <string name="dialog_discard_message">Are you sure you want to discard your Loop?</string>
