@@ -18,17 +18,20 @@
     <dimen name="normal_button_font_size">13sp</dimen>
     <dimen name="top_button_group_margin">16dp</dimen>
     <dimen name="margin_among_buttons">25dp</dimen>
-    <dimen name="color_picker_background_size">34dp</dimen>
-    <dimen name="color_picker_filler_size">28dp</dimen>
-    <dimen name="color_picker_item_margin">12dp</dimen>
+    <dimen name="color_picker_touchable_area_size">40dp</dimen>
+    <dimen name="color_picker_background_size">24dp</dimen>
+    <dimen name="color_picker_filler_size">22dp</dimen>
+    <dimen name="color_picker_item_margin">8dp</dimen>
 
     <dimen name="shutter_button_margin">68dp</dimen>
     <dimen name="normal_button_medium_round_corner">32dp</dimen>
 
-    <dimen name="save_button_bottom_margin">68dp</dimen>
-    <dimen name="save_button_right_margin">24dp</dimen>
+    <dimen name="save_button_bottom_margin">16dp</dimen>
+    <dimen name="save_button_right_margin">16dp</dimen>
     <dimen name="save_button_height">48dp</dimen>
     <dimen name="save_button_text_width">72dp</dimen>
+
+    <dimen name="editor_initial_text_size">40sp</dimen>
 
     <dimen name="gradient_top_height">72dp</dimen>
     <dimen name="gradient_bottom_height">152dp</dimen>

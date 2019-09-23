@@ -14,10 +14,11 @@ const val FLAGS_FULLSCREEN =
             View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
 
 fun hideSystemUI(window: Window) {
-    // Enables regular immersive mode.
-    // For "lean back" mode, remove SYSTEM_UI_FLAG_IMMERSIVE.
-    // Or for "sticky immersive," replace it with SYSTEM_UI_FLAG_IMMERSIVE_STICKY
     window.decorView.systemUiVisibility = FLAGS_FULLSCREEN
+}
+
+fun hideStatusBar(window: Window) {
+    window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
 }
 
 // Shows the system bars by removing all the flags

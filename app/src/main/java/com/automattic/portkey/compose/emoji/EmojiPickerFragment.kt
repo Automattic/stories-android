@@ -41,6 +41,7 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
         val params = (contentView.parent as View).layoutParams as CoordinatorLayout.LayoutParams
 
         (params.behavior as? BottomSheetBehavior)?.setBottomSheetCallback(bottomSheetBehaviorCallback)
+        (params.behavior as? BottomSheetBehavior)?.state = BottomSheetBehavior.STATE_EXPANDED
 
         (contentView.parent as View).setBackgroundColor(resources.getColor(android.R.color.transparent))
         contentView.rvEmoji.layoutManager = GridLayoutManager(activity, COLUMNS)

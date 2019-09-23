@@ -97,7 +97,10 @@ internal class MultiTouchListener(
                         )
                     }
                     if (onMultiTouchListener != null && deleteView != null) {
-                        onMultiTouchListener!!.onRemoveViewReadyListener(view, isViewInBounds(deleteView, x, y))
+                        val readyForDelete = isViewInBounds(deleteView, x, y)
+                        // fade the view a bit to indicate it's going bye bye
+                        setAlphaOnView(view, readyForDelete)
+                        onMultiTouchListener!!.onRemoveViewReadyListener(view, readyForDelete)
                     }
                 }
             }
@@ -130,6 +133,14 @@ internal class MultiTouchListener(
             }
         }
         return true
+    }
+
+    private fun setAlphaOnView(view: View, makeTransparent: Boolean) {
+        if (makeTransparent) {
+            view.alpha = 0.5f
+        } else {
+            view.alpha = 1f
+        }
     }
 
     private fun firePhotoEditorSDKListener(view: View, isStart: Boolean) {

@@ -16,8 +16,11 @@
         android:layout_alignParentTop="true"
         android:layout_margin="20dp"
         android:background="@drawable/rounded_border_text_view"
-        android:padding="10dp"
-        android:text="Done"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:text="@string/label_done"
         android:textAllCaps="false"
         android:textColor="@color/white"
         android:textSize="15sp" />
@@ -32,18 +35,19 @@
         android:background="@null"
         android:gravity="center"
         android:inputType="textMultiLine"
-        android:textSize="40sp" />
+        android:textSize="@dimen/editor_initial_text_size" />
 
     <RelativeLayout
         android:id="@+id/add_text_color_picker_relative_layout"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/color_picker_item_margin"
+        android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/add_text_color_picker_recycler_view"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
