@@ -58,6 +58,7 @@ import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.AUTO
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.OFF
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.ON
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
+import com.automattic.photoeditor.camera.interfaces.VideoRecorderFinished
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
 import com.automattic.photoeditor.camera.interfaces.camera2LensFacingFromPortkeyCameraSelection
 import com.automattic.photoeditor.camera.interfaces.portkeyCameraSelectionFromCamera2LensFacing
@@ -734,14 +735,14 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
         /**
         * create video output file
         */
-        currentFile = FileUtils.getLoopFrameFile(true, "orig_")
+        currentFile = FileUtils.getLoopFrameFile(activity, true, "orig_")
         currentFile?.createNewFile()
 
         /**
         * set output file in media recorder
         */
         mediaRecorder.setOutputFile(currentFile?.getAbsolutePath())
-        val profile: CamcorderProfile = CamcorderProfile.get(CamcorderProfile.QUALITY_480P)
+        val profile: CamcorderProfile = findCamcorderProfile()
         mediaRecorder.setVideoFrameRate(profile.videoFrameRate)
         mediaRecorder.setVideoSize(profile.videoFrameWidth, profile.videoFrameHeight)
         mediaRecorder.setVideoEncodingBitRate(profile.videoBitRate)
@@ -760,10 +761,19 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
         mediaRecorder.prepare()
     }
 
+    private fun findCamcorderProfile(): CamcorderProfile {
+        for (quality in CAMCORDER_QUALITIES) {
+            if (CamcorderProfile.hasProfile(cameraId.toInt(), quality)) {
+                return CamcorderProfile.get(quality)
+            }
+        }
+        return CamcorderProfile.get(0)
+    }
+
     /**
      * Creates a new [CameraCaptureSession] for actual video recording.
      */
-    override fun startRecordingVideo() {
+    override fun startRecordingVideo(finishedListener: VideoRecorderFinished?) {
         try {
             closePreviewSession()
             setUpMediaRecorder()
@@ -809,15 +819,18 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
                             mediaRecorder.start()
                         } catch (e: CameraAccessException) {
                             Log.e(TAG, e.toString())
+                            finishedListener?.onError(e.toString(), e)
                         }
                     }
 
                     override fun onConfigureFailed(session: CameraCaptureSession) {
-                        // TODO: capture error, inform the user about it
+                        Log.e(TAG, "CameraCaptureSession.onConfigureFailed")
+                        finishedListener?.onError("CameraCaptureSession.onConfigureFailed", null)
                     }
                 }, null)
         } catch (e: CameraAccessException) {
             Log.e(TAG, e.toString())
+            finishedListener?.onError(e.toString(), e)
         }
     }
 
@@ -840,7 +853,9 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
 
     override fun takePicture(onImageCapturedListener: ImageCaptureListener) {
         // Create output file to hold the image
-        currentFile = FileUtils.getLoopFrameFile(false, "orig_")
+        activity?.let {
+            currentFile = FileUtils.getLoopFrameFile(it, false, "orig_")
+        }
         currentFile?.createNewFile()
         imageCapturedListener = onImageCapturedListener
         lockFocus()
@@ -895,6 +910,18 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
         private val SENSOR_ORIENTATION_DEFAULT_DEGREES = 90
         private val SENSOR_ORIENTATION_INVERSE_DEGREES = 270
         private val instance = Camera2BasicHandling()
+
+        /** Camcorder profiles quality list */
+        private val CAMCORDER_QUALITIES: IntArray = intArrayOf(
+                CamcorderProfile.QUALITY_2160P,
+                CamcorderProfile.QUALITY_1080P,
+                CamcorderProfile.QUALITY_720P,
+                CamcorderProfile.QUALITY_480P,
+                CamcorderProfile.QUALITY_QVGA,
+                CamcorderProfile.QUALITY_QCIF,
+                CamcorderProfile.QUALITY_CIF,
+                CamcorderProfile.QUALITY_LOW
+        )
 
         init {
             ORIENTATIONS.append(Surface.ROTATION_0, 90)

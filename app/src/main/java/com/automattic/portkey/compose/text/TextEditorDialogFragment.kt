@@ -1,26 +1,25 @@
-package com.automattic.portkey.compose
+package com.automattic.portkey.compose.text
 
-import android.content.Context
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
+import android.view.WindowManager
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.automattic.portkey.R
 import kotlinx.android.synthetic.main.add_text_dialog.*
+import kotlinx.android.synthetic.main.add_text_dialog.view.*
 
 /**
  * Created by Burhanuddin Rashid on 1/16/2018.
  */
 
 class TextEditorDialogFragment : DialogFragment() {
-    private var inputMethodManager: InputMethodManager? = null
     private var colorCode: Int = 0
     private var textEditor: TextEditor? = null
 
@@ -33,6 +32,7 @@ class TextEditorDialogFragment : DialogFragment() {
         dialog?.apply {
             window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             window?.setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
+            window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
         }
     }
 
@@ -42,23 +42,35 @@ class TextEditorDialogFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        inputMethodManager = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+
+        // Setup the color picker for text color
+        val addTextColorPickerRecyclerView = view.add_text_color_picker_recycler_view
+        val layoutManager = LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
+        addTextColorPickerRecyclerView.layoutManager = layoutManager
+        addTextColorPickerRecyclerView.setHasFixedSize(true)
+        activity?.let {
+            val colorPickerAdapter = ColorPickerAdapter(it)
+            // This listener will change the text color when clicked on any color from picker
+            colorPickerAdapter.setOnColorPickerClickListener { colorCode ->
+                this.colorCode = colorCode
+                add_text_edit_text?.setTextColor(colorCode)
+            }
+            addTextColorPickerRecyclerView.adapter = colorPickerAdapter
+        }
 
         arguments?.let {
             add_text_edit_text?.setText(it.getString(EXTRA_INPUT_TEXT))
             colorCode = it.getInt(EXTRA_COLOR_CODE)
             add_text_edit_text?.setTextColor(colorCode)
         }
-        inputMethodManager?.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0)
+        add_text_edit_text?.requestFocus()
 
         // Make a callback on activity when user is done with text editing
         add_text_done_tv?.setOnClickListener { textView ->
-            inputMethodManager?.hideSoftInputFromWindow(textView.windowToken, 0)
+            dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
             dismiss()
             val inputText = add_text_edit_text?.text.toString()
-            if (!TextUtils.isEmpty(inputText)) {
-                textEditor?.onDone(inputText, colorCode)
-            }
+            textEditor?.onDone(inputText, colorCode)
         }
     }
 
@@ -84,7 +96,9 @@ class TextEditorDialogFragment : DialogFragment() {
                     putString(EXTRA_INPUT_TEXT, inputText)
                     putInt(EXTRA_COLOR_CODE, colorCode)
                 }
-                show(appCompatActivity.supportFragmentManager, TAG)
+                show(appCompatActivity.supportFragmentManager,
+                    TAG
+                )
             }
         }
     }

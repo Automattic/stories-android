@@ -23,7 +23,8 @@ internal class MultiTouchListener(
     private val parentView: RelativeLayout,
     private val photoEditImageView: ImageView,
     private val mIsTextPinchZoomable: Boolean,
-    private val mOnPhotoEditorListener: OnPhotoEditorListener?
+    private val mOnPhotoEditorListener: OnPhotoEditorListener?,
+    private var onMultiTouchListener: OnMultiTouchListener? = null
 ) : OnTouchListener {
     private val mGestureListener: GestureDetector
     private val isRotateEnabled = true
@@ -41,7 +42,7 @@ internal class MultiTouchListener(
     private val location = IntArray(2)
     private var outRect: Rect? = null
 
-    private var onMultiTouchListener: OnMultiTouchListener? = null
+    // private var onMultiTouchListener: OnMultiTouchListener? = null
     private var mOnGestureControl: OnGestureControl? = null
 
     init {
@@ -95,6 +96,12 @@ internal class MultiTouchListener(
                             currY - mPrevY
                         )
                     }
+                    if (onMultiTouchListener != null && deleteView != null) {
+                        val readyForDelete = isViewInBounds(deleteView, x, y)
+                        // fade the view a bit to indicate it's going bye bye
+                        setAlphaOnView(view, readyForDelete)
+                        onMultiTouchListener!!.onRemoveViewReadyListener(view, readyForDelete)
+                    }
                 }
             }
             MotionEvent.ACTION_CANCEL -> mActivePointerId =
@@ -104,9 +111,10 @@ internal class MultiTouchListener(
                 if (deleteView != null && isViewInBounds(deleteView, x, y)) {
                     if (onMultiTouchListener != null)
                         onMultiTouchListener!!.onRemoveViewListener(view)
-                } else if (!isViewInBounds(photoEditImageView, x, y)) {
-                    view.animate().translationY(0f).translationY(0f)
                 }
+//                else if (!isViewInBounds(photoEditImageView, x, y)) {
+//                    view.animate().translationY(0f).translationY(0f)
+//                }
                 if (deleteView != null) {
                     deleteView.visibility = View.GONE
                 }
@@ -125,6 +133,14 @@ internal class MultiTouchListener(
             }
         }
         return true
+    }
+
+    private fun setAlphaOnView(view: View, makeTransparent: Boolean) {
+        if (makeTransparent) {
+            view.alpha = 0.5f
+        } else {
+            view.alpha = 1f
+        }
     }
 
     private fun firePhotoEditorSDKListener(view: View, isStart: Boolean) {
@@ -190,10 +206,12 @@ internal class MultiTouchListener(
         internal var maximumScale: Float = 0.toFloat()
     }
 
-    internal interface OnMultiTouchListener {
+    interface OnMultiTouchListener {
         fun onEditTextClickListener(text: String, colorCode: Int)
 
         fun onRemoveViewListener(removedView: View)
+
+        fun onRemoveViewReadyListener(removedView: View, ready: Boolean)
     }
 
     internal interface OnGestureControl {
