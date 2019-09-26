@@ -52,7 +52,8 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
 
         override fun onSurfaceTextureSizeChanged(texture: SurfaceTexture, width: Int, height: Int) {
             if (currentExternalUri != null && videoHeight > 0 && videoWidth > 0) {
-                updateTextureViewSizeForCropping(width, height)
+//                updateTextureViewSizeForCropping(width, height)
+                updateTextureViewSizeForLetterbox(videoWidth.toInt(), videoHeight.toInt())
             }
         }
 
@@ -65,7 +66,7 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
      * An [AutoFitTextureView] for camera preview.
      */
     lateinit var textureView: AutoFitTextureView
-    private lateinit var originalMatrix: Matrix
+    lateinit var originalMatrix: Matrix
 
     private var active: Boolean = false
 
@@ -158,7 +159,8 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
             currentExternalUri?.let {
                 textureView.setTransform(originalMatrix)
                 calculateVideoSize(it)
-                updateTextureViewSizeForCropping(textureView.measuredWidth, textureView.measuredHeight)
+                // updateTextureViewSizeForCropping(textureView.measuredWidth, textureView.measuredHeight)
+                updateTextureViewSizeForLetterbox(videoWidth.toInt(), videoHeight.toInt())
                 mediaPlayer = MediaPlayer().apply {
                     setDataSource(context!!, currentExternalUri!!)
                     setSurface(s)
@@ -239,6 +241,38 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
         matrix.setScale(scaleX, scaleY, pivotPointX.toFloat(), pivotPointY.toFloat())
 
         textureView.setTransform(matrix)
+    }
+
+    private fun updateTextureViewSizeForLetterbox(videoWidth: Int, videoHeight: Int) {
+        val viewWidth = textureView.getWidth()
+        val viewHeight = textureView.getHeight()
+        val aspectRatio = videoHeight.toDouble() / videoWidth
+
+        val newWidth: Int
+        val newHeight: Int
+        if (viewHeight > (viewWidth * aspectRatio).toInt()) {
+            // limited by narrow width; restrict height
+            newWidth = viewWidth
+            newHeight = (viewWidth * aspectRatio).toInt()
+        } else {
+            // limited by short height; restrict width
+            newWidth = (viewHeight / aspectRatio).toInt()
+            newHeight = viewHeight
+        }
+        val xoff = (viewWidth - newWidth) / 2
+        val yoff = (viewHeight - newHeight) / 2
+        Log.v(
+            TAG, "video=" + videoWidth + "x" + videoHeight +
+                    " view=" + viewWidth + "x" + viewHeight +
+                    " newView=" + newWidth + "x" + newHeight +
+                    " off=" + xoff + "," + yoff
+        )
+
+        val txform = Matrix()
+        textureView.getTransform(txform)
+        txform.setScale(newWidth.toFloat() / viewWidth, newHeight.toFloat() / viewHeight)
+        txform.postTranslate(xoff.toFloat(), yoff.toFloat())
+        textureView.setTransform(txform)
     }
 
     companion object {
