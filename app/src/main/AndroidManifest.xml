@@ -47,6 +47,11 @@
                 android:screenOrientation="portrait"
                 android:theme="@style/AppTheme.Immersive">
         </activity>
+        <activity
+            android:name=".compose.photopicker.PhotoPickerActivity"
+            android:label="@string/photo_picker_title"
+            android:theme="@style/AppTheme.NoActionBar"
+            />
 
         <!-- FileProvider used to share photos with other apps -->
         <provider

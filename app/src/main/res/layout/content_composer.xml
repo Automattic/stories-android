@@ -109,6 +109,17 @@
         app:layout_constraintTop_toTopOf="parent"
         />
 
+    <!-- bottom gradient  -->
+    <View
+        android:id="@+id/gradient_bottom"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/gradient_bottom_height"
+        android:background="@drawable/bottom_gradient"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"/>
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/control_flash_group"
         android:layout_width="wrap_content"
@@ -291,17 +302,6 @@
 
     </LinearLayout>
 
-    <!-- bottom gradient  -->
-    <View
-        android:id="@+id/gradient_bottom"
-        android:layout_width="0dp"
-        android:layout_height="@dimen/gradient_bottom_height"
-        android:background="@drawable/bottom_gradient"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"/>
-
     <ImageButton
         android:id="@+id/close_button"
         android:visibility="invisible"
@@ -320,7 +320,7 @@
         android:layout_height="@dimen/save_button_total_height"
         android:layout_marginBottom="@dimen/save_button_bottom_margin"
         android:layout_marginEnd="@dimen/save_button_right_margin"
-        android:visibility="gone"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"/>
 

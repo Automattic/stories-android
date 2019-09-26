@@ -2,9 +2,10 @@ package com.automattic.portkey.compose
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.app.ActivityOptions
 import android.content.Context
 import android.content.Intent
-import android.graphics.Point
 import android.hardware.Camera
 import android.media.MediaScannerConnection
 import android.net.Uri
@@ -14,6 +15,7 @@ import android.os.Handler
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.text.TextUtils
+import android.util.Log
 import android.view.GestureDetector
 import androidx.appcompat.app.AppCompatActivity
 import android.view.View
@@ -56,6 +58,13 @@ import com.automattic.portkey.R
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
+import com.automattic.portkey.compose.photopicker.MediaBrowserType
+import com.automattic.portkey.compose.photopicker.PhotoPickerActivity
+import com.automattic.portkey.compose.photopicker.PhotoPickerFragment
+import com.automattic.portkey.compose.photopicker.RequestCodes
+import com.automattic.portkey.util.CrashLoggingUtils
+import com.automattic.portkey.util.getDisplayPixelSize
+import com.automattic.portkey.util.isVideo
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 
@@ -275,6 +284,36 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         return super.onTouchEvent(event)
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        when (requestCode) {
+            RequestCodes.PHOTO_PICKER -> if (resultCode == Activity.RESULT_OK && data != null) {
+                val strMediaUri = data.getStringExtra(PhotoPickerActivity.EXTRA_MEDIA_URI)
+                if (strMediaUri == null) {
+                    Log.e("Composer", "Can't resolve picked media")
+                    showToast("Can't resolve picked media")
+                    return
+                }
+
+                // decide whether the picked media is a VIDEO or an IMAGE
+                if (isVideo(strMediaUri)) {
+                    // now start playing the video we just recorded
+                    showPlayVideo(Uri.parse(strMediaUri))
+                    // TODO remove this and support composing a Loop Frame with picked external video
+                    showToast("WARNING: only video captured with Portkey can be saved for now")
+                } else {
+                    // assuming image for now
+                    Glide.with(this@ComposeLoopFrameActivity)
+                        .load(strMediaUri)
+                        .transform(CenterCrop())
+                        .into(photoEditorView.source)
+                    showStaticBackground()
+                }
+            }
+        }
+    }
+
     private fun addClickListeners() {
         camera_capture_button
             .setOnTouchListener(
@@ -333,7 +372,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             )
 
         container_gallery_upload.setOnClickListener {
-            Toast.makeText(this@ComposeLoopFrameActivity, "not implemented yet", Toast.LENGTH_SHORT).show()
+            showMediaPicker()
         }
 
         camera_flip_group.setOnClickListener {
@@ -394,6 +433,16 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         save_button.setOnClickListener {
             saveLoopFrame()
         }
+    }
+
+    private fun showMediaPicker() {
+        val intent = Intent(this@ComposeLoopFrameActivity, PhotoPickerActivity::class.java)
+        intent.putExtra(PhotoPickerFragment.ARG_BROWSER_TYPE, MediaBrowserType.PORTKEY_PICKER)
+
+        startActivityForResult(
+            intent,
+            RequestCodes.PHOTO_PICKER,
+            ActivityOptions.makeSceneTransitionAnimation(this).toBundle())
     }
 
     private fun deleteCapturedMedia() {
@@ -461,7 +510,12 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
     private fun showPlayVideo(videoFile: File? = null) {
         showEditModeUIControls(false)
-        backgroundSurfaceManager.switchVideoPlayerOn(videoFile)
+        backgroundSurfaceManager.switchVideoPlayerOnFromFile(videoFile)
+    }
+
+    private fun showPlayVideo(videoUri: Uri) {
+        showEditModeUIControls(false)
+        backgroundSurfaceManager.switchVideoPlayerOnFromUri(videoUri)
     }
 
     private fun showStaticBackground() {
@@ -592,7 +646,17 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     private fun saveLoopFrame() {
         // check wether we have an Image or a Video, and call its save functionality accordingly
         if (backgroundSurfaceManager.cameraVisible() || backgroundSurfaceManager.videoPlayerVisible()) {
-            saveVideo(backgroundSurfaceManager.getCurrentFile().toString())
+            val currentBkgMedia = backgroundSurfaceManager.getCurrentBackgroundMedia()
+            if (currentBkgMedia != null) {
+                if (backgroundSurfaceManager.getCurrentFile() == null) {
+                    showToast("WARNING: only video captured with Portkey can be saved for now")
+                } else {
+                    saveVideo(currentBkgMedia)
+                }
+            } else {
+                CrashLoggingUtils.log("An error occurred trying to save video, current background media not found")
+                showToast("An error occurred trying to save video, current background media not found")
+            }
         } else {
             // check whether there are any GIF stickers - if there are, we need to produce a video instead
             if (photoEditor.anyStickersAdded()) {
@@ -648,7 +712,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     @SuppressLint("MissingPermission")
-    private fun saveVideo(inputFile: String) {
+    private fun saveVideo(inputFile: Uri) {
         if (PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             showLoading("Saving...")
             try {
@@ -733,7 +797,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                         override fun onSuccess(imagePath: String) {
                             // now save the video with emoji, but using the previously saved video as input
                             hideLoading()
-                            saveVideo(imagePath)
+                            saveVideo(Uri.parse(imagePath))
                             // TODO: delete the temporal video produced originally
                         }
 
@@ -812,10 +876,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         // show proper edit mode controls
         close_button.visibility = View.VISIBLE
         edit_mode_controls.visibility = View.VISIBLE
-        if (photoEditor.anyViewsAdded()) {
+//        if (photoEditor.anyViewsAdded()) {
             // only show save button if any views have been added
             save_button.visibility = View.VISIBLE
-        }
+//        }
 
         if (noSound) {
             sound_button_group.visibility = View.INVISIBLE
@@ -863,12 +927,12 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     private fun showSaveButtonIfViewsAdded() {
-        if (photoEditor.anyViewsAdded()) {
+//        if (photoEditor.anyViewsAdded()) {
             // only show save button if any views have been added
             save_button.visibility = View.VISIBLE
-        } else {
-            save_button.visibility = View.INVISIBLE
-        }
+//        } else {
+//            save_button.visibility = View.INVISIBLE
+//        }
     }
 
     private fun updateFlashModeSelectionIcon() {
@@ -947,20 +1011,13 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     private fun calculateScreenSize() {
-        val display = windowManager.defaultDisplay
-        val size = Point()
-        display.getSize(size)
+        val size = getDisplayPixelSize(this)
         screenSizeX = size.x
         screenSizeY = size.y
     }
 
     private inner class FlingGestureListener : GestureDetector.SimpleOnGestureListener() {
         override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
-            // only care about this in edit mode
-            if (edit_mode_controls.visibility != View.VISIBLE) {
-                return false
-            }
-
             e1?.let {
                 e2?.let {
                     if (e1.getY() - e2.getY() > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
@@ -969,7 +1026,14 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                         if ((screenSizeY - ycoordStart) < SWIPE_MIN_DISTANCE_FROM_BOTTOM) {
                             // if swipe started as close as bottom of the screen as possible, then interpret this
                             // as a swipe from bottom of the screen gesture
-                            emojiPickerFragment.show(supportFragmentManager, emojiPickerFragment.getTag())
+
+                            // in edit mode, show Emoji picker
+                            if (edit_mode_controls.visibility == View.VISIBLE) {
+                                emojiPickerFragment.show(supportFragmentManager, emojiPickerFragment.getTag())
+                            } else {
+                                // in capture mode, show media picker
+                                showMediaPicker()
+                            }
                         }
                         return false
                     } else if (e2.getY() - e1.getY() > SWIPE_MIN_DISTANCE &&

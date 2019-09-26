@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">portkey</string>
+    <string name="photo_picker_title">Portkey Photo Picker</string>
 
     <string name="label_tool_text">Text tool</string>
     <string name="label_tool_emoji">Emoji tool</string>
@@ -44,6 +45,23 @@
 
     <string name="permissions_message">Allow Loop to access your camera, microphone, and local storage.</string>
     <string name="permissions_turn_on">Turn On</string>
+
+    <!-- Photo picker    -->
+    <string name="photo_picker_thumbnail_desc">Play video</string>
+    <string name="pick_photo">Select photo</string>
+    <string name="pick_video">Select video</string>
+    <string name="photo_picker_choose_video">Choose video from device</string>
+    <string name="photo_picker_choose_photo">Choose photo from device</string>
+    <string name="confirm">Confirm</string>
+    <string name="photo_picker_use_photo">Use this photo</string>
+    <string name="cab_selected">%d selected</string>
+    <string name="media_empty_list">You don\'t have any media</string>
+    <string name="photo_picker_soft_ask_allow">Allow</string>
+    <string name="photo_picker_soft_ask_label">%s needs permissions to access your photos</string>
+    <string name="photo_picker_device_desc">pick from device</string>
+    <string name="photo_picker_camera_desc">open camera</string>
+    <string name="photo_picker_wpmedia_desc">pick from WordPress media</string>
+    <string name="content_description_person_reading_device_notification">Person reading device with notifications</string>
 
     <!--preference keys-->
     <string name="pref_camera_selection" translatable="false">pref_camera_selection</string>

@@ -788,7 +788,7 @@ class PhotoEditor private constructor(builder: Builder) :
     @SuppressLint("StaticFieldLeak")
     @RequiresPermission(allOf = [Manifest.permission.WRITE_EXTERNAL_STORAGE])
     fun saveVideoAsFile(
-        videoInputPath: String,
+        videoInputPath: Uri,
         videoOutputPath: String,
         saveSettings: SaveSettings,
         onSaveListener: OnSaveWithCancelListener
@@ -803,7 +803,7 @@ class PhotoEditor private constructor(builder: Builder) :
         }
 
         val retriever = MediaMetadataRetriever()
-        retriever.setDataSource(videoInputPath)
+        retriever.setDataSource(context, videoInputPath)
         var width = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH))
         var height = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT))
         var rotation = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION))
@@ -836,7 +836,7 @@ class PhotoEditor private constructor(builder: Builder) :
             }
         }
 
-        Mp4Composer(videoInputPath, videoOutputPath)
+        Mp4Composer(videoInputPath.toString(), videoOutputPath)
             .size(width, height)
             .fillMode(FillMode.PRESERVE_ASPECT_FIT)
             .filter(GlFilterGroup(filterCollection))
