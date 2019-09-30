@@ -14,7 +14,6 @@ import android.view.Surface
 import androidx.fragment.app.FragmentActivity
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.lang.Long
-import java.util.Arrays
 import java.util.Collections
 import java.util.Comparator
 
@@ -126,6 +125,7 @@ class CameraUtils {
             val characteristics = manager.getCameraCharacteristics(cameraId)
 
             val map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+                ?: throw IllegalStateException("Could not obtain SCALER_STREAM_CONFIGURATION_MAP")
 
             // Find out if we need to swap dimension to get the preview size relative to sensor
             // coordinate.
@@ -148,16 +148,13 @@ class CameraUtils {
             if (maxPreviewHeight > MAX_PREVIEW_HEIGHT) maxPreviewHeight = MAX_PREVIEW_HEIGHT
 
             // For still image captures, we use the largest available size.
-            val largest = Collections.max(
-                Arrays.asList(*map!!.getOutputSizes(ImageFormat.JPEG)),
-                CompareSizesByArea()
-            )
+            val largest = Collections.max(listOf(*map.getOutputSizes(ImageFormat.JPEG)), CompareSizesByArea())
 
             // Danger, W.R.! Attempting to use too large a preview size could  exceed the camera
             // bus' bandwidth limitation, resulting in gorgeous previews but the storage of
             // garbage capture data.
             optimalPreviewSize = chooseOptimalSize(
-                map!!.getOutputSizes(SurfaceTexture::class.java),
+                map.getOutputSizes(SurfaceTexture::class.java),
                 rotatedPreviewWidth, rotatedPreviewHeight,
                 maxPreviewWidth, maxPreviewHeight,
                 largest
