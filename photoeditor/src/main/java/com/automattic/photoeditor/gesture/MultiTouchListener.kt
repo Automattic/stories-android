@@ -8,8 +8,8 @@ import android.view.View.OnTouchListener
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import com.automattic.photoeditor.OnPhotoEditorListener
-import com.automattic.photoeditor.views.ViewType
 import com.automattic.photoeditor.gesture.ScaleGestureDetector.SimpleOnScaleGestureListener
+import com.automattic.photoeditor.views.ViewType
 
 /**
  * Created on 18/01/2017.
@@ -100,7 +100,7 @@ internal class MultiTouchListener(
                         val readyForDelete = isViewInBounds(deleteView, x, y)
                         // fade the view a bit to indicate it's going bye bye
                         setAlphaOnView(view, readyForDelete)
-                        onMultiTouchListener!!.onRemoveViewReadyListener(view, readyForDelete)
+                        onMultiTouchListener?.onRemoveViewReadyListener(view, readyForDelete)
                     }
                 }
             }
@@ -109,8 +109,7 @@ internal class MultiTouchListener(
             MotionEvent.ACTION_UP -> {
                 mActivePointerId = INVALID_POINTER_ID
                 if (deleteView != null && isViewInBounds(deleteView, x, y)) {
-                    if (onMultiTouchListener != null)
-                        onMultiTouchListener!!.onRemoveViewListener(view)
+                    onMultiTouchListener?.onRemoveViewListener(view)
                 }
 //                else if (!isViewInBounds(photoEditImageView, x, y)) {
 //                    view.animate().translationY(0f).translationY(0f)
@@ -156,8 +155,8 @@ internal class MultiTouchListener(
     private fun isViewInBounds(view: View, x: Int, y: Int): Boolean {
         view.getDrawingRect(outRect)
         view.getLocationOnScreen(location)
-        outRect!!.offset(location[0], location[1])
-        return outRect!!.contains(x, y)
+        outRect?.offset(location[0], location[1])
+        return outRect?.contains(x, y) ?: false
     }
 
     fun setOnMultiTouchListener(onMultiTouchListener: OnMultiTouchListener) {
@@ -226,17 +225,13 @@ internal class MultiTouchListener(
 
     private inner class GestureListener : GestureDetector.SimpleOnGestureListener() {
         override fun onSingleTapUp(e: MotionEvent): Boolean {
-            if (mOnGestureControl != null) {
-                mOnGestureControl!!.onClick()
-            }
+            mOnGestureControl?.onClick()
             return true
         }
 
         override fun onLongPress(e: MotionEvent) {
             super.onLongPress(e)
-            if (mOnGestureControl != null) {
-                mOnGestureControl!!.onLongClick()
-            }
+            mOnGestureControl?.onLongClick()
         }
     }
 

@@ -133,9 +133,7 @@ class BrushDrawingView : View {
     internal fun clearAll() {
         mDrawnPaths.clear()
         mRedoPaths.clear()
-        if (mDrawCanvas != null) {
-            mDrawCanvas!!.drawColor(0, PorterDuff.Mode.CLEAR)
-        }
+        mDrawCanvas?.drawColor(0, PorterDuff.Mode.CLEAR)
         invalidate()
     }
 
@@ -194,9 +192,7 @@ class BrushDrawingView : View {
             mRedoPaths.push(mDrawnPaths.pop())
             invalidate()
         }
-        if (mBrushViewChangeListener != null) {
-            mBrushViewChangeListener!!.onViewRemoved(this)
-        }
+        mBrushViewChangeListener?.onViewRemoved(this)
         return !mDrawnPaths.empty()
     }
 
@@ -206,9 +202,7 @@ class BrushDrawingView : View {
             invalidate()
         }
 
-        if (mBrushViewChangeListener != null) {
-            mBrushViewChangeListener!!.onViewAdd(this)
-        }
+        mBrushViewChangeListener?.onViewAdd(this)
         return !mRedoPaths.empty()
     }
 
@@ -218,9 +212,7 @@ class BrushDrawingView : View {
         mPath.moveTo(x, y)
         mTouchX = x
         mTouchY = y
-        if (mBrushViewChangeListener != null) {
-            mBrushViewChangeListener!!.onStartDrawing()
-        }
+        mBrushViewChangeListener?.onStartDrawing()
     }
 
     private fun touchMove(x: Float, y: Float) {
@@ -236,13 +228,13 @@ class BrushDrawingView : View {
     private fun touchUp() {
         mPath.lineTo(mTouchX, mTouchY)
         // Commit the path to our offscreen
-        mDrawCanvas!!.drawPath(mPath, mDrawPaint)
+        mDrawCanvas?.drawPath(mPath, mDrawPaint)
         // kill this so we don't double draw
         mDrawnPaths.push(LinePath(mPath, mDrawPaint))
         mPath = Path()
-        if (mBrushViewChangeListener != null) {
-            mBrushViewChangeListener!!.onStopDrawing()
-            mBrushViewChangeListener!!.onViewAdd(this)
+        mBrushViewChangeListener?.apply {
+            onStopDrawing()
+            onViewAdd(this@BrushDrawingView)
         }
     }
 

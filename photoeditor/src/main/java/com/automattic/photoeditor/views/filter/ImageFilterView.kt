@@ -34,8 +34,8 @@ import android.os.Handler
 import android.os.Looper
 import android.util.AttributeSet
 import android.util.Log
-import com.automattic.photoeditor.util.BitmapUtil
 import com.automattic.photoeditor.OnSaveBitmap
+import com.automattic.photoeditor.util.BitmapUtil
 import com.automattic.photoeditor.views.filter.PhotoFilter.AUTO_FIX
 import com.automattic.photoeditor.views.filter.PhotoFilter.BLACK_WHITE
 import com.automattic.photoeditor.views.filter.PhotoFilter.BRIGHTNESS
@@ -51,10 +51,6 @@ import com.automattic.photoeditor.views.filter.PhotoFilter.GRAIN
 import com.automattic.photoeditor.views.filter.PhotoFilter.GRAY_SCALE
 import com.automattic.photoeditor.views.filter.PhotoFilter.LOMISH
 import com.automattic.photoeditor.views.filter.PhotoFilter.NEGATIVE
-
-import javax.microedition.khronos.egl.EGLConfig
-import javax.microedition.khronos.opengles.GL10
-
 import com.automattic.photoeditor.views.filter.PhotoFilter.NONE
 import com.automattic.photoeditor.views.filter.PhotoFilter.POSTERIZE
 import com.automattic.photoeditor.views.filter.PhotoFilter.ROTATE
@@ -64,6 +60,8 @@ import com.automattic.photoeditor.views.filter.PhotoFilter.SHARPEN
 import com.automattic.photoeditor.views.filter.PhotoFilter.TEMPERATURE
 import com.automattic.photoeditor.views.filter.PhotoFilter.TINT
 import com.automattic.photoeditor.views.filter.PhotoFilter.VIGNETTE
+import javax.microedition.khronos.egl.EGLConfig
+import javax.microedition.khronos.opengles.GL10
 
 /**
  *
@@ -131,11 +129,13 @@ internal class ImageFilterView : GLSurfaceView, GLSurfaceView.Renderer {
         }
         renderResult()
         if (isSaveImage) {
-            val mFilterBitmap = BitmapUtil.createBitmapFromGLSurface(this, gl)
-            Log.e(TAG, "onDrawFrame: " + mFilterBitmap!!)
-            isSaveImage = false
-            if (mOnSaveBitmap != null) {
-                Handler(Looper.getMainLooper()).post { mOnSaveBitmap!!.onBitmapReady(mFilterBitmap) }
+            val filterBitmap = BitmapUtil.createBitmapFromGLSurface(this, gl)
+            Log.e(TAG, "onDrawFrame: $filterBitmap")
+            filterBitmap?.let { bitmap ->
+                isSaveImage = false
+                mOnSaveBitmap?.let { onSaveBitmap ->
+                    Handler(Looper.getMainLooper()).post { onSaveBitmap.onBitmapReady(bitmap) }
+                }
             }
         }
     }
@@ -162,9 +162,9 @@ internal class ImageFilterView : GLSurfaceView, GLSurfaceView.Renderer {
         GLES20.glGenTextures(2, mTextures, 0)
 
         // Load input bitmap
-        if (mSourceBitmap != null) {
-            mImageWidth = mSourceBitmap!!.width
-            mImageHeight = mSourceBitmap!!.height
+        mSourceBitmap?.let { sourceBitmap ->
+            mImageWidth = sourceBitmap.width
+            mImageHeight = sourceBitmap.height
             mTexRenderer.updateTextureSize(mImageWidth, mImageHeight)
 
             // Upload to texture
@@ -177,62 +177,71 @@ internal class ImageFilterView : GLSurfaceView, GLSurfaceView.Renderer {
     }
 
     private fun initEffect() {
-        val effectFactory = mEffectContext!!.factory
-        if (mEffect != null) {
-            mEffect!!.release()
-        }
-        if (mCustomEffect != null) {
-            mEffect = effectFactory.createEffect(mCustomEffect!!.effectName)
-            val parameters = mCustomEffect!!.parameters
+        val effectFactory = mEffectContext?.factory ?: return
+        mEffect?.release()
+
+        mCustomEffect?.let { customEffect ->
+            mEffect = effectFactory.createEffect(customEffect.effectName)
+            val parameters = customEffect.parameters
             for ((key, value) in parameters) {
-                mEffect!!.setParameter(key, value)
+                mEffect?.setParameter(key, value)
             }
-        } else {
+        } ?: run {
             // Initialize the correct effect based on the selected menu/action item
             when (mCurrentEffect) {
                 AUTO_FIX -> {
-                    mEffect = effectFactory.createEffect(EFFECT_AUTOFIX)
-                    mEffect!!.setParameter("scale", 0.5f)
+                    mEffect = effectFactory.createEffect(EFFECT_AUTOFIX).apply {
+                        setParameter("scale", 0.5f)
+                    }
                 }
                 BLACK_WHITE -> {
-                    mEffect = effectFactory.createEffect(EFFECT_BLACKWHITE)
-                    mEffect!!.setParameter("black", .1f)
-                    mEffect!!.setParameter("white", .7f)
+                    mEffect = effectFactory.createEffect(EFFECT_BLACKWHITE).apply {
+                        setParameter("black", .1f)
+                        setParameter("white", .7f)
+                    }
                 }
                 BRIGHTNESS -> {
-                    mEffect = effectFactory.createEffect(EFFECT_BRIGHTNESS)
-                    mEffect!!.setParameter("brightness", 2.0f)
+                    mEffect = effectFactory.createEffect(EFFECT_BRIGHTNESS).apply {
+                        setParameter("brightness", 2.0f)
+                    }
                 }
                 CONTRAST -> {
-                    mEffect = effectFactory.createEffect(EFFECT_CONTRAST)
-                    mEffect!!.setParameter("contrast", 1.4f)
+                    mEffect = effectFactory.createEffect(EFFECT_CONTRAST).apply {
+                        setParameter("contrast", 1.4f)
+                    }
                 }
                 CROSS_PROCESS -> mEffect = effectFactory.createEffect(EFFECT_CROSSPROCESS)
                 DOCUMENTARY -> mEffect = effectFactory.createEffect(EFFECT_DOCUMENTARY)
                 DUE_TONE -> {
-                    mEffect = effectFactory.createEffect(EFFECT_DUOTONE)
-                    mEffect!!.setParameter("first_color", Color.YELLOW)
-                    mEffect!!.setParameter("second_color", Color.DKGRAY)
+                    mEffect = effectFactory.createEffect(EFFECT_DUOTONE).apply {
+                        setParameter("first_color", Color.YELLOW)
+                        setParameter("second_color", Color.DKGRAY)
+                    }
                 }
                 FILL_LIGHT -> {
-                    mEffect = effectFactory.createEffect(EFFECT_FILLLIGHT)
-                    mEffect!!.setParameter("strength", .8f)
+                    mEffect = effectFactory.createEffect(EFFECT_FILLLIGHT).apply {
+                        setParameter("strength", .8f)
+                    }
                 }
                 FISH_EYE -> {
-                    mEffect = effectFactory.createEffect(EFFECT_FISHEYE)
-                    mEffect!!.setParameter("scale", .5f)
+                    mEffect = effectFactory.createEffect(EFFECT_FISHEYE).apply {
+                        setParameter("scale", .5f)
+                    }
                 }
                 FLIP_HORIZONTAL -> {
-                    mEffect = effectFactory.createEffect(EFFECT_FLIP)
-                    mEffect!!.setParameter("horizontal", true)
+                    mEffect = effectFactory.createEffect(EFFECT_FLIP).apply {
+                        setParameter("horizontal", true)
+                    }
                 }
                 FLIP_VERTICAL -> {
-                    mEffect = effectFactory.createEffect(EFFECT_FLIP)
-                    mEffect!!.setParameter("vertical", true)
+                    mEffect = effectFactory.createEffect(EFFECT_FLIP).apply {
+                        setParameter("vertical", true)
+                    }
                 }
                 GRAIN -> {
-                    mEffect = effectFactory.createEffect(EFFECT_GRAIN)
-                    mEffect!!.setParameter("strength", 1.0f)
+                    mEffect = effectFactory.createEffect(EFFECT_GRAIN).apply {
+                        setParameter("strength", 1.0f)
+                    }
                 }
                 GRAY_SCALE -> mEffect = effectFactory.createEffect(EFFECT_GRAYSCALE)
                 LOMISH -> mEffect = effectFactory.createEffect(EFFECT_LOMOISH)
@@ -241,33 +250,38 @@ internal class ImageFilterView : GLSurfaceView, GLSurfaceView.Renderer {
                 }
                 POSTERIZE -> mEffect = effectFactory.createEffect(EFFECT_POSTERIZE)
                 ROTATE -> {
-                    mEffect = effectFactory.createEffect(EFFECT_ROTATE)
-                    mEffect!!.setParameter("angle", 180)
+                    mEffect = effectFactory.createEffect(EFFECT_ROTATE).apply {
+                        setParameter("angle", 180)
+                    }
                 }
                 SATURATE -> {
-                    mEffect = effectFactory.createEffect(EFFECT_SATURATE)
-                    mEffect!!.setParameter("scale", .5f)
+                    mEffect = effectFactory.createEffect(EFFECT_SATURATE).apply {
+                        setParameter("scale", .5f)
+                    }
                 }
                 SEPIA -> mEffect = effectFactory.createEffect(EFFECT_SEPIA)
                 SHARPEN -> mEffect = effectFactory.createEffect(EFFECT_SHARPEN)
                 TEMPERATURE -> {
-                    mEffect = effectFactory.createEffect(EFFECT_TEMPERATURE)
-                    mEffect!!.setParameter("scale", .9f)
+                    mEffect = effectFactory.createEffect(EFFECT_TEMPERATURE).apply {
+                        setParameter("scale", .9f)
+                    }
                 }
                 TINT -> {
-                    mEffect = effectFactory.createEffect(EFFECT_TINT)
-                    mEffect!!.setParameter("tint", Color.MAGENTA)
+                    mEffect = effectFactory.createEffect(EFFECT_TINT).apply {
+                        setParameter("tint", Color.MAGENTA)
+                    }
                 }
                 VIGNETTE -> {
-                    mEffect = effectFactory.createEffect(EFFECT_VIGNETTE)
-                    mEffect!!.setParameter("scale", .5f)
+                    mEffect = effectFactory.createEffect(EFFECT_VIGNETTE).apply {
+                        setParameter("scale", .5f)
+                    }
                 }
             }
         }
     }
 
     private fun applyEffect() {
-        mEffect!!.apply(mTextures[0], mImageWidth, mImageHeight, mTextures[1])
+        mEffect?.apply(mTextures[0], mImageWidth, mImageHeight, mTextures[1])
     }
 
     private fun renderResult() {
@@ -281,6 +295,6 @@ internal class ImageFilterView : GLSurfaceView, GLSurfaceView.Renderer {
     }
 
     companion object {
-        private val TAG = "ImageFilterView"
+        private const val TAG = "ImageFilterView"
     }
 }

@@ -57,12 +57,12 @@ internal class TextureRenderer {
             TEX_VERTICES.size * FLOAT_SIZE_BYTES
         )
             .order(ByteOrder.nativeOrder()).asFloatBuffer()
-        mTexVertices!!.put(TEX_VERTICES).position(0)
+        mTexVertices?.put(TEX_VERTICES)?.position(0)
         mPosVertices = ByteBuffer.allocateDirect(
             POS_VERTICES.size * FLOAT_SIZE_BYTES
         )
             .order(ByteOrder.nativeOrder()).asFloatBuffer()
-        mPosVertices!!.put(POS_VERTICES).position(0)
+        mPosVertices?.put(POS_VERTICES)?.position(0)
     }
 
     fun tearDown() {
@@ -123,7 +123,7 @@ internal class TextureRenderer {
     }
 
     private fun computeOutputVertices() {
-        if (mPosVertices != null) {
+        mPosVertices?.let { posVertices ->
             val imgAspectRatio = mTexWidth / mTexHeight.toFloat()
             val viewAspectRatio = mViewWidth / mViewHeight.toFloat()
             val relativeAspectRatio = viewAspectRatio / imgAspectRatio
@@ -143,7 +143,7 @@ internal class TextureRenderer {
                 y1 = relativeAspectRatio
             }
             val coords = floatArrayOf(x0, y0, x1, y0, x0, y1, x1, y1)
-            mPosVertices!!.put(coords).position(0)
+            posVertices.put(coords).position(0)
         }
     }
 
