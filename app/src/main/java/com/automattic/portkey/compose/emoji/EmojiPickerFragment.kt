@@ -11,12 +11,11 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.automattic.photoeditor.PhotoEditor
 import com.automattic.portkey.R
+import com.automattic.portkey.compose.hideStatusBar
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-
 import kotlinx.android.synthetic.main.fragment_bottom_sticker_emoji_dialog.view.*
 import kotlinx.android.synthetic.main.row_emoji.view.*
-import com.automattic.portkey.compose.hideStatusBar
 
 class EmojiPickerFragment : BottomSheetDialogFragment() {
     private var listener: EmojiListener? = null
@@ -43,42 +42,42 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
 
     override fun onResume() {
         super.onResume()
-        hideStatusBar(dialog?.window!!)
+        dialog?.window?.let { hideStatusBar(it) }
     }
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        val contentView = View.inflate(context, R.layout.fragment_bottom_sticker_emoji_dialog, null)
-        dialog.setContentView(contentView)
-        val params = (contentView.parent as View).layoutParams as CoordinatorLayout.LayoutParams
+        activity?.let { activity ->
+            val contentView = View.inflate(context, R.layout.fragment_bottom_sticker_emoji_dialog, null)
+            dialog.setContentView(contentView)
+            val params = (contentView.parent as View).layoutParams as CoordinatorLayout.LayoutParams
 
-        (params.behavior as? BottomSheetBehavior)?.setBottomSheetCallback(bottomSheetBehaviorCallback)
-        (params.behavior as? BottomSheetBehavior)?.state = BottomSheetBehavior.STATE_EXPANDED
+            (params.behavior as? BottomSheetBehavior)?.setBottomSheetCallback(bottomSheetBehaviorCallback)
+            (params.behavior as? BottomSheetBehavior)?.state = BottomSheetBehavior.STATE_EXPANDED
 
-        (contentView.parent as View).setBackgroundColor(resources.getColor(android.R.color.transparent))
-        contentView.rvEmoji.layoutManager = GridLayoutManager(activity, COLUMNS)
-        contentView.rvEmoji.adapter = EmojiAdapter()
+            (contentView.parent as View).setBackgroundColor(resources.getColor(android.R.color.transparent))
+            contentView.rvEmoji.layoutManager = GridLayoutManager(activity, COLUMNS)
+            contentView.rvEmoji.adapter = EmojiAdapter(PhotoEditor.getEmojis(activity))
+        }
     }
 
     fun setEmojiListener(emojiListener: EmojiListener) {
         listener = emojiListener
     }
 
-    inner class EmojiAdapter : RecyclerView.Adapter<EmojiAdapter.ViewHolder>() {
-        internal var emojisList = PhotoEditor.getEmojis(activity!!)
-
+    inner class EmojiAdapter(internal val emojiList: List<String>) : RecyclerView.Adapter<EmojiAdapter.ViewHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.row_emoji, parent, false)
             return ViewHolder(view)
         }
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            holder.txtEmojiRef.text = emojisList[position]
+            holder.txtEmojiRef.text = emojiList[position]
         }
 
         override fun getItemCount(): Int {
-            return emojisList.size
+            return emojiList.size
         }
 
         inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -88,7 +87,7 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
                 txtEmojiRef = itemView.txtEmoji
 
                 itemView.setOnClickListener {
-                    listener?.onEmojiClick(emojisList[layoutPosition])
+                    listener?.onEmojiClick(emojiList[layoutPosition])
                     dismiss()
                 }
             }
