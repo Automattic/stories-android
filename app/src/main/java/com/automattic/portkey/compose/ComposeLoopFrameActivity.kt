@@ -447,11 +447,9 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
     private fun deleteCapturedMedia() {
         currentOriginalCapturedFile?.let {
-            val apkURI = FileProvider.getUriForFile(
-                this,
-                applicationContext.packageName + ".provider", it)
-            contentResolver.delete(apkURI, null, null)
+            it.delete()
         }
+
         // reset
         currentOriginalCapturedFile = null
     }

@@ -61,6 +61,10 @@ import com.automattic.photoeditor.camera.interfaces.VideoRecorderFinished
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
 import com.automattic.photoeditor.camera.interfaces.camera2LensFacingFromPortkeyCameraSelection
 import com.automattic.photoeditor.camera.interfaces.portkeyCameraSelectionFromCamera2LensFacing
+import com.automattic.photoeditor.util.CameraUtils
+import com.automattic.photoeditor.util.CameraUtils.Companion.areDimensionsSwapped
+import com.automattic.photoeditor.util.CameraUtils.Companion.chooseOptimalSize
+import com.automattic.photoeditor.util.CameraUtils.CompareSizesByArea
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
@@ -343,7 +347,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
                     val displayRotation = activity.windowManager.defaultDisplay.rotation
 
                     sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION) ?: continue
-                    val swappedDimensions = areDimensionsSwapped(displayRotation)
+                    val swappedDimensions = areDimensionsSwapped(displayRotation, sensorOrientation)
 
                     val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
                     val displaySize = Point(metrics.widthPixels, metrics.heightPixels)
@@ -353,10 +357,10 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
                     var maxPreviewWidth = if (swappedDimensions) displaySize.y else displaySize.x
                     var maxPreviewHeight = if (swappedDimensions) displaySize.x else displaySize.y
 
-                    if (maxPreviewWidth > MAX_PREVIEW_WIDTH) maxPreviewWidth =
-                        MAX_PREVIEW_WIDTH
-                    if (maxPreviewHeight > MAX_PREVIEW_HEIGHT) maxPreviewHeight =
-                        MAX_PREVIEW_HEIGHT
+                    if (maxPreviewWidth > CameraUtils.MAX_PREVIEW_WIDTH) maxPreviewWidth =
+                        CameraUtils.MAX_PREVIEW_WIDTH
+                    if (maxPreviewHeight > CameraUtils.MAX_PREVIEW_HEIGHT) maxPreviewHeight =
+                        CameraUtils.MAX_PREVIEW_HEIGHT
 
                     // Danger, W.R.! Attempting to use too large a preview size could  exceed the camera
                     // bus' bandwidth limitation, resulting in gorgeous previews but the storage of
@@ -397,33 +401,6 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
                     )
             }
         }
-    }
-
-    /**
-     * Determines if the dimensions are swapped given the phone's current rotation.
-     *
-     * @param displayRotation The current rotation of the display
-     *
-     * @return true if the dimensions are swapped, false otherwise.
-     */
-    private fun areDimensionsSwapped(displayRotation: Int): Boolean {
-        var swappedDimensions = false
-        when (displayRotation) {
-            Surface.ROTATION_0, Surface.ROTATION_180 -> {
-                if (sensorOrientation == 90 || sensorOrientation == 270) {
-                    swappedDimensions = true
-                }
-            }
-            Surface.ROTATION_90, Surface.ROTATION_270 -> {
-                if (sensorOrientation == 0 || sensorOrientation == 180) {
-                    swappedDimensions = true
-                }
-            }
-            else -> {
-                Log.e(TAG, "Display rotation is invalid: $displayRotation")
-            }
-        }
-        return swappedDimensions
     }
 
     /**
@@ -861,9 +838,10 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
     override fun takePicture(onImageCapturedListener: ImageCaptureListener) {
         // Create output file to hold the image
         activity?.let {
-            currentFile = FileUtils.getLoopFrameFile(it, false, "orig_")
+            currentFile = FileUtils.getCaptureFile(it, false, "orig_")
         }
         currentFile?.createNewFile()
+
         imageCapturedListener = onImageCapturedListener
         lockFocus()
     }
@@ -971,69 +949,6 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
          * Camera state: Picture was taken.
          */
         private val STATE_PICTURE_TAKEN = 4
-
-        /**
-         * Max preview width that is guaranteed by Camera2 API
-         */
-        private val MAX_PREVIEW_WIDTH = 1920
-
-        /**
-         * Max preview height that is guaranteed by Camera2 API
-         */
-        private val MAX_PREVIEW_HEIGHT = 1080
-
-        /**
-         * Given `choices` of `Size`s supported by a camera, choose the smallest one that
-         * is at least as large as the respective texture view size, and that is at most as large as
-         * the respective max size, and whose aspect ratio matches with the specified value. If such
-         * size doesn't exist, choose the largest one that is at most as large as the respective max
-         * size, and whose aspect ratio matches with the specified value.
-         *
-         * @param choices The list of sizes that the camera supports for the intended
-         *                          output class
-         * @param textureViewWidth The width of the texture view relative to sensor coordinate
-         * @param textureViewHeight The height of the texture view relative to sensor coordinate
-         * @param maxWidth The maximum width that can be chosen
-         * @param maxHeight The maximum height that can be chosen
-         * @param aspectRatio The aspect ratio
-         * @return The optimal `Size`, or an arbitrary one if none were big enough
-         */
-        @JvmStatic private fun chooseOptimalSize(
-            choices: Array<Size>,
-            textureViewWidth: Int,
-            textureViewHeight: Int,
-            maxWidth: Int,
-            maxHeight: Int,
-            aspectRatio: Size
-        ): Size {
-            // Collect the supported resolutions that are at least as big as the preview Surface
-            val bigEnough = ArrayList<Size>()
-            // Collect the supported resolutions that are smaller than the preview Surface
-            val notBigEnough = ArrayList<Size>()
-            val w = aspectRatio.width
-            val h = aspectRatio.height
-            for (option in choices) {
-                if (option.width <= maxWidth && option.height <= maxHeight &&
-                        option.height == option.width * h / w) {
-                    if (option.width >= textureViewWidth && option.height >= textureViewHeight) {
-                        bigEnough.add(option)
-                    } else {
-                        notBigEnough.add(option)
-                    }
-                }
-            }
-
-            // Pick the smallest of those big enough. If there is no one big enough, pick the
-            // largest of those not big enough.
-            if (bigEnough.size > 0) {
-                return Collections.min(bigEnough, CompareSizesByArea())
-            } else if (notBigEnough.size > 0) {
-                return Collections.max(notBigEnough, CompareSizesByArea())
-            } else {
-                Log.e(TAG, "Couldn't find any suitable preview size")
-                return choices[0]
-            }
-        }
 
         @JvmStatic fun getInstance(
             textureView: AutoFitTextureView,
