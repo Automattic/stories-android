@@ -13,22 +13,22 @@ import android.util.Size
 import android.view.Surface
 import androidx.fragment.app.FragmentActivity
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
-import java.lang.Long
+import java.lang.Long.signum
 import java.util.Collections
 import java.util.Comparator
 
 class CameraUtils {
     companion object {
-        private val TAG = "CameraUtils"
+        private const val TAG = "CameraUtils"
         /**
          * Max preview width that is guaranteed by Camera2 API
          */
-        val MAX_PREVIEW_WIDTH = 1920
+        const val MAX_PREVIEW_WIDTH = 1920
 
         /**
          * Max preview height that is guaranteed by Camera2 API
          */
-        val MAX_PREVIEW_HEIGHT = 1080
+        const val MAX_PREVIEW_HEIGHT = 1080
 
         /**
          * Given `choices` of `Size`s supported by a camera, choose the smallest one that
@@ -73,13 +73,13 @@ class CameraUtils {
 
             // Pick the smallest of those big enough. If there is no one big enough, pick the
             // largest of those not big enough.
-            if (bigEnough.size > 0) {
-                return Collections.min(bigEnough, CompareSizesByArea())
-            } else if (notBigEnough.size > 0) {
-                return Collections.max(notBigEnough, CompareSizesByArea())
-            } else {
-                Log.e(TAG, "Couldn't find any suitable preview size")
-                return choices[0]
+            return when {
+                bigEnough.size > 0 -> Collections.min(bigEnough, CompareSizesByArea())
+                notBigEnough.size > 0 -> Collections.max(notBigEnough, CompareSizesByArea())
+                else -> {
+                    Log.e(TAG, "Couldn't find any suitable preview size")
+                    choices[0]
+                }
             }
         }
 
@@ -118,7 +118,7 @@ class CameraUtils {
             // Get screen metrics used to setup camera for full screen resolution
             val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
             val displaySize = Point(metrics.widthPixels, metrics.heightPixels)
-            var optimalPreviewSize: Size
+            val optimalPreviewSize: Size
             Log.d(TAG, "Screen metrics: ${metrics.widthPixels} x ${metrics.heightPixels}")
 
             val manager = activity.getSystemService(Context.CAMERA_SERVICE) as CameraManager
@@ -131,10 +131,7 @@ class CameraUtils {
             // coordinate.
             val displayRotation = activity.windowManager.defaultDisplay.rotation
 
-            var sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION)
-            if (sensorOrientation == null) {
-                sensorOrientation = 0
-            }
+            val sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION) ?: 0
             val swappedDimensions = areDimensionsSwapped(displayRotation, sensorOrientation)
 
             val height = textureView.height
@@ -173,6 +170,6 @@ class CameraUtils {
     internal class CompareSizesByArea : Comparator<Size> {
         // We cast here to ensure the multiplications won't overflow
         override fun compare(lhs: Size, rhs: Size) =
-            Long.signum(lhs.width.toLong() * lhs.height - rhs.width.toLong() * rhs.height)
+            signum(lhs.width.toLong() * lhs.height - rhs.width.toLong() * rhs.height)
     }
 }
