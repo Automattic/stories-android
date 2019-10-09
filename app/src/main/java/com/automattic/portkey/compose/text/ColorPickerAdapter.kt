@@ -1,17 +1,16 @@
 package com.automattic.portkey.compose.text
 
 import android.content.Context
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.color_picker_list_item.view.*
-
-import java.util.ArrayList
-import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.GradientDrawable
 import com.automattic.portkey.R
+import kotlinx.android.synthetic.main.color_picker_list_item.view.*
+import java.util.ArrayList
 
 /**
  * Created by Ahmed Adel on 5/8/17.
@@ -31,7 +30,7 @@ class ColorPickerAdapter internal constructor(private val context: Context, priv
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val background = holder.colorPickerActualColorViewRef.getBackground()
+        val background = holder.colorPickerActualColorViewRef.background
         if (background is GradientDrawable) {
             background.setColor(colorPickerColors[position])
         } else if (background is ColorDrawable) {
@@ -50,11 +49,9 @@ class ColorPickerAdapter internal constructor(private val context: Context, priv
     }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        var colorPickerActualColorViewRef: View
+        var colorPickerActualColorViewRef: View = itemView.color_picker_view_actual_color
 
         init {
-            colorPickerActualColorViewRef = itemView.color_picker_view_actual_color
-
             itemView.setOnClickListener {
                 onColorPickerClickListener?.let {
                     it(colorPickerColors[adapterPosition])
