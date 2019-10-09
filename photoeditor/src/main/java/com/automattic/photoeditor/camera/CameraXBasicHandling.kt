@@ -315,7 +315,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         /**
          * Tag for the [Log].
          */
-        private val TAG = "CameraXBasicHandling"
+        private const val TAG = "CameraXBasicHandling"
 
         @JvmStatic fun getInstance(
             textureView: AutoFitTextureView,

@@ -29,8 +29,6 @@ import com.automattic.photoeditor.gesture.MultiTouchListener.OnMultiTouchListene
 import com.automattic.photoeditor.util.BitmapUtil
 import com.automattic.photoeditor.views.PhotoEditorView
 import com.automattic.photoeditor.views.ViewType
-import com.automattic.photoeditor.views.ViewType.BRUSH_DRAWING
-import com.automattic.photoeditor.views.ViewType.STICKER_ANIMATED
 import com.automattic.photoeditor.views.added.AddedView
 import com.automattic.photoeditor.views.added.AddedViewList
 import com.automattic.photoeditor.views.brush.BrushDrawingView
@@ -122,12 +120,10 @@ class PhotoEditor private constructor(builder: Builder) :
 
     /**
      * @return provide the size of eraser
-     * @see PhotoEditor.setBrushSize
      */
     /**
      * set the size of bursh user want to paint on canvas i.e [BrushDrawingView]
      *
-     * @param size size of brush
      */
     var brushSize: Float
         get() = brushDrawingView.brushSize
@@ -137,12 +133,9 @@ class PhotoEditor private constructor(builder: Builder) :
 
     /**
      * @return provide the size of eraser
-     * @see PhotoEditor.setBrushColor
      */
     /**
      * set brush color which user want to paint
-     *
-     * @param color color value for paint
      */
     var brushColor: Int
         get() = brushDrawingView.brushColor
@@ -541,8 +534,8 @@ class PhotoEditor private constructor(builder: Builder) :
             }
             mOnPhotoEditorListener?.onRemoveViewListener(addedViews.size)
             val viewTag = removeView.view.tag
-            if (viewTag != null && viewTag is ViewType) {
-                mOnPhotoEditorListener?.onRemoveViewListener(viewTag, addedViews.size)
+            (viewTag as? ViewType)?.let {
+                mOnPhotoEditorListener?.onRemoveViewListener(it, addedViews.size)
             }
         }
         return addedViews.size != 0
@@ -557,7 +550,7 @@ class PhotoEditor private constructor(builder: Builder) :
         if (redoViews.size > 0) {
             val redoView = redoViews[redoViews.size - 1]
             if (redoView.view is BrushDrawingView) {
-                return brushDrawingView != null && brushDrawingView.redo()
+                return brushDrawingView.redo()
             } else {
                 redoViews.removeAt(redoViews.size - 1)
                 parentView.addView(redoView.view)
@@ -697,7 +690,9 @@ class PhotoEditor private constructor(builder: Builder) :
      */
     @SuppressLint("StaticFieldLeak")
     @RequiresPermission(allOf = [Manifest.permission.WRITE_EXTERNAL_STORAGE])
-    @Deprecated("Use {@link #saveAsFile(String, OnSaveListener)} instead")
+    @Deprecated("Use {@link #saveAsFile(String, OnSaveListener)} instead",
+        ReplaceWith("saveAsFile(imagePath, onSaveListener)")
+    )
     fun saveImage(imagePath: String, onSaveListener: OnSaveListener) {
         saveAsFile(imagePath, onSaveListener)
     }
@@ -796,8 +791,8 @@ class PhotoEditor private constructor(builder: Builder) :
         onSaveListener: OnSaveWithCancelListener
     ) {
         Log.d(TAG, "Video Path: $videoInputPath")
-        var widthParent = parentView.getWidth()
-        var heightParent = parentView.getHeight()
+        val widthParent = parentView.width
+        val heightParent = parentView.height
 
         if (addedViews.size == 0) {
             onSaveListener.onCancel(true)
@@ -808,7 +803,7 @@ class PhotoEditor private constructor(builder: Builder) :
         retriever.setDataSource(context, videoInputPath)
         var width = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH))
         var height = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT))
-        var rotation = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION))
+        val rotation = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION))
         // if rotation is vertical, then swap height/width
         if (rotation == 90 || rotation == 270) {
             width = height.also { height = width }
@@ -826,10 +821,12 @@ class PhotoEditor private constructor(builder: Builder) :
                 v.view.matrix
             )
             when (v.viewType) {
-                STICKER_ANIMATED -> {
-                    val file = File(v.uri?.path)
-                    val fileInputStream = FileInputStream(file)
-                    filterCollection.add(GlGifWatermarkFilter(context, fileInputStream, viewPositionInfo))
+                ViewType.STICKER_ANIMATED -> {
+                    v.uri?.path?.let { path ->
+                        val file = File(path)
+                        val fileInputStream = FileInputStream(file)
+                        filterCollection.add(GlGifWatermarkFilter(context, fileInputStream, viewPositionInfo))
+                    }
                 }
                 else -> {
                     clearHelperBox()
@@ -885,8 +882,8 @@ class PhotoEditor private constructor(builder: Builder) :
         saveSettings: SaveSettings,
         onSaveListener: OnSaveWithCancelListener
     ) {
-        var widthParent = parentView.getWidth()
-        var heightParent = parentView.getHeight()
+        val widthParent = parentView.width
+        val heightParent = parentView.height
 
         // get the images currently on top of the screen, and add them as Filters to the mp4composer
         val filterCollection = ArrayList<GlFilter>()
@@ -900,9 +897,11 @@ class PhotoEditor private constructor(builder: Builder) :
             )
             when (v.viewType) {
                 ViewType.STICKER_ANIMATED -> {
-                    val file = File(v.uri?.path)
-                    val fileInputStream = FileInputStream(file)
-                    filterCollection.add(GlGifWatermarkFilter(context, fileInputStream, viewPositionInfo))
+                    v.uri?.path?.let { path ->
+                        val file = File(path)
+                        val fileInputStream = FileInputStream(file)
+                        filterCollection.add(GlGifWatermarkFilter(context, fileInputStream, viewPositionInfo))
+                    }
                 }
                 else -> {
                     clearHelperBox()
@@ -1036,7 +1035,7 @@ class PhotoEditor private constructor(builder: Builder) :
         if (redoViews.size > 0) {
             redoViews.removeAt(redoViews.size - 1)
         }
-        addedViews.add(AddedView(brushDrawingView, BRUSH_DRAWING))
+        addedViews.add(AddedView(brushDrawingView, ViewType.BRUSH_DRAWING))
         mOnPhotoEditorListener?.onAddViewListener(ViewType.BRUSH_DRAWING, addedViews.size)
     }
 
@@ -1062,7 +1061,7 @@ class PhotoEditor private constructor(builder: Builder) :
 
     fun anyStickersAdded(): Boolean {
         for (v: AddedView in addedViews) {
-            if (v.viewType == STICKER_ANIMATED) {
+            if (v.viewType == ViewType.STICKER_ANIMATED) {
                 return true
             }
         }
@@ -1082,21 +1081,16 @@ class PhotoEditor private constructor(builder: Builder) :
      * which we have setup in our xml layout
      *
      * @param context context
-     * @param photoEditorView [PhotoEditorView]
+     * @param parentView [PhotoEditorView]
      */
         (val context: Context, val parentView: PhotoEditorView) {
-        val imageView: ImageView
+        val imageView: ImageView = parentView.source
         var deleteView: View? = null
-        val brushDrawingView: BrushDrawingView
+        val brushDrawingView: BrushDrawingView = parentView.brush
         var textTypeface: Typeface? = null
         var emojiTypeface: Typeface? = null
         // By Default pinch zoom on text is enabled
         var isTextPinchZoomable = true
-
-        init {
-            imageView = parentView.source
-            brushDrawingView = parentView.brush
-        }
 
         fun setDeleteView(deleteView: View): Builder {
             this.deleteView = deleteView
@@ -1145,18 +1139,16 @@ class PhotoEditor private constructor(builder: Builder) :
     }
 
     companion object {
-        private val TAG = "PhotoEditor"
+        private const val TAG = "PhotoEditor"
 
         private fun convertEmoji(emoji: String): String {
-            var returnedEmoji: String
-            try {
+            return try {
                 val convertEmojiToInt = Integer.parseInt(emoji.substring(2), 16)
-                returnedEmoji = String(Character.toChars(convertEmojiToInt))
+                String(Character.toChars(convertEmojiToInt))
             } catch (e: NumberFormatException) {
-                returnedEmoji = ""
+                Log.e(TAG, "Could not convert emoji to int: $emoji")
+                ""
             }
-
-            return returnedEmoji
         }
 
         /**
