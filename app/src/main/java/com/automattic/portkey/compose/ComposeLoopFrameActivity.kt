@@ -17,58 +17,55 @@ import android.os.Vibrator
 import android.text.TextUtils
 import android.util.Log
 import android.view.GestureDetector
-import androidx.appcompat.app.AppCompatActivity
+import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
+import android.view.View.OnClickListener
+import android.view.ViewGroup
+import android.webkit.MimeTypeMap
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.Group
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import androidx.core.view.GestureDetectorCompat
+import androidx.core.view.ViewCompat
 import com.automattic.photoeditor.OnPhotoEditorListener
 import com.automattic.photoeditor.PhotoEditor
 import com.automattic.photoeditor.SaveSettings
+import com.automattic.photoeditor.camera.interfaces.CameraSelection
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
+import com.automattic.photoeditor.camera.interfaces.VideoRecorderFinished
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment.FlashSupportChangeListener
 import com.automattic.photoeditor.state.BackgroundSurfaceManager
 import com.automattic.photoeditor.util.FileUtils.Companion.getLoopFrameFile
 import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.ViewType
-import com.automattic.portkey.BuildConfig
-import com.automattic.portkey.R.color
-import com.automattic.portkey.R.layout
-import com.automattic.portkey.R.string
-import com.bumptech.glide.Glide
-import com.google.android.material.snackbar.Snackbar
-
-import kotlinx.android.synthetic.main.content_composer.*
-import java.io.File
-import java.io.IOException
-import android.view.Gravity
-import android.view.MotionEvent
-import android.view.View.OnClickListener
-import android.view.ViewGroup
-import android.webkit.MimeTypeMap
-import androidx.core.content.FileProvider
-import androidx.core.view.GestureDetectorCompat
-import androidx.core.view.ViewCompat
-import com.automattic.photoeditor.camera.interfaces.CameraSelection
-import com.automattic.photoeditor.camera.interfaces.VideoRecorderFinished
 import com.automattic.photoeditor.views.ViewType.TEXT
+import com.automattic.portkey.BuildConfig
 import com.automattic.portkey.Portkey
 import com.automattic.portkey.R
-import com.automattic.portkey.compose.text.TextEditorDialogFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
 import com.automattic.portkey.compose.photopicker.MediaBrowserType
 import com.automattic.portkey.compose.photopicker.PhotoPickerActivity
 import com.automattic.portkey.compose.photopicker.PhotoPickerFragment
 import com.automattic.portkey.compose.photopicker.RequestCodes
+import com.automattic.portkey.compose.text.TextEditorDialogFragment
 import com.automattic.portkey.util.CrashLoggingUtils
 import com.automattic.portkey.util.getDisplayPixelSize
 import com.automattic.portkey.util.isVideo
+import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.android.synthetic.main.content_composer.*
+import java.io.File
+import java.io.IOException
+import kotlin.math.abs
 
-fun Group.setAllOnClickListener(listener: View.OnClickListener?) {
+fun Group.setAllOnClickListener(listener: OnClickListener?) {
     referencedIds.forEach { id ->
         rootView.findViewById<View>(id).setOnClickListener(listener)
     }
@@ -96,7 +93,6 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     private var cameraSelection = CameraSelection.BACK
     private var flashModeSelection = FlashIndicatorState.OFF
     private var videoPlayerMuted = false
-    private val FRAGMENT_DIALOG = "dialog"
 
     private lateinit var emojiPickerFragment: EmojiPickerFragment
     private lateinit var swipeDetector: GestureDetectorCompat
@@ -105,7 +101,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(layout.activity_composer)
+        setContentView(R.layout.activity_composer)
 
         addInsetTopMargin(edit_mode_controls.layoutParams, (application as Portkey).getStatusBarHeight())
         addInsetTopMargin(close_button.layoutParams, (application as Portkey).getStatusBarHeight())
@@ -161,6 +157,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 editModeRestoreAllUIControls()
             }
 
+            @Suppress("OverridingDeprecatedMember")
             override fun onRemoveViewListener(numberOfAddedViews: Int) {
                 // no op
             }
@@ -230,16 +227,16 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 savedInstanceState.getSerializable(STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE) as File?
 
             photoEditorView.postDelayed({
-                if (backgroundSurfaceManager.videoPlayerVisible()) {
-                    showPlayVideo(currentOriginalCapturedFile)
-                } else if (backgroundSurfaceManager.cameraVisible()) {
-                    launchCameraPreview()
-                } else {
-                    Glide.with(this@ComposeLoopFrameActivity)
-                        .load(currentOriginalCapturedFile)
-                        .transform(CenterCrop())
-                        .into(photoEditorView.source)
-                    showStaticBackground()
+                when {
+                    backgroundSurfaceManager.videoPlayerVisible() -> showPlayVideo(currentOriginalCapturedFile)
+                    backgroundSurfaceManager.cameraVisible() -> launchCameraPreview()
+                    else -> {
+                        Glide.with(this@ComposeLoopFrameActivity)
+                            .load(currentOriginalCapturedFile)
+                            .transform(CenterCrop())
+                            .into(photoEditorView.source)
+                        showStaticBackground()
+                    }
                 }
             }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
         }
@@ -382,12 +379,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
         // attach listener a bit delayed as we need to have cameraBasicHandling created first
         photoEditorView.postDelayed({
-            camera_flash_group.setAllOnClickListener(object : View.OnClickListener {
-                override fun onClick(v: View) {
-                    flashModeSelection = backgroundSurfaceManager.switchFlashState()
-                    updateFlashModeSelectionIcon()
-                    saveFlashModeSelectionPref()
-                }
+            camera_flash_group.setAllOnClickListener(OnClickListener {
+                flashModeSelection = backgroundSurfaceManager.switchFlashState()
+                updateFlashModeSelectionIcon()
+                saveFlashModeSelectionPref()
             })
         }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
 
@@ -395,7 +390,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             // add discard dialog
             if (photoEditor.anyViewsAdded()) {
                 // show dialog
-                DiscardDialog.newInstance(getString(string.dialog_discard_message), object : DiscardOk {
+                DiscardDialog.newInstance(getString(R.string.dialog_discard_message), object : DiscardOk {
                     override fun discardOkClicked() {
                         photoEditor.clearAllViews()
                         launchCameraPreview()
@@ -427,7 +422,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         }
 
         stickers_button_group.setOnClickListener {
-            emojiPickerFragment.show(supportFragmentManager, emojiPickerFragment.getTag())
+            emojiPickerFragment.show(supportFragmentManager, emojiPickerFragment.tag)
         }
 
         save_button.setOnClickListener {
@@ -446,9 +441,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     private fun deleteCapturedMedia() {
-        currentOriginalCapturedFile?.let {
-            it.delete()
-        }
+        currentOriginalCapturedFile?.delete()
 
         // reset
         currentOriginalCapturedFile = null
@@ -456,7 +449,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
     private fun testBrush() {
         photoEditor.setBrushDrawingMode(true)
-        photoEditor.brushColor = ContextCompat.getColor(baseContext, color.red)
+        photoEditor.brushColor = ContextCompat.getColor(baseContext, R.color.red)
     }
 
     private fun testEraser() {
@@ -465,10 +458,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     private fun addNewText() {
-        val dp = resources.getDimension(R.dimen.editor_initial_text_size) / getResources().getDisplayMetrics().density
+        val dp = resources.getDimension(R.dimen.editor_initial_text_size) / resources.displayMetrics.density
         photoEditor.addText(
             "",
-            colorCodeTextView = ContextCompat.getColor(baseContext, color.text_color_white),
+            colorCodeTextView = ContextCompat.getColor(baseContext, R.color.text_color_white),
             fontSizeSp = dp
         )
     }
@@ -477,7 +470,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         val emojisList = PhotoEditor.getEmojis(this)
         // get some random emoji
         val randomEmojiPos = (0..emojisList.size).shuffled().first()
-        photoEditor.addEmoji(emojisList.get(randomEmojiPos))
+        photoEditor.addEmoji(emojisList[randomEmojiPos])
     }
 
     private fun testSticker() {
@@ -590,7 +583,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             override fun onError(message: String?, cause: Throwable?) {
                 // TODO implement error handling
                 runOnUiThread {
-                    showToast("Video could not be saved: " + message)
+                    showToast("Video could not be saved: $message")
                 }
                 waitToReenableCapture()
             }
@@ -605,6 +598,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 VIBRATION_INDICATION_LENGTH_MS, VibrationEffect.DEFAULT_AMPLITUDE))
         } else {
             // deprecated in API 26
+            @Suppress("DEPRECATION")
             vibrator.vibrate(VIBRATION_INDICATION_LENGTH_MS)
         }
     }
@@ -675,18 +669,14 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                     .build()
 
                 photoEditor.saveAsFile(file.absolutePath, saveSettings, object : PhotoEditor.OnSaveListener {
-                    override fun onSuccess(imagePath: String) {
+                    override fun onSuccess(filePath: String) {
                         hideLoading()
                         deleteCapturedMedia()
                         sendNewLoopReadyBroadcast(file)
                         showSnackbar(
                             getString(R.string.label_snackbar_loop_frame_saved),
                             getString(R.string.label_snackbar_share),
-                            object : OnClickListener {
-                                override fun onClick(p0: View?) {
-                                    shareAction(file)
-                                }
-                            }
+                            OnClickListener { shareAction(file) }
                         )
                         hideEditModeUIControls()
                         backgroundSurfaceManager.switchCameraPreviewOn()
@@ -730,7 +720,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                             }
                         }
 
-                        override fun onSuccess(imagePath: String) {
+                        override fun onSuccess(filePath: String) {
                             runOnUiThread {
                                 hideLoading()
                                 deleteCapturedMedia()
@@ -739,11 +729,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                                 showSnackbar(
                                     getString(R.string.label_snackbar_loop_frame_saved),
                                     getString(R.string.label_snackbar_share),
-                                    object : OnClickListener {
-                                        override fun onClick(p0: View?) {
-                                            shareAction(file)
-                                        }
-                                    }
+                                    OnClickListener { shareAction(file) }
                                 )
                                 hideEditModeUIControls()
                                 backgroundSurfaceManager.switchCameraPreviewOn()
@@ -788,10 +774,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                             // TODO not implemented
                         }
 
-                        override fun onSuccess(imagePath: String) {
+                        override fun onSuccess(filePath: String) {
                             // now save the video with emoji, but using the previously saved video as input
                             hideLoading()
-                            saveVideo(Uri.parse(imagePath))
+                            saveVideo(Uri.parse(filePath))
                             // TODO: delete the temporal video produced originally
                         }
 
@@ -810,19 +796,19 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         }
     }
 
-    protected fun showLoading(message: String) {
+    private fun showLoading(message: String) {
         editModeHideAllUIControls(false)
         save_button.setSaving(true)
         blockTouchOnPhotoEditor()
     }
 
-    protected fun hideLoading() {
+    private fun hideLoading() {
         editModeRestoreAllUIControls()
         save_button.setSaving(false)
         releaseTouchOnPhotoEditor()
     }
 
-    protected fun showSnackbar(message: String, actionLabel: String? = null, listener: OnClickListener? = null) {
+    private fun showSnackbar(message: String, actionLabel: String? = null, listener: OnClickListener? = null) {
         runOnUiThread {
             val view = findViewById<View>(android.R.id.content)
             if (view != null) {
@@ -943,7 +929,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     private fun saveCameraSelectionPref() {
         val sharedPref = getPreferences(Context.MODE_PRIVATE)
         with(sharedPref.edit()) {
-            putInt(getString(string.pref_camera_selection), cameraSelection.id)
+            putInt(getString(R.string.pref_camera_selection), cameraSelection.id)
             commit()
         }
     }
@@ -951,7 +937,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     private fun saveFlashModeSelectionPref() {
         val sharedPref = getPreferences(Context.MODE_PRIVATE)
         with(sharedPref.edit()) {
-            putInt(getString(string.pref_flash_mode_selection), flashModeSelection.id)
+            putInt(getString(R.string.pref_flash_mode_selection), flashModeSelection.id)
             commit()
         }
     }
@@ -973,6 +959,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         // Implicit broadcasts will be ignored for devices running API
         // level >= 24, so if you only target 24+ you can remove this statement
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            @Suppress("DEPRECATION")
             if (mediaFile.extension.startsWith("jpg")) {
                 sendBroadcast(Intent(Camera.ACTION_NEW_PICTURE, Uri.fromFile(mediaFile)))
             } else {
@@ -991,12 +978,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
     private fun blockTouchOnPhotoEditor() {
         translucent_view.visibility = View.VISIBLE
-        translucent_view.setOnTouchListener(object : View.OnTouchListener {
-            override fun onTouch(p0: View?, p1: MotionEvent?): Boolean {
-                // no op
-                return true
-            }
-        })
+        translucent_view.setOnTouchListener { _, _ ->
+            // no op
+            true
+        }
     }
 
     private fun releaseTouchOnPhotoEditor() {
@@ -1014,24 +999,24 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
             e1?.let {
                 e2?.let {
-                    if (e1.getY() - e2.getY() > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
+                    if (e1.y - e2.y > SWIPE_MIN_DISTANCE && abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
                         // Bottom to top
-                        val ycoordStart = e1.getY()
+                        val ycoordStart = e1.y
                         if ((screenSizeY - ycoordStart) < SWIPE_MIN_DISTANCE_FROM_BOTTOM) {
                             // if swipe started as close as bottom of the screen as possible, then interpret this
                             // as a swipe from bottom of the screen gesture
 
                             // in edit mode, show Emoji picker
                             if (edit_mode_controls.visibility == View.VISIBLE) {
-                                emojiPickerFragment.show(supportFragmentManager, emojiPickerFragment.getTag())
+                                emojiPickerFragment.show(supportFragmentManager, emojiPickerFragment.tag)
                             } else {
                                 // in capture mode, show media picker
                                 showMediaPicker()
                             }
                         }
                         return false
-                    } else if (e2.getY() - e1.getY() > SWIPE_MIN_DISTANCE &&
-                        Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
+                    } else if (e2.y - e1.y > SWIPE_MIN_DISTANCE &&
+                        abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
                         // Top to bottom
                         return false
                     }
@@ -1042,6 +1027,8 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     companion object {
+        private const val FRAGMENT_DIALOG = "dialog"
+
         private const val SURFACE_MANAGER_READY_LAUNCH_DELAY = 500L
         private const val CAMERA_VIDEO_RECORD_MAX_LENGTH_MS = 10000L
         private const val CAMERA_STILL_PICTURE_ANIM_MS = 300L
