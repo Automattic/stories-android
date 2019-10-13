@@ -31,6 +31,8 @@ class Portkey : Application() {
             array.com_google_android_gms_fonts_certs
         )
         config = FontRequestEmojiCompatConfig(applicationContext, fontRequest)
+        config.setReplaceAll(true)
+        config.setUseEmojiAsDefaultStyle(true)
 
         config.registerInitCallback(object : EmojiCompat.InitCallback() {
             override fun onInitialized() {
