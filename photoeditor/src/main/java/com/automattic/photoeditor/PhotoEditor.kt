@@ -377,6 +377,8 @@ class PhotoEditor private constructor(builder: Builder) :
                 EmojiCompat.get().registerInitCallback(object : EmojiCompat.InitCallback() {
                     val regularTextViewRef = WeakReference(emojiTextView)
                     override fun onInitialized() {
+                        EmojiCompat.get().unregisterInitCallback(this)
+
                         val regularTextView = regularTextViewRef.get()
                         if (regularTextView != null) {
                             val compat = EmojiCompat.get()
@@ -385,6 +387,8 @@ class PhotoEditor private constructor(builder: Builder) :
                     }
 
                     override fun onFailed(throwable: Throwable?) {
+                        EmojiCompat.get().unregisterInitCallback(this)
+
                         // just fallback to setting the text
                         emojiTextView.text = emojiName
                     }
