@@ -210,12 +210,14 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             backgroundSurfaceManager.preTurnTextureViewOn()
 
             // check camera selection, flash state from preferences
-            cameraSelection =
-                CameraSelection.valueOf(
-                    getPreferences(Context.MODE_PRIVATE).getInt(getString(R.string.pref_camera_selection), 0))!!
-            flashModeSelection =
-                FlashIndicatorState.valueOf(
-                    getPreferences(Context.MODE_PRIVATE).getInt(getString(R.string.pref_flash_mode_selection), 0))!!
+            CameraSelection.valueOf(
+                getPreferences(Context.MODE_PRIVATE).getInt(getString(R.string.pref_camera_selection), 0))?.let {
+                cameraSelection = it
+            }
+            FlashIndicatorState.valueOf(
+                getPreferences(Context.MODE_PRIVATE).getInt(getString(R.string.pref_flash_mode_selection), 0))?.let {
+                flashModeSelection = it
+            }
 
             // also, update the UI
             updateFlashModeSelectionIcon()

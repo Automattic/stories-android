@@ -35,7 +35,6 @@ import com.automattic.photoeditor.util.CameraUtils.Companion.setupOptimalCameraP
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.io.File
-import java.lang.Exception
 
 class CameraXBasicHandling : VideoRecorderFragment() {
     private var videoCapture: VideoCapture? = null
@@ -224,30 +223,31 @@ class CameraXBasicHandling : VideoRecorderFragment() {
 
     override fun takePicture(onImageCapturedListener: ImageCaptureListener) {
         // Create output file to hold the image
-        currentFile = FileUtils.getCaptureFile(context!!, false, "orig_")
-        currentFile?.createNewFile()
+        context?.let { context ->
+            currentFile = FileUtils.getCaptureFile(context, false, "orig_").apply { createNewFile() }
 
-        // Setup image capture metadata
-        val metadata = Metadata().apply {
-            // Mirror image when using the front camera
-            isReversedHorizontal = lensFacing == CameraX.LensFacing.FRONT
-        }
-
-        // image capture only
-        if (!CameraX.isBound(imageCapture)) {
-            CameraX.bindToLifecycle(activity, imageCapture)
-        }
-
-        // Setup image capture listener which is triggered after photo has been taken
-        imageCapture?.takePicture(currentFile, object : ImageCapture.OnImageSavedListener {
-            override fun onImageSaved(file: File) {
-                onImageCapturedListener.onImageSaved(file)
+            // Setup image capture metadata
+            val metadata = Metadata().apply {
+                // Mirror image when using the front camera
+                isReversedHorizontal = lensFacing == CameraX.LensFacing.FRONT
             }
 
-            override fun onError(useCaseError: UseCaseError, message: String, cause: Throwable?) {
-                onImageCapturedListener.onError(message, cause)
+            // image capture only
+            if (!CameraX.isBound(imageCapture)) {
+                CameraX.bindToLifecycle(activity, imageCapture)
             }
-        }, metadata)
+
+            // Setup image capture listener which is triggered after photo has been taken
+            imageCapture?.takePicture(currentFile, object : ImageCapture.OnImageSavedListener {
+                override fun onImageSaved(file: File) {
+                    onImageCapturedListener.onImageSaved(file)
+                }
+
+                override fun onError(useCaseError: UseCaseError, message: String, cause: Throwable?) {
+                    onImageCapturedListener.onError(message, cause)
+                }
+            }, metadata)
+        }
     }
 
     @SuppressLint("RestrictedApi")

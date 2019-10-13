@@ -176,7 +176,7 @@ internal class ScaleGestureDetector(private val mListener: OnScaleGestureListene
      * @return Current event time in milliseconds.
      */
     val eventTime: Long
-        get() = mCurrEvent!!.eventTime
+        get() = mCurrEvent?.eventTime ?: 0
 
     /**
      * The listener for receiving notifications when gestures occur.
@@ -428,9 +428,12 @@ internal class ScaleGestureDetector(private val mListener: OnScaleGestureListene
         mScaleFactor = -1f
         currentSpanVector.set(0.0f, 0.0f)
 
-        val prev = mPrevEvent
+        val prev = mPrevEvent ?: run {
+            Log.e(TAG, "No previous event in ScaleGestureDetector")
+            return
+        }
 
-        val prevIndex0 = prev!!.findPointerIndex(mActiveId0)
+        val prevIndex0 = prev.findPointerIndex(mActiveId0)
         val prevIndex1 = prev.findPointerIndex(mActiveId1)
         val currIndex0 = curr.findPointerIndex(mActiveId0)
         val currIndex1 = curr.findPointerIndex(mActiveId1)

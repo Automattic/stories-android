@@ -13,23 +13,22 @@ import android.util.Size
 import android.view.Surface
 import androidx.fragment.app.FragmentActivity
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
-import java.lang.Long
-import java.util.Arrays
+import java.lang.Long.signum
 import java.util.Collections
 import java.util.Comparator
 
 class CameraUtils {
     companion object {
-        private val TAG = "CameraUtils"
+        private const val TAG = "CameraUtils"
         /**
          * Max preview width that is guaranteed by Camera2 API
          */
-        val MAX_PREVIEW_WIDTH = 1920
+        const val MAX_PREVIEW_WIDTH = 1920
 
         /**
          * Max preview height that is guaranteed by Camera2 API
          */
-        val MAX_PREVIEW_HEIGHT = 1080
+        const val MAX_PREVIEW_HEIGHT = 1080
 
         /**
          * Given `choices` of `Size`s supported by a camera, choose the smallest one that
@@ -74,13 +73,13 @@ class CameraUtils {
 
             // Pick the smallest of those big enough. If there is no one big enough, pick the
             // largest of those not big enough.
-            if (bigEnough.size > 0) {
-                return Collections.min(bigEnough, CompareSizesByArea())
-            } else if (notBigEnough.size > 0) {
-                return Collections.max(notBigEnough, CompareSizesByArea())
-            } else {
-                Log.e(TAG, "Couldn't find any suitable preview size")
-                return choices[0]
+            return when {
+                bigEnough.size > 0 -> Collections.min(bigEnough, CompareSizesByArea())
+                notBigEnough.size > 0 -> Collections.max(notBigEnough, CompareSizesByArea())
+                else -> {
+                    Log.e(TAG, "Couldn't find any suitable preview size")
+                    choices[0]
+                }
             }
         }
 
@@ -119,24 +118,21 @@ class CameraUtils {
             // Get screen metrics used to setup camera for full screen resolution
             val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
             val displaySize = Point(metrics.widthPixels, metrics.heightPixels)
-            var optimalPreviewSize: Size
+            val optimalPreviewSize: Size
             Log.d(TAG, "Screen metrics: ${metrics.widthPixels} x ${metrics.heightPixels}")
 
             val manager = activity.getSystemService(Context.CAMERA_SERVICE) as CameraManager
             val characteristics = manager.getCameraCharacteristics(cameraId)
 
-            val map = characteristics.get(
-                CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+            val map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+                ?: throw IllegalStateException("Could not obtain SCALER_STREAM_CONFIGURATION_MAP")
 
             // Find out if we need to swap dimension to get the preview size relative to sensor
             // coordinate.
             val displayRotation = activity.windowManager.defaultDisplay.rotation
 
-            var sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION)
-            if (sensorOrientation == null) {
-                sensorOrientation = 0
-            }
-            val swappedDimensions = CameraUtils.areDimensionsSwapped(displayRotation, sensorOrientation)
+            val sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION) ?: 0
+            val swappedDimensions = areDimensionsSwapped(displayRotation, sensorOrientation)
 
             val height = textureView.height
             val width = textureView.width
@@ -145,22 +141,17 @@ class CameraUtils {
             var maxPreviewWidth = if (swappedDimensions) displaySize.y else displaySize.x
             var maxPreviewHeight = if (swappedDimensions) displaySize.x else displaySize.y
 
-            if (maxPreviewWidth > CameraUtils.MAX_PREVIEW_WIDTH) maxPreviewWidth =
-                CameraUtils.MAX_PREVIEW_WIDTH
-            if (maxPreviewHeight > CameraUtils.MAX_PREVIEW_HEIGHT) maxPreviewHeight =
-                CameraUtils.MAX_PREVIEW_HEIGHT
+            if (maxPreviewWidth > MAX_PREVIEW_WIDTH) maxPreviewWidth = MAX_PREVIEW_WIDTH
+            if (maxPreviewHeight > MAX_PREVIEW_HEIGHT) maxPreviewHeight = MAX_PREVIEW_HEIGHT
 
             // For still image captures, we use the largest available size.
-            val largest = Collections.max(
-                Arrays.asList(*map!!.getOutputSizes(ImageFormat.JPEG)),
-                CompareSizesByArea()
-            )
+            val largest = Collections.max(listOf(*map.getOutputSizes(ImageFormat.JPEG)), CompareSizesByArea())
 
             // Danger, W.R.! Attempting to use too large a preview size could  exceed the camera
             // bus' bandwidth limitation, resulting in gorgeous previews but the storage of
             // garbage capture data.
             optimalPreviewSize = chooseOptimalSize(
-                map!!.getOutputSizes(SurfaceTexture::class.java),
+                map.getOutputSizes(SurfaceTexture::class.java),
                 rotatedPreviewWidth, rotatedPreviewHeight,
                 maxPreviewWidth, maxPreviewHeight,
                 largest
@@ -179,6 +170,6 @@ class CameraUtils {
     internal class CompareSizesByArea : Comparator<Size> {
         // We cast here to ensure the multiplications won't overflow
         override fun compare(lhs: Size, rhs: Size) =
-            Long.signum(lhs.width.toLong() * lhs.height - rhs.width.toLong() * rhs.height)
+            signum(lhs.width.toLong() * lhs.height - rhs.width.toLong() * rhs.height)
     }
 }

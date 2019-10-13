@@ -14,12 +14,12 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import androidx.annotation.RequiresApi
-import com.automattic.photoeditor.views.filter.CustomEffect
 import com.automattic.photoeditor.OnSaveBitmap
 import com.automattic.photoeditor.R.styleable
 import com.automattic.photoeditor.views.background.fixed.BackgroundImageView
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import com.automattic.photoeditor.views.brush.BrushDrawingView
+import com.automattic.photoeditor.views.filter.CustomEffect
 import com.automattic.photoeditor.views.filter.ImageFilterView
 import com.automattic.photoeditor.views.filter.PhotoFilter
 
@@ -223,13 +223,13 @@ class PhotoEditorView : RelativeLayout {
 
     internal fun setFilterEffect(filterType: PhotoFilter) {
         imageFilterView.visibility = View.VISIBLE
-        imageFilterView.setSourceBitmap(backgroundImage.bitmap!!)
+        imageFilterView.setSourceBitmap(backgroundImage.bitmap)
         imageFilterView.setFilterEffect(filterType)
     }
 
     internal fun setFilterEffect(customEffect: CustomEffect) {
         imageFilterView.visibility = View.VISIBLE
-        imageFilterView.setSourceBitmap(backgroundImage.bitmap!!)
+        imageFilterView.setSourceBitmap(backgroundImage.bitmap)
         imageFilterView.setFilterEffect(customEffect)
     }
 
