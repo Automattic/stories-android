@@ -4,10 +4,12 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
+import android.hardware.camera2.CameraMetadata
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
 import android.util.Rational
+import android.util.Size
 import android.view.ViewGroup
 import androidx.camera.core.CameraX
 import androidx.camera.core.ImageCapture
@@ -27,6 +29,9 @@ import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
 import com.automattic.photoeditor.camera.interfaces.cameraXLensFacingFromPortkeyCameraSelection
 import com.automattic.photoeditor.camera.interfaces.cameraXflashModeFromPortkeyFlashState
 import com.automattic.photoeditor.camera.interfaces.portkeyCameraSelectionFromCameraXLensFacing
+import com.automattic.photoeditor.util.CameraUtils.Companion.MAX_PREVIEW_HEIGHT
+import com.automattic.photoeditor.util.CameraUtils.Companion.MAX_PREVIEW_WIDTH
+import com.automattic.photoeditor.util.CameraUtils.Companion.setupOptimalCameraPreviewSize
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.io.File
@@ -78,7 +83,31 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         // Get screen metrics used to setup camera for full screen resolution
         val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
         val screenAspectRatio = Rational(metrics.widthPixels, metrics.heightPixels)
+        var optimalPreviewSize = Size(MAX_PREVIEW_WIDTH, MAX_PREVIEW_HEIGHT)
         Log.d(TAG, "Screen metrics: ${metrics.widthPixels} x ${metrics.heightPixels}")
+
+        val isCameraFacingBack = lensFacing == CameraX.LensFacing.BACK
+        activity?.let {
+            val manager = it.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+            for (cameraId in manager.cameraIdList) {
+                val characteristics = manager.getCameraCharacteristics(cameraId)
+
+                val cameraDirection = characteristics.get(CameraCharacteristics.LENS_FACING)
+                if (cameraDirection != null && isCameraFacingBack &&
+                    cameraDirection != CameraMetadata.LENS_FACING_BACK) {
+                    continue
+                }
+
+                // just make sure we've got characteristics before calling setupOptimalCameraPreviewSize()
+                if (characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP) == null) {
+                    continue
+                }
+
+                optimalPreviewSize = setupOptimalCameraPreviewSize(it, textureView, cameraId)
+
+                break
+            }
+        }
 
         // retrieve flash availability for this camera
         val cameraId = CameraX.getCameraWithLensFacing(lensFacing)
@@ -89,8 +118,8 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         // Create configuration object for the preview use case
         val previewConfig = PreviewConfig.Builder().apply {
             setLensFacing(lensFacing)
-            // We request aspect ratio but no r esolution to let CameraX optimize our use cases
-            setTargetAspectRatio(screenAspectRatio)
+            // set our calculated target resolution
+            setTargetResolution(optimalPreviewSize)
             // Set initial target rotation, we will have to call this again if rotation changes
             // during the lifecycle of this use case
             setTargetRotation(textureView.display.rotation)
@@ -195,7 +224,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
 
     override fun takePicture(onImageCapturedListener: ImageCaptureListener) {
         // Create output file to hold the image
-        currentFile = FileUtils.getLoopFrameFile(context!!, false, "orig_")
+        currentFile = FileUtils.getCaptureFile(context!!, false, "orig_")
         currentFile?.createNewFile()
 
         // Setup image capture metadata

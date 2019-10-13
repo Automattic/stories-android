@@ -21,5 +21,17 @@ class FileUtils {
             return if (mediaDir != null && mediaDir.exists())
                 mediaDir else appContext.filesDir
         }
+
+        /* internal / disposable files used in capturing */
+        fun getInternalDirectory(context: Context): File {
+            return context.getDir("tmp", 0)
+        }
+
+        fun getCaptureFile(context: Context, video: Boolean, prefix: String = ""): File {
+            return File(getInternalDirectory(context),
+                "loop_tmp" +
+                        System.currentTimeMillis() + if (video) ".mp4" else ".jpg"
+            )
+        }
     }
 }

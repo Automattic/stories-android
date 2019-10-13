@@ -10,12 +10,12 @@ android {
         applicationId "com.automattic.portkey"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 10
+        versionCode 11
         // Allow versionName to be overridden with property. e.g. -PversionName=1234
         if (project.hasProperty("versionName")) {
             versionName project.property("versionName")
         } else {
-            versionName "1.0.0.10-camerax"
+            versionName "1.0.0.11-camerax"
         }
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
