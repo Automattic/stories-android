@@ -47,14 +47,16 @@ class VideoRecordingControlView @JvmOverloads constructor(
             ta.recycle()
         }
 
-        circlePaint = Paint()
-        circlePaint.isAntiAlias = true
-        circlePaint.color = strokeProgressColor
+        circlePaint = Paint().apply {
+            isAntiAlias = true
+            color = strokeProgressColor
+        }
 
-        eraserPaint = Paint()
-        eraserPaint.isAntiAlias = true
-        eraserPaint.color = strokeFillColor
-        eraserPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
+        eraserPaint = Paint().apply {
+            isAntiAlias = true
+            color = strokeFillColor
+            xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
+        }
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -136,6 +138,6 @@ class VideoRecordingControlView @JvmOverloads constructor(
     }
 
     companion object {
-        private val START_POSITION_ANGLE = 270
+        private const val START_POSITION_ANGLE = 270
     }
 }

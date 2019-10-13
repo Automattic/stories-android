@@ -58,15 +58,12 @@ class SaveButton : FrameLayout {
     override fun setOnClickListener(l: OnClickListener?) {
         saveButtonClickListener = l
         super.setOnClickListener {
-            // no op
             onClick(it)
         }
     }
 
-    fun onClick(view: View) {
-        if (savingState) {
-            // no op
-        } else {
+    private fun onClick(view: View) {
+        if (!savingState) {
             saveButtonClickListener?.onClick(view)
         }
     }

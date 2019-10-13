@@ -51,15 +51,12 @@ class DeleteButton : FrameLayout {
     override fun setOnClickListener(l: OnClickListener?) {
         deleteButtonClickListener = l
         super.setOnClickListener {
-            // no op
             onClick(it)
         }
     }
 
-    fun onClick(view: View) {
-        if (readyForDeleteState) {
-            // no op
-        } else {
+    private fun onClick(view: View) {
+        if (!readyForDeleteState) {
             deleteButtonClickListener?.onClick(view)
         }
     }

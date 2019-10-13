@@ -17,7 +17,6 @@
 package com.automattic.photoeditor.camera
 
 import android.Manifest
-import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -69,10 +68,10 @@ import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.io.IOException
-import java.util.Arrays
 import java.util.Collections
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
+import kotlin.math.max
 
 class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
     /**
@@ -334,7 +333,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
 
                     // For still image captures, we use the largest available size.
                     val largest = Collections.max(
-                        Arrays.asList(*map.getOutputSizes(ImageFormat.JPEG)),
+                        listOf(*map.getOutputSizes(ImageFormat.JPEG)),
                         CompareSizesByArea()
                     )
                     imageReader = ImageReader.newInstance(largest.width, largest.height,
@@ -491,7 +490,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
                 previewRequestBuilder.addTarget(surface)
 
                 // Here, we create a CameraCaptureSession for camera preview.
-                camera.createCaptureSession(Arrays.asList(surface, imageReader?.surface),
+                camera.createCaptureSession(listOf(surface, imageReader?.surface),
                     object : CameraCaptureSession.StateCallback() {
                         override fun onConfigured(cameraCaptureSession: CameraCaptureSession) {
                             // The camera is already closed
@@ -545,7 +544,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
 
             if (Surface.ROTATION_90 == rotation || Surface.ROTATION_270 == rotation) {
                 bufferRect.offset(centerX - bufferRect.centerX(), centerY - bufferRect.centerY())
-                val scale = Math.max(
+                val scale = max(
                     viewHeight.toFloat() / previewSize.height,
                     viewWidth.toFloat() / previewSize.width)
                 with(matrix) {
@@ -710,39 +709,38 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
 
     @Throws(IOException::class)
     private fun setUpMediaRecorder() {
-        val activity: Activity? = getActivity()
-        if (activity == null) return
+        activity?.let { activity ->
+            mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
+            mediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE)
+            mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+            /**
+             * create video output file
+             */
+            currentFile = FileUtils.getLoopFrameFile(activity, true, "orig_")
+            currentFile?.createNewFile()
 
-        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
-        mediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE)
-        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-        /**
-        * create video output file
-        */
-        currentFile = FileUtils.getLoopFrameFile(activity, true, "orig_")
-        currentFile?.createNewFile()
+            /**
+             * set output file in media recorder
+             */
+            mediaRecorder.setOutputFile(currentFile?.absolutePath)
+            val profile: CamcorderProfile = findCamcorderProfile()
+            mediaRecorder.setVideoFrameRate(profile.videoFrameRate)
+            mediaRecorder.setVideoSize(profile.videoFrameWidth, profile.videoFrameHeight)
+            mediaRecorder.setVideoEncodingBitRate(profile.videoBitRate)
+            mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264)
+            mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+            mediaRecorder.setAudioEncodingBitRate(profile.audioBitRate)
+            mediaRecorder.setAudioSamplingRate(profile.audioSampleRate)
 
-        /**
-        * set output file in media recorder
-        */
-        mediaRecorder.setOutputFile(currentFile?.getAbsolutePath())
-        val profile: CamcorderProfile = findCamcorderProfile()
-        mediaRecorder.setVideoFrameRate(profile.videoFrameRate)
-        mediaRecorder.setVideoSize(profile.videoFrameWidth, profile.videoFrameHeight)
-        mediaRecorder.setVideoEncodingBitRate(profile.videoBitRate)
-        mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264)
-        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-        mediaRecorder.setAudioEncodingBitRate(profile.audioBitRate)
-        mediaRecorder.setAudioSamplingRate(profile.audioSampleRate)
-
-        val rotation = activity.getWindowManager().getDefaultDisplay().getRotation()
-        when (sensorOrientation) {
-            SENSOR_ORIENTATION_DEFAULT_DEGREES ->
-                mediaRecorder.setOrientationHint(ORIENTATIONS.get(rotation))
-            SENSOR_ORIENTATION_INVERSE_DEGREES ->
-                mediaRecorder.setOrientationHint(INVERSE_ORIENTATIONS.get(rotation))
+            val rotation = activity.windowManager.defaultDisplay.rotation
+            when (sensorOrientation) {
+                SENSOR_ORIENTATION_DEFAULT_DEGREES ->
+                    mediaRecorder.setOrientationHint(ORIENTATIONS.get(rotation))
+                SENSOR_ORIENTATION_INVERSE_DEGREES ->
+                    mediaRecorder.setOrientationHint(INVERSE_ORIENTATIONS.get(rotation))
+            }
+            mediaRecorder.prepare()
         }
-        mediaRecorder.prepare()
     }
 
     private fun findCamcorderProfile(): CamcorderProfile {
@@ -779,7 +777,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
                 previewRequestBuilder.addTarget(recorderSurface)
 
                 // Here, we create a CameraCaptureSession for camera recording + preview.
-                camera.createCaptureSession(Arrays.asList(surface, recorderSurface),
+                camera.createCaptureSession(listOf(surface, recorderSurface),
                     object : CameraCaptureSession.StateCallback() {
                         override fun onConfigured(cameraCaptureSession: CameraCaptureSession) {
                             // The camera is already closed
@@ -830,7 +828,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
         }
     }
 
-    fun closePreviewSession() {
+    private fun closePreviewSession() {
         captureSession?.close()
         captureSession = null
     }
@@ -891,9 +889,9 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
          */
         private val ORIENTATIONS = SparseIntArray()
         private val INVERSE_ORIENTATIONS = SparseIntArray()
-        private val FRAGMENT_DIALOG = "dialog"
-        private val SENSOR_ORIENTATION_DEFAULT_DEGREES = 90
-        private val SENSOR_ORIENTATION_INVERSE_DEGREES = 270
+        private const val FRAGMENT_DIALOG = "dialog"
+        private const val SENSOR_ORIENTATION_DEFAULT_DEGREES = 90
+        private const val SENSOR_ORIENTATION_INVERSE_DEGREES = 270
         private val instance = Camera2BasicHandling()
 
         /** Camcorder profiles quality list */
@@ -923,32 +921,32 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
         /**
          * Tag for the [Log].
          */
-        private val TAG = "Camera2BasicHandling"
+        private const val TAG = "Camera2BasicHandling"
 
         /**
          * Camera state: Showing camera preview.
          */
-        private val STATE_PREVIEW = 0
+        private const val STATE_PREVIEW = 0
 
         /**
          * Camera state: Waiting for the focus to be locked.
          */
-        private val STATE_WAITING_LOCK = 1
+        private const val STATE_WAITING_LOCK = 1
 
         /**
          * Camera state: Waiting for the exposure to be precapture state.
          */
-        private val STATE_WAITING_PRECAPTURE = 2
+        private const val STATE_WAITING_PRECAPTURE = 2
 
         /**
          * Camera state: Waiting for the exposure state to be something other than precapture.
          */
-        private val STATE_WAITING_NON_PRECAPTURE = 3
+        private const val STATE_WAITING_NON_PRECAPTURE = 3
 
         /**
          * Camera state: Picture was taken.
          */
-        private val STATE_PICTURE_TAKEN = 4
+        private const val STATE_PICTURE_TAKEN = 4
 
         @JvmStatic fun getInstance(
             textureView: AutoFitTextureView,

@@ -4,7 +4,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
 import android.view.Window
-import kotlinx.android.synthetic.main.content_composer.*
 
 const val IMMERSIVE_FLAG_TIMEOUT = 500L
 /** Combination of all flags required to put activity into immersive mode */

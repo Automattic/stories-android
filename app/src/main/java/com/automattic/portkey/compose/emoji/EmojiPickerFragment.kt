@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.automattic.photoeditor.PhotoEditor
@@ -56,7 +57,8 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
             (params.behavior as? BottomSheetBehavior)?.setBottomSheetCallback(bottomSheetBehaviorCallback)
             (params.behavior as? BottomSheetBehavior)?.state = BottomSheetBehavior.STATE_EXPANDED
 
-            (contentView.parent as View).setBackgroundColor(resources.getColor(android.R.color.transparent))
+            (contentView.parent as View).setBackgroundColor(
+                ContextCompat.getColor(activity, android.R.color.transparent))
             contentView.rvEmoji.layoutManager = GridLayoutManager(activity, COLUMNS)
             contentView.rvEmoji.adapter = EmojiAdapter(PhotoEditor.getEmojis(activity))
         }
@@ -81,11 +83,9 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
         }
 
         inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            var txtEmojiRef: TextView
+            var txtEmojiRef: TextView = itemView.txtEmoji
 
             init {
-                txtEmojiRef = itemView.txtEmoji
-
                 itemView.setOnClickListener {
                     listener?.onEmojiClick(emojiList[layoutPosition])
                     dismiss()

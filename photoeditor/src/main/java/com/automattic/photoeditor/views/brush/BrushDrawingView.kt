@@ -239,6 +239,6 @@ class BrushDrawingView : View {
     }
 
     companion object {
-        private val TOUCH_TOLERANCE = 4f
+        private const val TOUCH_TOLERANCE = 4f
     }
 }
