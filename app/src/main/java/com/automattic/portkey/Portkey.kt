@@ -6,12 +6,16 @@ import androidx.core.provider.FontRequest
 import androidx.emoji.text.EmojiCompat
 import androidx.emoji.text.FontRequestEmojiCompatConfig
 import com.automattic.portkey.R.array
+import com.automattic.portkey.util.CrashLoggingUtils
 
 class Portkey : Application() {
+    private var statusBarHeight: Int = 0
+
     override fun onCreate() {
         super.onCreate()
-
         AppPrefs.init(this)
+
+        CrashLoggingUtils.startCrashLogging(this)
 
         initEmojiCompat()
     }
@@ -43,5 +47,13 @@ class Portkey : Application() {
 
     companion object {
         const val TAG = "Portkey"
+    }
+
+    fun setStatusBarHeight(newHeight: Int) {
+        statusBarHeight = newHeight
+    }
+
+    fun getStatusBarHeight(): Int {
+        return statusBarHeight
     }
 }

@@ -8,8 +8,8 @@ import android.view.View.OnTouchListener
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import com.automattic.photoeditor.OnPhotoEditorListener
-import com.automattic.photoeditor.views.ViewType
 import com.automattic.photoeditor.gesture.ScaleGestureDetector.SimpleOnScaleGestureListener
+import com.automattic.photoeditor.views.ViewType
 
 /**
  * Created on 18/01/2017.
@@ -23,14 +23,15 @@ internal class MultiTouchListener(
     private val parentView: RelativeLayout,
     private val photoEditImageView: ImageView,
     private val mIsTextPinchZoomable: Boolean,
-    private val mOnPhotoEditorListener: OnPhotoEditorListener?
+    private val mOnPhotoEditorListener: OnPhotoEditorListener?,
+    private var onMultiTouchListener: OnMultiTouchListener? = null
 ) : OnTouchListener {
     private val mGestureListener: GestureDetector
     private val isRotateEnabled = true
     private val isTranslateEnabled = true
     private val isScaleEnabled = true
     private val minimumScale = 0.5f
-    private val maximumScale = 10.0f
+    private val maximumScale = 4.2f // 10.0f
     private var mActivePointerId = INVALID_POINTER_ID
     private var mPrevX: Float = 0.toFloat()
     private var mPrevY: Float = 0.toFloat()
@@ -41,7 +42,7 @@ internal class MultiTouchListener(
     private val location = IntArray(2)
     private var outRect: Rect? = null
 
-    private var onMultiTouchListener: OnMultiTouchListener? = null
+    // private var onMultiTouchListener: OnMultiTouchListener? = null
     private var mOnGestureControl: OnGestureControl? = null
 
     init {
@@ -95,6 +96,12 @@ internal class MultiTouchListener(
                             currY - mPrevY
                         )
                     }
+                    if (onMultiTouchListener != null && deleteView != null) {
+                        val readyForDelete = isViewInBounds(deleteView, x, y)
+                        // fade the view a bit to indicate it's going bye bye
+                        setAlphaOnView(view, readyForDelete)
+                        onMultiTouchListener?.onRemoveViewReadyListener(view, readyForDelete)
+                    }
                 }
             }
             MotionEvent.ACTION_CANCEL -> mActivePointerId =
@@ -102,11 +109,11 @@ internal class MultiTouchListener(
             MotionEvent.ACTION_UP -> {
                 mActivePointerId = INVALID_POINTER_ID
                 if (deleteView != null && isViewInBounds(deleteView, x, y)) {
-                    if (onMultiTouchListener != null)
-                        onMultiTouchListener!!.onRemoveViewListener(view)
-                } else if (!isViewInBounds(photoEditImageView, x, y)) {
-                    view.animate().translationY(0f).translationY(0f)
+                    onMultiTouchListener?.onRemoveViewListener(view)
                 }
+//                else if (!isViewInBounds(photoEditImageView, x, y)) {
+//                    view.animate().translationY(0f).translationY(0f)
+//                }
                 if (deleteView != null) {
                     deleteView.visibility = View.GONE
                 }
@@ -127,6 +134,14 @@ internal class MultiTouchListener(
         return true
     }
 
+    private fun setAlphaOnView(view: View, makeTransparent: Boolean) {
+        if (makeTransparent) {
+            view.alpha = 0.5f
+        } else {
+            view.alpha = 1f
+        }
+    }
+
     private fun firePhotoEditorSDKListener(view: View, isStart: Boolean) {
         val viewTag = view.tag
         if (mOnPhotoEditorListener != null && viewTag != null && viewTag is ViewType) {
@@ -140,8 +155,8 @@ internal class MultiTouchListener(
     private fun isViewInBounds(view: View, x: Int, y: Int): Boolean {
         view.getDrawingRect(outRect)
         view.getLocationOnScreen(location)
-        outRect!!.offset(location[0], location[1])
-        return outRect!!.contains(x, y)
+        outRect?.offset(location[0], location[1])
+        return outRect?.contains(x, y) ?: false
     }
 
     fun setOnMultiTouchListener(onMultiTouchListener: OnMultiTouchListener) {
@@ -190,10 +205,12 @@ internal class MultiTouchListener(
         internal var maximumScale: Float = 0.toFloat()
     }
 
-    internal interface OnMultiTouchListener {
+    interface OnMultiTouchListener {
         fun onEditTextClickListener(text: String, colorCode: Int)
 
         fun onRemoveViewListener(removedView: View)
+
+        fun onRemoveViewReadyListener(removedView: View, ready: Boolean)
     }
 
     internal interface OnGestureControl {
@@ -208,17 +225,13 @@ internal class MultiTouchListener(
 
     private inner class GestureListener : GestureDetector.SimpleOnGestureListener() {
         override fun onSingleTapUp(e: MotionEvent): Boolean {
-            if (mOnGestureControl != null) {
-                mOnGestureControl!!.onClick()
-            }
+            mOnGestureControl?.onClick()
             return true
         }
 
         override fun onLongPress(e: MotionEvent) {
             super.onLongPress(e)
-            if (mOnGestureControl != null) {
-                mOnGestureControl!!.onLongClick()
-            }
+            mOnGestureControl?.onLongClick()
         }
     }
 

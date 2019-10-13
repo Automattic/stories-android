@@ -23,8 +23,8 @@ class VideoRecordingControlView @JvmOverloads constructor(
     private var bitmap: Bitmap? = null
     private var viewCanvas: Canvas? = null
 
-    private var circleOuterBounds: RectF? = null
-    private var circleInnerBounds: RectF? = null
+    private lateinit var circleOuterBounds: RectF
+    private lateinit var circleInnerBounds: RectF
 
     private val circlePaint: Paint
     private val eraserPaint: Paint
@@ -47,47 +47,53 @@ class VideoRecordingControlView @JvmOverloads constructor(
             ta.recycle()
         }
 
-        circlePaint = Paint()
-        circlePaint.isAntiAlias = true
-        circlePaint.color = strokeProgressColor
+        circlePaint = Paint().apply {
+            isAntiAlias = true
+            color = strokeProgressColor
+        }
 
-        eraserPaint = Paint()
-        eraserPaint.isAntiAlias = true
-        eraserPaint.color = strokeFillColor
-        eraserPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
+        eraserPaint = Paint().apply {
+            isAntiAlias = true
+            color = strokeFillColor
+            xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
+        }
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         if (w != oldw || h != oldh) {
-            bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-            bitmap!!.eraseColor(Color.TRANSPARENT)
-            viewCanvas = Canvas(bitmap!!)
+            bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)?.apply {
+                eraseColor(Color.TRANSPARENT)
+                viewCanvas = Canvas(this)
+            }
         }
         super.onSizeChanged(w, h, oldw, oldh)
         updateBounds()
     }
 
     override fun onDraw(canvas: Canvas) {
-        if (valueAnimator == null || !valueAnimator!!.isRunning) {
+        valueAnimator.takeIf { it == null || !it.isRunning }?.let {
             super.onDraw(canvas)
             return
         }
-        viewCanvas!!.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
 
-        if (circleSweepAngle > 0f) {
-            viewCanvas?.apply {
+        viewCanvas?.apply {
+            drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
+
+            if (circleSweepAngle > 0f) {
                 drawArc(
-                    circleOuterBounds!!,
+                    circleOuterBounds,
                     START_POSITION_ANGLE.toFloat(),
                     circleSweepAngle,
                     true,
                     circlePaint
                 )
-                drawOval(circleInnerBounds!!, eraserPaint)
+                drawOval(circleInnerBounds, eraserPaint)
+            }
+
+            bitmap?.let {
+                canvas.drawBitmap(it, 0f, 0f, null)
             }
         }
-
-        canvas.drawBitmap(bitmap!!, 0f, 0f, null)
     }
 
     fun startProgressingAnimation(waitTimeMs: Long) {
@@ -103,8 +109,8 @@ class VideoRecordingControlView @JvmOverloads constructor(
     }
 
     fun stopProgressingAnimation() {
-        if (valueAnimator != null && valueAnimator!!.isRunning) {
-            valueAnimator!!.cancel()
+        valueAnimator?.takeIf { it.isRunning }?.let {
+            it.cancel()
             valueAnimator = null
 
             drawProgress(0f)
@@ -122,16 +128,16 @@ class VideoRecordingControlView @JvmOverloads constructor(
 
         circleOuterBounds = RectF(0f, 0f, width.toFloat(), height.toFloat())
         circleInnerBounds = RectF(
-            circleOuterBounds!!.left + thickness,
-            circleOuterBounds!!.top + thickness,
-            circleOuterBounds!!.right - thickness,
-            circleOuterBounds!!.bottom - thickness
+            circleOuterBounds.left + thickness,
+            circleOuterBounds.top + thickness,
+            circleOuterBounds.right - thickness,
+            circleOuterBounds.bottom - thickness
         )
 
         invalidate()
     }
 
     companion object {
-        private val START_POSITION_ANGLE = 270
+        private const val START_POSITION_ANGLE = 270
     }
 }

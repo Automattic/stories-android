@@ -1,5 +1,6 @@
 package com.automattic.photoeditor.state
 
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import androidx.fragment.app.FragmentManager
@@ -20,6 +21,7 @@ import com.automattic.photoeditor.camera.interfaces.CameraSelection
 import com.automattic.photoeditor.camera.interfaces.CameraSelection.BACK
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
+import com.automattic.photoeditor.camera.interfaces.VideoRecorderFinished
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment.FlashSupportChangeListener
 import com.automattic.photoeditor.state.BackgroundSurfaceManager.SurfaceHandlerType.CAMERA2
@@ -140,8 +142,8 @@ class BackgroundSurfaceManager(
         isVideoPlayerVisible = false
         // now, start showing camera preview
         photoEditorView.turnTextureViewOn()
-        cameraBasicHandler.activate()
         videoPlayerHandling.deactivate()
+        cameraBasicHandler.activate()
     }
 
     fun flipCamera(): CameraSelection {
@@ -170,7 +172,28 @@ class BackgroundSurfaceManager(
         return cameraBasicHandler.isFlashAvailable()
     }
 
-    fun switchVideoPlayerOn() {
+    fun switchVideoPlayerOnFromFile(videoFile: File? = null) {
+        // if coming from Activity restart, use the passed parameter
+        if (videoFile != null) {
+            videoPlayerHandling.currentFile = videoFile
+            cameraBasicHandler.currentFile = videoFile
+            videoPlayerHandling.currentExternalUri = null
+        } else {
+            videoPlayerHandling.currentFile = cameraBasicHandler.currentFile
+            videoPlayerHandling.currentExternalUri = null
+        }
+        switchVideoPlayerOn()
+    }
+
+    fun switchVideoPlayerOnFromUri(videoUri: Uri) {
+        // if coming from Activity restart, use the passed parameter
+        videoPlayerHandling.currentExternalUri = videoUri
+        videoPlayerHandling.currentFile = null
+        cameraBasicHandler.currentFile = null
+        switchVideoPlayerOn()
+    }
+
+    private fun switchVideoPlayerOn() {
         // in case the Camera was being visible, set if off
         isVideoPlayerVisible = true
         if (isCameraVisible) {
@@ -184,11 +207,11 @@ class BackgroundSurfaceManager(
                 // wanted (video player) once we're sure video has been successfully saved
                 val handler = Handler()
                 handler.postDelayed({
-                        cameraXAwareSurfaceDeactivator()
-                        videoPlayerHandling.currentFile = cameraBasicHandler.currentFile
-                        photoEditorView.turnTextureViewOn()
-                        videoPlayerHandling.activate()
-                    }, 500
+                    cameraXAwareSurfaceDeactivator()
+                    videoPlayerHandling.currentFile = cameraBasicHandler.currentFile
+                    photoEditorView.turnTextureViewOn()
+                    videoPlayerHandling.activate()
+                }, 500
                 )
                 return
             } else {
@@ -200,6 +223,14 @@ class BackgroundSurfaceManager(
         videoPlayerHandling.activate()
     }
 
+    fun videoPlayerMute() {
+        videoPlayerHandling.mute()
+    }
+
+    fun videoPlayerUnmute() {
+        videoPlayerHandling.unmute()
+    }
+
     private fun cameraXAwareSurfaceDeactivator() {
         cameraBasicHandler.deactivate()
         if (useCameraX) {
@@ -209,12 +240,11 @@ class BackgroundSurfaceManager(
         }
     }
 
-    fun startRecordingVideo() {
+    fun startRecordingVideo(finishedListener: VideoRecorderFinished? = null) {
         if (isCameraVisible) {
             // let's start recording
             isCameraRecording = true
-            // TODO txtRecording.visibility = View.VISIBLE
-            cameraBasicHandler.startRecordingVideo()
+            cameraBasicHandler.startRecordingVideo(finishedListener)
         }
     }
 
@@ -222,7 +252,6 @@ class BackgroundSurfaceManager(
         if (isCameraRecording) {
             // stop recording
             isCameraRecording = false
-            // TODO txtRecording.visibility = View.GONE
             cameraBasicHandler.stopRecordingVideo()
         }
     }
@@ -232,7 +261,15 @@ class BackgroundSurfaceManager(
     }
 
     fun getCurrentFile(): File? {
-            return cameraBasicHandler.currentFile
+        return cameraBasicHandler.currentFile
+    }
+
+    fun getCurrentBackgroundMedia(): Uri? {
+        if (videoPlayerHandling.currentExternalUri != null) {
+            return videoPlayerHandling.currentExternalUri
+        } else {
+            return Uri.parse(cameraBasicHandler.currentFile.toString())
+        }
     }
 
     private fun getStateFromBundle() {
@@ -297,6 +334,7 @@ class BackgroundSurfaceManager(
                     videoPlayerHandling = videoPlayerFragment as VideoPlayingBasicHandling
                     // the photoEditorView layout has been recreated so, re-assign its TextureView
                     videoPlayerHandling.textureView = photoEditorView.textureView
+                    videoPlayerHandling.originalMatrix = photoEditorView.textureView.getTransform(null)
                 }
                 // add video player texture listener
                 photoEditorView.listeners.add(videoPlayerHandling.surfaceTextureListener)

@@ -19,6 +19,7 @@ package com.automattic.photoeditor.gesture
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import kotlin.math.sqrt
 
 /**
  * Detects transformation gestures involving more than one pointer ("multitouch")
@@ -134,7 +135,7 @@ internal class ScaleGestureDetector(private val mListener: OnScaleGestureListene
             if (mCurrLen == -1f) {
                 val cvx = currentSpanX
                 val cvy = currentSpanY
-                mCurrLen = Math.sqrt((cvx * cvx + cvy * cvy).toDouble()).toFloat()
+                mCurrLen = sqrt((cvx * cvx + cvy * cvy).toDouble()).toFloat()
             }
             return mCurrLen
         }
@@ -150,7 +151,7 @@ internal class ScaleGestureDetector(private val mListener: OnScaleGestureListene
             if (mPrevLen == -1f) {
                 val pvx = previousSpanX
                 val pvy = previousSpanY
-                mPrevLen = Math.sqrt((pvx * pvx + pvy * pvy).toDouble()).toFloat()
+                mPrevLen = sqrt((pvx * pvx + pvy * pvy).toDouble()).toFloat()
             }
             return mPrevLen
         }
@@ -176,7 +177,7 @@ internal class ScaleGestureDetector(private val mListener: OnScaleGestureListene
      * @return Current event time in milliseconds.
      */
     val eventTime: Long
-        get() = mCurrEvent!!.eventTime
+        get() = mCurrEvent?.eventTime ?: 0
 
     /**
      * The listener for receiving notifications when gestures occur.
@@ -220,8 +221,8 @@ internal class ScaleGestureDetector(private val mListener: OnScaleGestureListene
          * Responds to the end of a scale gesture. Reported by existing
          * pointers going up.
          *
-         * Once a scale has ended, [ScaleGestureDetector.getFocusX]
-         * and [ScaleGestureDetector.getFocusY] will return the location
+         * Once a scale has ended, [ScaleGestureDetector.focusX]
+         * and [ScaleGestureDetector.focusY] will return the location
          * of the pointer remaining on the screen.
          *
          * @param detector The detector reporting the event - use this to
@@ -428,9 +429,12 @@ internal class ScaleGestureDetector(private val mListener: OnScaleGestureListene
         mScaleFactor = -1f
         currentSpanVector.set(0.0f, 0.0f)
 
-        val prev = mPrevEvent
+        val prev = mPrevEvent ?: run {
+            Log.e(TAG, "No previous event in ScaleGestureDetector")
+            return
+        }
 
-        val prevIndex0 = prev!!.findPointerIndex(mActiveId0)
+        val prevIndex0 = prev.findPointerIndex(mActiveId0)
         val prevIndex1 = prev.findPointerIndex(mActiveId1)
         val currIndex0 = curr.findPointerIndex(mActiveId0)
         val currIndex1 = curr.findPointerIndex(mActiveId1)
@@ -486,7 +490,7 @@ internal class ScaleGestureDetector(private val mListener: OnScaleGestureListene
     }
 
     companion object {
-        private val TAG = "ScaleGestureDetector"
+        private const val TAG = "ScaleGestureDetector"
 
         /**
          * This value is the threshold ratio between our previous combined pressure
@@ -497,6 +501,6 @@ internal class ScaleGestureDetector(private val mListener: OnScaleGestureListene
          * that the user is in the process of lifting a pointer off of the device.
          * Its value was tuned experimentally.
          */
-        private val PRESSURE_THRESHOLD = 0.67f
+        private const val PRESSURE_THRESHOLD = 0.67f
     }
 }

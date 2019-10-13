@@ -15,8 +15,8 @@ interface PressAndHoldGestureListener {
 }
 
 class PressAndHoldGestureHelper(
-    val initialWait: Long,
-    val pressAndHoldGestureListener: PressAndHoldGestureListener?
+    private val initialWait: Long,
+    private val pressAndHoldGestureListener: PressAndHoldGestureListener?
 ) : View.OnTouchListener {
     private var holding = false
     private var canceled = false

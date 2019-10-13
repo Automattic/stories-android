@@ -2,6 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
+apply plugin: 'io.sentry.android.gradle'
 
 android {
     compileSdkVersion 29
@@ -9,8 +10,13 @@ android {
         applicationId "com.automattic.portkey"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 1
-        versionName "1.0"
+        versionCode 11
+        // Allow versionName to be overridden with property. e.g. -PversionName=1234
+        if (project.hasProperty("versionName")) {
+            versionName project.property("versionName")
+        } else {
+            versionName "1.0.0.11-camerax"
+        }
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -22,6 +28,10 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+    lintOptions {
+        abortOnError false
+        lintConfig file('lint.xml')
     }
 }
 
@@ -42,6 +52,11 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.9.0'
     kapt 'com.github.bumptech.glide:compiler:4.9.0'
 
+    implementation 'io.sentry:sentry-android:1.7.27'
+    // this dependency is not required if you are already using your own
+    // slf4j implementation
+    implementation 'org.slf4j:slf4j-nop:1.7.25'
+
     implementation project(path: ':photoeditor')
 
     testImplementation 'junit:junit:4.12'
@@ -60,6 +75,10 @@ android.buildTypes.all { buildType ->
         }
         else if (property.key.toLowerCase().startsWith("portkey.")) {
             buildType.buildConfigField "String", property.key.replace("portkey.", "").replace(".", "_").toUpperCase(),
+                    "\"${property.value}\""
+        }
+        else if (property.key.toLowerCase().startsWith("sentry.dsn")) {
+            buildType.buildConfigField "String", property.key.replace(".", "_").toUpperCase(),
                     "\"${property.value}\""
         }
         else if (property.key.toLowerCase().startsWith("portkey.res.")) {
@@ -90,7 +109,7 @@ if (["storeFile", "storePassword", "keyAlias", "keyPassword"].count { !project.h
     android {
         signingConfigs {
             release {
-                storeFile = file(project.storeFile.replaceFirst("^~", System.getProperty("user.home")))
+                storeFile = rootProject.file(project.storeFile)
                 storePassword = project.storePassword
                 keyAlias = project.keyAlias
                 keyPassword = project.keyPassword

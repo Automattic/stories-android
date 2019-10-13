@@ -4,7 +4,9 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".MainActivity">
+        android:id="@+id/compose_loop_frame_layout"
+        android:fitsSystemWindows="true"
+        tools:context=".compose.ComposeLoopFrameActivity">
 
     <include layout="@layout/content_composer"/>
 

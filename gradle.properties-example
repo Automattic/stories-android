@@ -24,3 +24,5 @@ kotlin.code.style=official
 # Portkey properties
 
 portkey.use.cameraX = true
+sentry.dsn = https://00000000000000000000000000000000@sentry.io/0000000
+

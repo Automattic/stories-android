@@ -14,12 +14,12 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import androidx.annotation.RequiresApi
-import com.automattic.photoeditor.views.filter.CustomEffect
 import com.automattic.photoeditor.OnSaveBitmap
 import com.automattic.photoeditor.R.styleable
 import com.automattic.photoeditor.views.background.fixed.BackgroundImageView
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import com.automattic.photoeditor.views.brush.BrushDrawingView
+import com.automattic.photoeditor.views.filter.CustomEffect
 import com.automattic.photoeditor.views.filter.ImageFilterView
 import com.automattic.photoeditor.views.filter.PhotoFilter
 
@@ -107,7 +107,7 @@ class PhotoEditorView : RelativeLayout {
             adjustViewBounds = true
         }
 
-        val imgSrcParam = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+        val imgSrcParam = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT).apply {
             addRule(CENTER_IN_PARENT, TRUE)
         }
         if (attrs != null) {
@@ -119,7 +119,7 @@ class PhotoEditorView : RelativeLayout {
         }
 
         // Setup Camera preview view
-        val cameraParam = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+        val cameraParam = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT).apply {
             addRule(CENTER_IN_PARENT, TRUE)
         }
         // Setup Camera preview view
@@ -136,7 +136,7 @@ class PhotoEditorView : RelativeLayout {
             id = brushSrcId
         }
         // Align brush to the size of image view
-        val brushParam = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+        val brushParam = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT).apply {
             addRule(CENTER_IN_PARENT, TRUE)
             addRule(ALIGN_TOP, imgSrcId)
             addRule(ALIGN_BOTTOM, imgSrcId)
@@ -146,7 +146,7 @@ class PhotoEditorView : RelativeLayout {
         imageFilterView = ImageFilterView(context)
         imageFilterView.id = glFilterId
         imageFilterView.visibility = View.GONE
-        val imgFilterParam = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+        val imgFilterParam = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT).apply {
             addRule(CENTER_IN_PARENT, TRUE)
             addRule(ALIGN_TOP, imgSrcId)
             addRule(ALIGN_BOTTOM, imgSrcId)
@@ -223,24 +223,24 @@ class PhotoEditorView : RelativeLayout {
 
     internal fun setFilterEffect(filterType: PhotoFilter) {
         imageFilterView.visibility = View.VISIBLE
-        imageFilterView.setSourceBitmap(backgroundImage.bitmap!!)
+        imageFilterView.setSourceBitmap(backgroundImage.bitmap)
         imageFilterView.setFilterEffect(filterType)
     }
 
     internal fun setFilterEffect(customEffect: CustomEffect) {
         imageFilterView.visibility = View.VISIBLE
-        imageFilterView.setSourceBitmap(backgroundImage.bitmap!!)
+        imageFilterView.setSourceBitmap(backgroundImage.bitmap)
         imageFilterView.setFilterEffect(customEffect)
     }
 
     internal fun turnTextureViewOn() {
-        backgroundImage.visibility = View.GONE
+        backgroundImage.visibility = View.INVISIBLE
         autoFitTextureView.visibility = View.VISIBLE
     }
 
     internal fun turnTextureViewOff() {
         backgroundImage.visibility = View.VISIBLE
-        autoFitTextureView.visibility = View.GONE
+        autoFitTextureView.visibility = View.INVISIBLE
     }
 
     internal fun toggleTextureView(): Boolean {
@@ -251,8 +251,8 @@ class PhotoEditorView : RelativeLayout {
     }
 
     internal fun turnTextureAndImageViewOff() {
-        backgroundImage.visibility = View.GONE
-        autoFitTextureView.visibility = View.GONE
+        backgroundImage.visibility = View.INVISIBLE
+        autoFitTextureView.visibility = View.INVISIBLE
     }
 
     companion object {

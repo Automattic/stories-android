@@ -15,7 +15,9 @@ object AppPrefs {
     /**
      * Application related preferences. When the user logs out, these preferences are erased.
      */
-    private enum class DeletablePrefKey : PrefKey
+    private enum class DeletablePrefKey : PrefKey {
+        CRASH_LOGGING_ENABLED,
+    }
 
     /**
      * These preferences won't be deleted when the user disconnects.
@@ -36,6 +38,14 @@ object AppPrefs {
 
     fun setIntroRequired(required: Boolean) {
         setBoolean(UndeletablePrefKey.INTRO_REQUIRED, required)
+    }
+
+    fun isCrashLoggingEnabled(): Boolean {
+        return getBoolean(DeletablePrefKey.CRASH_LOGGING_ENABLED, true)
+    }
+
+    fun setCrashLoggingEnabled(enabled: Boolean) {
+        setBoolean(DeletablePrefKey.CRASH_LOGGING_ENABLED, enabled)
     }
 
     /**

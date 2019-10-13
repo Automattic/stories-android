@@ -8,6 +8,7 @@
     <color name="black">#000000</color>
     <color name="grey">#888888</color>
     <color name="black_transp">#99000000</color>
+    <color name="black_transp_delete">#4D000000</color>
     <color name="red">#FF0000</color>
 
     <color name="text_color_white">@color/white</color>
@@ -22,8 +23,19 @@
 
 
     <color name="loop_magenta">#C9356E</color>
+    <color name="loop_magenta_disabled">#EB6594</color>
 
     <color name="dark_gray">#51565F</color>
     <color name="light_gray">#B4B1B8</color>
     <color name="lighter_gray">#E3DFE2</color>
+
+    <!-- Photo picker    -->
+    <color name="black_translucent_50">#80000000</color>
+    <color name="gray_20">#b4b1b8</color>
+    <color name="neutral_20">@color/gray_20</color>
+    <color name="gray_0">#f7f4f5</color>
+    <color name="neutral_0">@color/gray_0</color>
+    <color name="divider">@color/gray_5</color>
+    <color name="gray_5">#e3dfe2</color>
+
 </resources>

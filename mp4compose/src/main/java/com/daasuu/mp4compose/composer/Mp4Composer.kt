@@ -1,7 +1,9 @@
 package com.daasuu.mp4compose.composer
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
+import android.net.Uri
 import android.util.Log
 import android.util.Size
 
@@ -11,10 +13,6 @@ import com.daasuu.mp4compose.Rotation
 import com.daasuu.mp4compose.composer.Mp4ComposerEngine.ProgressCallback
 import com.daasuu.mp4compose.filter.GlFilter
 
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileNotFoundException
-import java.io.IOException
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -23,7 +21,7 @@ import java.util.concurrent.Executors
  */
 
 class Mp4Composer {
-    private val srcPath: String?
+    private val srcUri: Uri?
     private val destPath: String
     private var filter: GlFilter? = null
     private var outputResolution: Size? = null
@@ -38,11 +36,13 @@ class Mp4Composer {
     private var flipHorizontal = false
     private var isStaticImageBkgSource = false
     private var bkgBitmap: Bitmap? = null
+    private var context: Context? = null
 
     private var executorService: ExecutorService? = null
 
-    constructor(srcPath: String, destPath: String) {
-        this.srcPath = srcPath
+    constructor(srcUri: Uri, destPath: String) {
+        this.srcUri = srcUri
+        this.bkgBitmap = null
         this.destPath = destPath
         isStaticImageBkgSource = false
     }
@@ -52,8 +52,13 @@ class Mp4Composer {
         this.destPath = destPath
         isStaticImageBkgSource = true
 
-        // TODO remove this constructor
-        this.srcPath = null
+        this.srcUri = null
+    }
+
+    fun with(context: Context): Mp4Composer {
+        // needed for Uri handling (content resolver)
+        this.context = context
+        return this
     }
 
     fun filter(filter: GlFilter): Mp4Composer {
@@ -147,32 +152,9 @@ class Mp4Composer {
             // instead of being passsed the bitmap object directly with specialized constructor
             // Mp4Composer(final Bitmap bkgBmp, final String destPath) (remove such constructor).
             if (!isStaticImageBkgSource) {
-                val srcFile = File(srcPath!!)
-                val fileInputStream: FileInputStream
-                try {
-                    fileInputStream = FileInputStream(srcFile)
-                } catch (e: FileNotFoundException) {
-                    e.printStackTrace()
-                    if (listener != null) {
-                        listener!!.onFailed(e)
-                    }
-                    return@Runnable
-                }
-
-                try {
-                    engine.setDataSource(fileInputStream)
-                } catch (e: IOException) {
-                    e.printStackTrace()
-                    if (listener != null) {
-                        listener!!.onFailed(e)
-                    }
-                    return@Runnable
-                }
-            }
-
-            if (!isStaticImageBkgSource) {
-                val videoRotate = getVideoRotation(srcPath)
-                val srcVideoResolution = getVideoResolution(srcPath, videoRotate)
+                initializeUriDataSource(engine)
+                val videoRotate = getVideoRotation(srcUri!!)
+                val srcVideoResolution = getVideoResolution(srcUri!!, videoRotate)
 
                 if (outputResolution == null) {
                     if (fillMode == FillMode.CUSTOM) {
@@ -207,6 +189,7 @@ class Mp4Composer {
                         bitrate = calcBitRate(outputResolution!!.width, outputResolution!!.height)
                     }
                     engine.composeFromVideoSource(
+                        context,
                         destPath,
                         outputResolution!!,
                         filter!!,
@@ -295,11 +278,15 @@ class Mp4Composer {
         fun onFailed(exception: Exception)
     }
 
-    private fun getVideoRotation(videoFilePath: String?): Int {
+    private fun initializeUriDataSource(engine: Mp4ComposerEngine) {
+        engine.setDataSource(srcUri)
+    }
+
+    private fun getVideoRotation(videoUri: Uri): Int {
         var mediaMetadataRetriever: MediaMetadataRetriever? = null
         try {
             mediaMetadataRetriever = MediaMetadataRetriever()
-            mediaMetadataRetriever.setDataSource(videoFilePath)
+            mediaMetadataRetriever.setDataSource(context, videoUri)
             val orientation = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)
             return Integer.valueOf(orientation)
         } catch (e: IllegalArgumentException) {
@@ -326,11 +313,11 @@ class Mp4Composer {
         return bitrate
     }
 
-    private fun getVideoResolution(path: String?, rotation: Int): Size {
+    private fun getVideoResolution(videoUri: Uri, rotation: Int): Size {
         var retriever: MediaMetadataRetriever? = null
         try {
             retriever = MediaMetadataRetriever()
-            retriever.setDataSource(path)
+            retriever.setDataSource(context, videoUri)
             val width = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH))
             val height = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT))
 

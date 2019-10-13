@@ -19,15 +19,28 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
+        activity_main.setOnApplyWindowInsetsListener { view, insets ->
+            // remember the insetTop as margin to all controls appearing at the top of the screen for full screen
+            // screens (i.e. ComposeLoopFrameActivity)
+            (application as Portkey).setStatusBarHeight(insets.systemWindowInsetTop)
+            view.onApplyWindowInsets(insets)
+        }
+
         if (AppPrefs.isIntroRequired() || !PermissionUtils.allRequiredPermissionsGranted(this)) {
             startActivity(Intent(this, IntroActivity::class.java))
             finish()
         }
 
         fab.setOnClickListener { view ->
+            fab.isEnabled = false
             Navigation.findNavController(this, R.id.nav_host_fragment)
                 .navigate(R.id.action_mainFragment_to_composeLoopFrameActivity)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        fab.isEnabled = true
     }
 
     override fun onSupportNavigateUp() =

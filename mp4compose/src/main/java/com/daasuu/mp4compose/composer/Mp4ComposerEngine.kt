@@ -1,5 +1,6 @@
 package com.daasuu.mp4compose.composer
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.media.MediaCodecInfo
 import android.media.MediaExtractor
@@ -14,11 +15,11 @@ import com.daasuu.mp4compose.FillModeCustomItem
 import com.daasuu.mp4compose.Rotation
 import com.daasuu.mp4compose.filter.GlFilter
 
-import java.io.FileInputStream
 import java.io.IOException
 
 import android.media.MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar
 import android.media.MediaFormat.MIMETYPE_VIDEO_AVC
+import android.net.Uri
 
 // Refer: https://github.com/ypresto/android-transcoder/blob/master/lib/src/main/java/net/ypresto/androidtranscoder/engine/MediaTranscoderEngine.java
 
@@ -26,7 +27,7 @@ import android.media.MediaFormat.MIMETYPE_VIDEO_AVC
  * Internal engine, do not use this directly.
  */
 internal class Mp4ComposerEngine {
-    private var isSourceInputStream: FileInputStream? = null
+    private var sourceUri: Uri? = null
     private var videoComposer: VideoComposer? = null
     private var audioComposer: IAudioComposer? = null
     private var mediaExtractor: MediaExtractor? = null
@@ -37,12 +38,10 @@ internal class Mp4ComposerEngine {
 
     private var useStaticBkg: Boolean = false
     private var bkgBitmap: Bitmap? = null
+    private var context: Context? = null
 
-    @Throws(IOException::class)
-    fun setDataSource(sourceIS: FileInputStream) {
-        isSourceInputStream = sourceIS
-        // make this call to make sure a file descriptor can be obtained
-        isSourceInputStream!!.fd
+    fun setDataSource(uri: Uri?) {
+        this.sourceUri = uri
     }
 
     fun setProgressCallback(progressCallback: ProgressCallback) {
@@ -51,6 +50,7 @@ internal class Mp4ComposerEngine {
 
     @Throws(IOException::class)
     fun composeFromVideoSource(
+        context: Context?,
         destPath: String,
         outputResolution: Size,
         filter: GlFilter,
@@ -65,6 +65,7 @@ internal class Mp4ComposerEngine {
         flipHorizontal: Boolean
     ) {
         this.useStaticBkg = false
+        this.context = context
         compose(
             destPath, outputResolution, filter, bitrate, mute, rotation, inputResolution, fillMode,
             fillModeCustomItem, timeScale, flipVertical, flipHorizontal
@@ -118,9 +119,12 @@ internal class Mp4ComposerEngine {
 
             if (!useStaticBkg) {
                 mediaExtractor = MediaExtractor()
-                mediaExtractor!!.setDataSource(isSourceInputStream!!.fd)
                 mediaMetadataRetriever = MediaMetadataRetriever()
-                mediaMetadataRetriever!!.setDataSource(isSourceInputStream!!.fd)
+                if (sourceUri != null && context != null) {
+                    mediaExtractor!!.setDataSource(context!!, sourceUri!!, null)
+                    mediaMetadataRetriever!!.setDataSource(context!!, sourceUri!!)
+                }
+
                 try {
                     durationUs =
                         java.lang.Long.parseLong(
