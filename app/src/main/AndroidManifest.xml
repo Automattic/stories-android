@@ -15,6 +15,10 @@
 
     <uses-permission android:name="android.permission.VIBRATE"/>
 
+    <!-- Adding this meta-data will download the font when application is installed from
+        Google Play Store. This way the font will be downloaded and ready when your app starts
+        for the first time. -->
+    <meta-data android:name="fontProviderRequests" android:value="Noto Color Emoji Compat"/>
 
     <application
             android:allowBackup="true"
