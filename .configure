@@ -1,0 +1,20 @@
+{
+  "project_name": "portkey-android",
+  "branch": "master",
+  "pinned_hash": "746c07fd89399e5951493a32f2e853e804ca7fca",
+  "files_to_copy": [
+    {
+      "file": "android/Portkey/gradle.properties",
+      "destination": "gradle.properties",
+      "encrypt": true
+    },
+    {
+      "file": "android/automattic.jks",
+      "destination": "app/release.jks",
+      "encrypt": true
+    }
+  ],
+  "file_dependencies": [
+
+  ]
+}
