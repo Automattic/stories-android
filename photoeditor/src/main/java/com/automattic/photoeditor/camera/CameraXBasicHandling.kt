@@ -32,7 +32,6 @@ import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.io.File
 
-
 class CameraXBasicHandling : VideoRecorderFragment() {
     private var videoCapture: VideoCapture? = null
     private lateinit var videoPreview: Preview
@@ -198,7 +197,11 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                         Log.i(tag, "Video File : $file")
                         finishedListener?.onVideoSaved(file)
                     }
-                    override fun onError(useCaseError: VideoCapture.VideoCaptureError, message: String, cause: Throwable?) {
+                    override fun onError(
+                        useCaseError: VideoCapture.VideoCaptureError,
+                        message: String,
+                        cause: Throwable?
+                    ) {
                         Log.i(tag, "Video Error: $message")
                         finishedListener?.onError(message, cause)
                     }
