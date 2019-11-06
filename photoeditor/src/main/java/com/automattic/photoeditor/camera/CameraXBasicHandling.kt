@@ -165,7 +165,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         currentFile?.let {
             it.createNewFile()
 
-            // ubind this use case for now, we'll re-bind later
+            // unbind this use case for now, we'll re-bind later
             imageCapture?.let {
                 imageCapture?.clear()
                 if (CameraX.isBound(imageCapture)) {
