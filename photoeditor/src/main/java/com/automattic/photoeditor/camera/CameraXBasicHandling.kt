@@ -6,9 +6,10 @@ import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.os.AsyncTask
 import android.os.Bundle
+import android.util.DisplayMetrics
 import android.util.Log
+import android.util.Rational
 import android.view.ViewGroup
-import androidx.camera.core.AspectRatio.RATIO_4_3
 import androidx.camera.core.CameraX
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCapture.CaptureMode
@@ -75,6 +76,10 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     // TODO remove this RestrictedApi annotation once androidx.camera:camera moves out of alpha
     @SuppressLint("RestrictedApi")
     private fun startCamera() {
+        // Get screen metrics used to setup camera for full screen resolution
+        val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
+        val screenAspectRatio = Rational(metrics.widthPixels, metrics.heightPixels)
+
         // retrieve flash availability for this camera
         val cameraId = CameraX.getCameraWithLensFacing(lensFacing)
         cameraId?.let {
@@ -94,7 +99,9 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                 Use setTargetResolution() for more specific cases, such as when minimum (to save computation) or
                 maximum resolutions (for processing details) are required.
              */
-            setTargetAspectRatio(RATIO_4_3)
+            // for now, we're calling setTargetAspectRatioCustom() with this device's screen aspect ratio, given
+            // setting an aspect ratio of 4:3 would show undesired effects on alpha06 such as a stretched preview
+            setTargetAspectRatioCustom(screenAspectRatio)
             // Set initial target rotation, we will have to call this again if rotation changes
             // during the lifecycle of this use case
             setTargetRotation(textureView.display.rotation)
@@ -109,7 +116,8 @@ class CameraXBasicHandling : VideoRecorderFragment() {
             setCaptureMode(CaptureMode.MIN_LATENCY)
             // We request aspect ratio but no resolution to match preview config but letting
             // CameraX optimize for whatever specific resolution best fits requested capture mode
-            setTargetAspectRatio(RATIO_4_3)
+            // setTargetAspectRatio(RATIO_4_3)
+            setTargetAspectRatioCustom(screenAspectRatio)
             // Set initial target rotation, we will have to call this again if rotation changes
             // during the lifecycle of this use case
             setTargetRotation(textureView.display.rotation)
