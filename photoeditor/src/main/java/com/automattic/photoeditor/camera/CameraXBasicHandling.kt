@@ -37,6 +37,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     private lateinit var videoPreview: Preview
     private var imageCapture: ImageCapture? = null
     private var lensFacing = CameraX.LensFacing.BACK
+    private var screenAspectRatio = Rational(9, 16)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,7 +78,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     private fun startCamera() {
         // Get screen metrics used to setup camera for full screen resolution
         val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
-        val screenAspectRatio = Rational(metrics.widthPixels, metrics.heightPixels)
+        screenAspectRatio = Rational(metrics.widthPixels, metrics.heightPixels)
 
         // retrieve flash availability for this camera
         val cameraId = CameraX.getCameraWithLensFacing(lensFacing)
@@ -182,6 +183,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
 
             val videoCaptureConfig = VideoCaptureConfig.Builder().apply {
                 setLensFacing(lensFacing)
+                setTargetAspectRatioCustom(screenAspectRatio)
                 setTargetRotation(textureView.display.rotation)
             }.build()
             videoCapture = VideoCapture(videoCaptureConfig)
