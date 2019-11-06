@@ -535,14 +535,15 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                     showStaticBackground()
                     currentOriginalCapturedFile = file
                     waitToReenableCapture()
+                    showToast("IMAGE SAVED")
                 }
-
-                showToast("IMAGE SAVED")
             }
             override fun onError(message: String, cause: Throwable?) {
                 // TODO implement error handling
-                showToast("ERROR SAVING IMAGE")
-                waitToReenableCapture()
+                runOnUiThread {
+                    showToast("ERROR SAVING IMAGE")
+                    waitToReenableCapture()
+                }
             }
         })
     }

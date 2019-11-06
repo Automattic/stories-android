@@ -31,6 +31,7 @@ import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.io.File
 
+
 class CameraXBasicHandling : VideoRecorderFragment() {
     private var videoCapture: VideoCapture? = null
     private lateinit var videoPreview: Preview
@@ -77,7 +78,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         // retrieve flash availability for this camera
         val cameraId = CameraX.getCameraWithLensFacing(lensFacing)
         cameraId?.let {
-            updateFlashSupported(cameraId)
+            updateFlashSupported(it)
         }
 
         // Create configuration object for the preview use case
@@ -251,7 +252,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
 
                 // retrieve flash availability for this camera
                 cameraId?.let {
-                    updateFlashSupported(cameraId)
+                    updateFlashSupported(it)
                 }
 
                 // Unbind all use cases and bind them again with the new lens facing configuration
