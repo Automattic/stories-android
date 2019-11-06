@@ -14,6 +14,7 @@ import android.view.ViewGroup
 import androidx.camera.core.CameraX
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCapture.CaptureMode
+import androidx.camera.core.ImageCapture.ImageCaptureError
 import androidx.camera.core.ImageCapture.Metadata
 import androidx.camera.core.ImageCapture.UseCaseError
 import androidx.camera.core.ImageCaptureConfig
@@ -209,7 +210,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                 Log.i(tag, "Video File : $file")
                 finishedListener?.onVideoSaved(file)
             }
-            override fun onError(useCaseError: VideoCapture.UseCaseError?, message: String?, cause: Throwable?) {
+            override fun onError(useCaseError: VideoCapture.VideoCaptureError?, message: String?, cause: Throwable?) {
                 Log.i(tag, "Video Error: $message")
                 finishedListener?.onError(message, cause)
             }
@@ -243,7 +244,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                     onImageCapturedListener.onImageSaved(file)
                 }
 
-                override fun onError(useCaseError: UseCaseError, message: String, cause: Throwable?) {
+                override fun onError(useCaseError: ImageCaptureError, message: String, cause: Throwable?) {
                     onImageCapturedListener.onError(message, cause)
                 }
             }, metadata)
