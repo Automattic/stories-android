@@ -179,46 +179,49 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         activity?.let {
             currentFile = FileUtils.getLoopFrameFile(it, true, "orig_")
         }
-        currentFile?.createNewFile()
 
-        // ubind this use case for now, we'll re-bind later
-        imageCapture?.let {
-            imageCapture?.clear()
-            if (CameraX.isBound(imageCapture)) {
-                CameraX.unbind(imageCapture)
-            }
-        }
+        currentFile?.let {
+            it.createNewFile()
 
-        // if a previous instance exists, request to release muxer and buffers
-        videoCapture?.let {
-            if (CameraX.isBound(videoCapture)) {
-                CameraX.unbind(videoCapture)
-            }
-            videoCapture?.clear()
-        }
-
-        val videoCaptureConfig = VideoCaptureConfig.Builder().apply {
-            setLensFacing(lensFacing)
-            setTargetRotation(textureView.display.rotation)
-        }.build()
-        videoCapture = VideoCapture(videoCaptureConfig)
-
-        // video capture only
-        CameraX.bindToLifecycle(activity, videoCapture)
-
-        videoCapture?.startRecording(
-            currentFile,
-            AsyncTask.THREAD_POOL_EXECUTOR,
-            object : VideoCapture.OnVideoSavedListener {
-                override fun onVideoSaved(file: File) {
-                    Log.i(tag, "Video File : $file")
-                    finishedListener?.onVideoSaved(file)
+            // ubind this use case for now, we'll re-bind later
+            imageCapture?.let {
+                imageCapture?.clear()
+                if (CameraX.isBound(imageCapture)) {
+                    CameraX.unbind(imageCapture)
                 }
-                override fun onError(useCaseError: VideoCapture.VideoCaptureError, message: String, cause: Throwable?) {
-                    Log.i(tag, "Video Error: $message")
-                    finishedListener?.onError(message, cause)
+            }
+
+            // if a previous instance exists, request to release muxer and buffers
+            videoCapture?.let {
+                if (CameraX.isBound(videoCapture)) {
+                    CameraX.unbind(videoCapture)
                 }
-        })
+                videoCapture?.clear()
+            }
+
+            val videoCaptureConfig = VideoCaptureConfig.Builder().apply {
+                setLensFacing(lensFacing)
+                setTargetRotation(textureView.display.rotation)
+            }.build()
+            videoCapture = VideoCapture(videoCaptureConfig)
+
+            // video capture only
+            CameraX.bindToLifecycle(activity, videoCapture)
+
+            videoCapture?.startRecording(
+                it,
+                AsyncTask.THREAD_POOL_EXECUTOR,
+                object : VideoCapture.OnVideoSavedListener {
+                    override fun onVideoSaved(file: File) {
+                        Log.i(tag, "Video File : $file")
+                        finishedListener?.onVideoSaved(file)
+                    }
+                    override fun onError(useCaseError: VideoCapture.VideoCaptureError, message: String, cause: Throwable?) {
+                        Log.i(tag, "Video Error: $message")
+                        finishedListener?.onError(message, cause)
+                    }
+            })
+        }
     }
 
     @SuppressLint("RestrictedApi")
@@ -231,31 +234,33 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         context?.let { context ->
             currentFile = FileUtils.getCaptureFile(context, false, "orig_").apply { createNewFile() }
 
-            // Setup image capture metadata
-            val metadata = Metadata().apply {
-                // Mirror image when using the front camera
-                isReversedHorizontal = lensFacing == CameraX.LensFacing.FRONT
+            currentFile?.let {
+                // Setup image capture metadata
+                val metadata = Metadata().apply {
+                    // Mirror image when using the front camera
+                    isReversedHorizontal = lensFacing == CameraX.LensFacing.FRONT
+                }
+
+                // image capture only
+                if (!CameraX.isBound(imageCapture)) {
+                    CameraX.bindToLifecycle(activity, imageCapture)
+                }
+
+                // Setup image capture listener which is triggered after photo has been taken
+                imageCapture?.takePicture(
+                    it,
+                    metadata,
+                    AsyncTask.THREAD_POOL_EXECUTOR,
+                    object : ImageCapture.OnImageSavedListener {
+                        override fun onImageSaved(file: File) {
+                            onImageCapturedListener.onImageSaved(file)
+                        }
+
+                        override fun onError(useCaseError: ImageCaptureError, message: String, cause: Throwable?) {
+                            onImageCapturedListener.onError(message, cause)
+                        }
+                })
             }
-
-            // image capture only
-            if (!CameraX.isBound(imageCapture)) {
-                CameraX.bindToLifecycle(activity, imageCapture)
-            }
-
-            // Setup image capture listener which is triggered after photo has been taken
-            imageCapture?.takePicture(
-                currentFile,
-                metadata,
-                AsyncTask.THREAD_POOL_EXECUTOR,
-                object : ImageCapture.OnImageSavedListener {
-                    override fun onImageSaved(file: File) {
-                        onImageCapturedListener.onImageSaved(file)
-                    }
-
-                    override fun onError(useCaseError: ImageCaptureError, message: String, cause: Throwable?) {
-                        onImageCapturedListener.onError(message, cause)
-                    }
-            })
         }
     }
 
