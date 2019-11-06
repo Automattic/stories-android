@@ -5,6 +5,7 @@ import android.content.Context
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CameraMetadata
+import android.os.AsyncTask
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
@@ -205,15 +206,18 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         // video capture only
         CameraX.bindToLifecycle(activity, videoCapture)
 
-        videoCapture?.startRecording(currentFile, object : VideoCapture.OnVideoSavedListener {
-            override fun onVideoSaved(file: File?) {
-                Log.i(tag, "Video File : $file")
-                finishedListener?.onVideoSaved(file)
-            }
-            override fun onError(useCaseError: VideoCapture.VideoCaptureError?, message: String?, cause: Throwable?) {
-                Log.i(tag, "Video Error: $message")
-                finishedListener?.onError(message, cause)
-            }
+        videoCapture?.startRecording(
+            currentFile,
+            AsyncTask.THREAD_POOL_EXECUTOR,
+            object : VideoCapture.OnVideoSavedListener {
+                override fun onVideoSaved(file: File) {
+                    Log.i(tag, "Video File : $file")
+                    finishedListener?.onVideoSaved(file)
+                }
+                override fun onError(useCaseError: VideoCapture.VideoCaptureError, message: String, cause: Throwable?) {
+                    Log.i(tag, "Video Error: $message")
+                    finishedListener?.onError(message, cause)
+                }
         })
     }
 
@@ -239,15 +243,19 @@ class CameraXBasicHandling : VideoRecorderFragment() {
             }
 
             // Setup image capture listener which is triggered after photo has been taken
-            imageCapture?.takePicture(currentFile, object : ImageCapture.OnImageSavedListener {
-                override fun onImageSaved(file: File) {
-                    onImageCapturedListener.onImageSaved(file)
-                }
+            imageCapture?.takePicture(
+                currentFile,
+                metadata,
+                AsyncTask.THREAD_POOL_EXECUTOR,
+                object : ImageCapture.OnImageSavedListener {
+                    override fun onImageSaved(file: File) {
+                        onImageCapturedListener.onImageSaved(file)
+                    }
 
-                override fun onError(useCaseError: ImageCaptureError, message: String, cause: Throwable?) {
-                    onImageCapturedListener.onError(message, cause)
-                }
-            }, metadata)
+                    override fun onError(useCaseError: ImageCaptureError, message: String, cause: Throwable?) {
+                        onImageCapturedListener.onError(message, cause)
+                    }
+            })
         }
     }
 
