@@ -4,18 +4,17 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
-import android.hardware.camera2.CameraMetadata
+import android.os.AsyncTask
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
 import android.util.Rational
-import android.util.Size
 import android.view.ViewGroup
 import androidx.camera.core.CameraX
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCapture.CaptureMode
+import androidx.camera.core.ImageCapture.ImageCaptureError
 import androidx.camera.core.ImageCapture.Metadata
-import androidx.camera.core.ImageCapture.UseCaseError
 import androidx.camera.core.ImageCaptureConfig
 import androidx.camera.core.Preview
 import androidx.camera.core.PreviewConfig
@@ -29,9 +28,6 @@ import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
 import com.automattic.photoeditor.camera.interfaces.cameraXLensFacingFromPortkeyCameraSelection
 import com.automattic.photoeditor.camera.interfaces.cameraXflashModeFromPortkeyFlashState
 import com.automattic.photoeditor.camera.interfaces.portkeyCameraSelectionFromCameraXLensFacing
-import com.automattic.photoeditor.util.CameraUtils.Companion.MAX_PREVIEW_HEIGHT
-import com.automattic.photoeditor.util.CameraUtils.Companion.MAX_PREVIEW_WIDTH
-import com.automattic.photoeditor.util.CameraUtils.Companion.setupOptimalCameraPreviewSize
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.io.File
@@ -41,6 +37,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     private lateinit var videoPreview: Preview
     private var imageCapture: ImageCapture? = null
     private var lensFacing = CameraX.LensFacing.BACK
+    private var screenAspectRatio = Rational(9, 16)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,44 +78,30 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     private fun startCamera() {
         // Get screen metrics used to setup camera for full screen resolution
         val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
-        val screenAspectRatio = Rational(metrics.widthPixels, metrics.heightPixels)
-        var optimalPreviewSize = Size(MAX_PREVIEW_WIDTH, MAX_PREVIEW_HEIGHT)
-        Log.d(TAG, "Screen metrics: ${metrics.widthPixels} x ${metrics.heightPixels}")
-
-        val isCameraFacingBack = lensFacing == CameraX.LensFacing.BACK
-        activity?.let {
-            val manager = it.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-            for (cameraId in manager.cameraIdList) {
-                val characteristics = manager.getCameraCharacteristics(cameraId)
-
-                val cameraDirection = characteristics.get(CameraCharacteristics.LENS_FACING)
-                if (cameraDirection != null && isCameraFacingBack &&
-                    cameraDirection != CameraMetadata.LENS_FACING_BACK) {
-                    continue
-                }
-
-                // just make sure we've got characteristics before calling setupOptimalCameraPreviewSize()
-                if (characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP) == null) {
-                    continue
-                }
-
-                optimalPreviewSize = setupOptimalCameraPreviewSize(it, textureView, cameraId)
-
-                break
-            }
-        }
+        screenAspectRatio = Rational(metrics.widthPixels, metrics.heightPixels)
 
         // retrieve flash availability for this camera
         val cameraId = CameraX.getCameraWithLensFacing(lensFacing)
         cameraId?.let {
-            updateFlashSupported(cameraId)
+            updateFlashSupported(it)
         }
 
         // Create configuration object for the preview use case
         val previewConfig = PreviewConfig.Builder().apply {
             setLensFacing(lensFacing)
-            // set our calculated target resolution
-            setTargetResolution(optimalPreviewSize)
+            /*  From https://developer.android.com/jetpack/androidx/releases/camera#camera2-core-1.0.0-alpha06
+                Aspect Ratios: For each use case, applications should call only one of setTargetResolution() or
+                setTargetAspectRatio(). Calling both on the same builder will return an error.
+                In general it’s recommended to use setTargetAspectRatio() based on the application’s UI design.
+                Specific resolutions will be based on the use case. For example, preview will be near screen resolutions
+                and image capture will provide high resolution stills. See the automatic resolutions table for more
+                information. https://developer.android.com/training/camerax/configuration#automatic-resolution
+                Use setTargetResolution() for more specific cases, such as when minimum (to save computation) or
+                maximum resolutions (for processing details) are required.
+             */
+            // for now, we're calling setTargetAspectRatioCustom() with this device's screen aspect ratio, given
+            // setting an aspect ratio of 4:3 would show undesired effects on alpha06 such as a stretched preview
+            setTargetAspectRatioCustom(screenAspectRatio)
             // Set initial target rotation, we will have to call this again if rotation changes
             // during the lifecycle of this use case
             setTargetRotation(textureView.display.rotation)
@@ -133,7 +116,8 @@ class CameraXBasicHandling : VideoRecorderFragment() {
             setCaptureMode(CaptureMode.MIN_LATENCY)
             // We request aspect ratio but no resolution to match preview config but letting
             // CameraX optimize for whatever specific resolution best fits requested capture mode
-            setTargetAspectRatio(screenAspectRatio)
+            // setTargetAspectRatio(RATIO_4_3)
+            setTargetAspectRatioCustom(screenAspectRatio)
             // Set initial target rotation, we will have to call this again if rotation changes
             // during the lifecycle of this use case
             setTargetRotation(textureView.display.rotation)
@@ -177,43 +161,54 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         activity?.let {
             currentFile = FileUtils.getLoopFrameFile(it, true, "orig_")
         }
-        currentFile?.createNewFile()
 
-        // ubind this use case for now, we'll re-bind later
-        imageCapture?.let {
-            imageCapture?.clear()
-            if (CameraX.isBound(imageCapture)) {
-                CameraX.unbind(imageCapture)
+        currentFile?.let {
+            it.createNewFile()
+
+            // unbind this use case for now, we'll re-bind later
+            imageCapture?.let {
+                imageCapture?.clear()
+                if (CameraX.isBound(imageCapture)) {
+                    CameraX.unbind(imageCapture)
+                }
             }
+
+            // if a previous instance exists, request to release muxer and buffers
+            videoCapture?.let {
+                if (CameraX.isBound(videoCapture)) {
+                    CameraX.unbind(videoCapture)
+                }
+                videoCapture?.clear()
+            }
+
+            val videoCaptureConfig = VideoCaptureConfig.Builder().apply {
+                setLensFacing(lensFacing)
+                setTargetAspectRatioCustom(screenAspectRatio)
+                setTargetRotation(textureView.display.rotation)
+            }.build()
+            videoCapture = VideoCapture(videoCaptureConfig)
+
+            // video capture only
+            CameraX.bindToLifecycle(activity, videoCapture)
+
+            videoCapture?.startRecording(
+                it,
+                AsyncTask.THREAD_POOL_EXECUTOR,
+                object : VideoCapture.OnVideoSavedListener {
+                    override fun onVideoSaved(file: File) {
+                        Log.i(tag, "Video File : $file")
+                        finishedListener?.onVideoSaved(file)
+                    }
+                    override fun onError(
+                        useCaseError: VideoCapture.VideoCaptureError,
+                        message: String,
+                        cause: Throwable?
+                    ) {
+                        Log.i(tag, "Video Error: $message")
+                        finishedListener?.onError(message, cause)
+                    }
+            })
         }
-
-        // if a previous instance exists, request to release muxer and buffers
-        videoCapture?.let {
-            if (CameraX.isBound(videoCapture)) {
-                CameraX.unbind(videoCapture)
-            }
-            videoCapture?.clear()
-        }
-
-        val videoCaptureConfig = VideoCaptureConfig.Builder().apply {
-            setLensFacing(lensFacing)
-            setTargetRotation(textureView.display.rotation)
-        }.build()
-        videoCapture = VideoCapture(videoCaptureConfig)
-
-        // video capture only
-        CameraX.bindToLifecycle(activity, videoCapture)
-
-        videoCapture?.startRecording(currentFile, object : VideoCapture.OnVideoSavedListener {
-            override fun onVideoSaved(file: File?) {
-                Log.i(tag, "Video File : $file")
-                finishedListener?.onVideoSaved(file)
-            }
-            override fun onError(useCaseError: VideoCapture.UseCaseError?, message: String?, cause: Throwable?) {
-                Log.i(tag, "Video Error: $message")
-                finishedListener?.onError(message, cause)
-            }
-        })
     }
 
     @SuppressLint("RestrictedApi")
@@ -226,27 +221,33 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         context?.let { context ->
             currentFile = FileUtils.getCaptureFile(context, false, "orig_").apply { createNewFile() }
 
-            // Setup image capture metadata
-            val metadata = Metadata().apply {
-                // Mirror image when using the front camera
-                isReversedHorizontal = lensFacing == CameraX.LensFacing.FRONT
-            }
-
-            // image capture only
-            if (!CameraX.isBound(imageCapture)) {
-                CameraX.bindToLifecycle(activity, imageCapture)
-            }
-
-            // Setup image capture listener which is triggered after photo has been taken
-            imageCapture?.takePicture(currentFile, object : ImageCapture.OnImageSavedListener {
-                override fun onImageSaved(file: File) {
-                    onImageCapturedListener.onImageSaved(file)
+            currentFile?.let {
+                // Setup image capture metadata
+                val metadata = Metadata().apply {
+                    // Mirror image when using the front camera
+                    isReversedHorizontal = lensFacing == CameraX.LensFacing.FRONT
                 }
 
-                override fun onError(useCaseError: UseCaseError, message: String, cause: Throwable?) {
-                    onImageCapturedListener.onError(message, cause)
+                // image capture only
+                if (!CameraX.isBound(imageCapture)) {
+                    CameraX.bindToLifecycle(activity, imageCapture)
                 }
-            }, metadata)
+
+                // Setup image capture listener which is triggered after photo has been taken
+                imageCapture?.takePicture(
+                    it,
+                    metadata,
+                    AsyncTask.THREAD_POOL_EXECUTOR,
+                    object : ImageCapture.OnImageSavedListener {
+                        override fun onImageSaved(file: File) {
+                            onImageCapturedListener.onImageSaved(file)
+                        }
+
+                        override fun onError(useCaseError: ImageCaptureError, message: String, cause: Throwable?) {
+                            onImageCapturedListener.onError(message, cause)
+                        }
+                })
+            }
         }
     }
 
@@ -264,7 +265,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
 
                 // retrieve flash availability for this camera
                 cameraId?.let {
-                    updateFlashSupported(cameraId)
+                    updateFlashSupported(it)
                 }
 
                 // Unbind all use cases and bind them again with the new lens facing configuration
