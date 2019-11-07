@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.emoji.widget.EmojiTextView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content">
-
-    <androidx.emoji.widget.EmojiTextView
-        android:id="@+id/txtEmoji"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="4dp"
-        android:padding="2dp"
-        android:textColor="#FFFFFF"
-        android:textSize="35sp"/>
-</LinearLayout>
+    android:id="@+id/txtEmoji"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="4dp"
+    android:padding="2dp"
+    android:textColor="#FFFFFF"
+    android:textSize="35sp"/>
