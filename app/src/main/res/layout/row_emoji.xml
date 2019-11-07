@@ -8,4 +8,5 @@
     android:layout_margin="4dp"
     android:padding="2dp"
     android:textColor="#FFFFFF"
+    android:textAlignment="center"
     android:textSize="35sp"/>
