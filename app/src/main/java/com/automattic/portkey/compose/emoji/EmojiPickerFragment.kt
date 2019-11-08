@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
+import androidx.emoji.text.EmojiCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.automattic.photoeditor.PhotoEditor
@@ -75,7 +76,26 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
         }
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            holder.txtEmojiRef.text = emojiList[position]
+            // holder.txtEmojiRef.text = emojiList[position]
+            // use EmojiCompat to process the string and make sure we have an emoji that can be rendered
+            EmojiCompat.get().registerInitCallback(object : EmojiCompat.InitCallback() {
+                override fun onInitialized() {
+                    EmojiCompat.get().unregisterInitCallback(this)
+
+                    val regularTextView = holder.txtEmojiRef
+                    if (regularTextView != null) {
+                        val compat = EmojiCompat.get()
+                        regularTextView.text = compat.process(emojiList[position])
+                    }
+                }
+
+                override fun onFailed(throwable: Throwable?) {
+                    EmojiCompat.get().unregisterInitCallback(this)
+
+                    // just fallback to setting the text
+                    holder.txtEmojiRef.text = emojiList[position]
+                }
+            })
         }
 
         override fun getItemCount(): Int {
