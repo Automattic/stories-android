@@ -394,7 +394,7 @@ class PhotoEditor private constructor(builder: Builder) :
                     }
                 })
             }
-            emojiTextView.textSize = 56f
+//            emojiTextView.textSize = 56f
 
             // hide cross and background borders for now
             imgClose.visibility = View.GONE
