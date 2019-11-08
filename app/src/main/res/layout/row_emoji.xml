@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.emoji.widget.EmojiTextView xmlns:android="http://schemas.android.com/apk/res/android"
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/txtEmoji"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
+    android:layout_width="48dp"
+    android:layout_height="48dp"
     android:layout_margin="@dimen/emoji_picker_item_margin"
     android:padding="@dimen/emoji_picker_item_padding"
     android:textColor="#FFFFFF"
     android:textAlignment="center"
-    android:textSize="@dimen/emoji_picker_initial_text_size" />
+    app:autoSizeTextType="uniform" />
