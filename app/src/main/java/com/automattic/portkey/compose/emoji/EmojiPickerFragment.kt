@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.automattic.photoeditor.PhotoEditor
 import com.automattic.portkey.R
 import com.automattic.portkey.compose.hideStatusBar
+import com.automattic.portkey.util.getDisplayPixelWidth
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.android.synthetic.main.fragment_bottom_sticker_emoji_dialog.view.*
@@ -21,6 +22,7 @@ import kotlinx.android.synthetic.main.row_emoji.view.*
 
 class EmojiPickerFragment : BottomSheetDialogFragment() {
     private var listener: EmojiListener? = null
+    private var emojiViewWidth: Int? = null
 
     private val bottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {
         override fun onStateChanged(bottomSheet: View, newState: Int) {
@@ -45,6 +47,25 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
     override fun onResume() {
         super.onResume()
         dialog?.window?.let { hideStatusBar(it) }
+        context?.let {
+            emojiViewWidth = getEmojiViewWidthForScreenWidthAndColumns(getDisplayPixelWidth(it), COLUMNS)
+        }
+    }
+
+    private fun getEmojiViewWidthForScreenWidthAndColumns(screenWidth: Int, columns: Int) : Int {
+        // let's calculate the emoji view width here, given the dialog may be displayed while the user goes
+        // out to change the fontSize manually in Settings -> Accessibility
+        val itemPadding = resources.getDimension(R.dimen.emoji_picker_item_padding) / resources.displayMetrics.density
+        val itemMargin = resources.getDimension(R.dimen.emoji_picker_item_margin) / resources.displayMetrics.density
+        val startEndMargin =
+            resources.getDimension(R.dimen.emoji_picker_whole_list_side_margin) / resources.displayMetrics.density
+
+        val wholeListTakenSpace = (itemPadding * 2) + (itemMargin * 2) + (startEndMargin * 2)
+
+        val remainingScreenOperatingSpace = screenWidth - wholeListTakenSpace
+        val maxEmojiWidth = remainingScreenOperatingSpace / columns
+
+        return maxEmojiWidth.toInt()
     }
 
     @SuppressLint("RestrictedApi")
@@ -72,6 +93,13 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
     inner class EmojiAdapter(internal val emojiList: List<String>) : RecyclerView.Adapter<EmojiAdapter.ViewHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.row_emoji, parent, false)
+            emojiViewWidth?.let {
+                val params = view.getLayoutParams()
+                // Changes the height and width to the specified *pixels*
+                params.height = it
+                params.width = it
+                view.setLayoutParams(params)
+            }
             return ViewHolder(view)
         }
 

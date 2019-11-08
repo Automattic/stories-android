@@ -40,6 +40,9 @@
 
     <dimen name="editor_initial_text_size">40sp</dimen>
     <dimen name="emoji_picker_initial_text_size">35sp</dimen>
+<!-- emoji_picker_initial_size can be anything, it needs be fixed but we are going to calculate it
+ on runtime later depending on screen size -->
+    <dimen name="emoji_picker_initial_size">48dp</dimen>
     <dimen name="emoji_picker_item_padding">2dp</dimen>
     <dimen name="emoji_picker_item_margin">4dp</dimen>
     <dimen name="emoji_picker_whole_list_side_margin">16dp</dimen>
