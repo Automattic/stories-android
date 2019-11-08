@@ -52,7 +52,7 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private fun getEmojiViewWidthForScreenWidthAndColumns(screenWidth: Int, columns: Int) : Int {
+    private fun getEmojiViewWidthForScreenWidthAndColumns(screenWidth: Int, columns: Int): Int {
         // let's calculate the emoji view width here, given the dialog may be displayed while the user goes
         // out to change the fontSize manually in Settings -> Accessibility
         val itemPadding = resources.getDimension(R.dimen.emoji_picker_item_padding) / resources.displayMetrics.density
@@ -143,6 +143,6 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
     }
 
     companion object {
-        const val COLUMNS = 6
+        const val COLUMNS = 12
     }
 }
