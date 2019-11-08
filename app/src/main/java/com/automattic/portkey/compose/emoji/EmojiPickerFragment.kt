@@ -95,7 +95,7 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.row_emoji, parent, false)
             emojiViewWidth?.let {
                 val params = view.getLayoutParams()
-                // Changes the height and width to the specified *pixels*
+                // Changes the height and width to the specified dp
                 params.height = it
                 params.width = it
                 view.setLayoutParams(params)
