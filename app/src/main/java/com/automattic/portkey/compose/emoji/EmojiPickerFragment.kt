@@ -142,6 +142,6 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
     }
 
     companion object {
-        const val COLUMNS = 12
+        const val COLUMNS = 6
     }
 }
