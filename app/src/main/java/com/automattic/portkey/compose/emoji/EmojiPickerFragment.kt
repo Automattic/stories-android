@@ -104,7 +104,6 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
         }
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            // holder.txtEmojiRef.text = emojiList[position]
             // use EmojiCompat to process the string and make sure we have an emoji that can be rendered
             EmojiCompat.get().registerInitCallback(object : EmojiCompat.InitCallback() {
                 override fun onInitialized() {
