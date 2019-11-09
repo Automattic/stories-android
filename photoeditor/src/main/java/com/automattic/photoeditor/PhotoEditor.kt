@@ -16,7 +16,6 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
@@ -25,7 +24,6 @@ import androidx.annotation.IntRange
 import androidx.annotation.RequiresPermission
 import androidx.annotation.UiThread
 import androidx.emoji.text.EmojiCompat
-import androidx.emoji.text.EmojiCompat.InitCallback
 import com.automattic.photoeditor.gesture.MultiTouchListener
 import com.automattic.photoeditor.gesture.MultiTouchListener.OnMultiTouchListener
 import com.automattic.photoeditor.util.BitmapUtil
@@ -178,24 +176,8 @@ class PhotoEditor private constructor(builder: Builder) :
     fun addImage(desiredImage: Bitmap) {
         getLayout(ViewType.IMAGE)?.apply {
             val imageView = findViewById<ImageView>(R.id.imgPhotoEditorImage)
-            val frmBorder = findViewById<FrameLayout>(R.id.frmBorder)
-            val imgClose = findViewById<ImageView>(R.id.imgPhotoEditorClose)
 
             imageView.setImageBitmap(desiredImage)
-
-            val multiTouchListenerInstance = newMultiTouchListener
-            multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
-                override fun onClick() {
-                    val isBackgroundVisible = frmBorder.tag != null && frmBorder.tag as Boolean
-                    frmBorder.setBackgroundResource(if (isBackgroundVisible) 0 else R.drawable.rounded_border_tv)
-                    imgClose.visibility = if (isBackgroundVisible) View.GONE else View.VISIBLE
-                    frmBorder.tag = !isBackgroundVisible
-                }
-
-                override fun onLongClick() {}
-            })
-
-            setOnTouchListener(multiTouchListenerInstance)
 
             addViewToParent(this, ViewType.IMAGE)
         }
@@ -204,22 +186,6 @@ class PhotoEditor private constructor(builder: Builder) :
     fun addNewImageView(isAnimated: Boolean, uri: Uri) {
         getLayout(ViewType.IMAGE)?.apply {
             val imageView = findViewById<ImageView>(R.id.imgPhotoEditorImage)
-            val frmBorder = findViewById<FrameLayout>(R.id.frmBorder)
-            val imgClose = findViewById<ImageView>(R.id.imgPhotoEditorClose)
-
-            val multiTouchListenerInstance = newMultiTouchListener
-            multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
-                override fun onClick() {
-                    val isBackgroundVisible = frmBorder.tag != null && frmBorder.tag as Boolean
-                    frmBorder.setBackgroundResource(if (isBackgroundVisible) 0 else R.drawable.rounded_border_tv)
-                    imgClose.visibility = if (isBackgroundVisible) View.GONE else View.VISIBLE
-                    frmBorder.tag = !isBackgroundVisible
-                }
-
-                override fun onLongClick() {}
-            })
-
-            setOnTouchListener(multiTouchListenerInstance)
 
             addViewToParent(this, if (isAnimated) ViewType.STICKER_ANIMATED else ViewType.IMAGE, uri)
 
@@ -233,22 +199,6 @@ class PhotoEditor private constructor(builder: Builder) :
     fun addNewImageView(isAnimated: Boolean): ImageView? {
         getLayout(ViewType.IMAGE)?.apply {
             val imageView = findViewById<ImageView>(R.id.imgPhotoEditorImage)
-            val frmBorder = findViewById<FrameLayout>(R.id.frmBorder)
-            val imgClose = findViewById<ImageView>(R.id.imgPhotoEditorClose)
-
-            val multiTouchListenerInstance = newMultiTouchListener
-            multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
-                override fun onClick() {
-                    val isBackgroundVisible = frmBorder.tag != null && frmBorder.tag as Boolean
-                    frmBorder.setBackgroundResource(if (isBackgroundVisible) 0 else R.drawable.rounded_border_tv)
-                    imgClose.visibility = if (isBackgroundVisible) View.GONE else View.VISIBLE
-                    frmBorder.tag = !isBackgroundVisible
-                }
-
-                override fun onLongClick() {}
-            })
-
-            setOnTouchListener(multiTouchListenerInstance)
 
             addViewToParent(this, if (isAnimated) ViewType.STICKER_ANIMATED else ViewType.IMAGE)
 
@@ -270,12 +220,6 @@ class PhotoEditor private constructor(builder: Builder) :
         brushDrawingView.brushDrawingMode = false
         getLayout(ViewType.TEXT)?.apply {
             val textInputTv = findViewById<TextView>(R.id.tvPhotoEditorText)
-            val imgClose = findViewById<ImageView>(R.id.imgPhotoEditorClose)
-            val frmBorder = findViewById<FrameLayout>(R.id.frmBorder)
-
-            // hide cross and background borders for now
-            imgClose.visibility = View.GONE
-            frmBorder.setBackgroundResource(0)
 
             textInputTv.text = text
             textInputTv.setTextColor(colorCodeTextView)
@@ -365,8 +309,6 @@ class PhotoEditor private constructor(builder: Builder) :
         brushDrawingView.brushDrawingMode = false
         getLayout(ViewType.EMOJI)?.apply {
             val emojiTextView = findViewById<TextView>(R.id.tvPhotoEditorText)
-            val frmBorder = findViewById<FrameLayout>(R.id.frmBorder)
-            val imgClose = findViewById<ImageView>(R.id.imgPhotoEditorClose)
 
             if (emojiTypeface != null) {
                 emojiTextView.typeface = emojiTypeface
@@ -395,10 +337,6 @@ class PhotoEditor private constructor(builder: Builder) :
                 })
             }
 //            emojiTextView.textSize = 56f
-
-            // hide cross and background borders for now
-            imgClose.visibility = View.GONE
-            frmBorder.setBackgroundResource(0)
 
             val multiTouchListenerInstance = newMultiTouchListener
             multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
@@ -466,9 +404,6 @@ class PhotoEditor private constructor(builder: Builder) :
             // We are setting tag as ViewType to identify what type of the view it is
             // when we remove the view from stack i.e onRemoveViewListener(ViewType viewType, int numberOfAddedViews);
             rootView.tag = viewType
-            val imgClose = rootView.findViewById<ImageView>(R.id.imgPhotoEditorClose)
-            val finalRootView = rootView
-            imgClose?.setOnClickListener { viewUndo(finalRootView, viewType) }
         }
         return rootView
     }
@@ -479,7 +414,7 @@ class PhotoEditor private constructor(builder: Builder) :
      * @param brushDrawingMode true if mode is enabled
      */
     fun setBrushDrawingMode(brushDrawingMode: Boolean) {
-            brushDrawingView.brushDrawingMode = brushDrawingMode
+        brushDrawingView.brushDrawingMode = brushDrawingMode
     }
 
     /**
@@ -615,15 +550,15 @@ class PhotoEditor private constructor(builder: Builder) :
      */
     @UiThread
     fun clearHelperBox() {
-        for (i in 0 until parentView.childCount) {
-            val childAt = parentView.getChildAt(i)
-            val frmBorder = childAt.findViewById<FrameLayout>(R.id.frmBorder)
-            frmBorder?.setBackgroundResource(0)
-            val imgClose = childAt.findViewById<ImageView>(R.id.imgPhotoEditorClose)
-            if (imgClose != null) {
-                imgClose.visibility = View.GONE
-            }
-        }
+//        for (i in 0 until parentView.childCount) {
+//            val childAt = parentView.getChildAt(i)
+//            val frmBorder = childAt.findViewById<FrameLayout>(R.id.frmBorder)
+//            frmBorder?.setBackgroundResource(0)
+//            val imgClose = childAt.findViewById<ImageView>(R.id.imgPhotoEditorClose)
+//            if (imgClose != null) {
+//                imgClose.visibility = View.GONE
+//            }
+//        }
     }
 
     /**
