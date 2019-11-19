@@ -109,11 +109,8 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
                 override fun onInitialized() {
                     EmojiCompat.get().unregisterInitCallback(this)
 
-                    val regularTextView = holder.txtEmojiRef
-                    if (regularTextView != null) {
-                        val compat = EmojiCompat.get()
-                        regularTextView.text = compat.process(emojiList[position])
-                    }
+                    val compat = EmojiCompat.get()
+                    holder.txtEmojiRef.text = compat.process(emojiList[position])
                 }
 
                 override fun onFailed(throwable: Throwable?) {
