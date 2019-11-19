@@ -94,11 +94,11 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.row_emoji, parent, false)
             emojiViewWidth?.let {
-                val params = view.getLayoutParams()
+                val params = view.layoutParams
                 // Changes the height and width to the specified dp
                 params.height = it
                 params.width = it
-                view.setLayoutParams(params)
+                view.layoutParams = params
             }
             return ViewHolder(view)
         }
