@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="autosize_tv_margin">4dp</dimen>
+    <dimen name="autosize_tv_initial_width">96dp</dimen>
+    <dimen name="autosize_tv_initial_height">96dp</dimen>
+</resources>

@@ -29,6 +29,7 @@ import com.automattic.photoeditor.gesture.MultiTouchListener.OnMultiTouchListene
 import com.automattic.photoeditor.util.BitmapUtil
 import com.automattic.photoeditor.views.PhotoEditorView
 import com.automattic.photoeditor.views.ViewType
+import com.automattic.photoeditor.views.ViewType.EMOJI
 import com.automattic.photoeditor.views.added.AddedView
 import com.automattic.photoeditor.views.added.AddedViewList
 import com.automattic.photoeditor.views.brush.BrushDrawingView
@@ -309,7 +310,6 @@ class PhotoEditor private constructor(builder: Builder) :
         brushDrawingView.brushDrawingMode = false
         getLayout(ViewType.EMOJI)?.apply {
             val emojiTextView = findViewById<TextView>(R.id.tvPhotoEditorText)
-
             if (emojiTypeface != null) {
                 emojiTextView.typeface = emojiTypeface
                 emojiTextView.text = emojiName
@@ -359,11 +359,22 @@ class PhotoEditor private constructor(builder: Builder) :
      * @param rootView rootview of image,text and emoji
      */
     private fun addViewToParent(rootView: View, viewType: ViewType, sourceUri: Uri? = null) {
-        val params = RelativeLayout.LayoutParams(
-            ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-        params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
-        parentView.addView(rootView, params)
+        if (viewType != EMOJI) {
+            val params = RelativeLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
+            parentView.addView(rootView, params)
+        } else {
+            val params = RelativeLayout.LayoutParams(
+                context.resources.getDimensionPixelSize(R.dimen.autosize_tv_initial_height),
+                context.resources.getDimensionPixelSize(R.dimen.autosize_tv_initial_height)
+            )
+            params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
+            rootView.tvPhotoEditorText.layoutParams = params
+
+            parentView.addView(rootView, params)
+        }
         addedViews.add(AddedView(rootView, viewType, sourceUri))
         mOnPhotoEditorListener?.onAddViewListener(viewType, addedViews.size)
     }
@@ -389,14 +400,13 @@ class PhotoEditor private constructor(builder: Builder) :
             ViewType.IMAGE -> rootView = layoutInflater.inflate(R.layout.view_photo_editor_image, null)
             ViewType.EMOJI -> {
                 rootView = layoutInflater.inflate(R.layout.view_photo_editor_text, null)
-                val txtTextEmoji = rootView.tvPhotoEditorText
-                if (txtTextEmoji != null) {
-                    if (mDefaultEmojiTypeface != null) {
-                        txtTextEmoji.typeface = mDefaultEmojiTypeface
+                if (rootView.tvPhotoEditorText != null && mDefaultTextTypeface != null) {
+                    rootView.tvPhotoEditorText.gravity = Gravity.CENTER
+                    if (mDefaultTextTypeface != null) {
+                        rootView.tvPhotoEditorText.typeface = mDefaultTextTypeface
                     }
-                    txtTextEmoji.gravity = Gravity.CENTER
-                    txtTextEmoji.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
                 }
+                rootView.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
             }
         }
 
