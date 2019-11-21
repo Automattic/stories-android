@@ -389,7 +389,7 @@ class PhotoEditor private constructor(builder: Builder) :
         when (viewType) {
             ViewType.TEXT -> {
                 rootView = layoutInflater.inflate(R.layout.view_photo_editor_text, null)
-                if (rootView.tvPhotoEditorText != null && mDefaultTextTypeface != null) {
+                if (rootView.tvPhotoEditorText != null) {
                     rootView.tvPhotoEditorText.gravity = Gravity.CENTER
                     if (mDefaultTextTypeface != null) {
                         rootView.tvPhotoEditorText.typeface = mDefaultTextTypeface
@@ -399,8 +399,9 @@ class PhotoEditor private constructor(builder: Builder) :
             ViewType.IMAGE -> rootView = layoutInflater.inflate(R.layout.view_photo_editor_image, null)
             ViewType.EMOJI -> {
                 rootView = layoutInflater.inflate(R.layout.view_photo_editor_text, null)
-                if (rootView.tvPhotoEditorText != null && mDefaultTextTypeface != null) {
+                if (rootView.tvPhotoEditorText != null) {
                     rootView.tvPhotoEditorText.gravity = Gravity.CENTER
+                    rootView.tvPhotoEditorText.textAlignment = View.TEXT_ALIGNMENT_CENTER
                     if (mDefaultTextTypeface != null) {
                         rootView.tvPhotoEditorText.typeface = mDefaultTextTypeface
                     }
