@@ -336,7 +336,6 @@ class PhotoEditor private constructor(builder: Builder) :
                     }
                 })
             }
-            emojiTextView.textSize = 56f
 
             val multiTouchListenerInstance = newMultiTouchListener
             multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
