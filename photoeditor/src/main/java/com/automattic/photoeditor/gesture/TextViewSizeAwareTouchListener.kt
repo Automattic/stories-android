@@ -3,7 +3,6 @@ package com.automattic.photoeditor.gesture
 import android.annotation.SuppressLint
 import android.view.MotionEvent
 import android.view.View
-import android.widget.TextView
 
 class TextViewSizeAwareTouchListener(val minWidth: Int, val minHeight: Int) : View.OnTouchListener {
     private var originX = 0f
