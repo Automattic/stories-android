@@ -413,11 +413,10 @@ class PhotoEditor private constructor(builder: Builder) :
                     }
                     txtTextEmoji.gravity = Gravity.CENTER
                     txtTextEmoji.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
-                    val maxHeight = parentView.height
-                    rootView.tvPhotoEditorText.textSize =
+                    txtTextEmoji.textSize =
                         TypedValue.applyDimension(
                             TypedValue.COMPLEX_UNIT_SP,
-                            maxHeight.toFloat(),
+                            DEFAULT_AUTO_SIZE_MAX_TEXT_SIZE_IN_SP,
                             context.resources.displayMetrics
                         )
                 }
@@ -1125,6 +1124,9 @@ class PhotoEditor private constructor(builder: Builder) :
 
     companion object {
         private const val TAG = "PhotoEditor"
+        // idea taken from TextView's source code, setting maximum of 112sp for fontSize
+        // see https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/widget/TextView.java#891
+        private const val DEFAULT_AUTO_SIZE_MAX_TEXT_SIZE_IN_SP = 152f
 
         private fun convertEmoji(emoji: String): String {
             return try {
