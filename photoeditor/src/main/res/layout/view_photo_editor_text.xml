@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.lb.auto_fit_textview.AutoResizeTextView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/tvPhotoEditorText"
-    android:layout_width="96dp"
-    android:layout_height="96dp"
-    android:layout_margin="4dp"
-    android:padding="4dp"
+    android:layout_width="@dimen/autosize_tv_initial_width"
+    android:layout_height="@dimen/autosize_tv_initial_height"
+    android:layout_margin="@dimen/autosize_tv_margin"
+    android:padding="@dimen/autosize_tv_margin"
     android:textColor="#000000" />
 
