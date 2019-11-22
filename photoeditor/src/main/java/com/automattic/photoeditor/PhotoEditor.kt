@@ -26,6 +26,7 @@ import androidx.annotation.UiThread
 import androidx.emoji.text.EmojiCompat
 import com.automattic.photoeditor.gesture.MultiTouchListener
 import com.automattic.photoeditor.gesture.MultiTouchListener.OnMultiTouchListener
+import com.automattic.photoeditor.gesture.TextViewSizeAwareTouchListener
 import com.automattic.photoeditor.util.BitmapUtil
 import com.automattic.photoeditor.views.PhotoEditorView
 import com.automattic.photoeditor.views.ViewType
@@ -337,17 +338,20 @@ class PhotoEditor private constructor(builder: Builder) :
                 })
             }
 
-            val multiTouchListenerInstance = newMultiTouchListener
-            multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
-                override fun onClick() {
-                }
+//            val multiTouchListenerInstance = newMultiTouchListener
+//            multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
+//                override fun onClick() {
+//                }
+//
+//                override fun onLongClick() {
+//                    // TODO implement the DELETE action (hide every other view, allow this view to be dragged to the trash
+//                    // bin)
+//                }
+//            })
+//            setOnTouchListener(multiTouchListenerInstance)
 
-                override fun onLongClick() {
-                    // TODO implement the DELETE action (hide every other view, allow this view to be dragged to the trash
-                    // bin)
-                }
-            })
-            setOnTouchListener(multiTouchListenerInstance)
+            setOnTouchListener(TextViewSizeAwareTouchListener(50, 50))
+
             addViewToParent(this, ViewType.EMOJI)
         }
     }
@@ -405,8 +409,15 @@ class PhotoEditor private constructor(builder: Builder) :
                     if (mDefaultTextTypeface != null) {
                         rootView.tvPhotoEditorText.typeface = mDefaultTextTypeface
                     }
+                    val maxHeight = parentView.height
+                    rootView.tvPhotoEditorText.textSize =
+                        TypedValue.applyDimension(
+                            TypedValue.COMPLEX_UNIT_SP,
+                            maxHeight.toFloat(),
+                            context.resources.displayMetrics
+                        )
                 }
-                rootView.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+                // rootView.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
             }
         }
 

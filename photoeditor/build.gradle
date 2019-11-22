@@ -49,6 +49,8 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.9.0'
     kapt 'com.github.bumptech.glide:compiler:4.9.0'
 
+    implementation 'com.github.AndroidDeveloperLB:AutoFitTextView:8'
+
     implementation project(path: ':mp4compose')
 
     testImplementation 'junit:junit:4.12'
