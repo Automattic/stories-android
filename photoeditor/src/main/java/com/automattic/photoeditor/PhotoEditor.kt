@@ -339,6 +339,7 @@ class PhotoEditor private constructor(builder: Builder) :
                 })
             }
 
+            // TODO: will uncomment and remove TextViewSizeAwareTouchListener class accordingly in a later PR
 //            val multiTouchListenerInstance = newMultiTouchListener
 //            multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
 //                override fun onClick() {
@@ -420,7 +421,6 @@ class PhotoEditor private constructor(builder: Builder) :
                             context.resources.displayMetrics
                         )
                 }
-                // rootView.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
             }
         }
 
@@ -574,6 +574,7 @@ class PhotoEditor private constructor(builder: Builder) :
      */
     @UiThread
     fun clearHelperBox() {
+        // TODO will remove this method accordingly once imgCLose and frmBorder are removed from all views
 //        for (i in 0 until parentView.childCount) {
 //            val childAt = parentView.getChildAt(i)
 //            val frmBorder = childAt.findViewById<FrameLayout>(R.id.frmBorder)

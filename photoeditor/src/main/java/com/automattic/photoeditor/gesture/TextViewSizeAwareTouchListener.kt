@@ -57,6 +57,8 @@ class TextViewSizeAwareTouchListener(val minWidth: Int, val minHeight: Int) : Vi
                         params.height = newHeight
 
                         view.layoutParams = params
+                        // note: requestLayout() is needed to get AutoResizeTextView to recalculate its fontSize after a
+                        // change in view's width/height is made
                         view.requestLayout()
                         lastDiffX = diffX
                         lastDiffY = diffY
