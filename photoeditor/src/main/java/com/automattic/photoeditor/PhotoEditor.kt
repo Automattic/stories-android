@@ -26,9 +26,11 @@ import androidx.annotation.UiThread
 import androidx.emoji.text.EmojiCompat
 import com.automattic.photoeditor.gesture.MultiTouchListener
 import com.automattic.photoeditor.gesture.MultiTouchListener.OnMultiTouchListener
+import com.automattic.photoeditor.gesture.TextViewSizeAwareTouchListener
 import com.automattic.photoeditor.util.BitmapUtil
 import com.automattic.photoeditor.views.PhotoEditorView
 import com.automattic.photoeditor.views.ViewType
+import com.automattic.photoeditor.views.ViewType.EMOJI
 import com.automattic.photoeditor.views.added.AddedView
 import com.automattic.photoeditor.views.added.AddedViewList
 import com.automattic.photoeditor.views.brush.BrushDrawingView
@@ -337,17 +339,20 @@ class PhotoEditor private constructor(builder: Builder) :
                 })
             }
 
-            val multiTouchListenerInstance = newMultiTouchListener
-            multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
-                override fun onClick() {
-                }
+//            val multiTouchListenerInstance = newMultiTouchListener
+//            multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
+//                override fun onClick() {
+//                }
+//
+//                override fun onLongClick() {
+//                    // TODO implement the DELETE action (hide every other view, allow this view to be dragged to the trash
+//                    // bin)
+//                }
+//            })
+//            setOnTouchListener(multiTouchListenerInstance)
 
-                override fun onLongClick() {
-                    // TODO implement the DELETE action (hide every other view, allow this view to be dragged to the trash
-                    // bin)
-                }
-            })
-            setOnTouchListener(multiTouchListenerInstance)
+            setOnTouchListener(TextViewSizeAwareTouchListener(50, 50))
+
             addViewToParent(this, ViewType.EMOJI)
         }
     }
@@ -358,11 +363,23 @@ class PhotoEditor private constructor(builder: Builder) :
      * @param rootView rootview of image,text and emoji
      */
     private fun addViewToParent(rootView: View, viewType: ViewType, sourceUri: Uri? = null) {
-        val params = RelativeLayout.LayoutParams(
-            ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-        params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
-        parentView.addView(rootView, params)
+        if (viewType != EMOJI) {
+            val params = RelativeLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
+            parentView.addView(rootView, params)
+        } else {
+            val params = RelativeLayout.LayoutParams(
+                context.resources.getDimensionPixelSize(R.dimen.autosize_tv_initial_height),
+                context.resources.getDimensionPixelSize(R.dimen.autosize_tv_initial_height)
+            )
+            params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
+            rootView.tvPhotoEditorText.layoutParams = params
+
+            parentView.addView(rootView, params)
+        }
+
         addedViews.add(AddedView(rootView, viewType, sourceUri))
         mOnPhotoEditorListener?.onAddViewListener(viewType, addedViews.size)
     }
@@ -395,7 +412,15 @@ class PhotoEditor private constructor(builder: Builder) :
                     }
                     txtTextEmoji.gravity = Gravity.CENTER
                     txtTextEmoji.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+                    val maxHeight = parentView.height
+                    rootView.tvPhotoEditorText.textSize =
+                        TypedValue.applyDimension(
+                            TypedValue.COMPLEX_UNIT_SP,
+                            maxHeight.toFloat(),
+                            context.resources.displayMetrics
+                        )
                 }
+                // rootView.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
             }
         }
 
