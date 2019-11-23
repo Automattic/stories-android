@@ -339,7 +339,6 @@ class PhotoEditor private constructor(builder: Builder) :
                 })
             }
 
-            // TODO: will uncomment and remove TextViewSizeAwareTouchListener class accordingly in a later PR
 //            val multiTouchListenerInstance = newMultiTouchListener
 //            multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
 //                override fun onClick() {
