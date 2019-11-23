@@ -13,6 +13,9 @@ class RotationGestureDetector(private val mListener: OnRotationGestureListener?)
     var angle: Float = 0.toFloat()
         private set
 
+    private var currentSpanVector = Vector2D()
+    private var prevSpanVector = Vector2D()
+
     init {
         ptrID1 = INVALID_POINTER_ID
         ptrID2 = INVALID_POINTER_ID
@@ -27,6 +30,11 @@ class RotationGestureDetector(private val mListener: OnRotationGestureListener?)
                 sY = event.getY(event.findPointerIndex(ptrID1))
                 fX = event.getX(event.findPointerIndex(ptrID2))
                 fY = event.getY(event.findPointerIndex(ptrID2))
+
+                val pvx = fX - sX
+                val pvy = fY - sY
+
+                prevSpanVector.set(pvx, pvy)
             }
             MotionEvent.ACTION_MOVE -> if (ptrID1 != INVALID_POINTER_ID && ptrID2 != INVALID_POINTER_ID) {
                 val nfX: Float
@@ -38,7 +46,16 @@ class RotationGestureDetector(private val mListener: OnRotationGestureListener?)
                 nfX = event.getX(event.findPointerIndex(ptrID2))
                 nfY = event.getY(event.findPointerIndex(ptrID2))
 
-                angle = angleBetweenLines(fX, fY, sX, sY, nfX, nfY, nsX, nsY)
+                val cvx = nfX - nsX
+                val cvy = nfY - nsY
+
+                currentSpanVector.set(cvx, cvy)
+
+                angle = Vector2D.getAngle(
+                    prevSpanVector,
+                    currentSpanVector
+                )
+
                 mListener?.onRotation(view, angle)
             }
             MotionEvent.ACTION_UP -> ptrID1 = INVALID_POINTER_ID
@@ -49,25 +66,6 @@ class RotationGestureDetector(private val mListener: OnRotationGestureListener?)
             }
         }
         return true
-    }
-
-    private fun angleBetweenLines(
-        fX: Float,
-        fY: Float,
-        sX: Float,
-        sY: Float,
-        nfX: Float,
-        nfY: Float,
-        nsX: Float,
-        nsY: Float
-    ): Float {
-        val angle1 = Math.atan2((fY - sY).toDouble(), (fX - sX).toDouble()).toFloat()
-        val angle2 = Math.atan2((nfY - nsY).toDouble(), (nfX - nsX).toDouble()).toFloat()
-
-        var angle = Math.toDegrees((angle1 - angle2).toDouble()).toFloat() % 360
-        if (angle < -180f) angle += 360.0f
-        if (angle > 180f) angle -= 360.0f
-        return angle
     }
 
     interface OnRotationGestureListener {

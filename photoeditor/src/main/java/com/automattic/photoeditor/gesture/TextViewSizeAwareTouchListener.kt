@@ -23,7 +23,7 @@ class TextViewSizeAwareTouchListener(val minWidth: Int, val minHeight: Int) : Vi
     }
 
     override fun onRotation(view: View, angle: Float) {
-        view.rotation = angle
+        view.rotation += angle
     }
 
     @SuppressLint("ClickableViewAccessibility")
