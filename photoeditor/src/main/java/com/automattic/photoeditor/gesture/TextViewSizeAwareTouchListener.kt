@@ -78,20 +78,6 @@ class TextViewSizeAwareTouchListener(val minWidth: Int, val minHeight: Int) : Vi
                     var newX = event.getX(0) + originX
                     var newY = event.getY(0) + originY
 
-                    if (newX < 0) {
-                        newX = 0f
-                    }
-                    if (newY < 0) {
-                        newY = 0f
-                    }
-
-                    if (newX + view.measuredWidth > (view.parent as View).width) {
-                        newX = (view.parent as View).width.toFloat() - view.measuredWidth
-                    }
-                    if (newY + view.measuredHeight > (view.parent as View).height) {
-                        newY = (view.parent as View).height.toFloat() - view.measuredHeight
-                    }
-
                     view.x = newX
                     view.y = newY
                 }
