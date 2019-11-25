@@ -210,6 +210,9 @@ class PhotoEditor private constructor(builder: Builder) :
         getLayout(ViewType.IMAGE)?.apply {
             val imageView = findViewById<ImageView>(R.id.imgPhotoEditorImage)
 
+            val touchListenerInstance = newTextViewSizeAwareTouchListener
+            setOnTouchListener(touchListenerInstance)
+
             addViewToParent(this, if (isAnimated) ViewType.STICKER_ANIMATED else ViewType.IMAGE, uri)
 
             // now load the gif on this ImageView with Glide
