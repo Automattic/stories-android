@@ -109,6 +109,25 @@ class PhotoEditor private constructor(builder: Builder) :
             }
         )
 
+    private val newTextViewSizeAwareTouchListener: TextViewSizeAwareTouchListener
+        get() =
+            TextViewSizeAwareTouchListener(
+                context.resources.getDimensionPixelSize(R.dimen.autosize_tv_minimum_width),
+                context.resources.getDimensionPixelSize(R.dimen.autosize_tv_minimum_height),
+                deleteView,
+                object : OnDeleteViewListener {
+                    override fun onRemoveViewListener(removedView: View) {
+                        // here do actually remove the view
+                        val viewType = removedView.tag as ViewType
+                        viewUndo(removedView, viewType)
+                    }
+                    override fun onRemoveViewReadyListener(removedView: View, ready: Boolean) {
+                        mOnPhotoEditorListener?.onRemoveViewReadyListener(removedView, ready)
+                    }
+                },
+                mOnPhotoEditorListener
+            )
+
     /**
      * @return true is brush mode is enabled
      */
@@ -232,8 +251,23 @@ class PhotoEditor private constructor(builder: Builder) :
                 textInputTv.typeface = textTypeface
             }
 
-            val multiTouchListenerInstance = newMultiTouchListener
-            multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
+//            val multiTouchListenerInstance = newMultiTouchListener
+//            multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
+//                override fun onClick() {
+//                    val textInput = textInputTv.text.toString()
+//                    val currentTextColor = textInputTv.currentTextColor
+//                    mOnPhotoEditorListener?.onEditTextChangeListener(this@apply, textInput, currentTextColor, false)
+//                }
+//
+//                override fun onLongClick() {
+//                    // TODO implement the DELETE action (hide every other view, allow this view to be dragged to the trash
+//                    // bin)
+//                }
+//            })
+//            setOnTouchListener(multiTouchListenerInstance)
+
+            setOnTouchListener(newTextViewSizeAwareTouchListener)
+            newTextViewSizeAwareTouchListener.setOnGestureControl(object: TextViewSizeAwareTouchListener.OnGestureControl {
                 override fun onClick() {
                     val textInput = textInputTv.text.toString()
                     val currentTextColor = textInputTv.currentTextColor
@@ -241,12 +275,9 @@ class PhotoEditor private constructor(builder: Builder) :
                 }
 
                 override fun onLongClick() {
-                    // TODO implement the DELETE action (hide every other view, allow this view to be dragged to the trash
-                    // bin)
+                    // no op
                 }
             })
-
-            setOnTouchListener(multiTouchListenerInstance)
             addViewToParent(this, ViewType.TEXT)
 
             // now open TextEditor right away
@@ -352,25 +383,7 @@ class PhotoEditor private constructor(builder: Builder) :
 //            })
 //            setOnTouchListener(multiTouchListenerInstance)
 
-            setOnTouchListener(
-                TextViewSizeAwareTouchListener(
-                    resources.getDimensionPixelSize(R.dimen.autosize_tv_minimum_width),
-                    resources.getDimensionPixelSize(R.dimen.autosize_tv_minimum_height),
-                    deleteView,
-                    object : OnDeleteViewListener {
-                        override fun onRemoveViewListener(removedView: View) {
-                            // here do actually remove the view
-                            val viewType = removedView.tag as ViewType
-                            viewUndo(removedView, viewType)
-                        }
-                        override fun onRemoveViewReadyListener(removedView: View, ready: Boolean) {
-                            mOnPhotoEditorListener?.onRemoveViewReadyListener(removedView, ready)
-                        }
-                    },
-                    mOnPhotoEditorListener
-                )
-            )
-
+            setOnTouchListener(newTextViewSizeAwareTouchListener)
             addViewToParent(this, ViewType.EMOJI)
         }
     }
@@ -413,11 +426,20 @@ class PhotoEditor private constructor(builder: Builder) :
         when (viewType) {
             ViewType.TEXT -> {
                 rootView = layoutInflater.inflate(R.layout.view_photo_editor_text, null)
-                if (rootView.tvPhotoEditorText != null && mDefaultTextTypeface != null) {
-                    rootView.tvPhotoEditorText.gravity = Gravity.CENTER
+                val txtTextView = rootView.tvPhotoEditorText
+                if (txtTextView != null) {
                     if (mDefaultTextTypeface != null) {
-                        rootView.tvPhotoEditorText.typeface = mDefaultTextTypeface
+                        txtTextView.typeface = mDefaultTextTypeface
                     }
+                    txtTextView.gravity = Gravity.CENTER
+                    // txtTextView.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+                    val maxHeight = parentView.height
+                    rootView.tvPhotoEditorText.textSize =
+                        TypedValue.applyDimension(
+                            TypedValue.COMPLEX_UNIT_SP,
+                            maxHeight.toFloat(),
+                            context.resources.displayMetrics
+                        )
                 }
             }
             ViewType.IMAGE -> rootView = layoutInflater.inflate(R.layout.view_photo_editor_image, null)

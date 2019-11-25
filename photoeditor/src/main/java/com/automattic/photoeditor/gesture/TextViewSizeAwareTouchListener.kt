@@ -2,6 +2,7 @@ package com.automattic.photoeditor.gesture
 
 import android.annotation.SuppressLint
 import android.graphics.Rect
+import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import com.automattic.photoeditor.OnPhotoEditorListener
@@ -29,6 +30,9 @@ class TextViewSizeAwareTouchListener(
     private var outRect: Rect? = null
     private val location = IntArray(2)
 
+    private var onGestureControl: OnGestureControl? = null
+    private val gestureListener: GestureDetector
+
     init {
         rotationDetector = RotationGestureDetector()
         if (deleteView != null) {
@@ -39,6 +43,7 @@ class TextViewSizeAwareTouchListener(
         } else {
             outRect = Rect(0, 0, 0, 0)
         }
+        gestureListener = GestureDetector(GestureListener())
     }
 
     interface OnDeleteViewListener {
@@ -46,9 +51,32 @@ class TextViewSizeAwareTouchListener(
         fun onRemoveViewReadyListener(removedView: View, ready: Boolean)
     }
 
+    interface OnGestureControl {
+        fun onClick()
+        fun onLongClick()
+    }
+
+    fun setOnGestureControl(onGestureControl: OnGestureControl) {
+        this.onGestureControl = onGestureControl
+    }
+
+    private inner class GestureListener : GestureDetector.SimpleOnGestureListener() {
+        override fun onSingleTapUp(e: MotionEvent): Boolean {
+            onGestureControl?.onClick()
+            return true
+        }
+
+        override fun onLongPress(e: MotionEvent) {
+            super.onLongPress(e)
+            onGestureControl?.onLongClick()
+        }
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouch(view: View, event: MotionEvent): Boolean {
         rotationDetector.onTouchEvent(view, event)
+        gestureListener.onTouchEvent(event)
+
         event.offsetLocation(event.rawX - event.x, event.rawY - event.y)
 
         when (event.actionMasked) {
