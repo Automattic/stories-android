@@ -3,7 +3,7 @@ package com.automattic.photoeditor.gesture
 import android.view.MotionEvent
 import android.view.View
 
-class RotationGestureDetector(private val mListener: OnRotationGestureListener?) {
+class RotationGestureDetector {
     private var fX: Float = 0.toFloat()
     private var fY: Float = 0.toFloat()
     private var sX: Float = 0.toFloat()
@@ -56,7 +56,8 @@ class RotationGestureDetector(private val mListener: OnRotationGestureListener?)
                     currentSpanVector
                 )
 
-                mListener?.onRotation(view, angle)
+                // set calculated rotation on view
+                view.rotation += angle
             }
             MotionEvent.ACTION_UP -> ptrID1 = INVALID_POINTER_ID
             MotionEvent.ACTION_POINTER_UP -> ptrID2 = INVALID_POINTER_ID
@@ -66,10 +67,6 @@ class RotationGestureDetector(private val mListener: OnRotationGestureListener?)
             }
         }
         return true
-    }
-
-    interface OnRotationGestureListener {
-        fun onRotation(view: View, angle: Float)
     }
 
     companion object {

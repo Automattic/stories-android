@@ -3,10 +3,8 @@ package com.automattic.photoeditor.gesture
 import android.annotation.SuppressLint
 import android.view.MotionEvent
 import android.view.View
-import com.automattic.photoeditor.gesture.RotationGestureDetector.OnRotationGestureListener
 
-class TextViewSizeAwareTouchListener(val minWidth: Int, val minHeight: Int) : View.OnTouchListener,
-    OnRotationGestureListener {
+class TextViewSizeAwareTouchListener(val minWidth: Int, val minHeight: Int) : View.OnTouchListener {
     private var originX = 0f
     private var originY = 0f
     private var secondOriginX = 0f
@@ -19,11 +17,7 @@ class TextViewSizeAwareTouchListener(val minWidth: Int, val minHeight: Int) : Vi
     private var rotationDetector: RotationGestureDetector
 
     init {
-        rotationDetector = RotationGestureDetector(this)
-    }
-
-    override fun onRotation(view: View, angle: Float) {
-        view.rotation += angle
+        rotationDetector = RotationGestureDetector()
     }
 
     @SuppressLint("ClickableViewAccessibility")
