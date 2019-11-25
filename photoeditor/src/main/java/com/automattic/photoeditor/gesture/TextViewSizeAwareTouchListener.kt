@@ -1,10 +1,19 @@
 package com.automattic.photoeditor.gesture
 
 import android.annotation.SuppressLint
+import android.graphics.Rect
 import android.view.MotionEvent
 import android.view.View
+import com.automattic.photoeditor.OnPhotoEditorListener
+import com.automattic.photoeditor.views.ViewType
 
-class TextViewSizeAwareTouchListener(val minWidth: Int, val minHeight: Int) : View.OnTouchListener {
+class TextViewSizeAwareTouchListener(
+    val minWidth: Int,
+    val minHeight: Int,
+    private val deleteView: View?,
+    private val onDeleteViewListener: OnDeleteViewListener?,
+    private val onPhotoEditorListener: OnPhotoEditorListener?
+) : View.OnTouchListener {
     private var originX = 0f
     private var originY = 0f
     private var secondOriginX = 0f
@@ -16,8 +25,25 @@ class TextViewSizeAwareTouchListener(val minWidth: Int, val minHeight: Int) : Vi
     private var secondOriginUp = false
     private var rotationDetector: RotationGestureDetector
 
+    // will hold deleteView Rect if passed, and location of current dragged view to see if it's a match
+    private var outRect: Rect? = null
+    private val location = IntArray(2)
+
     init {
         rotationDetector = RotationGestureDetector()
+        if (deleteView != null) {
+            outRect = Rect(
+                deleteView.left, deleteView.top,
+                deleteView.right, deleteView.bottom
+            )
+        } else {
+            outRect = Rect(0, 0, 0, 0)
+        }
+    }
+
+    interface OnDeleteViewListener {
+        fun onRemoveViewListener(removedView: View)
+        fun onRemoveViewReadyListener(removedView: View, ready: Boolean)
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -31,6 +57,11 @@ class TextViewSizeAwareTouchListener(val minWidth: Int, val minHeight: Int) : Vi
                 secondOriginUp = false
                 originX = view.x - event.getX(0)
                 originY = view.y - event.getY(0)
+                if (deleteView != null) {
+                    deleteView.visibility = View.VISIBLE
+                }
+                view.bringToFront()
+                firePhotoEditorSDKListener(view, true)
             }
             MotionEvent.ACTION_POINTER_DOWN -> {
                 secondOriginX = view.x - event.getX(1)
@@ -40,6 +71,13 @@ class TextViewSizeAwareTouchListener(val minWidth: Int, val minHeight: Int) : Vi
                 lastDiffY = Math.abs(secondOriginY - originY)
             }
             MotionEvent.ACTION_MOVE -> { // a pointer was moved
+                deleteView?.let {
+                    val readyForDelete = isViewInBounds(it, event.rawX.toInt(), event.rawY.toInt())
+                    // fade the view a bit to indicate it's going bye bye
+                    setAlphaOnView(view, readyForDelete)
+                    onDeleteViewListener?.onRemoveViewReadyListener(view, readyForDelete)
+                }
+
                 if (event.pointerCount == 2) {
                     val diffX = Math.abs(event.getX(1) - event.getX(0))
                     val diffY = Math.abs(event.getY(1) - event.getY(0))
@@ -78,11 +116,46 @@ class TextViewSizeAwareTouchListener(val minWidth: Int, val minHeight: Int) : Vi
             }
             MotionEvent.ACTION_UP -> {
                 originUp = true
+
+                deleteView?.let {
+                    if (isViewInBounds(it, event.rawX.toInt(), event.rawY.toInt())) {
+                        onDeleteViewListener?.onRemoveViewListener(view)
+                    }
+                    it.visibility = View.GONE
+                }
+                firePhotoEditorSDKListener(view, false)
             }
             MotionEvent.ACTION_POINTER_UP -> {
                 secondOriginUp = true
             }
         }
         return true
+    }
+
+    private fun isViewInBounds(view: View, x: Int, y: Int): Boolean {
+        view.getDrawingRect(outRect)
+        view.getLocationOnScreen(location)
+        outRect?.offset(location[0], location[1])
+        return outRect?.contains(x, y) ?: false
+    }
+
+    private fun setAlphaOnView(view: View, makeTransparent: Boolean) {
+        if (makeTransparent) {
+            view.alpha = 0.5f
+        } else {
+            view.alpha = 1f
+        }
+    }
+
+    private fun firePhotoEditorSDKListener(view: View, isStart: Boolean) {
+        onPhotoEditorListener?.let {
+            val viewTag = view.tag
+            if (viewTag != null && viewTag is ViewType) {
+                if (isStart)
+                    it.onStartViewChangeListener(view.tag as ViewType)
+                else
+                    it.onStopViewChangeListener(view.tag as ViewType)
+            }
+        }
     }
 }

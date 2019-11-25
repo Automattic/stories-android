@@ -27,6 +27,7 @@ import androidx.emoji.text.EmojiCompat
 import com.automattic.photoeditor.gesture.MultiTouchListener
 import com.automattic.photoeditor.gesture.MultiTouchListener.OnMultiTouchListener
 import com.automattic.photoeditor.gesture.TextViewSizeAwareTouchListener
+import com.automattic.photoeditor.gesture.TextViewSizeAwareTouchListener.OnDeleteViewListener
 import com.automattic.photoeditor.util.BitmapUtil
 import com.automattic.photoeditor.views.PhotoEditorView
 import com.automattic.photoeditor.views.ViewType
@@ -351,7 +352,23 @@ class PhotoEditor private constructor(builder: Builder) :
 //            })
 //            setOnTouchListener(multiTouchListenerInstance)
 
-            setOnTouchListener(TextViewSizeAwareTouchListener(50, 50))
+            setOnTouchListener(
+                TextViewSizeAwareTouchListener(
+                    50, 50,
+                    deleteView,
+                    object : OnDeleteViewListener {
+                        override fun onRemoveViewListener(removedView: View) {
+                            // here do actually remove the view
+                            val viewType = removedView.tag as ViewType
+                            viewUndo(removedView, viewType)
+                        }
+                        override fun onRemoveViewReadyListener(removedView: View, ready: Boolean) {
+                            mOnPhotoEditorListener?.onRemoveViewReadyListener(removedView, ready)
+                        }
+                    },
+                    mOnPhotoEditorListener
+                )
+            )
 
             addViewToParent(this, ViewType.EMOJI)
         }
