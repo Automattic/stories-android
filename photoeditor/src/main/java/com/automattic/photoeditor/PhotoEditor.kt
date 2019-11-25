@@ -354,7 +354,8 @@ class PhotoEditor private constructor(builder: Builder) :
 
             setOnTouchListener(
                 TextViewSizeAwareTouchListener(
-                    50, 50,
+                    resources.getDimensionPixelSize(R.dimen.autosize_tv_minimum_width),
+                    resources.getDimensionPixelSize(R.dimen.autosize_tv_minimum_height),
                     deleteView,
                     object : OnDeleteViewListener {
                         override fun onRemoveViewListener(removedView: View) {
