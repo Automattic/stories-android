@@ -32,6 +32,7 @@ import com.automattic.photoeditor.util.BitmapUtil
 import com.automattic.photoeditor.views.PhotoEditorView
 import com.automattic.photoeditor.views.ViewType
 import com.automattic.photoeditor.views.ViewType.EMOJI
+import com.automattic.photoeditor.views.ViewType.TEXT
 import com.automattic.photoeditor.views.added.AddedView
 import com.automattic.photoeditor.views.added.AddedViewList
 import com.automattic.photoeditor.views.brush.BrushDrawingView
@@ -246,38 +247,25 @@ class PhotoEditor private constructor(builder: Builder) :
             textInputTv.text = text
             textInputTv.setTextColor(colorCodeTextView)
             textInputTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSizeSp)
-//            textInputTv.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
             if (textTypeface != null) {
                 textInputTv.typeface = textTypeface
             }
 
-//            val multiTouchListenerInstance = newMultiTouchListener
-//            multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
-//                override fun onClick() {
-//                    val textInput = textInputTv.text.toString()
-//                    val currentTextColor = textInputTv.currentTextColor
-//                    mOnPhotoEditorListener?.onEditTextChangeListener(this@apply, textInput, currentTextColor, false)
-//                }
-//
-//                override fun onLongClick() {
-//                    // TODO implement the DELETE action (hide every other view, allow this view to be dragged to the trash
-//                    // bin)
-//                }
-//            })
-//            setOnTouchListener(multiTouchListenerInstance)
+            val touchListenerInstance = newTextViewSizeAwareTouchListener
+            touchListenerInstance.setOnGestureControl(
+                object : TextViewSizeAwareTouchListener.OnGestureControl {
+                    override fun onClick() {
+                        val textInput = textInputTv.text.toString()
+                        val currentTextColor = textInputTv.currentTextColor
+                        mOnPhotoEditorListener?.onEditTextChangeListener(this@apply, textInput, currentTextColor, false)
+                    }
 
-            setOnTouchListener(newTextViewSizeAwareTouchListener)
-            newTextViewSizeAwareTouchListener.setOnGestureControl(object: TextViewSizeAwareTouchListener.OnGestureControl {
-                override fun onClick() {
-                    val textInput = textInputTv.text.toString()
-                    val currentTextColor = textInputTv.currentTextColor
-                    mOnPhotoEditorListener?.onEditTextChangeListener(this@apply, textInput, currentTextColor, false)
+                    override fun onLongClick() {
+                        // no op
+                    }
                 }
-
-                override fun onLongClick() {
-                    // no op
-                }
-            })
+            )
+            setOnTouchListener(touchListenerInstance)
             addViewToParent(this, ViewType.TEXT)
 
             // now open TextEditor right away
@@ -383,7 +371,8 @@ class PhotoEditor private constructor(builder: Builder) :
 //            })
 //            setOnTouchListener(multiTouchListenerInstance)
 
-            setOnTouchListener(newTextViewSizeAwareTouchListener)
+            val touchListenerInstance = newTextViewSizeAwareTouchListener
+            setOnTouchListener(touchListenerInstance)
             addViewToParent(this, ViewType.EMOJI)
         }
     }
@@ -394,7 +383,7 @@ class PhotoEditor private constructor(builder: Builder) :
      * @param rootView rootview of image,text and emoji
      */
     private fun addViewToParent(rootView: View, viewType: ViewType, sourceUri: Uri? = null) {
-        if (viewType != EMOJI) {
+        if (viewType != EMOJI && viewType != TEXT) {
             val params = RelativeLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
             )

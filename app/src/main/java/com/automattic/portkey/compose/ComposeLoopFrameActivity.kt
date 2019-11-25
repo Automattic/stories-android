@@ -458,7 +458,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     private fun addNewText() {
-        val dp = resources.getDimension(R.dimen.editor_initial_text_size) / resources.displayMetrics.density
+        val dp = resources.getDimension(R.dimen.textview_initial_text_size) / resources.displayMetrics.density
         photoEditor.addText(
             "",
             colorCodeTextView = ContextCompat.getColor(baseContext, R.color.text_color_white),
