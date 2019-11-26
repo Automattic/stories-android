@@ -23,10 +23,18 @@ import androidx.appcompat.widget.AppCompatTextView
 class AutoResizeTextView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyle: Int = android.R.attr.textViewStyle) : AppCompatTextView(context, attrs, defStyle) {
     private val availableSpaceRect = RectF()
     private val sizeTester: SizeTester
-    private var maxTextSize: Float = 0.toFloat()
+    var maxTextSize: Float = 0.toFloat()
+        set(maxSize) {
+            field = maxSize
+            adjustTextSize()
+        }
+    var minTextSize: Float = 0.toFloat()
+        set(minSize) {
+            field = minSize
+            adjustTextSize()
+        }
     private var spacingMult = 1.0f
     private var spacingAdd = 0.0f
-    private var minTextSize: Float = 0.toFloat()
     private var widthLimit: Int = 0
     private var maxLines: Int = 0
     private var initialized = false
@@ -163,16 +171,6 @@ class AutoResizeTextView @JvmOverloads constructor(context: Context, attrs: Attr
         super.setLineSpacing(add, mult)
         spacingMult = mult
         spacingAdd = add
-    }
-
-    /**
-     * Set the lower text size limit and invalidate the view
-     *
-     * @param minTextSize
-     */
-    fun setMinTextSize(minTextSize: Float) {
-        this.minTextSize = minTextSize
-        adjustTextSize()
     }
 
     private fun adjustTextSize() {

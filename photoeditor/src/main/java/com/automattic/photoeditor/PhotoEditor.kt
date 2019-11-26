@@ -412,12 +412,10 @@ class PhotoEditor private constructor(builder: Builder) :
                         txtTextView.typeface = mDefaultTextTypeface
                     }
                     txtTextView.gravity = Gravity.CENTER
-                    // txtTextView.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
-                    val maxHeight = parentView.height
-                    rootView.tvPhotoEditorText.textSize =
+                    txtTextView.maxTextSize =
                         TypedValue.applyDimension(
                             TypedValue.COMPLEX_UNIT_SP,
-                            maxHeight.toFloat(),
+                            DEFAULT_AUTO_SIZE_MAX_TEXT_SIZE_IN_SP,
                             context.resources.displayMetrics
                         )
                 }
@@ -431,7 +429,7 @@ class PhotoEditor private constructor(builder: Builder) :
                         txtTextEmoji.typeface = mDefaultEmojiTypeface
                     }
                     txtTextEmoji.gravity = Gravity.CENTER
-                    txtTextEmoji.textSize =
+                    txtTextEmoji.maxTextSize =
                         TypedValue.applyDimension(
                             TypedValue.COMPLEX_UNIT_SP,
                             DEFAULT_AUTO_SIZE_MAX_TEXT_SIZE_IN_SP,
