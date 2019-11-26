@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.lb.auto_fit_textview.AutoResizeTextView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.automattic.photoeditor.views.AutoResizeTextView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/tvPhotoEditorText"
     android:layout_width="@dimen/autosize_tv_initial_width"
     android:layout_height="@dimen/autosize_tv_initial_height"
