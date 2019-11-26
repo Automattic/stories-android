@@ -362,18 +362,6 @@ class PhotoEditor private constructor(builder: Builder) :
                 })
             }
 
-//            val multiTouchListenerInstance = newMultiTouchListener
-//            multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
-//                override fun onClick() {
-//                }
-//
-//                override fun onLongClick() {
-//                    // TODO implement the DELETE action (hide every other view, allow this view to be dragged to the trash
-//                    // bin)
-//                }
-//            })
-//            setOnTouchListener(multiTouchListenerInstance)
-
             val touchListenerInstance = newTextViewSizeAwareTouchListener
             setOnTouchListener(touchListenerInstance)
             addViewToParent(this, ViewType.EMOJI)
