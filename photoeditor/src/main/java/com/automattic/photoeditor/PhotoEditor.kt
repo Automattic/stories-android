@@ -29,6 +29,7 @@ import com.automattic.photoeditor.gesture.MultiTouchListener.OnMultiTouchListene
 import com.automattic.photoeditor.gesture.TextViewSizeAwareTouchListener
 import com.automattic.photoeditor.gesture.TextViewSizeAwareTouchListener.OnDeleteViewListener
 import com.automattic.photoeditor.util.BitmapUtil
+import com.automattic.photoeditor.views.AutoResizeTextView
 import com.automattic.photoeditor.views.PhotoEditorView
 import com.automattic.photoeditor.views.ViewType
 import com.automattic.photoeditor.views.ViewType.EMOJI
@@ -245,7 +246,7 @@ class PhotoEditor private constructor(builder: Builder) :
     fun addText(text: String, colorCodeTextView: Int, textTypeface: Typeface? = null, fontSizeSp: Float = 18f) {
         brushDrawingView.brushDrawingMode = false
         getLayout(ViewType.TEXT)?.apply {
-            val textInputTv = findViewById<TextView>(R.id.tvPhotoEditorText)
+            val textInputTv = findViewById<AutoResizeTextView>(R.id.tvPhotoEditorText)
 
             textInputTv.text = text
             textInputTv.setTextColor(colorCodeTextView)
@@ -269,6 +270,7 @@ class PhotoEditor private constructor(builder: Builder) :
                 }
             )
             setOnTouchListener(touchListenerInstance)
+            textInputTv.setMaxMinFontSizeReachedListener(touchListenerInstance)
             addViewToParent(this, ViewType.TEXT)
 
             // now open TextEditor right away
@@ -333,7 +335,7 @@ class PhotoEditor private constructor(builder: Builder) :
     fun addEmoji(emojiTypeface: Typeface?, emojiName: String) {
         brushDrawingView.brushDrawingMode = false
         getLayout(ViewType.EMOJI)?.apply {
-            val emojiTextView = findViewById<TextView>(R.id.tvPhotoEditorText)
+            val emojiTextView = findViewById<AutoResizeTextView>(R.id.tvPhotoEditorText)
 
             if (emojiTypeface != null) {
                 emojiTextView.typeface = emojiTypeface
@@ -364,6 +366,7 @@ class PhotoEditor private constructor(builder: Builder) :
 
             val touchListenerInstance = newTextViewSizeAwareTouchListener
             setOnTouchListener(touchListenerInstance)
+            emojiTextView.setMaxMinFontSizeReachedListener(touchListenerInstance)
             addViewToParent(this, ViewType.EMOJI)
         }
     }

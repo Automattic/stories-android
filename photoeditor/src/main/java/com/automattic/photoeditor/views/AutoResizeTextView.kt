@@ -33,6 +33,7 @@ class AutoResizeTextView @JvmOverloads constructor(context: Context, attrs: Attr
             field = minSize
             adjustTextSize()
         }
+    private var maxMinFontSizeReachedListener: OnMaxMinFontSizeReached? = null
     private var spacingMult = 1.0f
     private var spacingAdd = 0.0f
     private var widthLimit: Int = 0
@@ -198,7 +199,28 @@ class AutoResizeTextView @JvmOverloads constructor(context: Context, attrs: Attr
 
     private fun superSetTextSize(startSize: Int) {
         val textSize = binarySearch(startSize, maxTextSize.toInt(), sizeTester, availableSpaceRect)
+        maxMinFontSizeReachedListener?.let {
+            if (isBestFontSizeMatchCloseEnoughToMax(textSize)) {
+                it.onMaxFontSizeReached()
+            } else if (isBestFontSizeMatchCloseEnoughToMin(textSize)) {
+                it.onMinFontSizeReached()
+            } else {
+                it.onFontSizeChangedWithinMinMaxRange()
+            }
+        }
         super.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize.toFloat())
+    }
+
+    private fun isBestFontSizeMatchCloseEnoughToMax(textSize: Int): Boolean {
+        // binary search compares integer to float so there could be 1 point of roundup difference between maxFontSize
+        // and the available space on screen in which the font actually fits
+        return textSize >= maxTextSize.toInt()-1
+    }
+
+    private fun isBestFontSizeMatchCloseEnoughToMin(textSize: Int): Boolean {
+        // binary search compares integer to float so there could be 1 point of roundup difference between minFontSize
+        // and the available space on screen in which the font actually fits
+        return textSize <= minTextSize.toInt()+1
     }
 
     private fun binarySearch(start: Int, end: Int, sizeTester: SizeTester, availableSpace: RectF): Int {
@@ -232,6 +254,16 @@ class AutoResizeTextView @JvmOverloads constructor(context: Context, attrs: Attr
         super.onSizeChanged(width, height, oldwidth, oldheight)
         if (width != oldwidth || height != oldheight)
             adjustTextSize()
+    }
+
+    fun setMaxMinFontSizeReachedListener(listener: OnMaxMinFontSizeReached) {
+        maxMinFontSizeReachedListener = listener
+    }
+
+    interface OnMaxMinFontSizeReached {
+        fun onMaxFontSizeReached()
+        fun onMinFontSizeReached()
+        fun onFontSizeChangedWithinMinMaxRange()
     }
 
     companion object {

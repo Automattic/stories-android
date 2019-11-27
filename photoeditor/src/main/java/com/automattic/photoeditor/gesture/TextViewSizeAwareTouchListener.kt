@@ -6,6 +6,7 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import com.automattic.photoeditor.OnPhotoEditorListener
+import com.automattic.photoeditor.views.AutoResizeTextView.OnMaxMinFontSizeReached
 import com.automattic.photoeditor.views.ViewType
 
 class TextViewSizeAwareTouchListener(
@@ -14,7 +15,7 @@ class TextViewSizeAwareTouchListener(
     private val deleteView: View?,
     private val onDeleteViewListener: OnDeleteViewListener?,
     private val onPhotoEditorListener: OnPhotoEditorListener?
-) : View.OnTouchListener {
+) : View.OnTouchListener, OnMaxMinFontSizeReached {
     private var originX = 0f
     private var originY = 0f
     private var secondOriginX = 0f
@@ -32,6 +33,9 @@ class TextViewSizeAwareTouchListener(
 
     private var onGestureControl: OnGestureControl? = null
     private val gestureListener: GestureDetector
+
+    private var maxFontSizeReached: Boolean = false
+    private var minFontSizeReached: Boolean = false
 
     init {
         rotationDetector = RotationGestureDetector()
@@ -70,6 +74,25 @@ class TextViewSizeAwareTouchListener(
             super.onLongPress(e)
             onGestureControl?.onLongClick()
         }
+    }
+
+    override fun onMaxFontSizeReached() {
+        maxFontSizeReached = true
+        minFontSizeReached = false
+    }
+
+    override fun onMinFontSizeReached() {
+        minFontSizeReached = true
+        maxFontSizeReached = false
+    }
+
+    override fun onFontSizeChangedWithinMinMaxRange() {
+        minFontSizeReached = false
+        maxFontSizeReached = false
+    }
+
+    private fun isMinOrMaxFontSizeReached(): Boolean {
+        return minFontSizeReached || maxFontSizeReached
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -113,24 +136,26 @@ class TextViewSizeAwareTouchListener(
                     var newHeight = (diffY * view.measuredHeight.toFloat() / lastDiffY).toInt()
 
                     if (newWidth > minWidth && newHeight > minHeight) {
-                        val parentWidth = (view.parent as View).width
-                        val parentHeight = (view.parent as View).height
-                        val params = view.layoutParams
+                        if (!isMinOrMaxFontSizeReached()) {
+                            val parentWidth = (view.parent as View).width
+                            val parentHeight = (view.parent as View).height
+                            val params = view.layoutParams
 
-                        if (newWidth + view.x > parentWidth) {
-                            newWidth = parentWidth - view.x.toInt()
+                            if (newWidth + view.x > parentWidth) {
+                                newWidth = parentWidth - view.x.toInt()
+                            }
+                            if (newHeight + view.y > parentHeight) {
+                                newHeight = parentHeight - view.y.toInt()
+                            }
+
+                            params.width = newWidth
+                            params.height = newHeight
+
+                            view.layoutParams = params
+                            // note: requestLayout() is needed to get AutoResizeTextView to recalculate its fontSize after a
+                            // change in view's width/height is made
+                            view.requestLayout()
                         }
-                        if (newHeight + view.y > parentHeight) {
-                            newHeight = parentHeight - view.y.toInt()
-                        }
-
-                        params.width = newWidth
-                        params.height = newHeight
-
-                        view.layoutParams = params
-                        // note: requestLayout() is needed to get AutoResizeTextView to recalculate its fontSize after a
-                        // change in view's width/height is made
-                        view.requestLayout()
                         lastDiffX = diffX
                         lastDiffY = diffY
                     }
@@ -144,6 +169,8 @@ class TextViewSizeAwareTouchListener(
             }
             MotionEvent.ACTION_UP -> {
                 originUp = true
+                minFontSizeReached = false
+                maxFontSizeReached = false
 
                 deleteView?.let {
                     if (isViewInBounds(it, event.rawX.toInt(), event.rawY.toInt())) {
@@ -155,6 +182,8 @@ class TextViewSizeAwareTouchListener(
             }
             MotionEvent.ACTION_POINTER_UP -> {
                 secondOriginUp = true
+                minFontSizeReached = false
+                maxFontSizeReached = false
             }
         }
         return true
