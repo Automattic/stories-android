@@ -2,6 +2,7 @@ package com.automattic.photoeditor.gesture
 
 import android.annotation.SuppressLint
 import android.graphics.Rect
+import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
@@ -36,6 +37,8 @@ class TextViewSizeAwareTouchListener(
 
     private var maxFontSizeReached: Boolean = false
     private var minFontSizeReached: Boolean = false
+    private var maxHeightForFontMeasured: Int = 0
+    private var maxWidthForFontMeasured: Int = 0
 
     init {
         rotationDetector = RotationGestureDetector()
@@ -95,6 +98,19 @@ class TextViewSizeAwareTouchListener(
         return minFontSizeReached || maxFontSizeReached
     }
 
+    private fun isZoomOutMovement(newWidth: Int, newHeight: Int, view: View): Boolean {
+        val params = view.layoutParams
+        return newWidth <= params.width || newHeight <= params.height
+    }
+
+    private fun setMaximumWidthAndHeightAfterFontMaxSizeReached(newWidth: Int, newHeight: Int) {
+        // the maximum width / height will only be set once (as it'll remain that way forever for this view)
+        if (maxFontSizeReached && maxHeightForFontMeasured == 0 && maxWidthForFontMeasured == 0) {
+            maxHeightForFontMeasured = newHeight
+            maxWidthForFontMeasured = newWidth
+        }
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouch(view: View, event: MotionEvent): Boolean {
         rotationDetector.onTouchEvent(view, event)
@@ -106,6 +122,7 @@ class TextViewSizeAwareTouchListener(
             MotionEvent.ACTION_DOWN -> {
                 originUp = false
                 secondOriginUp = false
+
                 originX = view.x - event.getX(0)
                 originY = view.y - event.getY(0)
                 if (deleteView != null) {
@@ -135,12 +152,23 @@ class TextViewSizeAwareTouchListener(
                     var newWidth = (diffX * view.measuredWidth.toFloat() / lastDiffX).toInt()
                     var newHeight = (diffY * view.measuredHeight.toFloat() / lastDiffY).toInt()
 
+                    if (isZoomOutMovement(newWidth, newHeight, view)) {
+                        Log.d("PORTKEY", "is zoom out: " + " newWidth: " + newWidth + " newHeight: "+ newHeight)
+//                        Log.d("PORTKEY", "is zoom out: " + " diffX: " + diffX + " diffY: "+ diffY)
+                    } else {
+                        Log.d("PORTKEY", "is zoom IN: " + " newWidth: " + newWidth + " newHeight: "+ newHeight)
+//                        Log.d("PORTKEY", "is zoom IN: " + " diffX: " + diffX + " diffY: "+ diffY)
+                    }
+
                     if (newWidth > minWidth && newHeight > minHeight) {
-                        if (!isMinOrMaxFontSizeReached()) {
+                        if (isZoomOutMovement(newWidth, newHeight, view) && !minFontSizeReached ||
+                            !isZoomOutMovement(newWidth, newHeight, view) && !maxFontSizeReached) {
+//                        if (!isMinOrMaxFontSizeReached()) {
                             val parentWidth = (view.parent as View).width
                             val parentHeight = (view.parent as View).height
                             val params = view.layoutParams
 
+                            // cap the size of the view to never be larger than the parent's view (container)
                             if (newWidth + view.x > parentWidth) {
                                 newWidth = parentWidth - view.x.toInt()
                             }
@@ -148,8 +176,33 @@ class TextViewSizeAwareTouchListener(
                                 newHeight = parentHeight - view.y.toInt()
                             }
 
+                            // also adjust view size to stay within the maximum view size allowed / found for the
+                            // maximum fontSize set on the TextView
+                            if (maxWidthForFontMeasured > 0) {
+                                if (newWidth + view.x > maxWidthForFontMeasured) {
+                                    newWidth = maxWidthForFontMeasured //  - view.x.toInt()
+                                }
+                            }
+                            if (maxHeightForFontMeasured > 0) {
+                                if (newHeight + view.y > maxHeightForFontMeasured) {
+                                    newHeight = maxHeightForFontMeasured // - view.y.toInt()
+                                }
+                            }
+
+                            // did we mess the calculations and ran below a minimum?
+                            // did the user cross fingers while pinching, getting us negative diff values?
+                            // let's cap it to the inferior limit
+                            if (newWidth < minWidth) {
+                                newWidth = minWidth
+                            }
+                            if (newHeight < minHeight) {
+                                newHeight = minHeight
+                            }
+
                             params.width = newWidth
                             params.height = newHeight
+
+                            setMaximumWidthAndHeightAfterFontMaxSizeReached(newWidth, newHeight)
 
                             view.layoutParams = params
                             // note: requestLayout() is needed to get AutoResizeTextView to recalculate its fontSize after a
@@ -169,8 +222,8 @@ class TextViewSizeAwareTouchListener(
             }
             MotionEvent.ACTION_UP -> {
                 originUp = true
-                minFontSizeReached = false
-                maxFontSizeReached = false
+                // if max fontSize reached, save current width / height for the view as the maximum
+                setMaximumWidthAndHeightAfterFontMaxSizeReached(view.measuredWidth, view.measuredHeight)
 
                 deleteView?.let {
                     if (isViewInBounds(it, event.rawX.toInt(), event.rawY.toInt())) {
@@ -182,8 +235,8 @@ class TextViewSizeAwareTouchListener(
             }
             MotionEvent.ACTION_POINTER_UP -> {
                 secondOriginUp = true
-                minFontSizeReached = false
-                maxFontSizeReached = false
+                // if max fontSize reached, save current width / height for the view as the maximum
+                setMaximumWidthAndHeightAfterFontMaxSizeReached(view.measuredWidth, view.measuredHeight)
             }
         }
         return true
