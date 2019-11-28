@@ -267,15 +267,9 @@ class TextViewSizeAwareTouchListener(
 
                 // also adjust view size to stay within the maximum view size allowed / found for the
                 // maximum fontSize set on the TextView
-                if (maxWidthForFontMeasured > 0) {
-                    if (newWidth > maxWidthForFontMeasured) {
-                        // keep width
+                if (maxWidthForFontMeasured > 0 || maxHeightForFontMeasured > 0) {
+                    if (newWidth > maxWidthForFontMeasured || newHeight > maxHeightForFontMeasured) {
                         newWidth = maxWidthForFontMeasured
-                        switchToScaleMode()
-                    }
-                }
-                if (maxHeightForFontMeasured > 0) {
-                    if (newHeight > maxHeightForFontMeasured) {
                         newHeight = maxHeightForFontMeasured
                         switchToScaleMode()
                     }
