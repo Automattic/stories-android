@@ -6,6 +6,7 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import com.automattic.photoeditor.OnPhotoEditorListener
+import com.automattic.photoeditor.gesture.ScaleGestureDetector.OnScaleGestureListener
 import com.automattic.photoeditor.views.AutoResizeTextView.OnMaxMinFontSizeReached
 import com.automattic.photoeditor.views.ViewType
 
@@ -25,7 +26,8 @@ class TextViewSizeAwareTouchListener(
 
     private var originUp = false
     private var secondOriginUp = false
-    private var rotationDetector: RotationGestureDetector
+    private val rotationDetector: RotationGestureDetector
+    private val scaleGestureDetector: ScaleGestureDetector
 
     // will hold deleteView Rect if passed, and location of current dragged view to see if it's a match
     private var outRect: Rect? = null
@@ -39,8 +41,29 @@ class TextViewSizeAwareTouchListener(
     private var maxHeightForFontMeasured: Int = 0
     private var maxWidthForFontMeasured: Int = 0
 
+    private var useScaleMode: Boolean = false
+
     init {
         rotationDetector = RotationGestureDetector()
+        scaleGestureDetector = ScaleGestureDetector(object: OnScaleGestureListener {
+            override fun onScale(view: View, detector: ScaleGestureDetector): Boolean {
+                if (useScaleMode) {
+                    var scale = view.scaleX * detector.scaleFactor
+                    scale = Math.max(DEFAULT_MIN_SCALE, Math.min(DEFAULT_MAX_SCALE, scale))
+                    view.scaleX = scale
+                    view.scaleY = scale
+                }
+                return true
+            }
+
+            override fun onScaleBegin(view: View, detector: ScaleGestureDetector): Boolean {
+                // signal ScaleGestureDetector to only continue to gather info if in scale mode
+                return useScaleMode
+            }
+
+            override fun onScaleEnd(view: View, detector: ScaleGestureDetector) {
+            }
+        })
         if (deleteView != null) {
             outRect = Rect(
                 deleteView.left, deleteView.top,
@@ -109,6 +132,7 @@ class TextViewSizeAwareTouchListener(
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouch(view: View, event: MotionEvent): Boolean {
         rotationDetector.onTouchEvent(view, event)
+        scaleGestureDetector.onTouchEvent(view, event)
         gestureListener.onTouchEvent(event)
 
         event.offsetLocation(event.rawX - event.x, event.rawY - event.y)
@@ -256,5 +280,10 @@ class TextViewSizeAwareTouchListener(
                     it.onStopViewChangeListener(view.tag as ViewType)
             }
         }
+    }
+
+    companion object {
+        private const val DEFAULT_MAX_SCALE = 4.2f
+        private const val DEFAULT_MIN_SCALE = 1f
     }
 }
