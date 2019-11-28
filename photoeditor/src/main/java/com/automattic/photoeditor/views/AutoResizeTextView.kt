@@ -20,7 +20,12 @@ import androidx.appcompat.widget.AppCompatTextView
  * It should work fine with most Android versions, but might have some issues on Android 3.1 - 4.04, as setTextSize will only work for the first time. <br></br>
  * More info here: https://code.google.com/p/android/issues/detail?id=22493 and here in case you wish to fix it: http://stackoverflow.com/a/21851239/878126
  */
-class AutoResizeTextView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyle: Int = android.R.attr.textViewStyle) : AppCompatTextView(context, attrs, defStyle) {
+class AutoResizeTextView @JvmOverloads
+constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyle: Int = android.R.attr.textViewStyle
+) : AppCompatTextView(context, attrs, defStyle) {
     private val availableSpaceRect = RectF()
     private val sizeTester: SizeTester
     var maxTextSize: Float = 0.toFloat()
@@ -43,7 +48,7 @@ class AutoResizeTextView @JvmOverloads constructor(context: Context, attrs: Attr
 
     private interface SizeTester {
         /**
-         * @param suggestedSize  Size of text to be tested
+         * @param suggestedSize Size of text to be tested
          * @param availableSpace available space in which text must fit
          * @return an integer < 0 if after applying `suggestedSize` to
          * text, it takes less space than `availableSpace`, > 0
@@ -79,8 +84,11 @@ class AutoResizeTextView @JvmOverloads constructor(context: Context, attrs: Attr
                     textRect.right = textPaint!!.measureText(text)
                 } else {
                     val layout: StaticLayout = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        StaticLayout.Builder.obtain(text, 0, text.length, textPaint!!, widthLimit).setLineSpacing(spacingAdd, spacingMult).setAlignment(Alignment.ALIGN_NORMAL).setIncludePad(true).build()
-                    } else StaticLayout(text, textPaint, widthLimit, Alignment.ALIGN_NORMAL, spacingMult, spacingAdd, true)
+                        StaticLayout.Builder.obtain(text, 0, text.length, textPaint!!, widthLimit)
+                            .setLineSpacing(spacingAdd, spacingMult)
+                            .setAlignment(Alignment.ALIGN_NORMAL).setIncludePad(true).build()
+                    } else
+                        StaticLayout(text, textPaint, widthLimit, Alignment.ALIGN_NORMAL, spacingMult, spacingAdd, true)
                     // return early if we have more lines
                     if (maxLines != NO_LINE_LIMIT && layout.lineCount > maxLines)
                         return 1
@@ -94,9 +102,6 @@ class AutoResizeTextView @JvmOverloads constructor(context: Context, attrs: Attr
                         if (maxWidth < layout.getLineRight(i) - layout.getLineLeft(i))
                             maxWidth = layout.getLineRight(i).toInt() - layout.getLineLeft(i).toInt()
                     }
-                    //for (int i = 0; i < layout.getLineCount(); i++)
-                    //    if (maxWidth < layout.getLineRight(i) - layout.getLineLeft(i))
-                    //        maxWidth = (int) layout.getLineRight(i) - (int) layout.getLineLeft(i);
                     textRect.right = maxWidth.toFloat()
                 }
                 textRect.offsetTo(0f, 0f)
@@ -214,13 +219,13 @@ class AutoResizeTextView @JvmOverloads constructor(context: Context, attrs: Attr
     private fun isBestFontSizeMatchCloseEnoughToMax(textSize: Int): Boolean {
         // binary search compares integer to float so there could be 1 point of roundup difference between maxFontSize
         // and the available space on screen in which the font actually fits
-        return textSize >= maxTextSize.toInt()-1
+        return textSize >= maxTextSize.toInt() - 1
     }
 
     private fun isBestFontSizeMatchCloseEnoughToMin(textSize: Int): Boolean {
         // binary search compares integer to float so there could be 1 point of roundup difference between minFontSize
         // and the available space on screen in which the font actually fits
-        return textSize <= minTextSize.toInt()+1
+        return textSize <= minTextSize.toInt() + 1
     }
 
     private fun binarySearch(start: Int, end: Int, sizeTester: SizeTester, availableSpace: RectF): Int {
