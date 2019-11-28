@@ -68,8 +68,8 @@ class TextViewSizeAwareTouchListener(
             }
 
             override fun onScaleBegin(view: View, detector: ScaleGestureDetector): Boolean {
-                // signal ScaleGestureDetector to only continue to gather info if in scale mode
-                return shouldScale()
+                // the ScaleGestureDetector should watch all events - given it accumulates the scale
+                return true
             }
 
             override fun onScaleEnd(view: View, detector: ScaleGestureDetector) {
@@ -132,12 +132,14 @@ class TextViewSizeAwareTouchListener(
         return newWidth <= params.width || newHeight <= params.height
     }
 
-    private fun setMaximumWidthAndHeightAfterFontMaxSizeReached(newWidth: Int, newHeight: Int) {
+    private fun setMaximumWidthAndHeightAfterFontMaxSizeReached(newWidth: Int, newHeight: Int): Boolean {
         // the maximum width / height will only be set once (as it'll remain that way forever for this view)
         if (maxFontSizeReached && maxHeightForFontMeasured == 0 && maxWidthForFontMeasured == 0) {
             maxHeightForFontMeasured = newHeight
             maxWidthForFontMeasured = newWidth
+            return true
         }
+        return false
     }
 
     private fun switchToScaleMode() {
@@ -279,7 +281,13 @@ class TextViewSizeAwareTouchListener(
                     params.width = newWidth
                     params.height = newHeight
 
-                    setMaximumWidthAndHeightAfterFontMaxSizeReached(newWidth, newHeight)
+                    val firstTimeSet = setMaximumWidthAndHeightAfterFontMaxSizeReached(newWidth, newHeight)
+                    if (firstTimeSet) {
+                        // if maximum reached for the first time, switching to scale mode so further motion events
+                        // within the same stream (i.e. gesture) can be now processed by the ScaleGestureDetector,
+                        // thus producing a smooth handler transition between both mechanisms
+                        switchToScaleMode()
+                    }
 
                     view.layoutParams = params
                     // note: requestLayout() is needed to get AutoResizeTextView to recalculate its fontSize after a
