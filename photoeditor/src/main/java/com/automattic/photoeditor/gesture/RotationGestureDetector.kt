@@ -27,10 +27,14 @@ class RotationGestureDetector {
             MotionEvent.ACTION_POINTER_DOWN -> {
                 ptrID2 = event.getPointerId(event.actionIndex)
                 if (ptrID1 != INVALID_POINTER_ID && ptrID2 != INVALID_POINTER_ID) {
-                    sX = event.getX(event.findPointerIndex(ptrID1))
-                    sY = event.getY(event.findPointerIndex(ptrID1))
-                    fX = event.getX(event.findPointerIndex(ptrID2))
-                    fY = event.getY(event.findPointerIndex(ptrID2))
+                    if (event.findPointerIndex(ptrID1) > -1) {
+                        sX = event.getX(event.findPointerIndex(ptrID1))
+                        sY = event.getY(event.findPointerIndex(ptrID1))
+                    }
+                    if (event.findPointerIndex(ptrID2) > -1) {
+                        fX = event.getX(event.findPointerIndex(ptrID2))
+                        fY = event.getY(event.findPointerIndex(ptrID2))
+                    }
 
                     val pvx = fX - sX
                     val pvy = fY - sY
