@@ -44,6 +44,7 @@ class TextViewSizeAwareTouchListener(
     private var maxWidthForFontMeasured: Int = 0
 
     private var scaleMode: ScaleMode = RESIZE
+    private var accumulatedScaleValue: Float = 0f
 
     enum class ScaleMode {
         RESIZE, SCALE
@@ -54,7 +55,7 @@ class TextViewSizeAwareTouchListener(
         scaleGestureDetector = ScaleGestureDetector(object : OnScaleGestureListener {
             override fun onScale(view: View, detector: ScaleGestureDetector): Boolean {
                 if (shouldScale()) {
-                    var scale = view.scaleX * detector.scaleFactor
+                    var scale = view.scaleX * (DEFAULT_MIN_SCALE + (detector.scaleFactor - accumulatedScaleValue))
                     scale = Math.max(DEFAULT_MIN_SCALE, Math.min(DEFAULT_MAX_SCALE, scale))
                     view.scaleX = scale
                     view.scaleY = scale
@@ -62,17 +63,26 @@ class TextViewSizeAwareTouchListener(
                         // if we reach the minimum scale, switch to resize mode for next iteration
                         // processing the motion stream of events
                         switchToResizeMode()
+                        resetAccumulatedScaleValue()
                     }
+                } else {
+                    // keep updating the accumulator while the ScaleGestureDetector keeps track of movement,
+                    // so we can subtract it later when we need to use the scale offset
+                    accumulatedScaleValue = detector.scaleFactor
                 }
                 return false
             }
 
             override fun onScaleBegin(view: View, detector: ScaleGestureDetector): Boolean {
+                // set the accumulator with the starting value
+                accumulatedScaleValue = detector.scaleFactor
                 // the ScaleGestureDetector should watch all events - given it accumulates the scale
                 return true
             }
 
             override fun onScaleEnd(view: View, detector: ScaleGestureDetector) {
+                // leave accum at initial value
+                resetAccumulatedScaleValue()
             }
         })
         if (deleteView != null) {
@@ -156,6 +166,10 @@ class TextViewSizeAwareTouchListener(
 
     private fun shouldScale(): Boolean {
         return scaleMode == SCALE
+    }
+
+    private fun resetAccumulatedScaleValue() {
+        accumulatedScaleValue = DEFAULT_MIN_SCALE
     }
 
     @SuppressLint("ClickableViewAccessibility")
