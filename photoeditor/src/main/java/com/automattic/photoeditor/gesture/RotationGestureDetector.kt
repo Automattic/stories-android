@@ -43,27 +43,31 @@ class RotationGestureDetector {
                 }
             }
             MotionEvent.ACTION_MOVE -> if (ptrID1 != INVALID_POINTER_ID && ptrID2 != INVALID_POINTER_ID) {
-                val nfX: Float
-                val nfY: Float
-                val nsX: Float
-                val nsY: Float
-                nsX = event.getX(event.findPointerIndex(ptrID1))
-                nsY = event.getY(event.findPointerIndex(ptrID1))
-                nfX = event.getX(event.findPointerIndex(ptrID2))
-                nfY = event.getY(event.findPointerIndex(ptrID2))
+                val idx1 = event.findPointerIndex(ptrID1)
+                val idx2 = event.findPointerIndex(ptrID2)
+                if (idx1 != INVALID_POINTER_IDX && idx2 != INVALID_POINTER_IDX) {
+                    val nfX: Float
+                    val nfY: Float
+                    val nsX: Float
+                    val nsY: Float
 
-                val cvx = nfX - nsX
-                val cvy = nfY - nsY
+                    nsX = event.getX(event.findPointerIndex(ptrID1))
+                    nsY = event.getY(event.findPointerIndex(ptrID1))
+                    nfX = event.getX(event.findPointerIndex(ptrID2))
+                    nfY = event.getY(event.findPointerIndex(ptrID2))
+                    val cvx = nfX - nsX
+                    val cvy = nfY - nsY
 
-                currentSpanVector.set(cvx, cvy)
+                    currentSpanVector.set(cvx, cvy)
 
-                angle = Vector2D.getAngle(
-                    prevSpanVector,
-                    currentSpanVector
-                )
+                    angle = Vector2D.getAngle(
+                        prevSpanVector,
+                        currentSpanVector
+                    )
 
-                // set calculated rotation on view
-                view.rotation += angle
+                    // set calculated rotation on view
+                    view.rotation += angle
+                }
             }
             MotionEvent.ACTION_UP -> ptrID1 = INVALID_POINTER_ID
             MotionEvent.ACTION_POINTER_UP -> ptrID2 = INVALID_POINTER_ID
@@ -77,5 +81,6 @@ class RotationGestureDetector {
 
     companion object {
         private val INVALID_POINTER_ID = -1
+        private val INVALID_POINTER_IDX = -1
     }
 }
