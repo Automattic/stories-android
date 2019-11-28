@@ -2,7 +2,6 @@ package com.automattic.photoeditor.gesture
 
 import android.annotation.SuppressLint
 import android.graphics.Rect
-import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
@@ -94,10 +93,6 @@ class TextViewSizeAwareTouchListener(
         maxFontSizeReached = false
     }
 
-    private fun isMinOrMaxFontSizeReached(): Boolean {
-        return minFontSizeReached || maxFontSizeReached
-    }
-
     private fun isZoomOutMovement(newWidth: Int, newHeight: Int, view: View): Boolean {
         val params = view.layoutParams
         return newWidth <= params.width || newHeight <= params.height
@@ -151,14 +146,6 @@ class TextViewSizeAwareTouchListener(
                     val diffY = Math.abs(event.getY(1) - event.getY(0))
                     var newWidth = (diffX * view.measuredWidth.toFloat() / lastDiffX).toInt()
                     var newHeight = (diffY * view.measuredHeight.toFloat() / lastDiffY).toInt()
-
-                    if (isZoomOutMovement(newWidth, newHeight, view)) {
-                        Log.d("PORTKEY", "is zoom out: " + " newWidth: " + newWidth + " newHeight: "+ newHeight)
-//                        Log.d("PORTKEY", "is zoom out: " + " diffX: " + diffX + " diffY: "+ diffY)
-                    } else {
-                        Log.d("PORTKEY", "is zoom IN: " + " newWidth: " + newWidth + " newHeight: "+ newHeight)
-//                        Log.d("PORTKEY", "is zoom IN: " + " diffX: " + diffX + " diffY: "+ diffY)
-                    }
 
                     if (newWidth > minWidth && newHeight > minHeight) {
                         if (isZoomOutMovement(newWidth, newHeight, view) && !minFontSizeReached ||
