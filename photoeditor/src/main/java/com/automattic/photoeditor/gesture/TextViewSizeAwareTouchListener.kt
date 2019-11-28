@@ -166,12 +166,13 @@ class TextViewSizeAwareTouchListener(
                             // maximum fontSize set on the TextView
                             if (maxWidthForFontMeasured > 0) {
                                 if (newWidth > maxWidthForFontMeasured) {
-                                    newWidth = maxWidthForFontMeasured //  - view.x.toInt()
+                                    // keep width
+                                    newWidth = maxWidthForFontMeasured
                                 }
                             }
                             if (maxHeightForFontMeasured > 0) {
                                 if (newHeight > maxHeightForFontMeasured) {
-                                    newHeight = maxHeightForFontMeasured // - view.y.toInt()
+                                    newHeight = maxHeightForFontMeasured
                                 }
                             }
 
@@ -185,15 +186,17 @@ class TextViewSizeAwareTouchListener(
                                 newHeight = minHeight
                             }
 
-                            params.width = newWidth
-                            params.height = newHeight
+                            if (view.measuredWidth != newWidth && view.measuredHeight != newHeight) {
+                                params.width = newWidth
+                                params.height = newHeight
 
-                            setMaximumWidthAndHeightAfterFontMaxSizeReached(newWidth, newHeight)
+                                setMaximumWidthAndHeightAfterFontMaxSizeReached(newWidth, newHeight)
 
-                            view.layoutParams = params
-                            // note: requestLayout() is needed to get AutoResizeTextView to recalculate its fontSize after a
-                            // change in view's width/height is made
-                            view.requestLayout()
+                                view.layoutParams = params
+                                // note: requestLayout() is needed to get AutoResizeTextView to recalculate its fontSize after a
+                                // change in view's width/height is made
+                                view.requestLayout()
+                            }
                         }
                         lastDiffX = diffX
                         lastDiffY = diffY
