@@ -150,7 +150,6 @@ class TextViewSizeAwareTouchListener(
                     if (newWidth > minWidth && newHeight > minHeight) {
                         if (isZoomOutMovement(newWidth, newHeight, view) && !minFontSizeReached ||
                             !isZoomOutMovement(newWidth, newHeight, view) && !maxFontSizeReached) {
-//                        if (!isMinOrMaxFontSizeReached()) {
                             val parentWidth = (view.parent as View).width
                             val parentHeight = (view.parent as View).height
                             val params = view.layoutParams
