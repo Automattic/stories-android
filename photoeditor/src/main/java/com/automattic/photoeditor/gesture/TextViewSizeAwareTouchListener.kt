@@ -51,7 +51,7 @@ class TextViewSizeAwareTouchListener(
 
     init {
         rotationDetector = RotationGestureDetector()
-        scaleGestureDetector = ScaleGestureDetector(object: OnScaleGestureListener {
+        scaleGestureDetector = ScaleGestureDetector(object : OnScaleGestureListener {
             override fun onScale(view: View, detector: ScaleGestureDetector): Boolean {
                 if (shouldScale()) {
                     var scale = view.scaleX * detector.scaleFactor
@@ -61,7 +61,7 @@ class TextViewSizeAwareTouchListener(
                     if (scale == DEFAULT_MIN_SCALE) {
                         // if we reach the minimum scale, switch to resize mode for next iteration
                         // processing the motion stream of events
-                         switchToResizeMode()
+                        switchToResizeMode()
                     }
                 }
                 return false
