@@ -438,6 +438,7 @@ class PhotoEditor private constructor(builder: Builder) :
                             DEFAULT_AUTO_SIZE_MAX_TEXT_SIZE_IN_SP,
                             context.resources.displayMetrics
                         )
+                    txtTextEmoji.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
                 }
             }
         }
