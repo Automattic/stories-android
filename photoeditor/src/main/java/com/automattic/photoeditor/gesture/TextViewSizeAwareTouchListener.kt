@@ -60,7 +60,7 @@ class TextViewSizeAwareTouchListener(
                     scale = Math.max(DEFAULT_MIN_SCALE, Math.min(DEFAULT_MAX_SCALE, scale))
                     view.scaleX = scale
                     view.scaleY = scale
-                    if (scale == DEFAULT_MIN_SCALE && previousAccumScaleValue >= accumulatedScaleValue ) {
+                    if (scale == DEFAULT_MIN_SCALE && previousAccumScaleValue >= accumulatedScaleValue) {
                         // if we reach the minimum scale while scaling down, switch to resize mode for next iteration
                         // processing the motion stream of events
                         switchToResizeMode()
