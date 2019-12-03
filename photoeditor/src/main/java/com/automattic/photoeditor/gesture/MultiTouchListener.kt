@@ -174,8 +174,8 @@ internal class MultiTouchListener(
         // let's now offset once more to bring the size of the view down by a percentage
         val currentDx = view.right - view.left
         val currentDy = view.bottom - view.top
-        val percentageOnX = (currentDx * -0.2).toInt()
-        val percentageOnY = (currentDy * -0.2).toInt()
+        val percentageOnX = (currentDx * TOUCH_IGNORE_AREA_PERCENTAGE).toInt()
+        val percentageOnY = (currentDy * TOUCH_IGNORE_AREA_PERCENTAGE).toInt()
         viewRect.offset(percentageOnX, percentageOnY)
         return viewRect.contains(event.rawX.toInt(), event.rawY.toInt())
     }
@@ -258,6 +258,7 @@ internal class MultiTouchListener(
 
     companion object {
         private val INVALID_POINTER_ID = -1
+        private val TOUCH_IGNORE_AREA_PERCENTAGE = 0.2f
 
         private fun adjustAngle(origDegrees: Float): Float {
             var degrees = origDegrees
