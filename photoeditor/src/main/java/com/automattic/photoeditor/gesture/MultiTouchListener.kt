@@ -61,7 +61,7 @@ internal class MultiTouchListener(
 
     override fun onTouch(view: View, event: MotionEvent): Boolean {
         mGestureListener.onTouchEvent(event)
-        // filter out touch events on transparent points
+        // filter out touch events that fall around the edges of the view
         if (!touchIsWellWithinView(view, event)) {
             return true
         }
