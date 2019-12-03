@@ -1,6 +1,7 @@
 package com.automattic.photoeditor.gesture
 
 import android.graphics.Rect
+import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
@@ -59,8 +60,12 @@ internal class MultiTouchListener(
     }
 
     override fun onTouch(view: View, event: MotionEvent): Boolean {
-        mScaleGestureDetector.onTouchEvent(view, event)
         mGestureListener.onTouchEvent(event)
+        // filter out touch events on transparent points
+        if (!touchIsWellWithinView(view, event)) {
+            return true
+        }
+        mScaleGestureDetector.onTouchEvent(view, event)
 
         if (!isTranslateEnabled) {
             return true
@@ -157,6 +162,22 @@ internal class MultiTouchListener(
         view.getLocationOnScreen(location)
         outRect?.offset(location[0], location[1])
         return outRect?.contains(x, y) ?: false
+    }
+
+    private fun touchIsWellWithinView(view: View, event: MotionEvent): Boolean {
+        view.getLocationOnScreen(location)
+        Log.d("PORTKEY", "location: x=" + location[0] + " y=" + location[1])
+        var viewRect = Rect()
+        view.getDrawingRect(viewRect)
+        viewRect.offset(location[0], location[1])
+        // now we have a viewRect that contains all possible view points according to the device screen coordinates
+        // let's now offset once more to bring the size of the view down by a percentage
+        val currentDx = view.right - view.left
+        val currentDy = view.bottom - view.top
+        val percentageOnX = (currentDx * -0.2).toInt()
+        val percentageOnY = (currentDy * -0.2).toInt()
+        viewRect.offset(percentageOnX, percentageOnY)
+        return viewRect.contains(event.rawX.toInt(), event.rawY.toInt())
     }
 
     fun setOnMultiTouchListener(onMultiTouchListener: OnMultiTouchListener) {
