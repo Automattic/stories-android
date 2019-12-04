@@ -23,6 +23,7 @@ import androidx.annotation.ColorInt
 import androidx.annotation.IntRange
 import androidx.annotation.RequiresPermission
 import androidx.annotation.UiThread
+import androidx.core.widget.TextViewCompat
 import androidx.emoji.text.EmojiCompat
 import com.automattic.photoeditor.gesture.MultiTouchListener
 import com.automattic.photoeditor.gesture.MultiTouchListener.OnMultiTouchListener
@@ -333,7 +334,6 @@ class PhotoEditor private constructor(builder: Builder) :
                     }
                 })
             }
-            emojiTextView.textSize = 68f
 
             val multiTouchListenerInstance = getNewMultitouchListener(this) // newMultiTouchListener
             multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
@@ -389,6 +389,8 @@ class PhotoEditor private constructor(builder: Builder) :
                 rootView = layoutInflater.inflate(R.layout.view_photo_editor_text, null)
                 val txtTextEmoji = rootView.tvPhotoEditorText
                 if (txtTextEmoji != null) {
+                    TextViewCompat.setAutoSizeTextTypeWithDefaults(
+                        txtTextEmoji, TextViewCompat.AUTO_SIZE_TEXT_TYPE_UNIFORM)
                     if (mDefaultEmojiTypeface != null) {
                         txtTextEmoji.typeface = mDefaultEmojiTypeface
                     }
