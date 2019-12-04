@@ -78,35 +78,6 @@ class PhotoEditor private constructor(builder: Builder) :
     private val mDefaultEmojiTypeface: Typeface?
 
     /**
-     * Create a new instance and scalable touchview
-     *
-     * @return scalable multitouch listener
-     */
-    private val newMultiTouchListener: MultiTouchListener
-        get() = MultiTouchListener(
-            deleteView,
-            parentView,
-            imageView,
-            isTextPinchZoomable,
-            mOnPhotoEditorListener,
-            object : OnMultiTouchListener {
-                override fun onEditTextClickListener(text: String, colorCode: Int) {
-                    // no op
-                }
-
-                override fun onRemoveViewListener(removedView: View) {
-                    // here do actually remove the view
-                    val viewType = removedView.tag as ViewType
-                    viewUndo(removedView, viewType)
-                }
-
-                override fun onRemoveViewReadyListener(removedView: View, ready: Boolean) {
-                    mOnPhotoEditorListener?.onRemoveViewReadyListener(removedView, ready)
-                }
-            }
-        )
-
-    /**
      * @return true is brush mode is enabled
      */
     val brushDrawableMode: Boolean?
@@ -165,6 +136,32 @@ class PhotoEditor private constructor(builder: Builder) :
         brushDrawingView.setBrushViewChangeListener(this)
         addedViews = AddedViewList()
         redoViews = AddedViewList()
+    }
+
+    private fun getNewMultitouchListener(mainView: View? = null): MultiTouchListener {
+            return MultiTouchListener(
+                mainView,
+                deleteView,
+                parentView,
+                imageView,
+                isTextPinchZoomable,
+                mOnPhotoEditorListener,
+                object : OnMultiTouchListener {
+                    override fun onEditTextClickListener(text: String, colorCode: Int) {
+                        // no op
+                    }
+
+                    override fun onRemoveViewListener(removedView: View) {
+                        // here do actually remove the view
+                        val viewType = removedView.tag as ViewType
+                        viewUndo(removedView, viewType)
+                    }
+
+                    override fun onRemoveViewReadyListener(removedView: View, ready: Boolean) {
+                        mOnPhotoEditorListener?.onRemoveViewReadyListener(removedView, ready)
+                    }
+                }
+            )
     }
 
     /**
@@ -229,7 +226,7 @@ class PhotoEditor private constructor(builder: Builder) :
                 textInputTv.typeface = textTypeface
             }
 
-            val multiTouchListenerInstance = newMultiTouchListener
+            val multiTouchListenerInstance = getNewMultitouchListener() // newMultiTouchListener
             multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
                 override fun onClick() {
                     val textInput = textInputTv.text.toString()
@@ -336,9 +333,9 @@ class PhotoEditor private constructor(builder: Builder) :
                     }
                 })
             }
-            emojiTextView.textSize = 56f
+            emojiTextView.textSize = 68f
 
-            val multiTouchListenerInstance = newMultiTouchListener
+            val multiTouchListenerInstance = getNewMultitouchListener(this) // newMultiTouchListener
             multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
                 override fun onClick() {
                 }
@@ -348,7 +345,8 @@ class PhotoEditor private constructor(builder: Builder) :
                     // bin)
                 }
             })
-            setOnTouchListener(multiTouchListenerInstance)
+            touchableArea.setOnTouchListener(multiTouchListenerInstance)
+            // setOnTouchListener(multiTouchListenerInstance)
             addViewToParent(this, ViewType.EMOJI)
         }
     }
