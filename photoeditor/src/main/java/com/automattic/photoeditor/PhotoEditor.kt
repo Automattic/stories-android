@@ -27,6 +27,7 @@ import androidx.core.widget.TextViewCompat
 import androidx.emoji.text.EmojiCompat
 import com.automattic.photoeditor.gesture.MultiTouchListener
 import com.automattic.photoeditor.gesture.MultiTouchListener.OnMultiTouchListener
+import com.automattic.photoeditor.gesture.MultiTouchListener.OnScaleChangedListener
 import com.automattic.photoeditor.util.BitmapUtil
 import com.automattic.photoeditor.views.PhotoEditorView
 import com.automattic.photoeditor.views.ViewType
@@ -336,13 +337,13 @@ class PhotoEditor private constructor(builder: Builder) :
             }
 
             val multiTouchListenerInstance = getNewMultitouchListener(this) // newMultiTouchListener
-            multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
-                override fun onClick() {
-                }
-
-                override fun onLongClick() {
-                    // TODO implement the DELETE action (hide every other view, allow this view to be dragged to the trash
-                    // bin)
+            multiTouchListenerInstance.setOnScaleChangedListener(object : OnScaleChangedListener {
+                override fun onScaleChanged(oldScale: Float, newScale: Float) {
+                    // if scale is lower than 1.0, stop reducing the touchable area
+                    if (newScale < 1.0f) {
+                        touchableArea.scaleX = 1.0f
+                        touchableArea.scaleY = 1.0f
+                    }
                 }
             })
             touchableArea.setOnTouchListener(multiTouchListenerInstance)

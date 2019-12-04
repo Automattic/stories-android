@@ -46,6 +46,8 @@ internal class MultiTouchListener(
     // private var onMultiTouchListener: OnMultiTouchListener? = null
     private var mOnGestureControl: OnGestureControl? = null
 
+    private var onScaleChangedListener: OnScaleChangedListener? = null
+
     init {
         mScaleGestureDetector = ScaleGestureDetector(ScaleGestureListener())
         mGestureListener = GestureDetector(GestureListener())
@@ -192,7 +194,7 @@ internal class MultiTouchListener(
             info.pivotY = mPivotY
             info.minimumScale = minimumScale
             info.maximumScale = maximumScale
-            move(view, info)
+            move(view, info, onScaleChangedListener)
             return !mIsTextPinchZoomable
         }
     }
@@ -208,6 +210,10 @@ internal class MultiTouchListener(
         internal var maximumScale: Float = 0.toFloat()
     }
 
+    interface OnScaleChangedListener {
+        fun onScaleChanged(oldScale: Float, newScale: Float)
+    }
+
     interface OnMultiTouchListener {
         fun onEditTextClickListener(text: String, colorCode: Int)
 
@@ -220,6 +226,10 @@ internal class MultiTouchListener(
         fun onClick()
 
         fun onLongClick()
+    }
+
+    fun setOnScaleChangedListener(listener: OnScaleChangedListener) {
+        onScaleChangedListener = listener
     }
 
     fun setOnGestureControl(onGestureControl: OnGestureControl) {
@@ -251,7 +261,7 @@ internal class MultiTouchListener(
             return degrees
         }
 
-        private fun move(view: View, info: TransformInfo) {
+        private fun move(view: View, info: TransformInfo, onScaleChangedListener: OnScaleChangedListener?) {
             computeRenderOffset(
                 view,
                 info.pivotX,
@@ -265,8 +275,16 @@ internal class MultiTouchListener(
 
             var scale = view.scaleX * info.deltaScale
             scale = Math.max(info.minimumScale, Math.min(info.maximumScale, scale))
+
+            val oldScale = view.scaleX
             view.scaleX = scale
             view.scaleY = scale
+
+            onScaleChangedListener?.let {
+                if (oldScale != scale) {
+                    it.onScaleChanged(oldScale, scale)
+                }
+            }
 
             val rotation =
                 adjustAngle(view.rotation + info.deltaAngle)
