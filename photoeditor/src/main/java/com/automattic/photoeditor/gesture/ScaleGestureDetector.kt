@@ -254,7 +254,7 @@ internal class ScaleGestureDetector(private val mListener: OnScaleGestureListene
         currentSpanVector = Vector2D()
     }
 
-    fun onTouchEvent(view: View, event: MotionEvent): Boolean {
+    fun onTouchEvent(view: View, event: MotionEvent, isTouchEventWellWithinView: Boolean): Boolean {
         val action = event.actionMasked
 
         if (action == MotionEvent.ACTION_DOWN) {
@@ -291,7 +291,10 @@ internal class ScaleGestureDetector(private val mListener: OnScaleGestureListene
 
                     setContext(view, event)
 
-                    isInProgress = mListener.onScaleBegin(view, this)
+                    // filter out touch events that fall around the edges of the view
+                    if (isTouchEventWellWithinView) {
+                        isInProgress = mListener.onScaleBegin(view, this)
+                    }
                 }
             }
         } else {
