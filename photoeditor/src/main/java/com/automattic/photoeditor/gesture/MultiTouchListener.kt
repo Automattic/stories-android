@@ -8,6 +8,7 @@ import android.view.View.OnTouchListener
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import com.automattic.photoeditor.OnPhotoEditorListener
+import com.automattic.photoeditor.R
 import com.automattic.photoeditor.gesture.ScaleGestureDetector.SimpleOnScaleGestureListener
 import com.automattic.photoeditor.views.ViewType
 
@@ -194,7 +195,16 @@ internal class MultiTouchListener(
             info.pivotY = mPivotY
             info.minimumScale = minimumScale
             info.maximumScale = maximumScale
-            move(view, info, onScaleChangedListener)
+            if (view.tag == ViewType.EMOJI) {
+                // this is the root view for EMOJI, let's copy movement on both TextView and touchable area
+                // so they move together
+                // the non-touchable area doesn't need to be limited in scale, so we don't pass onScaleChangedListener
+                move(view.findViewById(R.id.tvPhotoEditorText), info)
+                // the touchableArea needs be limited in scale, so here we pass onScaleChangedListener
+                move(view.findViewById(R.id.touchableArea), info, onScaleChangedListener)
+            } else {
+                move(view, info, onScaleChangedListener)
+            }
             return !mIsTextPinchZoomable
         }
     }
@@ -261,7 +271,7 @@ internal class MultiTouchListener(
             return degrees
         }
 
-        private fun move(view: View, info: TransformInfo, onScaleChangedListener: OnScaleChangedListener?) {
+        private fun move(view: View, info: TransformInfo, onScaleChangedListener: OnScaleChangedListener? = null) {
             computeRenderOffset(
                 view,
                 info.pivotX,

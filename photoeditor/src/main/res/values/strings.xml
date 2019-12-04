@@ -411,4 +411,7 @@
 
     <string name="request_permissions">This app needs camera and audio recording permissions.</string>
     <string name="camera_error">This device doesn\'t support Camera2 API.</string>
+
+    <string name="tag_touchable_area">tag_touchable_area</string>
+    <string name="tag_view_area">tag_view_area</string>
 </resources>

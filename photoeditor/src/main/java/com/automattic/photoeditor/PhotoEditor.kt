@@ -359,7 +359,7 @@ class PhotoEditor private constructor(builder: Builder) :
      */
     private fun addViewToParent(rootView: View, viewType: ViewType, sourceUri: Uri? = null) {
         val params = RelativeLayout.LayoutParams(
-            ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
         )
         params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
         parentView.addView(rootView, params)
