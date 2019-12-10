@@ -99,25 +99,18 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     private lateinit var swipeDetector: GestureDetectorCompat
     private var screenSizeX: Int = 0
     private var screenSizeY: Int = 0
-    private var systemWindowInsetSet: Boolean = false
+    private var topControlsBaseTopMargin: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_composer)
 
+        topControlsBaseTopMargin = getLayoutTopMarginBeforeInset(edit_mode_controls.layoutParams)
         ViewCompat.setOnApplyWindowInsetsListener(compose_loop_frame_layout) { view, insets ->
             // set insetTop as margin to all controls appearing at the top of the screen
-            if (!systemWindowInsetSet && insets.hasStableInsets() ) {
-                systemWindowInsetSet = true
-                addInsetTopMargin(edit_mode_controls.layoutParams, insets.systemWindowInsetTop)
-                addInsetTopMargin(close_button.layoutParams, insets.systemWindowInsetTop)
-                addInsetTopMargin(control_flash_group.layoutParams, insets.systemWindowInsetTop)
-            } else if (!systemWindowInsetSet && insets.systemWindowInsetTop > 0) {
-                systemWindowInsetSet = true
-                addInsetTopMargin(edit_mode_controls.layoutParams, insets.systemWindowInsetTop)
-                addInsetTopMargin(close_button.layoutParams, insets.systemWindowInsetTop)
-                addInsetTopMargin(control_flash_group.layoutParams, insets.systemWindowInsetTop)
-            }
+            addInsetTopMargin(edit_mode_controls.layoutParams, topControlsBaseTopMargin, insets.systemWindowInsetTop)
+            addInsetTopMargin(close_button.layoutParams, topControlsBaseTopMargin, insets.systemWindowInsetTop)
+            addInsetTopMargin(control_flash_group.layoutParams, topControlsBaseTopMargin, insets.systemWindowInsetTop)
             insets
         }
 

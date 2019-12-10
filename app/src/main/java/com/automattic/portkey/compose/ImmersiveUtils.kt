@@ -33,8 +33,15 @@ fun showSystemUI(window: Window) {
             or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
 }
 
-fun addInsetTopMargin(layoutParams: LayoutParams, insetTopMargin: Int) {
+fun addInsetTopMargin(layoutParams: LayoutParams, baseTopMargin: Int, insetTopMargin: Int) {
     if (layoutParams is ViewGroup.MarginLayoutParams) {
-        layoutParams.topMargin = layoutParams.topMargin + insetTopMargin
+         layoutParams.topMargin = baseTopMargin + insetTopMargin
     }
+}
+
+fun getLayoutTopMarginBeforeInset(layoutParams: LayoutParams) : Int {
+    if (layoutParams is ViewGroup.MarginLayoutParams) {
+        return layoutParams.topMargin
+    }
+    return 0
 }
