@@ -60,6 +60,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.android.synthetic.main.activity_composer.*
 import kotlinx.android.synthetic.main.content_composer.*
 import java.io.File
 import java.io.IOException
@@ -98,14 +99,27 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     private lateinit var swipeDetector: GestureDetectorCompat
     private var screenSizeX: Int = 0
     private var screenSizeY: Int = 0
+    private var systemWindowInsetSet: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_composer)
 
-        addInsetTopMargin(edit_mode_controls.layoutParams, (application as Portkey).getStatusBarHeight())
-        addInsetTopMargin(close_button.layoutParams, (application as Portkey).getStatusBarHeight())
-        addInsetTopMargin(control_flash_group.layoutParams, (application as Portkey).getStatusBarHeight())
+        ViewCompat.setOnApplyWindowInsetsListener(compose_loop_frame_layout) { view, insets ->
+            // set insetTop as margin to all controls appearing at the top of the screen
+            if (!systemWindowInsetSet && insets.hasStableInsets() ) {
+                systemWindowInsetSet = true
+                addInsetTopMargin(edit_mode_controls.layoutParams, insets.systemWindowInsetTop)
+                addInsetTopMargin(close_button.layoutParams, insets.systemWindowInsetTop)
+                addInsetTopMargin(control_flash_group.layoutParams, insets.systemWindowInsetTop)
+            } else if (!systemWindowInsetSet && insets.systemWindowInsetTop > 0) {
+                systemWindowInsetSet = true
+                addInsetTopMargin(edit_mode_controls.layoutParams, insets.systemWindowInsetTop)
+                addInsetTopMargin(close_button.layoutParams, insets.systemWindowInsetTop)
+                addInsetTopMargin(control_flash_group.layoutParams, insets.systemWindowInsetTop)
+            }
+            insets
+        }
 
         photoEditor = PhotoEditor.Builder(this, photoEditorView)
             .setPinchTextScalable(true) // set flag to make text scalable when pinch
