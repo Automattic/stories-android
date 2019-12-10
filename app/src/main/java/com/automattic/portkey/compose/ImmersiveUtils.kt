@@ -35,11 +35,11 @@ fun showSystemUI(window: Window) {
 
 fun addInsetTopMargin(layoutParams: LayoutParams, baseTopMargin: Int, insetTopMargin: Int) {
     if (layoutParams is ViewGroup.MarginLayoutParams) {
-         layoutParams.topMargin = baseTopMargin + insetTopMargin
+        layoutParams.topMargin = baseTopMargin + insetTopMargin
     }
 }
 
-fun getLayoutTopMarginBeforeInset(layoutParams: LayoutParams) : Int {
+fun getLayoutTopMarginBeforeInset(layoutParams: LayoutParams): Int {
     if (layoutParams is ViewGroup.MarginLayoutParams) {
         return layoutParams.topMargin
     }
