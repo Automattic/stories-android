@@ -184,7 +184,7 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
             holder.mImgThumbnail.setScaleY(scale);
         }
 
-        holder.mVideoOverlay.setVisibility(item.mIsVideo ? View.VISIBLE : View.GONE);
+//        holder.mVideoOverlay.setVisibility(item.mIsVideo ? View.VISIBLE : View.GONE);
         holder.mTxtVideoDuration.setVisibility(item.mIsVideo ? View.VISIBLE : View.GONE);
 
         if (mLoadThumbnails) {
