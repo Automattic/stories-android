@@ -232,6 +232,15 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
         return mMediaList.get(position);
     }
 
+    public boolean isSelectedSingleItemVideo() {
+        PhotoPickerItem item = getItemAtPosition(getSelectedPositions().get(0));
+        if (item != null) {
+            return item.mIsVideo;
+        } else {
+            return false;
+        }
+    }
+
     private boolean isValidPosition(int position) {
         return position >= 0 && position < mMediaList.size();
     }
@@ -471,9 +480,7 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
             addMedia(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, false);
 
             // videos
-            if (!mBrowserType.isSingleImagePicker()) {
-                addMedia(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, true);
-            }
+            addMedia(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, true);
 
             // sort by id in reverse (newest first)
             Collections.sort(mTmpList, new Comparator<PhotoPickerItem>() {

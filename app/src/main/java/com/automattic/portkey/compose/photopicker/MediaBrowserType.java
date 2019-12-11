@@ -22,8 +22,11 @@ public enum MediaBrowserType {
     public boolean isSingleImagePicker() {
         return this == FEATURED_IMAGE_PICKER
                || this == GRAVATAR_IMAGE_PICKER
-               || this == SITE_ICON_PICKER
-               || this == PORTKEY_PICKER;
+               || this == SITE_ICON_PICKER;
+    }
+
+    public boolean isSingleMediaItemPicker() {
+        return isSingleImagePicker() || this == PORTKEY_PICKER;
     }
 
     public boolean canMultiselect() {
