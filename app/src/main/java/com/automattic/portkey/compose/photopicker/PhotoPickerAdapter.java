@@ -386,14 +386,14 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
                 }
             });
 
-            mImgThumbnail.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    int position = getAdapterPosition();
-                    Log.d(TAG, "should select picture: " + position);
-                    return true;
-                }
-            });
+//            mImgThumbnail.setOnLongClickListener(new View.OnLongClickListener() {
+//                @Override
+//                public boolean onLongClick(View v) {
+//                    int position = getAdapterPosition();
+//                    Log.d(TAG, "should select picture: " + position);
+//                    return true;
+//                }
+//            });
 
             mVideoOverlay.setOnClickListener(new View.OnClickListener() {
                 @Override
