@@ -10,7 +10,7 @@ class PortkeyEditText : EditText {
 
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
 
-    constructor(context: Context, attrs: AttributeSet?,    defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
     override fun onKeyPreIme(keyCode: Int, event: KeyEvent): Boolean {
         return if (event.getKeyCode() === KeyEvent.KEYCODE_BACK) {
