@@ -98,6 +98,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     private lateinit var swipeDetector: GestureDetectorCompat
     private var screenSizeX: Int = 0
     private var screenSizeY: Int = 0
+    private var isEditingText: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -114,6 +115,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
         photoEditor.setOnPhotoEditorListener(object : OnPhotoEditorListener {
             override fun onEditTextChangeListener(rootView: View, text: String, colorCode: Int, isJustAdded: Boolean) {
+                isEditingText = true
                 editModeHideAllUIControls(false)
                 if (isJustAdded) {
                     // hide new text views
@@ -125,6 +127,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                     colorCode)
                 textEditorDialogFragment.setOnTextEditorListener(object : TextEditorDialogFragment.TextEditor {
                     override fun onDone(inputText: String, colorCode: Int) {
+                        isEditingText = false
                         // make sure to set it to visible, as newly added views are originally hidden until
                         // proper text is set
                         rootView.visibility = View.VISIBLE
@@ -154,7 +157,9 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             }
 
             override fun onStopViewChangeListener(viewType: ViewType) {
-                editModeRestoreAllUIControls()
+                if (!(viewType == TEXT && isEditingText)) {
+                    editModeRestoreAllUIControls()
+                }
             }
 
             @Suppress("OverridingDeprecatedMember")
