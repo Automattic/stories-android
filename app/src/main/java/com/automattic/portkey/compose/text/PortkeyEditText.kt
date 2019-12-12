@@ -21,9 +21,7 @@ class PortkeyEditText : EditText {
     }
 
     override fun onFocusChanged(focused: Boolean, direction: Int, previouslyFocusedRect: Rect?) {
-        if (focused) {
-            setSelection(selectionStart, selectionEnd)
-        }
+        setSelection(selectionStart, selectionEnd)
         super.onFocusChanged(focused, direction, previouslyFocusedRect)
     }
 }
