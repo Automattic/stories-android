@@ -1,7 +1,6 @@
 package com.automattic.portkey.compose.text
 
 import android.content.Context
-import android.graphics.Rect
 import android.util.AttributeSet
 import android.widget.EditText
 import android.view.KeyEvent
@@ -18,10 +17,5 @@ class PortkeyEditText : EditText {
             this.clearFocus()
             super.onKeyPreIme(keyCode, event)
         } else super.onKeyPreIme(keyCode, event)
-    }
-
-    override fun onFocusChanged(focused: Boolean, direction: Int, previouslyFocusedRect: Rect?) {
-        setSelection(selectionStart, selectionEnd)
-        super.onFocusChanged(focused, direction, previouslyFocusedRect)
     }
 }
