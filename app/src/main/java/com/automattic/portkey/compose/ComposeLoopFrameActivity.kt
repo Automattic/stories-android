@@ -115,6 +115,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
         photoEditor.setOnPhotoEditorListener(object : OnPhotoEditorListener {
             override fun onEditTextChangeListener(rootView: View, text: String, colorCode: Int, isJustAdded: Boolean) {
+                if (isEditingText) {
+                    return
+                }
+
                 isEditingText = true
                 editModeHideAllUIControls(false)
                 if (isJustAdded) {
