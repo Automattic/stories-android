@@ -15,4 +15,12 @@ open class BottomStripFragment : Fragment() {
     ): View? {
         return inflater.inflate(layout.fragment_bottom_strip, container, false)
     }
+
+    fun show() {
+        view?.visibility = View.VISIBLE
+    }
+
+    fun hide() {
+        view?.visibility = View.GONE
+    }
 }

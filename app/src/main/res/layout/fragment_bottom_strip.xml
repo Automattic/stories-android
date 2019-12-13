@@ -3,6 +3,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="@dimen/bottom_strip_height"
+    android:visibility="gone"
     android:background="@color/grey">
 
 </FrameLayout>
