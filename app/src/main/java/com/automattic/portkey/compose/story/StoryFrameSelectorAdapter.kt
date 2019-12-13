@@ -8,7 +8,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.automattic.portkey.R
 import kotlinx.android.synthetic.main.fragment_story_frame_item.view.*
 
-class StoryFrameSelectorAdapter(val storyFrameItems: Story, val context: Context) : RecyclerView.Adapter<StoryFrameSelectorAdapter.StoryFrameHolder>()  {
+class StoryFrameSelectorAdapter(
+    val storyFrameItems: Story,
+    val context: Context
+) : RecyclerView.Adapter<StoryFrameSelectorAdapter.StoryFrameHolder>() {
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
