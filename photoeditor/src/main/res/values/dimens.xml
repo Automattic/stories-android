@@ -1,0 +1,4 @@
+<resources>
+    <dimen name="emoji_view_size">108dp</dimen>
+    <dimen name="emoji_view_touchable_area_size">86dp</dimen>
+</resources>
