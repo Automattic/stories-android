@@ -51,7 +51,7 @@ import com.automattic.portkey.compose.photopicker.MediaBrowserType
 import com.automattic.portkey.compose.photopicker.PhotoPickerActivity
 import com.automattic.portkey.compose.photopicker.PhotoPickerFragment
 import com.automattic.portkey.compose.photopicker.RequestCodes
-import com.automattic.portkey.compose.story.BottomStripFragment
+import com.automattic.portkey.compose.story.StoryFrameSelectorFragment
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
 import com.automattic.portkey.util.CrashLoggingUtils
 import com.automattic.portkey.util.getDisplayPixelSize
@@ -456,7 +456,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
     private fun switchCameraPreviewOn() {
         backgroundSurfaceManager.switchCameraPreviewOn()
-        hideStoryCreationView()
+        hideStoryFrameSelector()
     }
 
     private fun testBrush() {
@@ -502,7 +502,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             return
         }
 
-        hideStoryCreationView()
+        hideStoryFrameSelector()
         hideEditModeUIControls()
 
         // set the correct camera as selected by the user last time they used the app
@@ -513,19 +513,19 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     }
 
     private fun showPlayVideo(videoFile: File? = null) {
-        showStoryCreationView()
+        showStoryFrameSelector()
         showEditModeUIControls(false)
         backgroundSurfaceManager.switchVideoPlayerOnFromFile(videoFile)
     }
 
     private fun showPlayVideo(videoUri: Uri) {
-        showStoryCreationView()
+        showStoryFrameSelector()
         showEditModeUIControls(false)
         backgroundSurfaceManager.switchVideoPlayerOnFromUri(videoUri)
     }
 
     private fun showStaticBackground() {
-        showStoryCreationView()
+        showStoryFrameSelector()
         showEditModeUIControls(true)
         backgroundSurfaceManager.switchStaticImageBackgroundModeOn()
     }
@@ -885,12 +885,12 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         }
     }
 
-    private fun hideStoryCreationView() {
-        (bottom_strip_view as BottomStripFragment).hide()
+    private fun hideStoryFrameSelector() {
+        (bottom_strip_view as StoryFrameSelectorFragment).hide()
     }
 
-    private fun showStoryCreationView() {
-        (bottom_strip_view as BottomStripFragment).show()
+    private fun showStoryFrameSelector() {
+        (bottom_strip_view as StoryFrameSelectorFragment).show()
     }
 
     private fun hideEditModeUIControls() {

@@ -324,7 +324,7 @@
         app:layout_constraintRight_toRightOf="parent"/>
 
 
-    <fragment android:name="com.automattic.portkey.compose.story.BottomStripFragment"
+    <fragment android:name="com.automattic.portkey.compose.story.StoryFrameSelectorFragment"
         android:id="@+id/bottom_strip_view"
         android:layout_width="match_parent"
         android:layout_height="@dimen/bottom_strip_height"

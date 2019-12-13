@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.automattic.portkey.R.layout
 
-open class BottomStripFragment : Fragment() {
+open class StoryFrameSelectorFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
