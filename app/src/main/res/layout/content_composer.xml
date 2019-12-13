@@ -1,334 +1,352 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:showIn="@layout/activity_composer"
-        tools:context=".compose.ComposeLoopFrameActivity"
-        android:animateLayoutChanges="true">
-
-    <com.automattic.photoeditor.views.PhotoEditorView
-        android:id="@+id/photoEditorView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:animateLayoutChanges="true"
-        android:background="@color/black"
-        >
-
-        <!-- this is the delete view  -->
-        <com.automattic.portkey.compose.DeleteButton
-            android:id="@+id/delete_view"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+>
+    <androidx.constraintlayout.widget.ConstraintLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            android:layout_centerHorizontal="true"
-            android:layout_alignParentBottom="true"/>
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            tools:showIn="@layout/activity_composer"
+            tools:context=".compose.ComposeLoopFrameActivity"
+            android:animateLayoutChanges="true">
 
-    </com.automattic.photoeditor.views.PhotoEditorView>
+        <com.automattic.photoeditor.views.PhotoEditorView
+            android:id="@+id/photoEditorView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:animateLayoutChanges="true"
+            android:background="@color/black"
+            >
 
-    <com.automattic.portkey.compose.VideoRecordingControlView
-        android:id="@+id/camera_capture_button"
-        android:visibility="invisible"
-        android:theme="@style/Widget.AppCompat.Button"
-        android:layout_width="@dimen/round_button_large"
-        android:layout_height="@dimen/round_button_large"
-        android:layout_marginBottom="@dimen/shutter_button_margin"
-        android:scaleType="fitCenter"
-        android:background="@drawable/ic_shutter_white"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:strokeThickness="@dimen/round_button_circle_stroke"
-        app:strokeFillColor="@color/white"
-        app:strokeProgressColor="@color/loop_magenta"
-        android:contentDescription="@string/capture_button_alt" />
+            <!-- this is the delete view  -->
+            <com.automattic.portkey.compose.DeleteButton
+                android:id="@+id/delete_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:layout_centerHorizontal="true"
+                android:layout_alignParentBottom="true"/>
+
+        </com.automattic.photoeditor.views.PhotoEditorView>
+
+        <com.automattic.portkey.compose.VideoRecordingControlView
+            android:id="@+id/camera_capture_button"
+            android:visibility="invisible"
+            android:theme="@style/Widget.AppCompat.Button"
+            android:layout_width="@dimen/round_button_large"
+            android:layout_height="@dimen/round_button_large"
+            android:layout_marginBottom="@dimen/shutter_button_margin"
+            android:scaleType="fitCenter"
+            android:background="@drawable/ic_shutter_white"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:strokeThickness="@dimen/round_button_circle_stroke"
+            app:strokeFillColor="@color/white"
+            app:strokeProgressColor="@color/loop_magenta"
+            android:contentDescription="@string/capture_button_alt" />
 
 
-    <LinearLayout
-        android:id="@+id/container_gallery_upload"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:orientation="vertical"
-        android:animateLayoutChanges="true"
-        app:layout_constraintBottom_toBottomOf="@+id/camera_capture_button"
-        app:layout_constraintEnd_toStartOf="@+id/camera_capture_button"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/camera_capture_button">
-
-        <RelativeLayout
+        <LinearLayout
+            android:id="@+id/container_gallery_upload"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal">
-            <!-- this will hold the thumbnail img for the picture taken  -->
-            <ImageView
-                android:id="@+id/gallery_upload_img"
-                android:layout_width="@dimen/normal_button_medium_round_corner"
-                android:layout_height="@dimen/normal_button_medium_round_corner"
-                android:background="@drawable/ic_gallery_upload"
-                android:contentDescription="@string/capture_button_alt"
-                android:scaleType="centerCrop"
-                android:layout_centerInParent="true"/>
+            android:layout_marginStart="8dp"
+            android:orientation="vertical"
+            android:animateLayoutChanges="true"
+            app:layout_constraintBottom_toBottomOf="@+id/camera_capture_button"
+            app:layout_constraintEnd_toStartOf="@+id/camera_capture_button"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/camera_capture_button">
 
-            <!-- this is just the border  -->
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal">
+                <!-- this will hold the thumbnail img for the picture taken  -->
+                <ImageView
+                    android:id="@+id/gallery_upload_img"
+                    android:layout_width="@dimen/normal_button_medium_round_corner"
+                    android:layout_height="@dimen/normal_button_medium_round_corner"
+                    android:background="@drawable/ic_gallery_upload"
+                    android:contentDescription="@string/capture_button_alt"
+                    android:scaleType="centerCrop"
+                    android:layout_centerInParent="true"/>
+
+                <!-- this is just the border  -->
+                <ImageView
+                    android:id="@+id/gallery_upload"
+                    android:layout_width="@dimen/normal_button_medium"
+                    android:layout_height="@dimen/normal_button_medium"
+                    android:background="@drawable/ic_gallery_upload"
+                    android:contentDescription="@string/capture_button_alt"
+                    android:scaleType="fitCenter"
+                    android:layout_centerInParent="true"/>
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/label_upload"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/label_control_upload"
+                android:textColor="@color/white"
+                android:textSize="@dimen/normal_button_font_size"
+                android:layout_gravity="center_horizontal"/>
+        </LinearLayout>
+
+        <!-- top gradient  -->
+        <View
+            android:id="@+id/gradient_top"
+            android:layout_width="0dp"
+            android:layout_height="100dp"
+            android:background="@drawable/top_gradient"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            />
+
+        <!-- bottom gradient  -->
+        <View
+            android:id="@+id/gradient_bottom"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/gradient_bottom_height"
+            android:background="@drawable/bottom_gradient"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"/>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/control_flash_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/top_button_group_margin"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:animateLayoutChanges="true">
+
+            <androidx.constraintlayout.widget.Group
+                android:id="@+id/camera_flash_group"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="invisible"
+                app:constraint_referenced_ids="camera_flash_button,label_flash" />
+
             <ImageView
-                android:id="@+id/gallery_upload"
+                android:id="@+id/camera_flash_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="2dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/ic_flash_off_black_24dp"
+                android:backgroundTint="@color/white"
+                android:contentDescription="@string/flash_button_alt"
+                android:scaleType="fitCenter"
+                app:layout_constraintBottom_toTopOf="@+id/label_flash"
+                app:layout_constraintStart_toStartOf="parent"/>
+
+            <TextView
+                android:id="@+id/label_flash"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_control_flash"
+                android:textColor="@color/white"
+                android:textSize="@dimen/normal_button_font_size"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@+id/camera_flash_button"
+                app:layout_constraintStart_toStartOf="@+id/camera_flash_button"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <LinearLayout
+            android:id="@+id/camera_flip_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:animateLayoutChanges="true"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="@+id/camera_capture_button"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/camera_capture_button"
+            app:layout_constraintTop_toTopOf="@+id/camera_capture_button">
+
+            <ImageView
+                android:id="@+id/camera_flip_button"
                 android:layout_width="@dimen/normal_button_medium"
                 android:layout_height="@dimen/normal_button_medium"
-                android:background="@drawable/ic_gallery_upload"
-                android:contentDescription="@string/capture_button_alt"
+                android:background="@drawable/ic_cameraflip_2"
+                android:backgroundTint="@color/white"
+                android:contentDescription="@string/flip_button_alt"
                 android:scaleType="fitCenter"
-                android:layout_centerInParent="true"/>
-        </RelativeLayout>
+                android:layout_gravity="center_horizontal"/>
 
-        <TextView
-            android:id="@+id/label_upload"
+            <TextView
+                android:id="@+id/label_flip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/label_control_flip_camera"
+                android:textColor="@color/white"
+                android:textSize="@dimen/normal_button_font_size"
+                android:layout_gravity="center_horizontal"/>
+        </LinearLayout>
+
+
+        <!--edit mode controls-->
+        <LinearLayout
+            android:id="@+id/edit_mode_controls"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/label_control_upload"
-            android:textColor="@color/white"
-            android:textSize="@dimen/normal_button_font_size"
-            android:layout_gravity="center_horizontal"/>
-    </LinearLayout>
-
-    <!-- top gradient  -->
-    <View
-        android:id="@+id/gradient_top"
-        android:layout_width="0dp"
-        android:layout_height="100dp"
-        android:background="@drawable/top_gradient"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        />
-
-    <!-- bottom gradient  -->
-    <View
-        android:id="@+id/gradient_bottom"
-        android:layout_width="0dp"
-        android:layout_height="@dimen/gradient_bottom_height"
-        android:background="@drawable/bottom_gradient"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"/>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/control_flash_group"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/top_button_group_margin"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:animateLayoutChanges="true">
-
-        <androidx.constraintlayout.widget.Group
-            android:id="@+id/camera_flash_group"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/top_button_group_margin"
+            android:orientation="horizontal"
             android:visibility="invisible"
-            app:constraint_referenced_ids="camera_flash_button,label_flash" />
+            android:fitsSystemWindows="true"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:animateLayoutChanges="true">
 
-        <ImageView
-            android:id="@+id/camera_flash_button"
+            <LinearLayout
+                android:id="@+id/sound_button_group"
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="@dimen/top_button_group_margin"
+                android:paddingRight="@dimen/top_button_group_margin"
+                android:paddingBottom="@dimen/top_button_group_margin"
+                android:layout_marginLeft="@dimen/top_button_group_margin"
+                >
+                <ImageView
+                    android:id="@+id/sound_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:background="@drawable/ic_volume_up_black_24dp"
+                    android:backgroundTint="@color/white"
+                    android:contentDescription="@string/sound_button_alt"
+                    android:scaleType="fitCenter"
+                    />
+
+                <TextView
+                    android:id="@+id/label_sound"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="@string/label_control_sound_on"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/normal_button_font_size"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/text_add_button_group"
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="@dimen/top_button_group_margin"
+                android:paddingRight="@dimen/top_button_group_margin"
+                android:paddingBottom="@dimen/top_button_group_margin"
+                android:layout_marginLeft="@dimen/top_button_group_margin"
+                >
+                <ImageView
+                    android:id="@+id/text_add_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:background="@drawable/ic_text_fields_black_24dp"
+                    android:backgroundTint="@color/white"
+                    android:contentDescription="@string/text_button_alt"
+                    android:scaleType="fitCenter"
+                    />
+
+                <TextView
+                    android:id="@+id/label_text_add"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="@string/label_control_text"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/normal_button_font_size"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/stickers_button_group"
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="@dimen/top_button_group_margin"
+                android:paddingBottom="@dimen/top_button_group_margin"
+                android:layout_marginLeft="@dimen/top_button_group_margin"
+                >
+                <ImageView
+                    android:id="@+id/stickers_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:background="@drawable/ic_stickers"
+                    android:backgroundTint="@color/white"
+                    android:contentDescription="@string/stickers_button_alt"
+                    android:scaleType="fitCenter"
+                    />
+
+                <TextView
+                    android:id="@+id/label_stickers"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="@string/label_control_stickers"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/normal_button_font_size"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/close_button"
+            android:visibility="invisible"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="2dp"
-            android:layout_marginStart="8dp"
-            android:background="@drawable/ic_flash_off_black_24dp"
+            android:layout_margin="@dimen/top_button_group_margin"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            android:background="@drawable/ic_close_black_24dp"
             android:backgroundTint="@color/white"
-            android:contentDescription="@string/flash_button_alt"
-            android:scaleType="fitCenter"
-            app:layout_constraintBottom_toTopOf="@+id/label_flash"
-            app:layout_constraintStart_toStartOf="parent"/>
+            />
 
-        <TextView
-            android:id="@+id/label_flash"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/label_control_flash"
-            android:textColor="@color/white"
-            android:textSize="@dimen/normal_button_font_size"
+        <com.automattic.portkey.compose.SaveButton
+            android:id="@+id/save_button"
+            android:layout_width="@dimen/save_button_total_width"
+            android:layout_height="@dimen/save_button_total_height"
+            android:layout_marginBottom="@dimen/save_button_bottom_margin"
+            android:layout_marginEnd="@dimen/save_button_right_margin"
+            android:visibility="invisible"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="@+id/camera_flash_button"
-            app:layout_constraintStart_toStartOf="@+id/camera_flash_button"/>
+            app:layout_constraintRight_toRightOf="parent"/>
+
+        <FrameLayout
+            android:id="@+id/translucent_view"
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <LinearLayout
-        android:id="@+id/camera_flip_group"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:animateLayoutChanges="true"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="@+id/camera_capture_button"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/camera_capture_button"
-        app:layout_constraintTop_toTopOf="@+id/camera_capture_button">
-
-        <ImageView
-            android:id="@+id/camera_flip_button"
-            android:layout_width="@dimen/normal_button_medium"
-            android:layout_height="@dimen/normal_button_medium"
-            android:background="@drawable/ic_cameraflip_2"
-            android:backgroundTint="@color/white"
-            android:contentDescription="@string/flip_button_alt"
-            android:scaleType="fitCenter"
-            android:layout_gravity="center_horizontal"/>
-
-        <TextView
-            android:id="@+id/label_flip"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/label_control_flip_camera"
-            android:textColor="@color/white"
-            android:textSize="@dimen/normal_button_font_size"
-            android:layout_gravity="center_horizontal"/>
-    </LinearLayout>
-
-
-    <!--edit mode controls-->
-    <LinearLayout
-        android:id="@+id/edit_mode_controls"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/top_button_group_margin"
-        android:orientation="horizontal"
-        android:visibility="invisible"
-        android:fitsSystemWindows="true"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:animateLayoutChanges="true">
-
-        <LinearLayout
-            android:id="@+id/sound_button_group"
-            android:orientation="vertical"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingLeft="@dimen/top_button_group_margin"
-            android:paddingRight="@dimen/top_button_group_margin"
-            android:paddingBottom="@dimen/top_button_group_margin"
-            android:layout_marginLeft="@dimen/top_button_group_margin"
-            >
-            <ImageView
-                android:id="@+id/sound_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:background="@drawable/ic_volume_up_black_24dp"
-                android:backgroundTint="@color/white"
-                android:contentDescription="@string/sound_button_alt"
-                android:scaleType="fitCenter"
-                />
-
-            <TextView
-                android:id="@+id/label_sound"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/label_control_sound_on"
-                android:textColor="@color/white"
-                android:textSize="@dimen/normal_button_font_size"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/text_add_button_group"
-            android:orientation="vertical"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingLeft="@dimen/top_button_group_margin"
-            android:paddingRight="@dimen/top_button_group_margin"
-            android:paddingBottom="@dimen/top_button_group_margin"
-            android:layout_marginLeft="@dimen/top_button_group_margin"
-            >
-            <ImageView
-                android:id="@+id/text_add_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:background="@drawable/ic_text_fields_black_24dp"
-                android:backgroundTint="@color/white"
-                android:contentDescription="@string/text_button_alt"
-                android:scaleType="fitCenter"
-                />
-
-            <TextView
-                android:id="@+id/label_text_add"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/label_control_text"
-                android:textColor="@color/white"
-                android:textSize="@dimen/normal_button_font_size"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/stickers_button_group"
-            android:orientation="vertical"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingLeft="@dimen/top_button_group_margin"
-            android:paddingBottom="@dimen/top_button_group_margin"
-            android:layout_marginLeft="@dimen/top_button_group_margin"
-            >
-            <ImageView
-                android:id="@+id/stickers_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:background="@drawable/ic_stickers"
-                android:backgroundTint="@color/white"
-                android:contentDescription="@string/stickers_button_alt"
-                android:scaleType="fitCenter"
-                />
-
-            <TextView
-                android:id="@+id/label_stickers"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/label_control_stickers"
-                android:textColor="@color/white"
-                android:textSize="@dimen/normal_button_font_size"/>
-        </LinearLayout>
-
-    </LinearLayout>
-
-    <ImageButton
-        android:id="@+id/close_button"
-        android:visibility="invisible"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/top_button_group_margin"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:background="@drawable/ic_close_black_24dp"
-        android:backgroundTint="@color/white"
-        />
-
-    <com.automattic.portkey.compose.SaveButton
-        android:id="@+id/save_button"
-        android:layout_width="@dimen/save_button_total_width"
-        android:layout_height="@dimen/save_button_total_height"
-        android:layout_marginBottom="@dimen/save_button_bottom_margin"
-        android:layout_marginEnd="@dimen/save_button_right_margin"
-        android:visibility="invisible"
+    <fragment android:name="com.automattic.portkey.compose.story.BottomStripFragment"
+        android:id="@+id/bottom_strip_view"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_strip_height"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"/>
 
-    <FrameLayout
-        android:id="@+id/translucent_view"
-        android:visibility="gone"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>
