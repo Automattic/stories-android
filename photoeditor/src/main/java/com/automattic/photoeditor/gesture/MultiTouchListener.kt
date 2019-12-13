@@ -19,6 +19,7 @@ import com.automattic.photoeditor.views.ViewType
  *
  */
 internal class MultiTouchListener(
+    private val mainView: View?,
     private val deleteView: View?,
     private val parentView: RelativeLayout,
     private val photoEditImageView: ImageView,
@@ -58,7 +59,9 @@ internal class MultiTouchListener(
         }
     }
 
-    override fun onTouch(view: View, event: MotionEvent): Boolean {
+    override fun onTouch(viewTouched: View, event: MotionEvent): Boolean {
+        val view = mainView ?: viewTouched
+
         mScaleGestureDetector.onTouchEvent(view, event)
         mGestureListener.onTouchEvent(event)
 
