@@ -13,7 +13,7 @@ open class StoryFrameSelectorFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(layout.fragment_bottom_strip, container, false)
+        return inflater.inflate(layout.fragment_story_frame_selector, container, false)
     }
 
     fun show() {
