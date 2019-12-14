@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 class StoryViewModel(val repository: StoryRepository, val storyId: Int) : ViewModel() {
     private val storyFrameItems: MutableLiveData<List<StoryFrameItem>> by lazy {
         MutableLiveData<List<StoryFrameItem>>().also {
-            repository.loadStory(storyId)
+            it.value = repository.loadStory(storyId)
         }
     }
 
