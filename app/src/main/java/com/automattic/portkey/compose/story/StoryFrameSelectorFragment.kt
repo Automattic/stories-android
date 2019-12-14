@@ -22,6 +22,15 @@ open class StoryFrameSelectorFragment : Fragment() {
         FAKE_CONTENT.frames.add(StoryFrameItem("test9"))
         FAKE_CONTENT.frames.add(StoryFrameItem("test10"))
         FAKE_CONTENT.frames.add(StoryFrameItem("test11"))
+        FAKE_CONTENT.frames.add(StoryFrameItem("test12"))
+        FAKE_CONTENT.frames.add(StoryFrameItem("test13"))
+        FAKE_CONTENT.frames.add(StoryFrameItem("test14"))
+        FAKE_CONTENT.frames.add(StoryFrameItem("test15"))
+        FAKE_CONTENT.frames.add(StoryFrameItem("test16"))
+        FAKE_CONTENT.frames.add(StoryFrameItem("test17"))
+        FAKE_CONTENT.frames.add(StoryFrameItem("test18"))
+        FAKE_CONTENT.frames.add(StoryFrameItem("test19"))
+        FAKE_CONTENT.frames.add(StoryFrameItem("test20"))
     }
 
     override fun onCreateView(
