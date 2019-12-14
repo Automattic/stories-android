@@ -74,6 +74,7 @@ class StoryFrameSelectorAdapter(
 
     // useful for loading an existing story to edit
     fun addAllItems(items: List<StoryFrameItem>) {
+        storyFrameItems.frames.clear()
         storyFrameItems.frames.addAll(items)
         notifyDataSetChanged()
     }
