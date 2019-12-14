@@ -16,7 +16,7 @@ open class StoryFrameSelectorFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         val model =
             ViewModelProviders.of(this,
-                StoryViewModelFactory(StoryRepository(), 0))[StoryViewModel::class.java]
+                StoryViewModelFactory(StoryRepository.getInstance(), 0))[StoryViewModel::class.java]
         model.getStoryFrameItems().observe(this, Observer<List<StoryFrameItem>> { frames ->
             // update adapter
             adapter.addAllItems(frames)

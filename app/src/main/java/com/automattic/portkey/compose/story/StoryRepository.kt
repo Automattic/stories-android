@@ -11,4 +11,14 @@ class StoryRepository {
         FAKE_CONTENT.frames.add(StoryFrameItem("test5"))
         return FAKE_CONTENT.frames
     }
+
+    companion object {
+        private var singleRepoInstance: StoryRepository? = null
+        fun getInstance() : StoryRepository {
+            if (singleRepoInstance == null) {
+                singleRepoInstance = StoryRepository()
+            }
+            return singleRepoInstance!!
+        }
+    }
 }
