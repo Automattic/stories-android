@@ -21,9 +21,17 @@ class StoryFrameSelectorAdapter(
         viewType: Int
     ): StoryFrameHolder {
         if (viewType == VIEW_TYPE_PLUS_ICON) {
-            return StoryFrameHolder(LayoutInflater.from(context).inflate(R.layout.fragment_story_frame_item_plus, parent, false))
+            return StoryFrameHolder(
+                LayoutInflater
+                    .from(context)
+                    .inflate(R.layout.fragment_story_frame_item_plus, parent, false)
+            )
         } else {
-            return StoryFrameHolder(LayoutInflater.from(context).inflate(R.layout.fragment_story_frame_item, parent, false))
+            return StoryFrameHolder(
+                LayoutInflater
+                    .from(context)
+                    .inflate(R.layout.fragment_story_frame_item, parent, false)
+            )
         }
     }
 
@@ -35,7 +43,7 @@ class StoryFrameSelectorAdapter(
         // first position has the plus icon, so skip that one
         if (position != 0) {
             // holder.textView.text = storyFrameItems.frames.get(position).name
-            holder.clickableView.setOnClickListener  { view ->
+            holder.clickableView.setOnClickListener { view ->
                 Toast.makeText(context, "IMAGE CLICKED: " + position, Toast.LENGTH_SHORT).show()
             }
 
@@ -44,7 +52,7 @@ class StoryFrameSelectorAdapter(
                 .transform(CenterCrop(), RoundedCorners(16))
                 .into(holder.imageView)
         } else {
-            holder.clickableView.setOnClickListener  { view ->
+            holder.clickableView.setOnClickListener { view ->
                 Toast.makeText(context, "PLUS CLICKED: " + position, Toast.LENGTH_SHORT).show()
             }
         }
