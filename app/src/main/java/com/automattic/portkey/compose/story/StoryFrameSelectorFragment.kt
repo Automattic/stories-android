@@ -14,7 +14,6 @@ open class StoryFrameSelectorFragment : Fragment() {
     lateinit var adapter: StoryFrameSelectorAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // val model = ViewModelProviders.of(this)[StoryViewModel::class.java]
         val model =
             ViewModelProviders.of(this,
                 StoryViewModelFactory(StoryRepository(), 0))[StoryViewModel::class.java]
