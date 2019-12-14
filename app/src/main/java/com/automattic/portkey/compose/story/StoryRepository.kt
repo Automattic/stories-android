@@ -2,7 +2,7 @@ package com.automattic.portkey.compose.story
 
 class StoryRepository {
     val FAKE_CONTENT = Story(ArrayList())
-    fun loadStory(storyId: Int) : ArrayList<StoryFrameItem> {
+    fun loadStory(storyId: Int): ArrayList<StoryFrameItem> {
         // TODO load the story items here, for the storyId passed as argument
         FAKE_CONTENT.frames.add(StoryFrameItem("test1"))
         FAKE_CONTENT.frames.add(StoryFrameItem("test2"))

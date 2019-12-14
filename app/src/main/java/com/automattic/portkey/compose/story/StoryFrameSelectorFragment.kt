@@ -10,16 +10,15 @@ import androidx.lifecycle.ViewModelProviders
 import com.automattic.portkey.R.layout
 import kotlinx.android.synthetic.main.fragment_story_frame_selector.view.*
 
-
 open class StoryFrameSelectorFragment : Fragment() {
-    lateinit var adapter : StoryFrameSelectorAdapter
+    lateinit var adapter: StoryFrameSelectorAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // val model = ViewModelProviders.of(this)[StoryViewModel::class.java]
         val model =
             ViewModelProviders.of(this,
                 StoryViewModelFactory(StoryRepository(), 0))[StoryViewModel::class.java]
-        model.getStoryFrameItems().observe(this, Observer<List<StoryFrameItem>>{ frames ->
+        model.getStoryFrameItems().observe(this, Observer<List<StoryFrameItem>> { frames ->
             // update adapter
             adapter.addAllItems(frames)
         })
