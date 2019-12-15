@@ -31,6 +31,11 @@ class StoryRepository {
         currentStoryFramesLiveData.postValue(currentStoryFrames)
     }
 
+    fun discardCurrentStorry() {
+        currentStoryFrames = ArrayList()
+        currentStoryFramesLiveData.postValue(currentStoryFrames)
+    }
+
     // used when user taps on a different frame and keep track record of its state
     fun setSelectedFrame(index: Int): StoryFrameItem {
         currentSelectedFrameIndex = index
