@@ -555,7 +555,6 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                             // update the repository
                             addStoryFrameItemToCurrentStory(StoryFrameItem(file.path))
                             setSelectedFrame(0)
-                            // TODO now set the ViewModel value to propagate observer changes
                         }
                     showStaticBackground()
                     currentOriginalCapturedFile = file
