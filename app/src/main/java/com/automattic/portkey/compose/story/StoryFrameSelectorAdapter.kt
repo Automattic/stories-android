@@ -13,9 +13,10 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import kotlinx.android.synthetic.main.fragment_story_frame_item.view.*
 
 class StoryFrameSelectorAdapter(
-    val storyFrameItems: Story,
     val context: Context
 ) : RecyclerView.Adapter<StoryFrameSelectorAdapter.StoryFrameHolder>() {
+    private val storyFrameItemsWithPlusControl = Story(ArrayList())
+
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
@@ -36,13 +37,13 @@ class StoryFrameSelectorAdapter(
     }
 
     override fun getItemCount(): Int {
-        return storyFrameItems.frames.size
+        return storyFrameItemsWithPlusControl.frames.size
     }
 
     override fun onBindViewHolder(holder: StoryFrameHolder, position: Int) {
         // first position has the plus icon, so skip that one
         if (position != 0) {
-            // holder.textView.text = storyFrameItems.frames.get(position).name
+            // holder.textView.text = storyFrameItemsWithPlusControl.frames.get(position).name
             holder.clickableView.setOnClickListener { view ->
                 Toast.makeText(context, "IMAGE CLICKED: " + position, Toast.LENGTH_SHORT).show()
             }
@@ -68,14 +69,16 @@ class StoryFrameSelectorAdapter(
     }
 
     fun insertItem(item: StoryFrameItem) {
-        storyFrameItems.frames.add(0, item)
+        // items are inserted to the left. Index 0 is always occupied by the Plus control, next available index is 1.
+        storyFrameItemsWithPlusControl.frames.add(1, item)
         notifyDataSetChanged()
     }
 
     // useful for loading an existing story to edit
     fun addAllItems(items: List<StoryFrameItem>) {
-        storyFrameItems.frames.clear()
-        storyFrameItems.frames.addAll(items)
+        storyFrameItemsWithPlusControl.frames.clear()
+        storyFrameItemsWithPlusControl.frames.add(StoryFrameItem("")) // adds a placeholder for the plus button
+        storyFrameItemsWithPlusControl.frames.addAll(items) // now add all items from the passed Story frame list
         notifyDataSetChanged()
     }
 

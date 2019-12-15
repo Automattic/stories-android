@@ -1,17 +1,12 @@
 package com.automattic.portkey.compose.story
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
-class StoryViewModel(val repository: StoryRepository, val storyId: Int) : ViewModel() {
-    private val storyFrameItems: MutableLiveData<List<StoryFrameItem>> by lazy {
+class StoryViewModel(val repository: StoryRepository, val storyIndex: Int) : ViewModel() {
+    val storyFrameItems: MutableLiveData<List<StoryFrameItem>> by lazy {
         MutableLiveData<List<StoryFrameItem>>().also {
-            it.value = repository.loadStory(storyId)
+            it.value = repository.loadStory(storyIndex)
         }
-    }
-
-    fun getStoryFrameItems(): LiveData<List<StoryFrameItem>> {
-        return storyFrameItems
     }
 }

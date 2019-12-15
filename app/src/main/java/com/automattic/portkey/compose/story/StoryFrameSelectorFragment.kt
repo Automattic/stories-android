@@ -12,12 +12,13 @@ import kotlinx.android.synthetic.main.fragment_story_frame_selector.view.*
 
 open class StoryFrameSelectorFragment : Fragment() {
     lateinit var adapter: StoryFrameSelectorAdapter
+    lateinit var model: StoryViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val model =
+        model =
             ViewModelProviders.of(this,
                 StoryViewModelFactory(StoryRepository.getInstance(), 0))[StoryViewModel::class.java]
-        model.getStoryFrameItems().observe(this, Observer<List<StoryFrameItem>> { frames ->
+        model.storyFrameItems.observe(this, Observer<List<StoryFrameItem>> { frames ->
             // update adapter
             adapter.addAllItems(frames)
         })
@@ -31,7 +32,7 @@ open class StoryFrameSelectorFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(layout.fragment_story_frame_selector, container, false)
         // instantiate adapter with an empty Story until it gets loaded
-        adapter = StoryFrameSelectorAdapter(Story(ArrayList()), activity!!)
+        adapter = StoryFrameSelectorAdapter(activity!!)
         view.story_frames_view.adapter = adapter
         return view
     }

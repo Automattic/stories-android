@@ -30,6 +30,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.ViewCompat
+import androidx.lifecycle.ViewModelProviders
 import com.automattic.photoeditor.OnPhotoEditorListener
 import com.automattic.photoeditor.PhotoEditor
 import com.automattic.photoeditor.SaveSettings
@@ -51,7 +52,11 @@ import com.automattic.portkey.compose.photopicker.MediaBrowserType
 import com.automattic.portkey.compose.photopicker.PhotoPickerActivity
 import com.automattic.portkey.compose.photopicker.PhotoPickerFragment
 import com.automattic.portkey.compose.photopicker.RequestCodes
+import com.automattic.portkey.compose.story.StoryFrameItem
 import com.automattic.portkey.compose.story.StoryFrameSelectorFragment
+import com.automattic.portkey.compose.story.StoryRepository
+import com.automattic.portkey.compose.story.StoryViewModel
+import com.automattic.portkey.compose.story.StoryViewModelFactory
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
 import com.automattic.portkey.util.CrashLoggingUtils
 import com.automattic.portkey.util.getDisplayPixelSize
@@ -548,6 +553,13 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                         .load(file)
                         .transform(CenterCrop())
                         .into(photoEditorView.source)
+                    StoryRepository
+                        .getInstance().apply {
+                            // update the repository
+                            addStoryFrameItemToCurrentStory(StoryFrameItem(file.path))
+                            setSelectedFrame(0)
+                            // TODO now set the ViewModel value to propagate observer changes
+                        }
                     showStaticBackground()
                     currentOriginalCapturedFile = file
                     waitToReenableCapture()
