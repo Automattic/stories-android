@@ -43,7 +43,6 @@ class StoryFrameSelectorAdapter(
     override fun onBindViewHolder(holder: StoryFrameHolder, position: Int) {
         // first position has the plus icon, so skip that one
         if (position != 0) {
-            // holder.textView.text = storyFrameItemsWithPlusControl.frames.get(position).name
             holder.clickableView.setOnClickListener { view ->
                 Toast.makeText(context, "IMAGE CLICKED: " + position, Toast.LENGTH_SHORT).show()
             }
