@@ -12,16 +12,27 @@ import kotlinx.android.synthetic.main.fragment_story_frame_selector.view.*
 
 open class StoryFrameSelectorFragment : Fragment() {
     lateinit var adapter: StoryFrameSelectorAdapter
-    lateinit var model: StoryViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        model =
+        val model =
             ViewModelProviders.of(this,
                 StoryViewModelFactory(StoryRepository.getInstance(), 0))[StoryViewModel::class.java]
         model.storyFrameItems.observe(this, Observer<List<StoryFrameItem>> { frames ->
             // update adapter
             adapter.addAllItems(frames)
         })
+
+        // now setup an observer on the StoryRepository's current story frames so we can update our StoryViewModel
+        // this way. By writing to the StoryRepository with its exposed methods, it will propagate changes to
+        // their observers, which will update the model's StoryFrameItems and these in turn will update the
+        // RecyclerView's adapter.
+        //  StoryRepository --> model.storyFrameItems --> RecyclerView's adapter.
+        StoryRepository
+            .getInstance()
+            .getCurrentStoryFramesLiveData()
+            .observe(this, Observer<List<StoryFrameItem>> { frames -> model.storyFrameItems.value = frames
+        })
+
         super.onCreate(savedInstanceState)
     }
 
