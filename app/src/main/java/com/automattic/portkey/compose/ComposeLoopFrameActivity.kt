@@ -1039,7 +1039,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 .transform(CenterCrop())
                 .into(photoEditorView.source)
             showStaticBackground()
-            // TODO call notifyDatasetChanged on the RecyclerView adapter so it changes the currently selected one.
         }
     }
 
