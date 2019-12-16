@@ -4,7 +4,6 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.automattic.portkey.R
 import com.bumptech.glide.Glide
@@ -50,7 +49,6 @@ class StoryFrameSelectorAdapter(
         // first position has the plus icon, so skip that one
         if (position != 0) {
             holder.clickableView.setOnClickListener { view ->
-                Toast.makeText(context, "IMAGE CLICKED: " + position, Toast.LENGTH_SHORT).show()
                 clickListener.onStoryFrameSelected(position - 1)
             }
 
@@ -67,7 +65,6 @@ class StoryFrameSelectorAdapter(
             }
         } else {
             holder.clickableView.setOnClickListener { view ->
-                Toast.makeText(context, "PLUS CLICKED: " + position, Toast.LENGTH_SHORT).show()
                 clickListener.onPlusIconTapped()
             }
             // always draw border for the PLUS icon button
