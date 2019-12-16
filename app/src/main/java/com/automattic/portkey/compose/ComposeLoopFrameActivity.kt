@@ -51,6 +51,7 @@ import com.automattic.portkey.compose.photopicker.MediaBrowserType
 import com.automattic.portkey.compose.photopicker.PhotoPickerActivity
 import com.automattic.portkey.compose.photopicker.PhotoPickerFragment
 import com.automattic.portkey.compose.photopicker.RequestCodes
+import com.automattic.portkey.compose.story.OnStoryFrameSelectorTappedListener
 import com.automattic.portkey.compose.story.StoryFrameItem
 import com.automattic.portkey.compose.story.StoryFrameSelectorFragment
 import com.automattic.portkey.compose.story.StoryRepository
@@ -82,7 +83,7 @@ fun Snackbar.config(context: Context) {
     ViewCompat.setElevation(this.view, 6f)
 }
 
-class ComposeLoopFrameActivity : AppCompatActivity() {
+class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTappedListener {
     private lateinit var photoEditor: PhotoEditor
     private lateinit var backgroundSurfaceManager: BackgroundSurfaceManager
     private var currentOriginalCapturedFile: File? = null
@@ -1028,6 +1029,14 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         val size = getDisplayPixelSize(this)
         screenSizeX = size.x
         screenSizeY = size.y
+    }
+
+    override fun onStoryFrameSelected(index: Int) {
+        // TODO here actually change the background StoryFrame being edited
+    }
+
+    override fun onPlusIconTapped() {
+        launchCameraPreview()
     }
 
     private inner class FlingGestureListener : GestureDetector.SimpleOnGestureListener() {

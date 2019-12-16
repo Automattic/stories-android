@@ -12,8 +12,14 @@ import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import kotlinx.android.synthetic.main.fragment_story_frame_item.view.*
 
+interface OnStoryFrameSelectorTappedListener {
+    fun onStoryFrameSelected(index: Int)
+    fun onPlusIconTapped()
+}
+
 class StoryFrameSelectorAdapter(
-    val context: Context
+    val context: Context,
+    val clickListener: OnStoryFrameSelectorTappedListener
 ) : RecyclerView.Adapter<StoryFrameSelectorAdapter.StoryFrameHolder>() {
     private val storyFrameItemsWithPlusControl = Story(ArrayList())
 
@@ -45,6 +51,7 @@ class StoryFrameSelectorAdapter(
         if (position != 0) {
             holder.clickableView.setOnClickListener { view ->
                 Toast.makeText(context, "IMAGE CLICKED: " + position, Toast.LENGTH_SHORT).show()
+                clickListener.onStoryFrameSelected(position)
             }
 
             Glide.with(context)
@@ -61,6 +68,7 @@ class StoryFrameSelectorAdapter(
         } else {
             holder.clickableView.setOnClickListener { view ->
                 Toast.makeText(context, "PLUS CLICKED: " + position, Toast.LENGTH_SHORT).show()
+                clickListener.onPlusIconTapped()
             }
             // always draw border for the PLUS icon button
             holder.frameSelected.visibility = View.VISIBLE
