@@ -49,6 +49,11 @@ class StoryFrameSelectorAdapter(
         // first position has the plus icon, so skip that one
         if (position != 0) {
             holder.clickableView.setOnClickListener { view ->
+                val previousSelectedPosition = StoryRepository.getInstance().getSelectedFrameIndex() + 1
+                if (position != previousSelectedPosition) {
+                    notifyItemChanged(position)
+                    notifyItemChanged(previousSelectedPosition)
+                }
                 clickListener.onStoryFrameSelected(position - 1)
             }
 
