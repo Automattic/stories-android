@@ -1042,7 +1042,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }
     }
 
-    override fun onPlusIconTapped() {
+    override fun onStoryFrameAddTapped() {
         launchCameraPreview()
     }
 

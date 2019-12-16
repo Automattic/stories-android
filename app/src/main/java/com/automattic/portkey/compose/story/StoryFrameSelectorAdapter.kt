@@ -13,7 +13,7 @@ import kotlinx.android.synthetic.main.fragment_story_frame_item.view.*
 
 interface OnStoryFrameSelectorTappedListener {
     fun onStoryFrameSelected(index: Int)
-    fun onPlusIconTapped()
+    fun onStoryFrameAddTapped()
 }
 
 class StoryFrameSelectorAdapter(
@@ -70,7 +70,7 @@ class StoryFrameSelectorAdapter(
             }
         } else {
             holder.clickableView.setOnClickListener { view ->
-                clickListener.onPlusIconTapped()
+                clickListener.onStoryFrameAddTapped()
             }
             // always draw border for the PLUS icon button
             holder.frameSelected.visibility = View.VISIBLE
