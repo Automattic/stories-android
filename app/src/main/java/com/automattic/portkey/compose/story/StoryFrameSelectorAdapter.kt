@@ -48,7 +48,7 @@ class StoryFrameSelectorAdapter(
             }
 
             Glide.with(context)
-                .load(R.drawable.intro02) // TODO change for data coming from datasource at [position]
+                .load(storyFrameItemsWithPlusControl.frames[position].filePath)
                 .transform(CenterCrop(), RoundedCorners(16))
                 .into(holder.imageView)
 
