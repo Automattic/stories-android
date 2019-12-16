@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData
 
 class StoryRepository {
     private var currentStoryFrames = ArrayList<StoryFrameItem>()
-    private var currentSelectedFrameIndex = 0
+    private var currentSelectedFrameIndex: Int = 0
     private val stories = ArrayList<Story>()
     private val currentStoryFramesLiveData = MutableLiveData<List<StoryFrameItem>>()
 
@@ -31,7 +31,7 @@ class StoryRepository {
         currentStoryFramesLiveData.postValue(currentStoryFrames)
     }
 
-    fun discardCurrentStorry() {
+    fun discardCurrentStory() {
         currentStoryFrames = ArrayList()
         currentStoryFramesLiveData.postValue(currentStoryFrames)
     }
@@ -40,6 +40,10 @@ class StoryRepository {
     fun setSelectedFrame(index: Int): StoryFrameItem {
         currentSelectedFrameIndex = index
         return currentStoryFrames[index]
+    }
+
+    fun getSelectedFrameIndex(): Int {
+        return currentSelectedFrameIndex
     }
 
     fun getCurrentStoryFramesLiveData(): LiveData<List<StoryFrameItem>> {

@@ -51,10 +51,19 @@ class StoryFrameSelectorAdapter(
                 .load(R.drawable.intro02) // TODO change for data coming from datasource at [position]
                 .transform(CenterCrop(), RoundedCorners(16))
                 .into(holder.imageView)
+
+            if (StoryRepository.getInstance().getSelectedFrameIndex() == (position - 1)) {
+                // paint it selected
+                holder.frameSelected.visibility = View.VISIBLE
+            } else {
+                holder.frameSelected.visibility = View.GONE
+            }
         } else {
             holder.clickableView.setOnClickListener { view ->
                 Toast.makeText(context, "PLUS CLICKED: " + position, Toast.LENGTH_SHORT).show()
             }
+            // always draw border for the PLUS icon button
+            holder.frameSelected.visibility = View.VISIBLE
         }
     }
 
@@ -84,6 +93,7 @@ class StoryFrameSelectorAdapter(
     class StoryFrameHolder(v: View) : RecyclerView.ViewHolder(v) {
         val clickableView = v // entire view should be clickable
         val imageView = v.frame_image
+        val frameSelected = v.frame_image_selected
     }
 
     companion object {
