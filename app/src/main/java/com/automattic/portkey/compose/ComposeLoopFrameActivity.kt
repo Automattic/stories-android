@@ -1032,7 +1032,15 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     override fun onStoryFrameSelected(index: Int) {
-        // TODO here actually change the background StoryFrame being edited
+        if (index != StoryRepository.getInstance().getSelectedFrameIndex()) {
+            currentOriginalCapturedFile = File(StoryRepository.getInstance().setSelectedFrame(index).filePath)
+            Glide.with(this@ComposeLoopFrameActivity)
+                .load(currentOriginalCapturedFile)
+                .transform(CenterCrop())
+                .into(photoEditorView.source)
+            showStaticBackground()
+            // TODO call notifyDatasetChanged on the RecyclerView adapter so it changes the currently selected one.
+        }
     }
 
     override fun onPlusIconTapped() {

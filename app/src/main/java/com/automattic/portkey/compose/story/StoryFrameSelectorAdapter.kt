@@ -51,7 +51,7 @@ class StoryFrameSelectorAdapter(
         if (position != 0) {
             holder.clickableView.setOnClickListener { view ->
                 Toast.makeText(context, "IMAGE CLICKED: " + position, Toast.LENGTH_SHORT).show()
-                clickListener.onStoryFrameSelected(position)
+                clickListener.onStoryFrameSelected(position - 1)
             }
 
             Glide.with(context)
