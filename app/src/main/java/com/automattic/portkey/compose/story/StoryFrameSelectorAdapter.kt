@@ -21,14 +21,14 @@ class StoryFrameSelectorAdapter(
         parent: ViewGroup,
         viewType: Int
     ): StoryFrameHolder {
-        if (viewType == VIEW_TYPE_PLUS_ICON) {
-            return StoryFrameHolder(
+        return if (viewType == VIEW_TYPE_PLUS_ICON) {
+            StoryFrameHolder(
                 LayoutInflater
                     .from(context)
                     .inflate(R.layout.fragment_story_frame_item_plus, parent, false)
             )
         } else {
-            return StoryFrameHolder(
+            StoryFrameHolder(
                 LayoutInflater
                     .from(context)
                     .inflate(R.layout.fragment_story_frame_item, parent, false)
