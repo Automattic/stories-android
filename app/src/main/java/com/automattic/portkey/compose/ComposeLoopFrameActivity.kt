@@ -43,6 +43,7 @@ import com.automattic.photoeditor.util.FileUtils.Companion.getLoopFrameFile
 import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.ViewType
 import com.automattic.photoeditor.views.ViewType.TEXT
+import com.automattic.photoeditor.views.added.AddedViewList
 import com.automattic.portkey.BuildConfig
 import com.automattic.portkey.R
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment
@@ -1036,17 +1037,15 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         val previousSelection = StoryRepository.getInstance().getSelectedFrameIndex()
         if (index != previousSelection) {
             // first, remember the currently added views
-            // TODO serialize addedViews and set them on the current frame
             val currentStoryFrameItem = StoryRepository
                                             .getInstance()
                                             .getCurrentStoryFrameAt(previousSelection)
-            // currentStoryFrameItem.addedViews = photoEditor.getViewsAdded()
-            currentStoryFrameItem.addedViewsSerialized =
-                StoryRepository.getInstance().serializeAddedViews(photoEditor.getViewsAdded())
+
+            // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
+            currentStoryFrameItem.addedViews = AddedViewList(photoEditor.getViewsAdded())
 
             // now clear addedViews so we don't leak View.Context
             photoEditor.clearAllViews()
-
 
             // now set the current capturedFile to be the one pointed to by the index frame
             val newSelectedFrame = StoryRepository.getInstance().setSelectedFrame(index)
@@ -1057,13 +1056,10 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 .into(photoEditorView.source)
             showStaticBackground()
 
-            // now inflate the addedViews for this selected frame and add them to the photoEditor view
-            newSelectedFrame.addedViewsSerialized?.let {
-                val addedViewsInNewSelectedFrame = StoryRepository.getInstance().deserializeAddedViews(it)
-                // TODO: add views again here
-                // parentView.addView(brushDrawingView)
-                for (oneView in addedViewsInNewSelectedFrame) {
-                    Log.d("PORTKEY", "oneView: " + oneView.viewType)
+            // now call addViewToParent the addedViews remembered by this frame
+            newSelectedFrame.addedViews.let {
+                for (oneView in it) {
+                    photoEditor.addViewToParent(oneView.view, oneView.viewType)
                 }
             }
         }
