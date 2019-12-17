@@ -51,6 +51,7 @@ import com.automattic.portkey.compose.photopicker.MediaBrowserType
 import com.automattic.portkey.compose.photopicker.PhotoPickerActivity
 import com.automattic.portkey.compose.photopicker.PhotoPickerFragment
 import com.automattic.portkey.compose.photopicker.RequestCodes
+import com.automattic.portkey.compose.story.StoryFrameSelectorFragment
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
 import com.automattic.portkey.util.CrashLoggingUtils
 import com.automattic.portkey.util.getDisplayPixelSize
@@ -270,7 +271,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         if (PermissionUtils.allRequiredPermissionsGranted(this)) {
-            backgroundSurfaceManager.switchCameraPreviewOn()
+            switchCameraPreviewOn()
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
@@ -453,6 +454,11 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         currentOriginalCapturedFile = null
     }
 
+    private fun switchCameraPreviewOn() {
+        backgroundSurfaceManager.switchCameraPreviewOn()
+        hideStoryFrameSelector()
+    }
+
     private fun testBrush() {
         photoEditor.setBrushDrawingMode(true)
         photoEditor.brushColor = ContextCompat.getColor(baseContext, R.color.red)
@@ -496,26 +502,30 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             return
         }
 
+        hideStoryFrameSelector()
         hideEditModeUIControls()
 
         // set the correct camera as selected by the user last time they used the app
         backgroundSurfaceManager.selectCamera(cameraSelection)
         // same goes for flash state
         backgroundSurfaceManager.setFlashState(flashModeSelection)
-        backgroundSurfaceManager.switchCameraPreviewOn()
+        switchCameraPreviewOn()
     }
 
     private fun showPlayVideo(videoFile: File? = null) {
+        showStoryFrameSelector()
         showEditModeUIControls(false)
         backgroundSurfaceManager.switchVideoPlayerOnFromFile(videoFile)
     }
 
     private fun showPlayVideo(videoUri: Uri) {
+        showStoryFrameSelector()
         showEditModeUIControls(false)
         backgroundSurfaceManager.switchVideoPlayerOnFromUri(videoUri)
     }
 
     private fun showStaticBackground() {
+        showStoryFrameSelector()
         showEditModeUIControls(true)
         backgroundSurfaceManager.switchStaticImageBackgroundModeOn()
     }
@@ -686,7 +696,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                             OnClickListener { shareAction(file) }
                         )
                         hideEditModeUIControls()
-                        backgroundSurfaceManager.switchCameraPreviewOn()
+                        switchCameraPreviewOn()
                     }
 
                     override fun onFailure(exception: Exception) {
@@ -739,7 +749,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                                     OnClickListener { shareAction(file) }
                                 )
                                 hideEditModeUIControls()
-                                backgroundSurfaceManager.switchCameraPreviewOn()
+                                switchCameraPreviewOn()
                             }
                         }
 
@@ -875,15 +885,23 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         }
     }
 
+    private fun hideStoryFrameSelector() {
+        (bottom_strip_view as StoryFrameSelectorFragment).hide()
+    }
+
+    private fun showStoryFrameSelector() {
+        (bottom_strip_view as StoryFrameSelectorFragment).show()
+    }
+
     private fun hideEditModeUIControls() {
-        // show capturing mode controls
-        showVideoUIControls()
         camera_capture_button.visibility = View.VISIBLE
 
         // hide proper edit mode controls
         close_button.visibility = View.INVISIBLE
         edit_mode_controls.visibility = View.INVISIBLE
         save_button.visibility = View.INVISIBLE
+        // show capturing mode controls
+        showVideoUIControls()
     }
 
     private fun editModeHideAllUIControls(hideSaveButton: Boolean) {

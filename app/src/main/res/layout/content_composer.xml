@@ -320,8 +320,17 @@
         android:layout_marginBottom="@dimen/save_button_bottom_margin"
         android:layout_marginEnd="@dimen/save_button_right_margin"
         android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@id/bottom_strip_view"
+        app:layout_constraintRight_toRightOf="parent"/>
+
+
+    <fragment android:name="com.automattic.portkey.compose.story.StoryFrameSelectorFragment"
+        android:id="@+id/bottom_strip_view"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_strip_height"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"/>
+
 
     <FrameLayout
         android:id="@+id/translucent_view"
