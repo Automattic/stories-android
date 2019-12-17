@@ -53,6 +53,7 @@ import com.automattic.portkey.compose.photopicker.PhotoPickerFragment
 import com.automattic.portkey.compose.photopicker.RequestCodes
 import com.automattic.portkey.compose.story.OnStoryFrameSelectorTappedListener
 import com.automattic.portkey.compose.story.StoryFrameItem
+import com.automattic.portkey.compose.story.StoryFrameItemType
 import com.automattic.portkey.compose.story.StoryFrameSelectorFragment
 import com.automattic.portkey.compose.story.StoryRepository
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
@@ -556,7 +557,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     StoryRepository
                         .getInstance().apply {
                             // update the repository
-                            addStoryFrameItemToCurrentStory(StoryFrameItem(file.path))
+                            addStoryFrameItemToCurrentStory(StoryFrameItem(file.path, StoryFrameItemType.IMAGE))
                             setSelectedFrame(0)
                         }
                     showStaticBackground()
