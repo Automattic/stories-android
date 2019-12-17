@@ -3,7 +3,13 @@ package com.automattic.photoeditor.views.added
 import android.view.View
 import java.util.ArrayList
 
-class AddedViewList : ArrayList<AddedView>() {
+class AddedViewList : ArrayList<AddedView> {
+    constructor(addedViewList: AddedViewList? = null) {
+        addedViewList?.let {
+            addAll(addedViewList)
+        }
+    }
+
     fun containsView(element: View): Boolean {
         for (n in this) {
             if (n.view == element) {
