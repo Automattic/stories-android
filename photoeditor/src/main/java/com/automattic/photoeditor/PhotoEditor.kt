@@ -1032,6 +1032,10 @@ class PhotoEditor private constructor(builder: Builder) :
         return (addedViews.size > 0)
     }
 
+    fun getViewsAdded(): AddedViewList {
+        return addedViews
+    }
+
     /**
      * Builder pattern to define [PhotoEditor] Instance
      */

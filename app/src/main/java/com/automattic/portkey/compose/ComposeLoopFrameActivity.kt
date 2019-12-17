@@ -1033,13 +1033,39 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     override fun onStoryFrameSelected(index: Int) {
-        if (index != StoryRepository.getInstance().getSelectedFrameIndex()) {
-            currentOriginalCapturedFile = File(StoryRepository.getInstance().setSelectedFrame(index).filePath)
+        val previousSelection = StoryRepository.getInstance().getSelectedFrameIndex()
+        if (index != previousSelection) {
+            // first, remember the currently added views
+            // TODO serialize addedViews and set them on the current frame
+            val currentStoryFrameItem = StoryRepository
+                                            .getInstance()
+                                            .getCurrentStoryFrameAt(previousSelection)
+            // currentStoryFrameItem.addedViews = photoEditor.getViewsAdded()
+            currentStoryFrameItem.addedViewsSerialized =
+                StoryRepository.getInstance().serializeAddedViews(photoEditor.getViewsAdded())
+
+            // now clear addedViews so we don't leak View.Context
+            photoEditor.clearAllViews()
+
+
+            // now set the current capturedFile to be the one pointed to by the index frame
+            val newSelectedFrame = StoryRepository.getInstance().setSelectedFrame(index)
+            currentOriginalCapturedFile = File(newSelectedFrame.filePath)
             Glide.with(this@ComposeLoopFrameActivity)
                 .load(currentOriginalCapturedFile)
                 .transform(CenterCrop())
                 .into(photoEditorView.source)
             showStaticBackground()
+
+            // now inflate the addedViews for this selected frame and add them to the photoEditor view
+            newSelectedFrame.addedViewsSerialized?.let {
+                val addedViewsInNewSelectedFrame = StoryRepository.getInstance().deserializeAddedViews(it)
+                // TODO: add views again here
+                // parentView.addView(brushDrawingView)
+                for (oneView in addedViewsInNewSelectedFrame) {
+                    Log.d("PORTKEY", "oneView: " + oneView.viewType)
+                }
+            }
         }
     }
 
