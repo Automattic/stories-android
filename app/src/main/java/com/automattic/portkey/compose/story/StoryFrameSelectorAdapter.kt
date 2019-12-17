@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.automattic.portkey.R
@@ -69,7 +70,7 @@ class StoryFrameSelectorAdapter(
 
     class StoryFrameHolder(v: View) : RecyclerView.ViewHolder(v) {
         val clickableView = v // entire view should be clickable
-        val imageView = v.frame_image
+        val imageView: ImageView = v.frame_image
     }
 
     companion object {
