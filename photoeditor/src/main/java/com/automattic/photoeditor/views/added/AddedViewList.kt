@@ -2,7 +2,9 @@ package com.automattic.photoeditor.views.added
 
 import android.view.View
 import java.util.ArrayList
+import kotlinx.serialization.Serializable
 
+@Serializable
 class AddedViewList : ArrayList<AddedView>() {
     fun containsView(element: View): Boolean {
         for (n in this) {
