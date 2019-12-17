@@ -566,7 +566,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     StoryRepository
                         .getInstance().apply {
                             // update the repository
-                            addStoryFrameItemToCurrentStory(StoryFrameItem(file.path))
+                            addStoryFrameItemToCurrentStory(StoryFrameItem(file.path, StoryFrameItemType.IMAGE))
                             setSelectedFrame(0)
                         }
                     showStaticBackground()
