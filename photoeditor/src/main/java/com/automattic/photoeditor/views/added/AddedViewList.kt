@@ -5,7 +5,13 @@ import java.util.ArrayList
 import kotlinx.serialization.Serializable
 
 @Serializable
-class AddedViewList : ArrayList<AddedView>() {
+class AddedViewList : ArrayList<AddedView> {
+    constructor(addedViewList: AddedViewList? = null) {
+        addedViewList?.let {
+            addAll(addedViewList)
+        }
+    }
+
     fun containsView(element: View): Boolean {
         for (n in this) {
             if (n.view == element) {
