@@ -60,11 +60,11 @@ class StoryFrameSelectorAdapter(
     }
 
     override fun getItemViewType(position: Int): Int {
-        if (position == 0) {
+        return if (position == 0) {
             // plus icon
-            return VIEW_TYPE_PLUS_ICON
+            VIEW_TYPE_PLUS_ICON
         } else {
-            return VIEW_TYPE_IMAGE
+            VIEW_TYPE_IMAGE
         }
     }
 
