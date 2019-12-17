@@ -39,7 +39,7 @@ open class StoryFrameSelectorFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(layout.fragment_story_frame_selector, container, false)
-        view.story_frames_view.adapter = StoryFrameSelectorAdapter(FAKE_CONTENT, activity!!)
+        view.story_frames_view.adapter = StoryFrameSelectorAdapter(FAKE_CONTENT, requireContext())
         return view
     }
 
