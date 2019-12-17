@@ -20,7 +20,9 @@ fun hideSystemUI(window: Window) {
 }
 
 fun hideStatusBar(window: Window) {
-    window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
+    window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_FULLSCREEN
+            or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
 }
 
 // Shows the system bars by removing all the flags
@@ -31,8 +33,15 @@ fun showSystemUI(window: Window) {
             or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
 }
 
-fun addInsetTopMargin(layoutParams: LayoutParams, insetTopMargin: Int) {
+fun addInsetTopMargin(layoutParams: LayoutParams, baseTopMargin: Int, insetTopMargin: Int) {
     if (layoutParams is ViewGroup.MarginLayoutParams) {
-        layoutParams.topMargin = layoutParams.topMargin + insetTopMargin
+        layoutParams.topMargin = baseTopMargin + insetTopMargin
     }
+}
+
+fun getLayoutTopMarginBeforeInset(layoutParams: LayoutParams): Int {
+    if (layoutParams is ViewGroup.MarginLayoutParams) {
+        return layoutParams.topMargin
+    }
+    return 0
 }
