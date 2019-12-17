@@ -46,6 +46,10 @@ class StoryRepository {
         return currentSelectedFrameIndex
     }
 
+    fun getCurrentStoryFrameAt(index: Int): StoryFrameItem {
+        return currentStoryFrames[index]
+    }
+
     fun getCurrentStoryFramesLiveData(): LiveData<List<StoryFrameItem>> {
         return currentStoryFramesLiveData
     }

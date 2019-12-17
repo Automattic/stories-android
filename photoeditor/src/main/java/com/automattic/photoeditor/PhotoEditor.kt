@@ -356,7 +356,7 @@ class PhotoEditor private constructor(builder: Builder) :
      *
      * @param rootView rootview of image,text and emoji
      */
-    private fun addViewToParent(rootView: View, viewType: ViewType, sourceUri: Uri? = null) {
+    fun addViewToParent(rootView: View, viewType: ViewType, sourceUri: Uri? = null) {
         val params = RelativeLayout.LayoutParams(
             ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
         )
@@ -1030,6 +1030,10 @@ class PhotoEditor private constructor(builder: Builder) :
 
     fun anyViewsAdded(): Boolean {
         return (addedViews.size > 0)
+    }
+
+    fun getViewsAdded(): AddedViewList {
+        return addedViews
     }
 
     /**
