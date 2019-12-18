@@ -50,7 +50,7 @@ class StoryFrameSelectorAdapter(
 
             Glide.with(context)
                 .load(R.drawable.intro02) // TODO change for data coming from datasource at [position]
-                .transform(CenterCrop(), RoundedCorners(16))
+                .transform(CenterCrop(), RoundedCorners(8))
                 .into(holder.imageView)
         } else {
             holder.clickableView.setOnClickListener { view ->
