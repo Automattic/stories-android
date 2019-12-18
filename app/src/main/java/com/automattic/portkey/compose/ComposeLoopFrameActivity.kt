@@ -53,6 +53,8 @@ import com.automattic.portkey.compose.photopicker.PhotoPickerFragment
 import com.automattic.portkey.compose.photopicker.RequestCodes
 import com.automattic.portkey.compose.story.OnStoryFrameSelectorTappedListener
 import com.automattic.portkey.compose.story.StoryFrameItem
+import com.automattic.portkey.compose.story.StoryFrameItemType
+import com.automattic.portkey.compose.story.StoryFrameItemType.VIDEO
 import com.automattic.portkey.compose.story.StoryFrameSelectorFragment
 import com.automattic.portkey.compose.story.StoryRepository
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
@@ -306,7 +308,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 }
 
                 // decide whether the picked media is a VIDEO or an IMAGE
-                if (isVideo(strMediaUri)) {
+                val isVideo = isVideo(strMediaUri)
+                if (isVideo) {
                     // now start playing the video we just recorded
                     showPlayVideo(Uri.parse(strMediaUri))
                 } else {
@@ -317,6 +320,13 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                         .into(photoEditorView.source)
                     showStaticBackground()
                 }
+                StoryRepository
+                    .getInstance().apply {
+                        // update the repository
+                        addStoryFrameItemToCurrentStory(StoryFrameItem(strMediaUri,
+                            if (isVideo) StoryFrameItemType.VIDEO else StoryFrameItemType.IMAGE))
+                        setSelectedFrame(0)
+                    }
             }
         }
     }
@@ -601,6 +611,14 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         backgroundSurfaceManager.startRecordingVideo(object : VideoRecorderFinished {
             override fun onVideoSaved(file: File?) {
                 currentOriginalCapturedFile = file
+                file?.let {
+                    StoryRepository
+                        .getInstance().apply {
+                            // update the repository
+                            addStoryFrameItemToCurrentStory(StoryFrameItem(it.path))
+                            setSelectedFrame(0)
+                        }
+                }
                 runOnUiThread {
                     // now start playing the video we just recorded
                     showPlayVideo()
@@ -1033,12 +1051,18 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
     override fun onStoryFrameSelected(index: Int) {
         if (index != StoryRepository.getInstance().getSelectedFrameIndex()) {
-            currentOriginalCapturedFile = File(StoryRepository.getInstance().setSelectedFrame(index).filePath)
-            Glide.with(this@ComposeLoopFrameActivity)
-                .load(currentOriginalCapturedFile)
-                .transform(CenterCrop())
-                .into(photoEditorView.source)
-            showStaticBackground()
+            val frameSelected = StoryRepository.getInstance().setSelectedFrame(index)
+            currentOriginalCapturedFile = File(frameSelected.filePath)
+            if (frameSelected.frameItemType == VIDEO) {
+                // now start playing the video we just recorded
+                showPlayVideo(Uri.parse(frameSelected.filePath))
+            } else {
+                Glide.with(this@ComposeLoopFrameActivity)
+                    .load(currentOriginalCapturedFile)
+                    .transform(CenterCrop())
+                    .into(photoEditorView.source)
+                showStaticBackground()
+            }
         }
     }
 
