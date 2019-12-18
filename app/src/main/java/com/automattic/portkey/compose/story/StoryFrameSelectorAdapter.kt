@@ -99,7 +99,7 @@ class StoryFrameSelectorAdapter(
     fun addAllItems(items: List<StoryFrameItem>) {
         storyFrameItemsWithPlusControl.frames.clear()
         storyFrameItemsWithPlusControl.frames.add(
-            StoryFrameItem(BackgroundSource.getDefault())  // adds a placeholder for the plus button
+            StoryFrameItem(BackgroundSource.getDefault()) // adds a placeholder for the plus button
         )
         storyFrameItemsWithPlusControl.frames.addAll(items) // now add all items from the passed Story frame list
         notifyDataSetChanged()
