@@ -31,7 +31,7 @@ open class StoryFrameSelectorFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(layout.fragment_story_frame_selector, container, false)
         // instantiate adapter with an empty Story until it gets loaded
-        adapter = StoryFrameSelectorAdapter(Story(ArrayList()), activity!!)
+        adapter = StoryFrameSelectorAdapter(Story(ArrayList()), requireContext())
         view.story_frames_view.adapter = adapter
         return view
     }
