@@ -909,6 +909,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         close_button.visibility = View.INVISIBLE
         edit_mode_controls.visibility = View.INVISIBLE
         sound_button_group.visibility = View.INVISIBLE
+        hideStoryFrameSelector()
         if (hideSaveButton) {
             save_button.visibility = View.INVISIBLE
         }
@@ -929,6 +930,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         } else {
             sound_button_group.visibility = View.VISIBLE
         }
+        showStoryFrameSelector()
     }
 
     private fun showSaveButtonIfViewsAdded() {
