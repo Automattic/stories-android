@@ -379,7 +379,7 @@ class PhotoEditor private constructor(builder: Builder) :
             ViewType.TEXT -> {
                 rootView = layoutInflater.inflate(R.layout.view_photo_editor_text, null)
                 if (rootView.tvPhotoEditorText != null) {
-                    // rootView.tvPhotoEditorText.gravity = Gravity.CENTER
+                    rootView.tvPhotoEditorText.gravity = Gravity.CENTER
                     if (mDefaultTextTypeface != null) {
                         rootView.tvPhotoEditorText.typeface = mDefaultTextTypeface
                     }
