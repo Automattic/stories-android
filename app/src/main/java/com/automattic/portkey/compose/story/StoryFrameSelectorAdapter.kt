@@ -59,7 +59,7 @@ class StoryFrameSelectorAdapter(
             }
 
             Glide.with(context)
-                .load(storyFrameItemsWithPlusControl.frames[position].filePath)
+                .load(storyFrameItemsWithPlusControl.frames[position].file)
                 .transform(CenterCrop(), RoundedCorners(16))
                 .into(holder.imageView)
 
@@ -96,7 +96,7 @@ class StoryFrameSelectorAdapter(
     // useful for loading an existing story to edit
     fun addAllItems(items: List<StoryFrameItem>) {
         storyFrameItemsWithPlusControl.frames.clear()
-        storyFrameItemsWithPlusControl.frames.add(StoryFrameItem("")) // adds a placeholder for the plus button
+        storyFrameItemsWithPlusControl.frames.add(StoryFrameItem()) // adds a placeholder for the plus button
         storyFrameItemsWithPlusControl.frames.addAll(items) // now add all items from the passed Story frame list
         notifyDataSetChanged()
     }

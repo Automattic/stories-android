@@ -324,8 +324,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 StoryRepository
                     .getInstance().apply {
                         // update the repository
-                        addStoryFrameItemToCurrentStory(StoryFrameItem(strMediaUri,
-                            if (isVideo) StoryFrameItemType.VIDEO else StoryFrameItemType.IMAGE))
+                        addStoryFrameItemToCurrentStory(StoryFrameItem(contentUri = Uri.parse(strMediaUri),
+                            frameItemType = if (isVideo) StoryFrameItemType.VIDEO else StoryFrameItemType.IMAGE))
                         setSelectedFrame(0)
                     }
             }
@@ -567,7 +567,9 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     StoryRepository
                         .getInstance().apply {
                             // update the repository
-                            addStoryFrameItemToCurrentStory(StoryFrameItem(file.path, StoryFrameItemType.IMAGE))
+                            addStoryFrameItemToCurrentStory(
+                                StoryFrameItem(file = file, frameItemType = StoryFrameItemType.IMAGE)
+                            )
                             setSelectedFrame(0)
                         }
                     showStaticBackground()
@@ -616,7 +618,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     StoryRepository
                         .getInstance().apply {
                             // update the repository
-                            addStoryFrameItemToCurrentStory(StoryFrameItem(it.path))
+                            addStoryFrameItemToCurrentStory(StoryFrameItem(file = it))
                             setSelectedFrame(0)
                         }
                 }
@@ -1066,17 +1068,32 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
             // now set the current capturedFile to be the one pointed to by the index frame
             val newSelectedFrame = StoryRepository.getInstance().setSelectedFrame(index)
-            currentOriginalCapturedFile = File(newSelectedFrame.filePath)
+            newSelectedFrame.file?.let {
+                currentOriginalCapturedFile = newSelectedFrame.file
+            }
+
+            // decide which background surface to activate here, possibilities are:
+            // 1. video/uri source
+            // 2. video/file source
+            // 3. image/uri source
+            // 4. image/file source
             if (newSelectedFrame.frameItemType == VIDEO) {
-                // now start playing the video we just recorded
-                showPlayVideo(Uri.parse(newSelectedFrame.filePath))
+                // start the video player
+                if (newSelectedFrame.file != null) {
+                    backgroundSurfaceManager.switchVideoPlayerOnFromFile(newSelectedFrame.file)
+                } else {
+                    newSelectedFrame.contentUri?.let {
+                        backgroundSurfaceManager.switchVideoPlayerOnFromUri(it)
+                    }
+                }
             } else {
                 Glide.with(this@ComposeLoopFrameActivity)
-                    .load(currentOriginalCapturedFile)
+                    .load(newSelectedFrame.file ?: newSelectedFrame.contentUri)
                     .transform(CenterCrop())
                     .into(photoEditorView.source)
                 showStaticBackground()
             }
+
             // now call addViewToParent the addedViews remembered by this frame
             newSelectedFrame.addedViews.let {
                 for (oneView in it) {
