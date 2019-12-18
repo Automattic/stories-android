@@ -50,7 +50,7 @@ class StoryFrameSelectorAdapter(
 
             Glide.with(context)
                 .load(storyFrameItemsWithPlusControl.frames[position].filePath)
-                .transform(CenterCrop(), RoundedCorners(16))
+                .transform(CenterCrop(), RoundedCorners(8))
                 .into(holder.imageView)
 
             if (StoryRepository.getInstance().getSelectedFrameIndex() == (position - 1)) {

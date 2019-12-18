@@ -1,5 +1,6 @@
 package com.automattic.portkey.compose.text
 
+import android.content.DialogInterface
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -72,6 +73,12 @@ class TextEditorDialogFragment : DialogFragment() {
             val inputText = add_text_edit_text?.text.toString()
             textEditor?.onDone(inputText, colorCode)
         }
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        val inputText = add_text_edit_text?.text.toString()
+        textEditor?.onDone(inputText, colorCode)
+        super.onDismiss(dialog)
     }
 
     // Callback to listener if user is done with text editing
