@@ -44,6 +44,7 @@ import com.daasuu.mp4compose.filter.GlFilterGroup
 import com.daasuu.mp4compose.filter.GlGifWatermarkFilter
 import com.daasuu.mp4compose.filter.GlWatermarkFilter
 import com.daasuu.mp4compose.filter.ViewPositionInfo
+import kotlinx.android.synthetic.main.view_photo_editor_emoji.view.*
 import kotlinx.android.synthetic.main.view_photo_editor_text.view.*
 import java.io.File
 import java.io.FileInputStream
@@ -306,7 +307,7 @@ class PhotoEditor private constructor(builder: Builder) :
     fun addEmoji(emojiTypeface: Typeface?, emojiName: String) {
         brushDrawingView.brushDrawingMode = false
         getLayout(ViewType.EMOJI)?.apply {
-            val emojiTextView = findViewById<TextView>(R.id.tvPhotoEditorText)
+            val emojiTextView = findViewById<TextView>(R.id.tvPhotoEditorEmoji)
 
             if (emojiTypeface != null) {
                 emojiTextView.typeface = emojiTypeface
@@ -377,8 +378,8 @@ class PhotoEditor private constructor(builder: Builder) :
         when (viewType) {
             ViewType.TEXT -> {
                 rootView = layoutInflater.inflate(R.layout.view_photo_editor_text, null)
-                if (rootView.tvPhotoEditorText != null && mDefaultTextTypeface != null) {
-                    rootView.tvPhotoEditorText.gravity = Gravity.CENTER
+                if (rootView.tvPhotoEditorText != null) {
+                    // rootView.tvPhotoEditorText.gravity = Gravity.CENTER
                     if (mDefaultTextTypeface != null) {
                         rootView.tvPhotoEditorText.typeface = mDefaultTextTypeface
                     }
@@ -386,8 +387,8 @@ class PhotoEditor private constructor(builder: Builder) :
             }
             ViewType.IMAGE -> rootView = layoutInflater.inflate(R.layout.view_photo_editor_image, null)
             ViewType.EMOJI -> {
-                rootView = layoutInflater.inflate(R.layout.view_photo_editor_text, null)
-                val txtTextEmoji = rootView.tvPhotoEditorText
+                rootView = layoutInflater.inflate(R.layout.view_photo_editor_emoji, null)
+                val txtTextEmoji = rootView.tvPhotoEditorEmoji
                 if (txtTextEmoji != null) {
                     TextViewCompat.setAutoSizeTextTypeWithDefaults(
                         txtTextEmoji, TextViewCompat.AUTO_SIZE_TEXT_TYPE_UNIFORM)
