@@ -25,7 +25,7 @@
         android:textColor="@color/white"
         android:textSize="15sp" />
 
-    <EditText
+    <com.automattic.portkey.compose.text.PortkeyEditText
         android:id="@+id/add_text_edit_text"
         style="@style/EditText"
         android:textColor="@color/white"

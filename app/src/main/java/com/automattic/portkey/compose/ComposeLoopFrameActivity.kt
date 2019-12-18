@@ -106,6 +106,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     private var screenSizeX: Int = 0
     private var screenSizeY: Int = 0
     private var topControlsBaseTopMargin: Int = 0
+    private var isEditingText: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -127,6 +128,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
         photoEditor.setOnPhotoEditorListener(object : OnPhotoEditorListener {
             override fun onEditTextChangeListener(rootView: View, text: String, colorCode: Int, isJustAdded: Boolean) {
+                if (isEditingText) {
+                    return
+                }
+
+                isEditingText = true
                 editModeHideAllUIControls(false)
                 if (isJustAdded) {
                     // hide new text views
@@ -138,6 +144,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     colorCode)
                 textEditorDialogFragment.setOnTextEditorListener(object : TextEditorDialogFragment.TextEditor {
                     override fun onDone(inputText: String, colorCode: Int) {
+                        isEditingText = false
                         // make sure to set it to visible, as newly added views are originally hidden until
                         // proper text is set
                         rootView.visibility = View.VISIBLE
@@ -167,7 +174,9 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             }
 
             override fun onStopViewChangeListener(viewType: ViewType) {
-                editModeRestoreAllUIControls()
+                if (!(viewType == TEXT && isEditingText)) {
+                    editModeRestoreAllUIControls()
+                }
             }
 
             @Suppress("OverridingDeprecatedMember")
@@ -573,7 +582,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     showStaticBackground()
                     currentOriginalCapturedFile = file
                     waitToReenableCapture()
-                    showToast("IMAGE SAVED")
                 }
             }
             override fun onError(message: String, cause: Throwable?) {
