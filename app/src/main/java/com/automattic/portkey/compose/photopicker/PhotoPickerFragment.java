@@ -273,16 +273,14 @@ public class PhotoPickerFragment extends Fragment {
             }
         });
 
-        if (!mBrowserType.isSingleImagePicker()) {
-            MenuItem itemVideo = popup.getMenu().add(R.string.photo_picker_choose_video);
-            itemVideo.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-                @Override
-                public boolean onMenuItemClick(MenuItem item) {
-                    doIconClicked(PhotoPickerIcon.ANDROID_CHOOSE_VIDEO);
-                    return true;
-                }
-            });
-        }
+        MenuItem itemVideo = popup.getMenu().add(R.string.photo_picker_choose_video);
+        itemVideo.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                doIconClicked(PhotoPickerIcon.ANDROID_CHOOSE_VIDEO);
+                return true;
+            }
+        });
 
 //        if (mSite != null) {
 //            MenuItem itemStock = popup.getMenu().add(R.string.photo_picker_stock_media);
@@ -359,7 +357,7 @@ public class PhotoPickerFragment extends Fragment {
                 if (mActionMode == null) {
                     ((AppCompatActivity) getActivity()).startSupportActionMode(new ActionModeCallback());
                 }
-                updateActionModeTitle();
+                updateActionModeTitle(mAdapter.isSelectedSingleItemVideo());
             }
         }
 
@@ -439,13 +437,17 @@ public class PhotoPickerFragment extends Fragment {
         }
     }
 
-    private void updateActionModeTitle() {
+    private void updateActionModeTitle(boolean selectedItemIsVideo) {
         if (mActionMode == null) {
             return;
         }
         String title;
-        if (mBrowserType.isSingleImagePicker()) {
-            mActionMode.setTitle(R.string.photo_picker_use_photo);
+        if (mBrowserType.isSingleMediaItemPicker()) {
+            if (selectedItemIsVideo) {
+                mActionMode.setTitle(R.string.photo_picker_use_video);
+            } else {
+                mActionMode.setTitle(R.string.photo_picker_use_photo);
+            }
         } else {
             int numSelected = getAdapter().getNumSelected();
             title = String.format(getString(R.string.cab_selected), numSelected);
