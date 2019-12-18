@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.automattic.portkey.R
 import com.bumptech.glide.Glide
@@ -18,7 +19,7 @@ interface OnStoryFrameSelectorTappedListener {
 
 class StoryFrameSelectorAdapter(
     val context: Context,
-    val clickListener: OnStoryFrameSelectorTappedListener
+    val clickListener: OnStoryFrameSelectorTappedListener?
 ) : RecyclerView.Adapter<StoryFrameSelectorAdapter.StoryFrameHolder>() {
     private val storyFrameItemsWithPlusControl = Story(ArrayList())
 
@@ -26,14 +27,14 @@ class StoryFrameSelectorAdapter(
         parent: ViewGroup,
         viewType: Int
     ): StoryFrameHolder {
-        if (viewType == VIEW_TYPE_PLUS_ICON) {
-            return StoryFrameHolder(
+        return if (viewType == VIEW_TYPE_PLUS_ICON) {
+            StoryFrameHolder(
                 LayoutInflater
                     .from(context)
                     .inflate(R.layout.fragment_story_frame_item_plus, parent, false)
             )
         } else {
-            return StoryFrameHolder(
+            StoryFrameHolder(
                 LayoutInflater
                     .from(context)
                     .inflate(R.layout.fragment_story_frame_item, parent, false)
@@ -54,7 +55,7 @@ class StoryFrameSelectorAdapter(
                     notifyItemChanged(position)
                     notifyItemChanged(previousSelectedPosition)
                 }
-                clickListener.onStoryFrameSelected(position - 1)
+                clickListener?.onStoryFrameSelected(position - 1)
             }
 
             Glide.with(context)
@@ -70,7 +71,7 @@ class StoryFrameSelectorAdapter(
             }
         } else {
             holder.clickableView.setOnClickListener { view ->
-                clickListener.onStoryFrameAddTapped()
+                clickListener?.onStoryFrameAddTapped()
             }
             // always draw border for the PLUS icon button
             holder.frameSelected.visibility = View.VISIBLE
@@ -78,11 +79,11 @@ class StoryFrameSelectorAdapter(
     }
 
     override fun getItemViewType(position: Int): Int {
-        if (position == 0) {
+        return if (position == 0) {
             // plus icon
-            return VIEW_TYPE_PLUS_ICON
+            VIEW_TYPE_PLUS_ICON
         } else {
-            return VIEW_TYPE_IMAGE
+            VIEW_TYPE_IMAGE
         }
     }
 
@@ -102,8 +103,8 @@ class StoryFrameSelectorAdapter(
 
     class StoryFrameHolder(v: View) : RecyclerView.ViewHolder(v) {
         val clickableView = v // entire view should be clickable
-        val imageView = v.frame_image
-        val frameSelected = v.frame_image_selected
+        val imageView: ImageView = v.frame_image
+        val frameSelected: ImageView = v.frame_image_selected
     }
 
     companion object {

@@ -308,7 +308,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 }
 
                 // decide whether the picked media is a VIDEO or an IMAGE
-                if (isVideo(strMediaUri)) {
+                val isVideo = isVideo(strMediaUri)
+                if (isVideo) {
                     // now start playing the video we just recorded
                     showPlayVideo(Uri.parse(strMediaUri))
                 } else {
@@ -319,6 +320,13 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                         .into(photoEditorView.source)
                     showStaticBackground()
                 }
+                StoryRepository
+                    .getInstance().apply {
+                        // update the repository
+                        addStoryFrameItemToCurrentStory(StoryFrameItem(strMediaUri,
+                            if (isVideo) StoryFrameItemType.VIDEO else StoryFrameItemType.IMAGE))
+                        setSelectedFrame(0)
+                    }
             }
         }
     }
@@ -603,6 +611,14 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         backgroundSurfaceManager.startRecordingVideo(object : VideoRecorderFinished {
             override fun onVideoSaved(file: File?) {
                 currentOriginalCapturedFile = file
+                file?.let {
+                    StoryRepository
+                        .getInstance().apply {
+                            // update the repository
+                            addStoryFrameItemToCurrentStory(StoryFrameItem(it.path))
+                            setSelectedFrame(0)
+                        }
+                }
                 runOnUiThread {
                     // now start playing the video we just recorded
                     showPlayVideo()
