@@ -550,7 +550,6 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                     showStaticBackground()
                     currentOriginalCapturedFile = file
                     waitToReenableCapture()
-                    showToast("IMAGE SAVED")
                 }
             }
             override fun onError(message: String, cause: Throwable?) {
