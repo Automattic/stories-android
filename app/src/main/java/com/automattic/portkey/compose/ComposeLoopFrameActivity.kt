@@ -54,6 +54,7 @@ import com.automattic.portkey.compose.photopicker.PhotoPickerFragment
 import com.automattic.portkey.compose.photopicker.RequestCodes
 import com.automattic.portkey.compose.story.OnStoryFrameSelectorTappedListener
 import com.automattic.portkey.compose.story.StoryFrameItem
+import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource
 import com.automattic.portkey.compose.story.StoryFrameItemType
 import com.automattic.portkey.compose.story.StoryFrameItemType.VIDEO
 import com.automattic.portkey.compose.story.StoryFrameSelectorFragment
@@ -324,7 +325,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 StoryRepository
                     .getInstance().apply {
                         // update the repository
-                        addStoryFrameItemToCurrentStory(StoryFrameItem(contentUri = Uri.parse(strMediaUri),
+                        addStoryFrameItemToCurrentStory(StoryFrameItem(
+                            BackgroundSource(contentUri = Uri.parse(strMediaUri)),
                             frameItemType = if (isVideo) StoryFrameItemType.VIDEO else StoryFrameItemType.IMAGE))
                         setSelectedFrame(0)
                     }
@@ -568,7 +570,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                         .getInstance().apply {
                             // update the repository
                             addStoryFrameItemToCurrentStory(
-                                StoryFrameItem(file = file, frameItemType = StoryFrameItemType.IMAGE)
+                                StoryFrameItem(BackgroundSource(file = file), frameItemType = StoryFrameItemType.IMAGE)
                             )
                             setSelectedFrame(0)
                         }
@@ -618,7 +620,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     StoryRepository
                         .getInstance().apply {
                             // update the repository
-                            addStoryFrameItemToCurrentStory(StoryFrameItem(file = it))
+                            addStoryFrameItemToCurrentStory(StoryFrameItem(BackgroundSource(file = it)))
                             setSelectedFrame(0)
                         }
                 }
@@ -1068,8 +1070,9 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
             // now set the current capturedFile to be the one pointed to by the index frame
             val newSelectedFrame = StoryRepository.getInstance().setSelectedFrame(index)
-            newSelectedFrame.file?.let {
-                currentOriginalCapturedFile = newSelectedFrame.file
+            val source = newSelectedFrame.source
+            if (source.isFile()) {
+                currentOriginalCapturedFile = source.file
             }
 
             // decide which background surface to activate here, possibilities are:
@@ -1078,17 +1081,16 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             // 3. image/uri source
             // 4. image/file source
             if (newSelectedFrame.frameItemType == VIDEO) {
-                // start the video player
-                if (newSelectedFrame.file != null) {
-                    backgroundSurfaceManager.switchVideoPlayerOnFromFile(newSelectedFrame.file)
-                } else {
-                    newSelectedFrame.contentUri?.let {
+                source.apply {
+                    if (isFile()) {
+                        backgroundSurfaceManager.switchVideoPlayerOnFromFile(file)
+                    } else contentUri?.let {
                         backgroundSurfaceManager.switchVideoPlayerOnFromUri(it)
                     }
                 }
             } else {
                 Glide.with(this@ComposeLoopFrameActivity)
-                    .load(newSelectedFrame.file ?: newSelectedFrame.contentUri)
+                    .load(source.file ?: source.contentUri)
                     .transform(CenterCrop())
                     .into(photoEditorView.source)
                 showStaticBackground()

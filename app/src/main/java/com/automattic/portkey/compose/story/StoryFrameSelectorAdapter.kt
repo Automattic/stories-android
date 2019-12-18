@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.automattic.portkey.R
+import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
@@ -58,8 +59,9 @@ class StoryFrameSelectorAdapter(
                 clickListener?.onStoryFrameSelected(position - 1)
             }
 
+            val source = storyFrameItemsWithPlusControl.frames[position].source
             Glide.with(context)
-                .load(storyFrameItemsWithPlusControl.frames[position].file)
+                .load(source.file ?: source.contentUri)
                 .transform(CenterCrop(), RoundedCorners(16))
                 .into(holder.imageView)
 
@@ -96,7 +98,7 @@ class StoryFrameSelectorAdapter(
     // useful for loading an existing story to edit
     fun addAllItems(items: List<StoryFrameItem>) {
         storyFrameItemsWithPlusControl.frames.clear()
-        storyFrameItemsWithPlusControl.frames.add(StoryFrameItem()) // adds a placeholder for the plus button
+        storyFrameItemsWithPlusControl.frames.add(StoryFrameItem(BackgroundSource.getDefault())) // adds a placeholder for the plus button
         storyFrameItemsWithPlusControl.frames.addAll(items) // now add all items from the passed Story frame list
         notifyDataSetChanged()
     }
