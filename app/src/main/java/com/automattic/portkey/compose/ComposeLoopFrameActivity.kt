@@ -56,6 +56,7 @@ import com.automattic.portkey.compose.story.OnStoryFrameSelectorTappedListener
 import com.automattic.portkey.compose.story.StoryFrameItem
 import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource
 import com.automattic.portkey.compose.story.StoryFrameItemType
+import com.automattic.portkey.compose.story.StoryFrameItemType.IMAGE
 import com.automattic.portkey.compose.story.StoryFrameItemType.VIDEO
 import com.automattic.portkey.compose.story.StoryFrameSelectorFragment
 import com.automattic.portkey.compose.story.StoryRepository
@@ -327,7 +328,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                         // update the repository
                         addStoryFrameItemToCurrentStory(StoryFrameItem(
                             BackgroundSource(contentUri = Uri.parse(strMediaUri)),
-                            frameItemType = if (isVideo) StoryFrameItemType.VIDEO else StoryFrameItemType.IMAGE))
+                            frameItemType = if (isVideo) VIDEO else IMAGE
+                        ))
                         setSelectedFrame(0)
                     }
             }
@@ -620,7 +622,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     StoryRepository
                         .getInstance().apply {
                             // update the repository
-                            addStoryFrameItemToCurrentStory(StoryFrameItem(BackgroundSource(file = it)))
+                            addStoryFrameItemToCurrentStory(StoryFrameItem(BackgroundSource(file = it),
+                                frameItemType = VIDEO))
                             setSelectedFrame(0)
                         }
                 }
