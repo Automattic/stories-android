@@ -62,7 +62,7 @@ class StoryFrameSelectorAdapter(
             val source = storyFrameItemsWithPlusControl.frames[position].source
             Glide.with(context)
                 .load(source.file ?: source.contentUri)
-                .transform(CenterCrop(), RoundedCorners(16))
+                .transform(CenterCrop(), RoundedCorners(8))
                 .into(holder.imageView)
 
             if (StoryRepository.getInstance().getSelectedFrameIndex() == (position - 1)) {
