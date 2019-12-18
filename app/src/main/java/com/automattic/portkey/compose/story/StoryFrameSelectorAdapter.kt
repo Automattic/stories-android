@@ -98,7 +98,9 @@ class StoryFrameSelectorAdapter(
     // useful for loading an existing story to edit
     fun addAllItems(items: List<StoryFrameItem>) {
         storyFrameItemsWithPlusControl.frames.clear()
-        storyFrameItemsWithPlusControl.frames.add(StoryFrameItem(BackgroundSource.getDefault())) // adds a placeholder for the plus button
+        storyFrameItemsWithPlusControl.frames.add(
+            StoryFrameItem(BackgroundSource.getDefault())  // adds a placeholder for the plus button
+        )
         storyFrameItemsWithPlusControl.frames.addAll(items) // now add all items from the passed Story frame list
         notifyDataSetChanged()
     }

@@ -42,4 +42,3 @@ data class StoryFrameItem(
         }
     }
 }
-
