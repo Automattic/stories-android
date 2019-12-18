@@ -184,7 +184,7 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
             holder.mImgThumbnail.setScaleY(scale);
         }
 
-        holder.mVideoOverlay.setVisibility(item.mIsVideo ? View.VISIBLE : View.GONE);
+//        holder.mVideoOverlay.setVisibility(item.mIsVideo ? View.VISIBLE : View.GONE);
         holder.mTxtVideoDuration.setVisibility(item.mIsVideo ? View.VISIBLE : View.GONE);
 
         if (mLoadThumbnails) {
@@ -230,6 +230,15 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
             return null;
         }
         return mMediaList.get(position);
+    }
+
+    public boolean isSelectedSingleItemVideo() {
+        PhotoPickerItem item = getItemAtPosition(getSelectedPositions().get(0));
+        if (item != null) {
+            return item.mIsVideo;
+        } else {
+            return false;
+        }
     }
 
     private boolean isValidPosition(int position) {
@@ -386,14 +395,14 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
                 }
             });
 
-            mImgThumbnail.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    int position = getAdapterPosition();
-                    Log.d(TAG, "should select picture: " + position);
-                    return true;
-                }
-            });
+//            mImgThumbnail.setOnLongClickListener(new View.OnLongClickListener() {
+//                @Override
+//                public boolean onLongClick(View v) {
+//                    int position = getAdapterPosition();
+//                    Log.d(TAG, "should select picture: " + position);
+//                    return true;
+//                }
+//            });
 
             mVideoOverlay.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -471,9 +480,7 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
             addMedia(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, false);
 
             // videos
-            if (!mBrowserType.isSingleImagePicker()) {
-                addMedia(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, true);
-            }
+            addMedia(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, true);
 
             // sort by id in reverse (newest first)
             Collections.sort(mTmpList, new Comparator<PhotoPickerItem>() {
