@@ -330,6 +330,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                         .into(photoEditorView.source)
                     showStaticBackground()
                 }
+
                 StoryRepository.apply {
                         // update the repository
                         addStoryFrameItemToCurrentStory(StoryFrameItem(strMediaUri,
