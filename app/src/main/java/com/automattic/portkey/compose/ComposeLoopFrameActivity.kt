@@ -330,7 +330,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     showStaticBackground()
                 }
                 StoryRepository
-                    .getInstance().apply {
+                    .apply {
                         // update the repository
                         addStoryFrameItemToCurrentStory(StoryFrameItem(strMediaUri,
                             if (isVideo) StoryFrameItemType.VIDEO else StoryFrameItemType.IMAGE))
@@ -621,7 +621,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 currentOriginalCapturedFile = file
                 file?.let {
                     StoryRepository
-                        .getInstance().apply {
+                        .apply {
                             // update the repository
                             addStoryFrameItemToCurrentStory(StoryFrameItem(it.path))
                             setSelectedFrame(0)
@@ -1058,8 +1058,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     override fun onStoryFrameSelected(index: Int) {
-        if (index != StoryRepository.getInstance().getSelectedFrameIndex()) {
-            val frameSelected = StoryRepository.getInstance().setSelectedFrame(index)
+        if (index != StoryRepository.getSelectedFrameIndex()) {
+            val frameSelected = StoryRepository.setSelectedFrame(index)
             currentOriginalCapturedFile = File(frameSelected.filePath)
             if (frameSelected.frameItemType == VIDEO) {
                 // now start playing the video we just recorded
