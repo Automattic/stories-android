@@ -63,7 +63,7 @@ class StoryFrameSelectorAdapter(
                 .transform(CenterCrop(), RoundedCorners(8))
                 .into(holder.imageView)
 
-            if (StoryRepository.getInstance().getSelectedFrameIndex() == (position - 1)) {
+            if (StoryRepository.getSelectedFrameIndex() == (position - 1)) {
                 // paint it selected
                 holder.frameSelected.visibility = View.VISIBLE
             } else {
