@@ -3,18 +3,19 @@ package com.automattic.portkey.compose.story
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 
-class StoryRepository {
-    private var currentStoryFrames = ArrayList<StoryFrameItem>()
+object StoryRepository {
+    private val currentStoryFrames = ArrayList<StoryFrameItem>()
     private var currentSelectedFrameIndex: Int = 0
     private val stories = ArrayList<Story>()
     private val currentStoryFramesLiveData = MutableLiveData<List<StoryFrameItem>>()
 
     fun loadStory(storyIndex: Int): ArrayList<StoryFrameItem> {
         if (stories.size > storyIndex) {
-            currentStoryFrames = stories[storyIndex].frames
+            currentStoryFrames.clear() // = stories[storyIndex].frames
+            currentStoryFrames.addAll(stories[storyIndex].frames)
         } else {
             // just crete a new story if we didn't find such index
-            currentStoryFrames = ArrayList()
+            currentStoryFrames.clear()
         }
         return currentStoryFrames
     }
@@ -27,12 +28,12 @@ class StoryRepository {
     // when the user finishes a story, just add it to our repo for now and clear currentStory
     fun finishCurrentStory() {
         stories.add(Story(currentStoryFrames)) // create new Story wrapper with the finished frames in there
-        currentStoryFrames = ArrayList()
+        currentStoryFrames.clear()
         currentStoryFramesLiveData.postValue(currentStoryFrames)
     }
 
     fun discardCurrentStory() {
-        currentStoryFrames = ArrayList()
+        currentStoryFrames.clear()
         currentStoryFramesLiveData.postValue(currentStoryFrames)
     }
 
@@ -52,15 +53,5 @@ class StoryRepository {
 
     fun getCurrentStoryFramesLiveData(): LiveData<List<StoryFrameItem>> {
         return currentStoryFramesLiveData
-    }
-
-    companion object {
-        private var singleRepoInstance: StoryRepository? = null
-        fun getInstance(): StoryRepository {
-            if (singleRepoInstance == null) {
-                singleRepoInstance = StoryRepository()
-            }
-            return singleRepoInstance!!
-        }
     }
 }

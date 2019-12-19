@@ -8,8 +8,7 @@ import java.io.File
 data class StoryFrameItem(
     val source: BackgroundSource,
     val frameItemType: StoryFrameItemType = IMAGE,
-    var addedViews: AddedViewList = AddedViewList(),
-    val name: String? = null
+    var addedViews: AddedViewList = AddedViewList()
 ) {
     class BackgroundSource {
         var file: File? = null

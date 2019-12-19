@@ -51,7 +51,7 @@ class StoryFrameSelectorAdapter(
         // first position has the plus icon, so skip that one
         if (position != 0) {
             holder.clickableView.setOnClickListener { view ->
-                val previousSelectedPosition = StoryRepository.getInstance().getSelectedFrameIndex() + 1
+                val previousSelectedPosition = StoryRepository.getSelectedFrameIndex() + 1
                 if (position != previousSelectedPosition) {
                     notifyItemChanged(position)
                     notifyItemChanged(previousSelectedPosition)
@@ -65,7 +65,7 @@ class StoryFrameSelectorAdapter(
                 .transform(CenterCrop(), RoundedCorners(8))
                 .into(holder.imageView)
 
-            if (StoryRepository.getInstance().getSelectedFrameIndex() == (position - 1)) {
+            if (StoryRepository.getSelectedFrameIndex() == (position - 1)) {
                 // paint it selected
                 holder.frameSelected.visibility = View.VISIBLE
             } else {
