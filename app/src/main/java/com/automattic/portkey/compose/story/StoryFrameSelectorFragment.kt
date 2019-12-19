@@ -16,7 +16,7 @@ open class StoryFrameSelectorFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         val model =
             ViewModelProviders.of(this,
-                StoryViewModelFactory(StoryRepository.getInstance(), 0))[StoryViewModel::class.java]
+                StoryViewModelFactory(StoryRepository, 0))[StoryViewModel::class.java]
         model.storyFrameItems.observe(this, Observer<List<StoryFrameItem>> { frames ->
             // update adapter
             adapter.addAllItems(frames)
@@ -28,7 +28,6 @@ open class StoryFrameSelectorFragment : Fragment() {
         // RecyclerView's adapter.
         //  StoryRepository --> model.storyFrameItems --> RecyclerView's adapter.
         StoryRepository
-            .getInstance()
             .getCurrentStoryFramesLiveData()
             .observe(this, Observer<List<StoryFrameItem>> { frames -> model.storyFrameItems.value = frames
         })

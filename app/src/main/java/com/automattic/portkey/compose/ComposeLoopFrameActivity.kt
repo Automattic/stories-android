@@ -330,8 +330,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                         .into(photoEditorView.source)
                     showStaticBackground()
                 }
-                StoryRepository
-                    .getInstance().apply {
+                StoryRepository.apply {
                         // update the repository
                         addStoryFrameItemToCurrentStory(StoryFrameItem(strMediaUri,
                             if (isVideo) StoryFrameItemType.VIDEO else StoryFrameItemType.IMAGE))
@@ -423,13 +422,13 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 DiscardDialog.newInstance(getString(R.string.dialog_discard_message), object : DiscardOk {
                     override fun discardOkClicked() {
                         photoEditor.clearAllViews()
-                        StoryRepository.getInstance().discardCurrentStory()
+                        StoryRepository.discardCurrentStory()
                         launchCameraPreview()
                         deleteCapturedMedia()
                     }
                 }).show(supportFragmentManager, FRAGMENT_DIALOG)
             } else {
-                StoryRepository.getInstance().discardCurrentStory()
+                StoryRepository.discardCurrentStory()
                 launchCameraPreview()
                 deleteCapturedMedia()
             }
@@ -574,7 +573,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                         .transform(CenterCrop())
                         .into(photoEditorView.source)
                     StoryRepository
-                        .getInstance().apply {
+                        .apply {
                             // update the repository
                             addStoryFrameItemToCurrentStory(StoryFrameItem(file.path, StoryFrameItemType.IMAGE))
                             setSelectedFrame(0)
@@ -622,7 +621,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 currentOriginalCapturedFile = file
                 file?.let {
                     StoryRepository
-                        .getInstance().apply {
+                        .apply {
                             // update the repository
                             addStoryFrameItemToCurrentStory(StoryFrameItem(it.path))
                             setSelectedFrame(0)
@@ -1059,12 +1058,10 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     override fun onStoryFrameSelected(index: Int) {
-        val previousSelection = StoryRepository.getInstance().getSelectedFrameIndex()
+        val previousSelection = StoryRepository.getSelectedFrameIndex()
         if (index != previousSelection) {
             // first, remember the currently added views
-            val currentStoryFrameItem = StoryRepository
-                                            .getInstance()
-                                            .getCurrentStoryFrameAt(previousSelection)
+            val currentStoryFrameItem = StoryRepository.getCurrentStoryFrameAt(previousSelection)
 
             // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
             currentStoryFrameItem.addedViews = AddedViewList(photoEditor.getViewsAdded())
@@ -1073,7 +1070,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             photoEditor.clearAllViews()
 
             // now set the current capturedFile to be the one pointed to by the index frame
-            val newSelectedFrame = StoryRepository.getInstance().setSelectedFrame(index)
+            val newSelectedFrame = StoryRepository.setSelectedFrame(index)
             currentOriginalCapturedFile = File(newSelectedFrame.filePath)
             if (newSelectedFrame.frameItemType == VIDEO) {
                 // now start playing the video we just recorded
