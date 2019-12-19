@@ -11,7 +11,7 @@ object StoryRepository {
 
     fun loadStory(storyIndex: Int): ArrayList<StoryFrameItem> {
         if (stories.size > storyIndex) {
-            currentStoryFrames.clear() // = stories[storyIndex].frames
+            currentStoryFrames.clear()
             currentStoryFrames.addAll(stories[storyIndex].frames)
         } else {
             // just crete a new story if we didn't find such index
