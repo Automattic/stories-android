@@ -3,7 +3,7 @@ package com.automattic.portkey.compose.story
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 
-class StoryRepository {
+object StoryRepository {
     private var currentStoryFrames = ArrayList<StoryFrameItem>()
     private var currentSelectedFrameIndex: Int = 0
     private val stories = ArrayList<Story>()
@@ -48,15 +48,5 @@ class StoryRepository {
 
     fun getCurrentStoryFramesLiveData(): LiveData<List<StoryFrameItem>> {
         return currentStoryFramesLiveData
-    }
-
-    companion object {
-        private var singleRepoInstance: StoryRepository? = null
-        fun getInstance(): StoryRepository {
-            if (singleRepoInstance == null) {
-                singleRepoInstance = StoryRepository()
-            }
-            return singleRepoInstance!!
-        }
     }
 }

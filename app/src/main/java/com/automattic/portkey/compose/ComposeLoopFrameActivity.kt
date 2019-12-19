@@ -411,13 +411,13 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 DiscardDialog.newInstance(getString(R.string.dialog_discard_message), object : DiscardOk {
                     override fun discardOkClicked() {
                         photoEditor.clearAllViews()
-                        StoryRepository.getInstance().discardCurrentStory()
+                        StoryRepository.discardCurrentStory()
                         launchCameraPreview()
                         deleteCapturedMedia()
                     }
                 }).show(supportFragmentManager, FRAGMENT_DIALOG)
             } else {
-                StoryRepository.getInstance().discardCurrentStory()
+                StoryRepository.discardCurrentStory()
                 launchCameraPreview()
                 deleteCapturedMedia()
             }
@@ -562,7 +562,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                         .transform(CenterCrop())
                         .into(photoEditorView.source)
                     StoryRepository
-                        .getInstance().apply {
+                        .apply {
                             // update the repository
                             addStoryFrameItemToCurrentStory(StoryFrameItem(file.path))
                             setSelectedFrame(0)
