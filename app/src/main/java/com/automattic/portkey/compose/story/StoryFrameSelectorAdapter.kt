@@ -68,6 +68,18 @@ class StoryFrameSelectorAdapter(
         }
     }
 
+    fun insertItem(item: StoryFrameItem) {
+        storyFrameItems.frames.add(0, item)
+        notifyDataSetChanged()
+    }
+
+    // useful for loading an existing story to edit
+    fun addAllItems(items: List<StoryFrameItem>) {
+        storyFrameItems.frames.clear()
+        storyFrameItems.frames.addAll(items)
+        notifyDataSetChanged()
+    }
+
     class StoryFrameHolder(v: View) : RecyclerView.ViewHolder(v) {
         val clickableView = v // entire view should be clickable
         val imageView: ImageView = v.frame_image

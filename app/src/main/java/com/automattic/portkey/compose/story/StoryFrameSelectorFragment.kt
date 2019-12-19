@@ -5,32 +5,23 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import com.automattic.portkey.R.layout
 import kotlinx.android.synthetic.main.fragment_story_frame_selector.view.*
 
 open class StoryFrameSelectorFragment : Fragment() {
-    init {
-        // TODO remove this init, used for development only
-        FAKE_CONTENT.frames.add(StoryFrameItem("test1"))
-        FAKE_CONTENT.frames.add(StoryFrameItem("test2"))
-        FAKE_CONTENT.frames.add(StoryFrameItem("test3"))
-        FAKE_CONTENT.frames.add(StoryFrameItem("test4"))
-        FAKE_CONTENT.frames.add(StoryFrameItem("test5"))
-        FAKE_CONTENT.frames.add(StoryFrameItem("test6"))
-        FAKE_CONTENT.frames.add(StoryFrameItem("test7"))
-        FAKE_CONTENT.frames.add(StoryFrameItem("test8"))
-        FAKE_CONTENT.frames.add(StoryFrameItem("test9"))
-        FAKE_CONTENT.frames.add(StoryFrameItem("test10"))
-        FAKE_CONTENT.frames.add(StoryFrameItem("test11"))
-        FAKE_CONTENT.frames.add(StoryFrameItem("test12"))
-        FAKE_CONTENT.frames.add(StoryFrameItem("test13"))
-        FAKE_CONTENT.frames.add(StoryFrameItem("test14"))
-        FAKE_CONTENT.frames.add(StoryFrameItem("test15"))
-        FAKE_CONTENT.frames.add(StoryFrameItem("test16"))
-        FAKE_CONTENT.frames.add(StoryFrameItem("test17"))
-        FAKE_CONTENT.frames.add(StoryFrameItem("test18"))
-        FAKE_CONTENT.frames.add(StoryFrameItem("test19"))
-        FAKE_CONTENT.frames.add(StoryFrameItem("test20"))
+    lateinit var adapter: StoryFrameSelectorAdapter
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        val model =
+            ViewModelProviders.of(this,
+                StoryViewModelFactory(StoryRepository(), 0))[StoryViewModel::class.java]
+        model.getStoryFrameItems().observe(this, Observer<List<StoryFrameItem>> { frames ->
+            // update adapter
+            adapter.addAllItems(frames)
+        })
+        super.onCreate(savedInstanceState)
     }
 
     override fun onCreateView(
@@ -39,7 +30,9 @@ open class StoryFrameSelectorFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(layout.fragment_story_frame_selector, container, false)
-        view.story_frames_view.adapter = StoryFrameSelectorAdapter(FAKE_CONTENT, requireContext())
+        // instantiate adapter with an empty Story until it gets loaded
+        adapter = StoryFrameSelectorAdapter(Story(ArrayList()), requireContext())
+        view.story_frames_view.adapter = adapter
         return view
     }
 
@@ -49,10 +42,5 @@ open class StoryFrameSelectorFragment : Fragment() {
 
     fun hide() {
         view?.visibility = View.GONE
-    }
-
-    companion object {
-        // TODO remove this val, used for development only
-        val FAKE_CONTENT = Story(ArrayList())
     }
 }
