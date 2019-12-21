@@ -18,12 +18,18 @@ open class StoryFrameSelectorFragment : Fragment() {
         // TODO storyIndex here is hardcoded to 0, will need to change once we have multiple stories stored.
         storyViewModel =
                 ViewModelProviders.of(requireActivity(), // important to use Activity's context, so we don't
-                        // end up looking into the wrong ViewModelProviders key
+                        // end up looking into the wrong ViewModelProviders bucket key
                         StoryViewModelFactory(StoryRepository, 0))[StoryViewModel::class.java]
         storyViewModel.onStoryFrameItems.observe(this, Observer<List<StoryFrameItem>> { frames ->
             // update adapter
             adapter.addAllItems(frames)
         })
+
+        storyViewModel.onSelectedFrameIndex.observe(this, Observer<Int> { newSelectedFrameIndex ->
+            // update adapter
+            adapter.notifyDataSetChanged()
+        })
+
 
         super.onCreate(savedInstanceState)
     }

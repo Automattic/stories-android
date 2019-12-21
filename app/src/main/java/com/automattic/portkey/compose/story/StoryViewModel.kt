@@ -23,32 +23,32 @@ class StoryViewModel(val repository: StoryRepository, val storyIndex: Int) : Vie
 
     fun loadStory(storyIndex: Int) {
         val framesInStory = repository.loadStory(storyIndex)
-        _onStoryFrameItems.postValue(framesInStory)
-        _onSelectedFrameIndex.postValue(0) // default selected frame when loading a new Story
+        _onStoryFrameItems.value = framesInStory
+        _onSelectedFrameIndex.value = 0 // default selected frame when loading a new Story
     }
 
     fun addStoryFrameItemToCurrentStory(item: StoryFrameItem) {
         repository.addStoryFrameItemToCurrentStory(item)
-        _onStoryFrameItems.postValue(repository.getImmutableCurrentStoryFrames())
+        _onStoryFrameItems.value = repository.getImmutableCurrentStoryFrames()
     }
 
     // when the user finishes a story, just add it to our repo for now and clear currentStory
     fun finishCurrentStory() {
         repository.finishCurrentStory()
-        _onStoryFrameItems.postValue(repository.getImmutableCurrentStoryFrames())
-        _onSelectedFrameIndex.postValue(0) // default selected frame when loading a new Story
+        _onStoryFrameItems.value = repository.getImmutableCurrentStoryFrames()
+        _onSelectedFrameIndex.value = 0 // default selected frame when loading a new Story
     }
 
     fun discardCurrentStory() {
         repository.discardCurrentStory()
-        _onStoryFrameItems.postValue(repository.getImmutableCurrentStoryFrames())
+        _onStoryFrameItems.value = repository.getImmutableCurrentStoryFrames()
     }
 
     // used when user taps on a different frame and keep track record of its state
     fun setSelectedFrame(index: Int): StoryFrameItem {
         val newlySelectedFrame = repository.getImmutableCurrentStoryFrames()[index]
-        _onStoryFrameItems.postValue(repository.getImmutableCurrentStoryFrames())
-        _onSelectedFrameIndex.postValue(index) // default selected frame when loading a new Story
+        currentSelectedFrameIndex = index
+        _onSelectedFrameIndex.value = index // default selected frame when loading a new Story
         return newlySelectedFrame
     }
 
