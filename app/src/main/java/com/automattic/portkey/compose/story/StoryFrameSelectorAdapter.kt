@@ -14,7 +14,8 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import kotlinx.android.synthetic.main.fragment_story_frame_item.view.*
 
 class StoryFrameSelectorAdapter(
-    val context: Context
+    val context: Context,
+    val storyViewModel: StoryViewModel
 ) : RecyclerView.Adapter<StoryFrameSelectorAdapter.StoryFrameHolder>() {
     private val storyFrameItemsWithPlusControl = Story(ArrayList())
 
@@ -53,7 +54,7 @@ class StoryFrameSelectorAdapter(
                 .transform(CenterCrop(), RoundedCorners(8))
                 .into(holder.imageView)
 
-            if (StoryRepository.getSelectedFrameIndex() == (position - 1)) {
+            if (storyViewModel.getSelectedFrameIndex() == (position - 1)) {
                 // paint it selected
                 holder.frameSelected.visibility = View.VISIBLE
             } else {
