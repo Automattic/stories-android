@@ -42,7 +42,7 @@ class StoryViewModel(val repository: StoryRepository, val storyIndex: Int) : Vie
 
     fun discardCurrentStory() {
         repository.discardCurrentStory()
-        currentSelectedFrameIndex = DEFAULT_SELECTION  // default selected frame when loading a new Story
+        currentSelectedFrameIndex = DEFAULT_SELECTION // default selected frame when loading a new Story
         _onSelectedFrameIndex.value = Pair(DEFAULT_SELECTION, currentSelectedFrameIndex)
         _onStoryFrameItems.value = repository.getImmutableCurrentStoryFrames()
     }
