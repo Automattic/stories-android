@@ -25,11 +25,15 @@ open class StoryFrameSelectorFragment : Fragment() {
             adapter.addAllItems(frames)
         })
 
-        storyViewModel.onSelectedFrameIndex.observe(this, Observer<Int> { newSelectedFrameIndex ->
-            // update adapter
-            adapter.notifyDataSetChanged()
+        storyViewModel.onSelectedFrameIndex.observe(this, Observer<Pair<Int, Int>> { selectedFrameIndexChange ->
+            if (selectedFrameIndexChange.first == selectedFrameIndexChange.second) {
+                // just call it once
+                adapter.notifyItemChanged(selectedFrameIndexChange.first + 1)
+            } else {
+                adapter.notifyItemChanged(selectedFrameIndexChange.first + 1)
+                adapter.notifyItemChanged(selectedFrameIndexChange.second + 1)
+            }
         })
-
 
         super.onCreate(savedInstanceState)
     }
