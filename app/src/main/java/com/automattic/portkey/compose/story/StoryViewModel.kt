@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.automattic.portkey.compose.story.StoryViewModel.StoryFrameListItemUiState.StoryFrameListItemUiStateFrame
 import com.automattic.portkey.compose.story.StoryViewModel.StoryFrameListItemUiState.StoryFrameListItemUiStatePlusIcon
+import com.automattic.portkey.util.SingleLiveEvent
 
 class StoryViewModel(val repository: StoryRepository, val storyIndex: Int) : ViewModel() {
     private var currentSelectedFrameIndex: Int = DEFAULT_SELECTION
@@ -12,12 +13,12 @@ class StoryViewModel(val repository: StoryRepository, val storyIndex: Int) : Vie
     private val _uiState: MutableLiveData<StoryFrameListUiState> = MutableLiveData()
     val uiState: LiveData<StoryFrameListUiState> = _uiState
 
-    private val _onSelectedFrameIndex: MutableLiveData<Pair<Int, Int>> by lazy {
-        MutableLiveData<Pair<Int, Int>>().also {
+    private val _onSelectedFrameIndex: SingleLiveEvent<Pair<Int, Int>> by lazy {
+        SingleLiveEvent<Pair<Int, Int>>().also {
             it.value = Pair(DEFAULT_SELECTION, currentSelectedFrameIndex)
         }
     }
-    val onSelectedFrameIndex: LiveData<Pair<Int, Int>> = _onSelectedFrameIndex
+    val onSelectedFrameIndex: SingleLiveEvent<Pair<Int, Int>> = _onSelectedFrameIndex
 
     fun loadStory(storyIndex: Int) {
         repository.loadStory(storyIndex)
