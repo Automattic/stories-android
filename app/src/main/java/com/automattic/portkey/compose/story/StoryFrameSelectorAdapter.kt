@@ -1,81 +1,51 @@
 package com.automattic.portkey.compose.story
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.automattic.portkey.R
+import com.automattic.portkey.R.layout
+import com.automattic.portkey.compose.story.StoryFrameSelectorAdapter.StoryFrameHolder.StoryFrameHolderItem
+import com.automattic.portkey.compose.story.StoryFrameSelectorAdapter.StoryFrameHolder.StoryFrameHolderPlusIcon
+import com.automattic.portkey.compose.story.StoryViewModel.StoryFrameListItemUiState
+import com.automattic.portkey.compose.story.StoryViewModel.StoryFrameListItemUiState.StoryFrameListItemUiStateFrame
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import kotlinx.android.synthetic.main.fragment_story_frame_item.view.*
 
-interface OnStoryFrameSelectorTappedListener {
-    fun onStoryFrameSelected(index: Int)
-    fun onStoryFrameAddTapped()
-}
-
-class StoryFrameSelectorAdapter(
-    val context: Context,
-    val clickListener: OnStoryFrameSelectorTappedListener?
-) : RecyclerView.Adapter<StoryFrameSelectorAdapter.StoryFrameHolder>() {
-    private val storyFrameItemsWithPlusControl = Story(ArrayList())
+class StoryFrameSelectorAdapter : RecyclerView.Adapter<StoryFrameSelectorAdapter.StoryFrameHolder>() {
+    private val items = mutableListOf<StoryFrameListItemUiState>()
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
     ): StoryFrameHolder {
-        return if (viewType == VIEW_TYPE_PLUS_ICON) {
-            StoryFrameHolder(
-                LayoutInflater
-                    .from(context)
-                    .inflate(R.layout.fragment_story_frame_item_plus, parent, false)
-            )
-        } else {
-            StoryFrameHolder(
-                LayoutInflater
-                    .from(context)
-                    .inflate(R.layout.fragment_story_frame_item, parent, false)
-            )
+        return when (viewType) {
+            VIEW_TYPE_PLUS_ICON ->
+                StoryFrameHolderPlusIcon(
+                    LayoutInflater
+                        .from(parent.context)
+                        .inflate(R.layout.fragment_story_frame_item_plus, parent, false)
+                )
+            VIEW_TYPE_IMAGE ->
+                StoryFrameHolderItem(
+                    LayoutInflater
+                        .from(parent.context)
+                        .inflate(layout.fragment_story_frame_item, parent, false)
+                )
+            else -> throw NotImplementedError("Unknown ViewType")
         }
     }
 
     override fun getItemCount(): Int {
-        return storyFrameItemsWithPlusControl.frames.size
+        return items.size
     }
 
     override fun onBindViewHolder(holder: StoryFrameHolder, position: Int) {
-        // first position has the plus icon, so skip that one
-        if (position != 0) {
-            holder.clickableView.setOnClickListener { view ->
-                val previousSelectedPosition = StoryRepository.getSelectedFrameIndex() + 1
-                if (position != previousSelectedPosition) {
-                    notifyItemChanged(position)
-                    notifyItemChanged(previousSelectedPosition)
-                }
-                clickListener?.onStoryFrameSelected(position - 1)
-            }
-
-            Glide.with(context)
-                .load(storyFrameItemsWithPlusControl.frames[position].filePath)
-                .transform(CenterCrop(), RoundedCorners(8))
-                .into(holder.imageView)
-
-            if (StoryRepository.getSelectedFrameIndex() == (position - 1)) {
-                // paint it selected
-                holder.frameSelected.visibility = View.VISIBLE
-            } else {
-                holder.frameSelected.visibility = View.GONE
-            }
-        } else {
-            holder.clickableView.setOnClickListener { view ->
-                clickListener?.onStoryFrameAddTapped()
-            }
-            // always draw border for the PLUS icon button
-            holder.frameSelected.visibility = View.VISIBLE
-        }
+        holder.onBind(items[position])
     }
 
     override fun getItemViewType(position: Int): Int {
@@ -87,24 +57,70 @@ class StoryFrameSelectorAdapter(
         }
     }
 
-    fun insertItem(item: StoryFrameItem) {
-        // items are inserted to the left. Index 0 is always occupied by the Plus control, next available index is 1.
-        storyFrameItemsWithPlusControl.frames.add(1, item)
-        notifyDataSetChanged()
-    }
-
     // useful for loading an existing story to edit
-    fun addAllItems(items: List<StoryFrameItem>) {
-        storyFrameItemsWithPlusControl.frames.clear()
-        storyFrameItemsWithPlusControl.frames.add(StoryFrameItem("")) // adds a placeholder for the plus button
-        storyFrameItemsWithPlusControl.frames.addAll(items) // now add all items from the passed Story frame list
+    fun addAllItems(newItems: List<StoryFrameListItemUiState>) {
+        items.clear()
+        items.addAll(newItems) // now add all items from the passed Story frame UiState list
         notifyDataSetChanged()
     }
 
-    class StoryFrameHolder(v: View) : RecyclerView.ViewHolder(v) {
+    fun updateContentUiStateSelection(oldSelection: Int, newSelection: Int) {
+        if (oldSelection == newSelection) {
+            // just call it once
+            notifyItemChanged(oldSelection)
+        } else {
+            notifyItemChanged(oldSelection)
+            notifyItemChanged(newSelection)
+        }
+    }
+
+    sealed class StoryFrameHolder(v: View) : RecyclerView.ViewHolder(v) {
         val clickableView = v // entire view should be clickable
         val imageView: ImageView = v.frame_image
-        val frameSelected: ImageView = v.frame_image_selected
+        val frameBorder: ImageView = v.frame_image_selected
+        abstract fun onBind(uiState: StoryFrameListItemUiState)
+
+        class StoryFrameHolderPlusIcon(v: View) : StoryFrameHolder(v) {
+            private var onPlusIconClicked: (() -> Unit)? = null
+
+            init {
+                clickableView.setOnClickListener {
+                    onPlusIconClicked?.invoke()
+                }
+            }
+
+            override fun onBind(uiState: StoryFrameListItemUiState) {
+                onPlusIconClicked = requireNotNull(uiState.onItemTapped) { "OnItemTapped is required." }
+                // always draw border for the PLUS icon button
+                frameBorder.visibility = View.VISIBLE
+            }
+        }
+
+        class StoryFrameHolderItem(v: View) : StoryFrameHolder(v) {
+            private var onFrameSelected: (() -> Unit)? = null
+
+            init {
+                clickableView.setOnClickListener {
+                    onFrameSelected?.invoke()
+                }
+            }
+
+            override fun onBind(uiState: StoryFrameListItemUiState) {
+                onFrameSelected = requireNotNull(uiState.onItemTapped) { "OnItemTapped is required." }
+                uiState as StoryFrameListItemUiStateFrame
+
+                Glide.with(imageView.context)
+                    .load(uiState.filePath)
+                    .transform(CenterCrop(), RoundedCorners(8))
+                    .into(imageView)
+
+                if (uiState.selected) {
+                    frameBorder.visibility = View.VISIBLE
+                } else {
+                    frameBorder.visibility = View.GONE
+                }
+            }
+        }
     }
 
     companion object {
