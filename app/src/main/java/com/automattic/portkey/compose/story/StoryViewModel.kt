@@ -23,6 +23,9 @@ class StoryViewModel(val repository: StoryRepository, val storyIndex: Int) : Vie
     private val _addButtonClicked = SingleLiveEvent<Unit>()
     val addButtonClicked = _addButtonClicked
 
+    private val _onUserSelectedFrame = SingleLiveEvent<Int>()
+    val onUserSelectedFrame = _onUserSelectedFrame
+
     fun loadStory(storyIndex: Int) {
         repository.loadStory(storyIndex)
         updateUiState(createUiStateFromModelState(repository.getImmutableCurrentStoryFrames()))
@@ -56,6 +59,11 @@ class StoryViewModel(val repository: StoryRepository, val storyIndex: Int) : Vie
         currentSelectedFrameIndex = index
         updateUiStateForSelection(oldIndex, index)
         return newlySelectedFrame
+    }
+
+    fun setSelectedFrameByUser(index: Int) {
+        setSelectedFrame(index)
+        _onUserSelectedFrame.value = index
     }
 
     fun getSelectedFrameIndex(): Int {
@@ -95,7 +103,7 @@ class StoryViewModel(val repository: StoryRepository, val storyIndex: Int) : Vie
             val isSelected = (getSelectedFrameIndex() == index)
             val oneFrameUiState = StoryFrameListItemUiStateFrame(selected = isSelected, filePath = model.filePath)
             oneFrameUiState.onItemTapped = {
-                setSelectedFrame(index)
+                setSelectedFrameByUser(index)
             }
             uiStateItems.add(oneFrameUiState)
         }

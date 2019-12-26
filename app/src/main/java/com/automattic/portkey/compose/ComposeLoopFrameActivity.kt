@@ -1064,19 +1064,17 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     override fun onStoryFrameSelected(index: Int) {
-        if (index != storyViewModel.getSelectedFrameIndex()) {
-            val frameSelected = storyViewModel.getSelectedFrame()
-            currentOriginalCapturedFile = File(frameSelected.filePath)
-            if (frameSelected.frameItemType == VIDEO) {
-                // now start playing the video we just recorded
-                showPlayVideo(Uri.parse(frameSelected.filePath))
-            } else {
-                Glide.with(this@ComposeLoopFrameActivity)
-                    .load(currentOriginalCapturedFile)
-                    .transform(CenterCrop())
-                    .into(photoEditorView.source)
-                showStaticBackground()
-            }
+        val frameSelected = storyViewModel.getSelectedFrame()
+        currentOriginalCapturedFile = File(frameSelected.filePath)
+        if (frameSelected.frameItemType == VIDEO) {
+            // now start playing the video we just recorded
+            showPlayVideo(Uri.parse(frameSelected.filePath))
+        } else {
+            Glide.with(this@ComposeLoopFrameActivity)
+                .load(currentOriginalCapturedFile)
+                .transform(CenterCrop())
+                .into(photoEditorView.source)
+            showStaticBackground()
         }
     }
 
