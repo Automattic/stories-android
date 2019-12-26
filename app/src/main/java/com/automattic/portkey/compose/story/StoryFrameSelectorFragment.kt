@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -24,6 +25,11 @@ open class StoryFrameSelectorFragment : Fragment() {
 
         storyViewModel.onSelectedFrameIndex.observe(this, Observer<Pair<Int, Int>> { selectedFrameIndexChange ->
             updateContentUiStateSelection(selectedFrameIndexChange.first, selectedFrameIndexChange.second)
+        })
+
+        storyViewModel.addButtonClicked.observe(this, Observer {
+            // TODO here introduce the actual handler
+            Toast.makeText(requireContext(), "CLICKED ADD", Toast.LENGTH_SHORT).show()
         })
 
         storyViewModel.uiState.observe(this, Observer { uiState ->

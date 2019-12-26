@@ -20,6 +20,9 @@ class StoryViewModel(val repository: StoryRepository, val storyIndex: Int) : Vie
     }
     val onSelectedFrameIndex: SingleLiveEvent<Pair<Int, Int>> = _onSelectedFrameIndex
 
+    private val _addButtonClicked = SingleLiveEvent<Unit>()
+    val addButtonClicked = _addButtonClicked
+
     fun loadStory(storyIndex: Int) {
         repository.loadStory(storyIndex)
         updateUiState(createUiStateFromModelState(repository.getImmutableCurrentStoryFrames()))
@@ -82,10 +85,8 @@ class StoryViewModel(val repository: StoryRepository, val storyIndex: Int) : Vie
         val newUiState = StoryFrameListUiState(uiStateItems)
         // add the plus icon to the UiState array
         uiStateItems.add(StoryFrameListItemUiStatePlusIcon)
-        // TODO add the SingleLiveEvent click listener
         StoryFrameListItemUiStatePlusIcon.onItemTapped = {
-            // setSelectedFrame(index)
-            // TODO here trigger SingleLiveEvent
+            _addButtonClicked.call()
         }
         storyItems.forEachIndexed { index, model ->
             val isSelected = (getSelectedFrameIndex() == index)
