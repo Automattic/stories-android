@@ -30,6 +30,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.ViewCompat
+import androidx.lifecycle.ViewModelProviders
 import com.automattic.photoeditor.OnPhotoEditorListener
 import com.automattic.photoeditor.PhotoEditor
 import com.automattic.photoeditor.SaveSettings
@@ -57,6 +58,8 @@ import com.automattic.portkey.compose.story.StoryFrameItemType
 import com.automattic.portkey.compose.story.StoryFrameItemType.VIDEO
 import com.automattic.portkey.compose.story.StoryFrameSelectorFragment
 import com.automattic.portkey.compose.story.StoryRepository
+import com.automattic.portkey.compose.story.StoryViewModel
+import com.automattic.portkey.compose.story.StoryViewModelFactory
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
 import com.automattic.portkey.util.CrashLoggingUtils
 import com.automattic.portkey.util.getDisplayPixelSize
@@ -106,6 +109,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     private var screenSizeY: Int = 0
     private var topControlsBaseTopMargin: Int = 0
     private var isEditingText: Boolean = false
+
+    private lateinit var storyViewModel: StoryViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -223,6 +228,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
         swipeDetector = GestureDetectorCompat(this, FlingGestureListener())
 
+        // TODO storyIndex here is hardcoded to 0, will need to change once we have multiple stories stored.
+        storyViewModel = ViewModelProviders.of(this,
+            StoryViewModelFactory(StoryRepository, 0)
+        )[StoryViewModel::class.java]
+
         if (savedInstanceState == null) {
             // small tweak to make sure to not show the background image for the static image background mode
             backgroundSurfaceManager.preTurnTextureViewOn()
@@ -329,13 +339,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                         .into(photoEditorView.source)
                     showStaticBackground()
                 }
-                StoryRepository
-                    .apply {
-                        // update the repository
-                        addStoryFrameItemToCurrentStory(StoryFrameItem(strMediaUri,
-                            if (isVideo) StoryFrameItemType.VIDEO else StoryFrameItemType.IMAGE))
-                        setSelectedFrame(0)
-                    }
+                storyViewModel.apply {
+                    addStoryFrameItemToCurrentStory(StoryFrameItem(strMediaUri,
+                        if (isVideo) StoryFrameItemType.VIDEO else StoryFrameItemType.IMAGE))
+                    setSelectedFrame(0)
+                }
             }
         }
     }
@@ -422,13 +430,13 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 DiscardDialog.newInstance(getString(R.string.dialog_discard_message), object : DiscardOk {
                     override fun discardOkClicked() {
                         photoEditor.clearAllViews()
-                        StoryRepository.discardCurrentStory()
+                        storyViewModel.discardCurrentStory()
                         launchCameraPreview()
                         deleteCapturedMedia()
                     }
                 }).show(supportFragmentManager, FRAGMENT_DIALOG)
             } else {
-                StoryRepository.discardCurrentStory()
+                storyViewModel.discardCurrentStory()
                 launchCameraPreview()
                 deleteCapturedMedia()
             }
@@ -572,12 +580,10 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                         .load(file)
                         .transform(CenterCrop())
                         .into(photoEditorView.source)
-                    StoryRepository
-                        .apply {
-                            // update the repository
-                            addStoryFrameItemToCurrentStory(StoryFrameItem(file.path))
-                            setSelectedFrame(0)
-                        }
+                    storyViewModel.apply {
+                        addStoryFrameItemToCurrentStory(StoryFrameItem(file.path))
+                        setSelectedFrame(0)
+                    }
                     showStaticBackground()
                     currentOriginalCapturedFile = file
                     waitToReenableCapture()
@@ -620,12 +626,12 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             override fun onVideoSaved(file: File?) {
                 currentOriginalCapturedFile = file
                 file?.let {
-                    StoryRepository
-                        .apply {
-                            // update the repository
-                            addStoryFrameItemToCurrentStory(StoryFrameItem(it.path))
+                    runOnUiThread {
+                        storyViewModel.apply {
+                            addStoryFrameItemToCurrentStory(StoryFrameItem(it.path, VIDEO))
                             setSelectedFrame(0)
                         }
+                    }
                 }
                 runOnUiThread {
                     // now start playing the video we just recorded
@@ -1058,8 +1064,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     override fun onStoryFrameSelected(index: Int) {
-        if (index != StoryRepository.getSelectedFrameIndex()) {
-            val frameSelected = StoryRepository.setSelectedFrame(index)
+        if (index != storyViewModel.getSelectedFrameIndex()) {
+            val frameSelected = storyViewModel.getSelectedFrame()
             currentOriginalCapturedFile = File(frameSelected.filePath)
             if (frameSelected.frameItemType == VIDEO) {
                 // now start playing the video we just recorded
