@@ -506,8 +506,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                         storyViewModel.discardCurrentStory()
                         launchCameraPreview()
                     } else {
-                        // only discard the current frame
-                        storyViewModel.removeFrameAt(storyViewModel.getSelectedFrameIndex())
+                        // get currentFrame value as it will change after calling onAboutToDeleteStoryFrame
+                        val currentFrameToDeleteIndex = storyViewModel.getSelectedFrameIndex()
+                        onAboutToDeleteStoryFrame(currentFrameToDeleteIndex)
+                        // now discard it from the viewModel
+                        storyViewModel.removeFrameAt(currentFrameToDeleteIndex)
                     }
 
                     // finally, delete the captured media
@@ -1114,6 +1117,18 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         val size = getDisplayPixelSize(this)
         screenSizeX = size.x
         screenSizeY = size.y
+    }
+
+    // switch frames before deletion
+    fun onAboutToDeleteStoryFrame(indexToDelete: Int) {
+        // first let's make sure we update the added views on photoEditor and switch to the next
+        // available frame - then update the StoryViewModel
+        var nextIdxToSelect = indexToDelete
+        // adjust index
+        if (nextIdxToSelect > 0) {
+            nextIdxToSelect--
+        }
+        onStoryFrameSelected(indexToDelete, nextIdxToSelect)
     }
 
     override fun onStoryFrameSelected(oldIndex: Int, index: Int) {

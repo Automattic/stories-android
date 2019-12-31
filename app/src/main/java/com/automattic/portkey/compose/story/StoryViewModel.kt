@@ -89,8 +89,9 @@ class StoryViewModel(val repository: StoryRepository, val storyIndex: Int) : Vie
     fun removeFrameAt(pos: Int) {
         // remove from the repo
         repository.removeFrameAt(pos)
+
         // adjust index
-        if (currentSelectedFrameIndex > 0) {
+        if (currentSelectedFrameIndex > (repository.getCurrentStorySize() - 1)) {
             currentSelectedFrameIndex--
         }
 
