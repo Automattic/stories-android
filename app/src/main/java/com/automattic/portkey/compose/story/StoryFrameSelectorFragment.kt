@@ -1,6 +1,7 @@
 package com.automattic.portkey.compose.story
 
 import android.content.Context
+import android.graphics.Canvas
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -115,6 +116,7 @@ open class StoryFrameSelectorFragment : Fragment() {
 
             override fun clearView(recyclerView: RecyclerView, viewHolder: ViewHolder) {
                 super.clearView(recyclerView, viewHolder)
+                viewHolder.itemView.setAlpha(1.0f)
                 storyViewModel.onSwapActionEnded()
             }
 
@@ -133,6 +135,30 @@ open class StoryFrameSelectorFragment : Fragment() {
 
             override fun isLongPressDragEnabled(): Boolean {
                 return true
+            }
+
+            override fun onChildDraw(
+                c: Canvas,
+                recyclerView: RecyclerView,
+                viewHolder: ViewHolder,
+                dX: Float,
+                dY: Float,
+                actionState: Int,
+                isCurrentlyActive: Boolean
+            ) {
+                if (actionState == ItemTouchHelper.ACTION_STATE_DRAG) {
+                    viewHolder.itemView.alpha = 0.5f
+                } else {
+                    super.onChildDraw(
+                        c,
+                        recyclerView,
+                        viewHolder,
+                        dX,
+                        dY,
+                        actionState,
+                        isCurrentlyActive
+                    )
+                }
             }
         }
 
