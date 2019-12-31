@@ -107,12 +107,25 @@ class StoryViewModel(val repository: StoryRepository, val storyIndex: Int) : Vie
 
     fun swapItemsInPositions(pos1: Int, pos2: Int) {
         repository.swapItemsInPositions(pos1, pos2)
+        // adjust currentSelectedFrameIndex so it reflects the movement only
+        // if the movement occurred entierly to the left of the selection, don't update it
+        // if the movement occurred from its left to its right, set the currentselection to be one position less
+        // if the movement occurred from its right to its left, an insertion occurred on the left so our position
+        // should get moved one position to the right
+        // if the movement occurred entirely to the right of the selection, don't update it
+        if (pos1 < currentSelectedFrameIndex && pos2 >= currentSelectedFrameIndex) {
+            currentSelectedFrameIndex--
+        } else if (pos1 > currentSelectedFrameIndex && pos2 <= currentSelectedFrameIndex) {
+            currentSelectedFrameIndex++
+        } else if (pos1 == currentSelectedFrameIndex) {
+            currentSelectedFrameIndex = pos2
+        }
+
         updateUiStateForItemSwap(pos1, pos2)
     }
 
-    fun onSwapActionEnded(pos2: Int) {
+    fun onSwapActionEnded() {
         updateUiState(createUiStateFromModelState(repository.getImmutableCurrentStoryFrames()))
-        setSelectedFrameByUser(pos2)
     }
 
     private fun updateUiState(uiState: StoryFrameListUiState) {

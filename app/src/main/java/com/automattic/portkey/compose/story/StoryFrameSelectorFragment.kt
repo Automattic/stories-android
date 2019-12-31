@@ -115,7 +115,7 @@ open class StoryFrameSelectorFragment : Fragment() {
 
             override fun clearView(recyclerView: RecyclerView, viewHolder: ViewHolder) {
                 super.clearView(recyclerView, viewHolder)
-                storyViewModel.onSwapActionEnded(viewHolder.adapterPosition - 1)
+                storyViewModel.onSwapActionEnded()
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, swipeDir: Int) {
