@@ -309,6 +309,18 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     override fun onBackPressed() {
         if (!backgroundSurfaceManager.cameraVisible()) {
             close_button.performClick()
+        } else if (storyViewModel.getCurrentStorySize() > 0) {
+            // get currently selected frame and check whether this is a video or an image
+            when (storyViewModel.getSelectedFrame().frameItemType) {
+                VIDEO -> runOnUiThread {
+                    // now start playing the video that was selected in the frame selector
+                    showPlayVideo()
+                }
+                IMAGE -> runOnUiThread {
+                    // switch to static background
+                    showStaticBackground()
+                }
+            }
         } else {
             super.onBackPressed()
         }
