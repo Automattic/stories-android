@@ -45,6 +45,10 @@ open class StoryFrameSelectorFragment : Fragment() {
             )
         })
 
+        storyViewModel.onFrameIndexMoved.observe(this, Observer<Pair<Int, Int>> { positionFrameIndexChange ->
+            updateContentUiStateMovedIndex(positionFrameIndexChange.first, positionFrameIndexChange.second)
+        })
+
         storyViewModel.addButtonClicked.observe(this, Observer {
             storyFrameTappedListener?.onStoryFrameAddTapped()
         })
@@ -87,6 +91,11 @@ open class StoryFrameSelectorFragment : Fragment() {
             .updateContentUiStateSelection(oldSelection, newSelection)
     }
 
+    private fun updateContentUiStateMovedIndex(oldPosition: Int, newPosition: Int) {
+        (story_frames_view.adapter as StoryFrameSelectorAdapter)
+            .updateContentUiStateMovedIndex(oldPosition, newPosition)
+    }
+
     private fun setupItemTouchListener(view: View) {
         val itemTouchCallback = object : ItemTouchHelper.SimpleCallback(ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT, 0) {
             override fun onMove(
@@ -102,6 +111,11 @@ open class StoryFrameSelectorFragment : Fragment() {
                 }
                 storyViewModel.swapItemsInPositions(fromPos - 1, toPos - 1)
                 return true
+            }
+
+            override fun clearView(recyclerView: RecyclerView, viewHolder: ViewHolder) {
+                super.clearView(recyclerView, viewHolder)
+                storyViewModel.onSwapActionEnded(viewHolder.adapterPosition - 1)
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, swipeDir: Int) {

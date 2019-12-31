@@ -74,6 +74,10 @@ class StoryFrameSelectorAdapter : RecyclerView.Adapter<StoryFrameSelectorAdapter
         }
     }
 
+    fun updateContentUiStateMovedIndex(oldPosition: Int, newPosition: Int) {
+        notifyItemMoved(oldPosition, newPosition)
+    }
+
     sealed class StoryFrameHolder(v: View) : RecyclerView.ViewHolder(v) {
         val clickableView = v // entire view should be clickable
         val imageView: ImageView = v.frame_image

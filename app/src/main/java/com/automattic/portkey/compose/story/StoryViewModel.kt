@@ -20,6 +20,9 @@ class StoryViewModel(val repository: StoryRepository, val storyIndex: Int) : Vie
     }
     val onSelectedFrameIndex: SingleLiveEvent<Pair<Int, Int>> = _onSelectedFrameIndex
 
+    private val _onFrameIndexMoved = SingleLiveEvent<Pair<Int, Int>>()
+    val onFrameIndexMoved: SingleLiveEvent<Pair<Int, Int>> = _onFrameIndexMoved
+
     private val _addButtonClicked = SingleLiveEvent<Unit>()
     val addButtonClicked = _addButtonClicked
 
@@ -104,6 +107,10 @@ class StoryViewModel(val repository: StoryRepository, val storyIndex: Int) : Vie
 
     fun swapItemsInPositions(pos1: Int, pos2: Int) {
         repository.swapItemsInPositions(pos1, pos2)
+        updateUiStateForItemSwap(pos1, pos2)
+    }
+
+    fun onSwapActionEnded(pos2: Int) {
         updateUiState(createUiStateFromModelState(repository.getImmutableCurrentStoryFrames()))
         setSelectedFrameByUser(pos2)
     }
@@ -123,6 +130,10 @@ class StoryViewModel(val repository: StoryRepository, val storyIndex: Int) : Vie
             }
             _onSelectedFrameIndex.value = Pair(oldSelectedIndex + 1, newSelectedIndex + 1)
         }
+    }
+
+    private fun updateUiStateForItemSwap(oldIndex: Int, newIndex: Int) {
+        _onFrameIndexMoved.value = Pair(oldIndex + 1, newIndex + 1)
     }
 
     private fun createUiStateFromModelState(storyItems: List<StoryFrameItem>): StoryFrameListUiState {
