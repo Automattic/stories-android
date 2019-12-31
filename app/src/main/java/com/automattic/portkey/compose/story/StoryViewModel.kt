@@ -102,6 +102,12 @@ class StoryViewModel(val repository: StoryRepository, val storyIndex: Int) : Vie
         }
     }
 
+    fun swapItemsInPositions(pos1: Int, pos2: Int) {
+        repository.swapItemsInPositions(pos1, pos2)
+        updateUiState(createUiStateFromModelState(repository.getImmutableCurrentStoryFrames()))
+        setSelectedFrameByUser(pos2)
+    }
+
     private fun updateUiState(uiState: StoryFrameListUiState) {
         _uiState.value = uiState
     }

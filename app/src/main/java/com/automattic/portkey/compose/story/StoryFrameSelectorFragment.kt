@@ -9,9 +9,15 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.automattic.portkey.R.layout
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.ViewHolder
+import com.automattic.portkey.compose.story.StoryFrameSelectorAdapter.StoryFrameHolder.StoryFrameHolderPlusIcon
 import com.automattic.portkey.compose.story.StoryViewModel.StoryFrameListUiState
 import kotlinx.android.synthetic.main.fragment_story_frame_selector.*
 import kotlinx.android.synthetic.main.fragment_story_frame_selector.view.*
+
+
 
 interface OnStoryFrameSelectorTappedListener {
     fun onStoryFrameSelected(oldIndex: Int, newIndex: Int)
@@ -59,6 +65,7 @@ open class StoryFrameSelectorFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(layout.fragment_story_frame_selector, container, false)
         view.story_frames_view.adapter = StoryFrameSelectorAdapter()
+        setupItemTouchListener(view)
         // TODO storyIndex here is hardcoded to 0, will need to change once we have multiple stories stored.
         storyViewModel.loadStory(0)
         return view
@@ -79,6 +86,46 @@ open class StoryFrameSelectorFragment : Fragment() {
         (story_frames_view.adapter as StoryFrameSelectorAdapter)
             .updateContentUiStateSelection(oldSelection, newSelection)
     }
+
+    private fun setupItemTouchListener(view: View) {
+        val itemTouchCallback = object : ItemTouchHelper.SimpleCallback(ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT, 0) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                val fromPos = viewHolder.adapterPosition
+                val toPos = target.adapterPosition
+                if (toPos == 0 || fromPos == 0) {
+                    // don't allow items to target position 0, and don't let the plus icon to be moved elsewhere
+                    return false
+                }
+                storyViewModel.swapItemsInPositions(fromPos - 1, toPos - 1)
+                return true
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, swipeDir: Int) {
+            }
+
+            override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: ViewHolder): Int {
+                var dragFlags = ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+                if (viewHolder is StoryFrameHolderPlusIcon) {
+                    // don't allow dragging for the StoryFrameHolderPlusIcon holder
+                    dragFlags = 0
+                }
+                val swipeFlags = 0
+                return makeMovementFlags(dragFlags, swipeFlags)
+            }
+
+            override fun isLongPressDragEnabled(): Boolean {
+                return true
+            }
+        }
+
+        val itemTouchHelper = ItemTouchHelper(itemTouchCallback)
+        itemTouchHelper.attachToRecyclerView(view.story_frames_view)
+    }
+
 
     fun show() {
         view?.visibility = View.VISIBLE
