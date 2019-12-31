@@ -17,8 +17,6 @@ import com.automattic.portkey.compose.story.StoryViewModel.StoryFrameListUiState
 import kotlinx.android.synthetic.main.fragment_story_frame_selector.*
 import kotlinx.android.synthetic.main.fragment_story_frame_selector.view.*
 
-
-
 interface OnStoryFrameSelectorTappedListener {
     fun onStoryFrameSelected(oldIndex: Int, newIndex: Int)
     fun onStoryFrameAddTapped()
@@ -97,7 +95,9 @@ open class StoryFrameSelectorFragment : Fragment() {
     }
 
     private fun setupItemTouchListener(view: View) {
-        val itemTouchCallback = object : ItemTouchHelper.SimpleCallback(ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT, 0) {
+        val itemTouchCallback = object : ItemTouchHelper.SimpleCallback(
+            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT, 0
+        ) {
             override fun onMove(
                 recyclerView: RecyclerView,
                 viewHolder: RecyclerView.ViewHolder,
@@ -139,7 +139,6 @@ open class StoryFrameSelectorFragment : Fragment() {
         val itemTouchHelper = ItemTouchHelper(itemTouchCallback)
         itemTouchHelper.attachToRecyclerView(view.story_frames_view)
     }
-
 
     fun show() {
         view?.visibility = View.VISIBLE
