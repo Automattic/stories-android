@@ -99,8 +99,6 @@ class StoryViewModel(val repository: StoryRepository, val storyIndex: Int) : Vie
             updateUiState(createUiStateFromModelState(repository.getImmutableCurrentStoryFrames()))
             // now let's select the one to the left
             setSelectedFrameByUser(currentSelectedFrameIndex)
-//            currentSelectedFrameIndex = repository.getCurrentStorySize() // default selected frame when loading a new Story
-            // _onSelectedFrameIndex.value = Pair(DEFAULT_SELECTION, currentSelectedFrameIndex)
         }
     }
 
