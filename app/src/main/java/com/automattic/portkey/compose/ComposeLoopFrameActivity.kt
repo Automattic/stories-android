@@ -18,7 +18,6 @@ import android.text.TextUtils
 import android.util.Log
 import android.view.GestureDetector
 import android.view.Gravity
-import android.view.MenuInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnClickListener
