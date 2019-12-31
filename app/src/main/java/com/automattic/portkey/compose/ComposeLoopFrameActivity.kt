@@ -1126,8 +1126,14 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         var nextIdxToSelect = indexToDelete
         // adjust index
         if (nextIdxToSelect > 0) {
+            // if there are items to the left, then prefer to select the next item to the left
             nextIdxToSelect--
+        } else {
+            // if there are no items to the left and there are items to the right, then choose
+            // an item to the right
+            nextIdxToSelect++
         }
+
         onStoryFrameSelected(indexToDelete, nextIdxToSelect)
     }
 

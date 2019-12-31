@@ -91,7 +91,7 @@ class StoryViewModel(val repository: StoryRepository, val storyIndex: Int) : Vie
         repository.removeFrameAt(pos)
 
         // adjust index
-        if (currentSelectedFrameIndex > (repository.getCurrentStorySize() - 1)) {
+        if (currentSelectedFrameIndex > 0 && pos <= currentSelectedFrameIndex) {
             currentSelectedFrameIndex--
         }
 
