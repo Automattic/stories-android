@@ -79,6 +79,31 @@ class StoryViewModel(val repository: StoryRepository, val storyIndex: Int) : Vie
         return repository.getImmutableCurrentStoryFrames()[index]
     }
 
+    fun getCurrentStorySize(): Int {
+        return repository.getCurrentStorySize()
+    }
+
+    fun removeFrameAt(pos: Int) {
+        // remove from the repo
+        repository.removeFrameAt(pos)
+        // adjust index
+        if (currentSelectedFrameIndex > 0) {
+            currentSelectedFrameIndex--
+        }
+
+        // if this Story no longer contains any frames, just discard it
+        if (repository.getCurrentStorySize() == 0) {
+            discardCurrentStory()
+        } else {
+            // if we have frames to keep, update the UI state with the new resulting frame array
+            updateUiState(createUiStateFromModelState(repository.getImmutableCurrentStoryFrames()))
+            // now let's select the one to the left
+            setSelectedFrameByUser(currentSelectedFrameIndex)
+//            currentSelectedFrameIndex = repository.getCurrentStorySize() // default selected frame when loading a new Story
+            // _onSelectedFrameIndex.value = Pair(DEFAULT_SELECTION, currentSelectedFrameIndex)
+        }
+    }
+
     private fun updateUiState(uiState: StoryFrameListUiState) {
         _uiState.value = uiState
     }
