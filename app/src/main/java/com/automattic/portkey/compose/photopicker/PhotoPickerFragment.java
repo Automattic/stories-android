@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.PopupMenu;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -69,6 +70,7 @@ public class PhotoPickerFragment extends Fragment {
     private MediaBrowserType mBrowserType;
 //    private SiteModel mSite;
     private ArrayList<Integer> mSelectedPositions;
+    private TextView mChooseItemsDescription;
 
 //    public static PhotoPickerFragment newInstance(@NonNull PhotoPickerListener listener,
 //                                                  @NonNull MediaBrowserType browserType,
@@ -187,6 +189,8 @@ public class PhotoPickerFragment extends Fragment {
         }
 
         mSoftAskView = view.findViewById(R.id.soft_ask_view);
+
+        mChooseItemsDescription = view.findViewById(R.id.text_choose_items_to_add);
 
         return view;
     }
@@ -372,6 +376,12 @@ public class PhotoPickerFragment extends Fragment {
             if (mRestoreState != null) {
                 mGridManager.onRestoreInstanceState(mRestoreState);
                 mRestoreState = null;
+            }
+
+            if (isEmpty) {
+                mChooseItemsDescription.setVisibility(View.GONE);
+            } else {
+                mChooseItemsDescription.setVisibility(View.VISIBLE);
             }
         }
     };
