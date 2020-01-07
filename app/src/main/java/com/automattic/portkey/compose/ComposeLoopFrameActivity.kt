@@ -1069,7 +1069,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     override fun onStoryFrameSelected(oldIndex: Int, index: Int) {
         if (index != oldIndex) {
             // first, remember the currently added views
-            val currentStoryFrameItem = StoryRepository.getCurrentStoryFrameAt(oldIndex)
+            val currentStoryFrameItem = storyViewModel.getFrameAtIndex(oldIndex)
 
             // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
             currentStoryFrameItem.addedViews = AddedViewList(photoEditor.getViewsAdded())

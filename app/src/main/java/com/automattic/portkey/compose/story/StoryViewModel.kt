@@ -72,7 +72,11 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: In
     }
 
     fun getSelectedFrame(): StoryFrameItem {
-        return repository.getImmutableCurrentStoryFrames()[currentSelectedFrameIndex]
+        return getFrameAtIndex(currentSelectedFrameIndex)
+    }
+
+    fun getFrameAtIndex(index: Int): StoryFrameItem {
+        return repository.getImmutableCurrentStoryFrames()[index]
     }
 
     private fun updateUiState(uiState: StoryFrameListUiState) {
