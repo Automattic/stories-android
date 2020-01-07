@@ -1008,6 +1008,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         close_button.visibility = View.INVISIBLE
         edit_mode_controls.visibility = View.INVISIBLE
         sound_button_group.visibility = View.INVISIBLE
+        hideStoryFrameSelector()
         if (hideSaveButton) {
             save_button.visibility = View.INVISIBLE
         }
@@ -1028,6 +1029,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         } else {
             sound_button_group.visibility = View.VISIBLE
         }
+        showStoryFrameSelector()
     }
 
     private fun showSaveButtonIfViewsAdded() {
@@ -1137,7 +1139,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         onStoryFrameSelected(indexToDelete, nextIdxToSelect)
     }
 
-    override fun onStoryFrameSelected(oldIndex: Int, index: Int) {
+    override fun onStoryFrameSelected(oldIndex: Int, newIndex: Int) {
         // first, remember the currently added views
         val currentStoryFrameItem = storyViewModel.getCurrentStoryFrameAt(oldIndex)
 
@@ -1148,7 +1150,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         photoEditor.clearAllViews()
 
         // now set the current capturedFile to be the one pointed to by the index frame
-        val newSelectedFrame = storyViewModel.setSelectedFrame(index)
+        val newSelectedFrame = storyViewModel.setSelectedFrame(newIndex)
         val source = newSelectedFrame.source
         if (source.isFile()) {
             currentOriginalCapturedFile = source.file
@@ -1184,6 +1186,15 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     override fun onStoryFrameAddTapped() {
+        // first, remember the currently added views
+        val currentStoryFrameItem = storyViewModel.getSelectedFrame()
+
+        // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
+        currentStoryFrameItem.addedViews = AddedViewList(photoEditor.getViewsAdded())
+
+        // now clear addedViews so we don't leak View.Context
+        photoEditor.clearAllViews()
+
         launchCameraPreview()
     }
 
