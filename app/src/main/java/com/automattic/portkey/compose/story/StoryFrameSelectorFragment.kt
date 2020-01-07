@@ -58,12 +58,13 @@ open class StoryFrameSelectorFragment : Fragment() {
     }
 
     private fun updateContentUiStateSelection(oldSelection: Int, newSelection: Int) {
+        val adapter = story_frames_view.adapter as StoryFrameSelectorAdapter
         if (oldSelection == newSelection) {
             // just call it once
-            (story_frames_view.adapter as StoryFrameSelectorAdapter).notifyItemChanged(oldSelection)
+            adapter.notifyItemChanged(oldSelection)
         } else {
-            (story_frames_view.adapter as StoryFrameSelectorAdapter).notifyItemChanged(oldSelection)
-            (story_frames_view.adapter as StoryFrameSelectorAdapter).notifyItemChanged(newSelection)
+            adapter.notifyItemChanged(oldSelection)
+            adapter.notifyItemChanged(newSelection)
         }
     }
 
