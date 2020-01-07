@@ -1143,9 +1143,9 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         if (newSelectedFrame.frameItemType == VIDEO) {
             source.apply {
                 if (isFile()) {
-                    backgroundSurfaceManager.switchVideoPlayerOnFromFile(file)
+                    showPlayVideo(file)
                 } else contentUri?.let {
-                    backgroundSurfaceManager.switchVideoPlayerOnFromUri(it)
+                    showPlayVideo(it)
                 }
             }
         } else {
