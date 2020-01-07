@@ -1100,6 +1100,15 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     override fun onStoryFrameAddTapped() {
+        // first, remember the currently added views
+        val currentStoryFrameItem = storyViewModel.getSelectedFrame()
+
+        // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
+        currentStoryFrameItem.addedViews = AddedViewList(photoEditor.getViewsAdded())
+
+        // now clear addedViews so we don't leak View.Context
+        photoEditor.clearAllViews()
+
         launchCameraPreview()
     }
 
