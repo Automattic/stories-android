@@ -1066,8 +1066,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         screenSizeY = size.y
     }
 
-    override fun onStoryFrameSelected(oldIndex: Int, index: Int) {
-        if (index != oldIndex) {
+    override fun onStoryFrameSelected(oldIndex: Int, newIndex: Int) {
+        if (newIndex != oldIndex) {
             // first, remember the currently added views
             val currentStoryFrameItem = storyViewModel.getFrameAtIndex(oldIndex)
 
@@ -1078,7 +1078,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             photoEditor.clearAllViews()
 
             // now set the current capturedFile to be the one pointed to by the index frame
-            val newSelectedFrame = storyViewModel.setSelectedFrame(index)
+            val newSelectedFrame = storyViewModel.setSelectedFrame(newIndex)
             currentOriginalCapturedFile = File(newSelectedFrame.filePath)
             if (newSelectedFrame.frameItemType == VIDEO) {
                 // now start playing the video we just recorded
