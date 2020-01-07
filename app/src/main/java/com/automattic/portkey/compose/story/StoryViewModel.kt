@@ -68,12 +68,12 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: In
     }
 
     private fun updateUiStateForSelection(oldSelectedIndex: Int, newSelectedIndex: Int) {
-        _uiState.value?.let {
-            (it.items[oldSelectedIndex + 1] as? StoryFrameListItemUiStateFrame)?.let {
+        _uiState.value?.let { immutableStory ->
+            (immutableStory.items[oldSelectedIndex + 1] as? StoryFrameListItemUiStateFrame)?.let {
                 it.selected = false
             }
 
-            (it.items[newSelectedIndex + 1] as? StoryFrameListItemUiStateFrame)?.let {
+            (immutableStory.items[newSelectedIndex + 1] as? StoryFrameListItemUiStateFrame)?.let {
                 it.selected = true
             }
             _onSelectedFrameIndex.value = Pair(oldSelectedIndex + 1, newSelectedIndex + 1)
