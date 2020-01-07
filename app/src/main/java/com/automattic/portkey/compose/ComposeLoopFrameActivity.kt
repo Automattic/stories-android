@@ -44,6 +44,7 @@ import com.automattic.photoeditor.util.FileUtils.Companion.getLoopFrameFile
 import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.ViewType
 import com.automattic.photoeditor.views.ViewType.TEXT
+import com.automattic.photoeditor.views.added.AddedViewList
 import com.automattic.portkey.BuildConfig
 import com.automattic.portkey.R
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment
@@ -1065,22 +1066,49 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         screenSizeY = size.y
     }
 
-    override fun onStoryFrameSelected(index: Int) {
-        val frameSelected = storyViewModel.getSelectedFrame()
-        currentOriginalCapturedFile = File(frameSelected.filePath)
-        if (frameSelected.frameItemType == VIDEO) {
-            // now start playing the video we just recorded
-            showPlayVideo(Uri.parse(frameSelected.filePath))
-        } else {
-            Glide.with(this@ComposeLoopFrameActivity)
-                .load(currentOriginalCapturedFile)
-                .transform(CenterCrop())
-                .into(photoEditorView.source)
-            showStaticBackground()
+    override fun onStoryFrameSelected(oldIndex: Int, newIndex: Int) {
+        if (newIndex != oldIndex) {
+            // first, remember the currently added views
+            val currentStoryFrameItem = storyViewModel.getFrameAtIndex(oldIndex)
+
+            // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
+            currentStoryFrameItem.addedViews = AddedViewList(photoEditor.getViewsAdded())
+
+            // now clear addedViews so we don't leak View.Context
+            photoEditor.clearAllViews()
+
+            // now set the current capturedFile to be the one pointed to by the index frame
+            val newSelectedFrame = storyViewModel.setSelectedFrame(newIndex)
+            currentOriginalCapturedFile = File(newSelectedFrame.filePath)
+            if (newSelectedFrame.frameItemType == VIDEO) {
+                // now start playing the video we just recorded
+                showPlayVideo(Uri.parse(newSelectedFrame.filePath))
+            } else {
+                Glide.with(this@ComposeLoopFrameActivity)
+                    .load(currentOriginalCapturedFile)
+                    .transform(CenterCrop())
+                    .into(photoEditorView.source)
+                showStaticBackground()
+            }
+            // now call addViewToParent the addedViews remembered by this frame
+            newSelectedFrame.addedViews.let {
+                for (oneView in it) {
+                    photoEditor.addViewToParent(oneView.view, oneView.viewType)
+                }
+            }
         }
     }
 
     override fun onStoryFrameAddTapped() {
+        // first, remember the currently added views
+        val currentStoryFrameItem = storyViewModel.getSelectedFrame()
+
+        // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
+        currentStoryFrameItem.addedViews = AddedViewList(photoEditor.getViewsAdded())
+
+        // now clear addedViews so we don't leak View.Context
+        photoEditor.clearAllViews()
+
         launchCameraPreview()
     }
 

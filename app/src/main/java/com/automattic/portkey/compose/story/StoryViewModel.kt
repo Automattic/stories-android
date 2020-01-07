@@ -23,7 +23,7 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: In
     private val _addButtonClicked = SingleLiveEvent<Unit>()
     val addButtonClicked = _addButtonClicked
 
-    private val _onUserSelectedFrame = SingleLiveEvent<Int>()
+    private val _onUserSelectedFrame = SingleLiveEvent<Pair<Int, Int>>()
     val onUserSelectedFrame = _onUserSelectedFrame
 
     fun loadStory(storyIndex: Int) {
@@ -62,8 +62,9 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: In
     }
 
     fun setSelectedFrameByUser(index: Int) {
+        val oldIndex = currentSelectedFrameIndex
         setSelectedFrame(index)
-        _onUserSelectedFrame.value = index
+        _onUserSelectedFrame.value = Pair(oldIndex, index)
     }
 
     fun getSelectedFrameIndex(): Int {
@@ -71,7 +72,11 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: In
     }
 
     fun getSelectedFrame(): StoryFrameItem {
-        return repository.getImmutableCurrentStoryFrames()[currentSelectedFrameIndex]
+        return getFrameAtIndex(currentSelectedFrameIndex)
+    }
+
+    fun getFrameAtIndex(index: Int): StoryFrameItem {
+        return repository.getImmutableCurrentStoryFrames()[index]
     }
 
     private fun updateUiState(uiState: StoryFrameListUiState) {

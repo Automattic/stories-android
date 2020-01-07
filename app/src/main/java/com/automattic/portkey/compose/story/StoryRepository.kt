@@ -31,6 +31,10 @@ object StoryRepository {
         currentStoryFrames.clear()
     }
 
+    fun getCurrentStoryFrameAt(index: Int): StoryFrameItem {
+        return currentStoryFrames[index]
+    }
+
     fun getImmutableCurrentStoryFrames(): List<StoryFrameItem> {
         return Collections.unmodifiableList<StoryFrameItem>(currentStoryFrames)
     }
