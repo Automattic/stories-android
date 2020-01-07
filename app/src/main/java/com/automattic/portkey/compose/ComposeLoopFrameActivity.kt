@@ -30,6 +30,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.ViewCompat
+import androidx.lifecycle.ViewModelProviders
 import com.automattic.photoeditor.OnPhotoEditorListener
 import com.automattic.photoeditor.PhotoEditor
 import com.automattic.photoeditor.SaveSettings
@@ -51,7 +52,11 @@ import com.automattic.portkey.compose.photopicker.MediaBrowserType
 import com.automattic.portkey.compose.photopicker.PhotoPickerActivity
 import com.automattic.portkey.compose.photopicker.PhotoPickerFragment
 import com.automattic.portkey.compose.photopicker.RequestCodes
+import com.automattic.portkey.compose.story.StoryFrameItem
 import com.automattic.portkey.compose.story.StoryFrameSelectorFragment
+import com.automattic.portkey.compose.story.StoryRepository
+import com.automattic.portkey.compose.story.StoryViewModel
+import com.automattic.portkey.compose.story.StoryViewModelFactory
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
 import com.automattic.portkey.util.CrashLoggingUtils
 import com.automattic.portkey.util.getDisplayPixelSize
@@ -101,6 +106,8 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     private var screenSizeY: Int = 0
     private var topControlsBaseTopMargin: Int = 0
     private var isEditingText: Boolean = false
+
+    private lateinit var storyViewModel: StoryViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -217,6 +224,11 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         addClickListeners()
 
         swipeDetector = GestureDetectorCompat(this, FlingGestureListener())
+
+        // TODO storyIndex here is hardcoded to 0, will need to change once we have multiple stories stored.
+        storyViewModel = ViewModelProviders.of(this,
+            StoryViewModelFactory(StoryRepository, 0)
+        )[StoryViewModel::class.java]
 
         if (savedInstanceState == null) {
             // small tweak to make sure to not show the background image for the static image background mode
@@ -409,13 +421,15 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 DiscardDialog.newInstance(getString(R.string.dialog_discard_message), object : DiscardOk {
                     override fun discardOkClicked() {
                         photoEditor.clearAllViews()
+                        storyViewModel.discardCurrentStory()
                         launchCameraPreview()
                         deleteCapturedMedia()
                     }
                 }).show(supportFragmentManager, FRAGMENT_DIALOG)
             } else {
-                deleteCapturedMedia()
+                storyViewModel.discardCurrentStory()
                 launchCameraPreview()
+                deleteCapturedMedia()
             }
         }
 
@@ -557,6 +571,10 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                         .load(file)
                         .transform(CenterCrop())
                         .into(photoEditorView.source)
+                    storyViewModel.apply {
+                        addStoryFrameItemToCurrentStory(StoryFrameItem(file.path))
+                        setSelectedFrame(0)
+                    }
                     showStaticBackground()
                     currentOriginalCapturedFile = file
                     waitToReenableCapture()

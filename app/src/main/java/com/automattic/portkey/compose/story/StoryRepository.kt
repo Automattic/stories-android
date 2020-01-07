@@ -1,14 +1,37 @@
 package com.automattic.portkey.compose.story
 
-class StoryRepository {
-    val FAKE_CONTENT = Story(ArrayList())
-    fun loadStory(storyId: Int): ArrayList<StoryFrameItem> {
-        // TODO load the story items here, for the storyId passed as argument
-        FAKE_CONTENT.frames.add(StoryFrameItem("test1"))
-        FAKE_CONTENT.frames.add(StoryFrameItem("test2"))
-        FAKE_CONTENT.frames.add(StoryFrameItem("test3"))
-        FAKE_CONTENT.frames.add(StoryFrameItem("test4"))
-        FAKE_CONTENT.frames.add(StoryFrameItem("test5"))
-        return FAKE_CONTENT.frames
+import java.util.Collections
+
+object StoryRepository {
+    private val currentStoryFrames = ArrayList<StoryFrameItem>()
+    private val stories = ArrayList<Story>()
+
+    fun loadStory(storyIndex: Int): ArrayList<StoryFrameItem> {
+        if (stories.size > storyIndex) {
+            currentStoryFrames.clear()
+            currentStoryFrames.addAll(stories[storyIndex].frames)
+        } else {
+            // just crete a new story if we didn't find such index
+            currentStoryFrames.clear()
+        }
+        return currentStoryFrames
+    }
+
+    fun addStoryFrameItemToCurrentStory(item: StoryFrameItem) {
+        currentStoryFrames.add(0, item)
+    }
+
+    // when the user finishes a story, just add it to our repo for now and clear currentStory
+    fun finishCurrentStory() {
+        stories.add(Story(currentStoryFrames)) // create new Story wrapper with the finished frames in there
+        currentStoryFrames.clear()
+    }
+
+    fun discardCurrentStory() {
+        currentStoryFrames.clear()
+    }
+
+    fun getImmutableCurrentStoryFrames(): List<StoryFrameItem> {
+        return Collections.unmodifiableList<StoryFrameItem>(currentStoryFrames)
     }
 }
