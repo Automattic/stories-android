@@ -1,12 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:app="http://schemas.android.com/apk/res-auto"
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:background="@android:color/white">
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start|bottom"
+        android:tint="@color/text_color_blue"
+        android:src="@drawable/ic_photo_camera_24px"
+        android:layout_margin="16dp" />
 
     <TextView
         android:id="@+id/text_choose_items_to_add"
@@ -99,4 +108,4 @@
 
         </LinearLayout>
     </RelativeLayout>
-</LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
