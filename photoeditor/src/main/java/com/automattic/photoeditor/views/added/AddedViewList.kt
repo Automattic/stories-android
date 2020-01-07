@@ -3,10 +3,10 @@ package com.automattic.photoeditor.views.added
 import android.view.View
 import java.util.ArrayList
 
-class AddedViewList : ArrayList<AddedView> {
-    constructor(addedViewList: AddedViewList? = null) {
+class AddedViewList(addedViewList: AddedViewList? = null) : ArrayList<AddedView>() {
+    init {
         addedViewList?.let {
-            addAll(addedViewList)
+            addAll(it)
         }
     }
 
