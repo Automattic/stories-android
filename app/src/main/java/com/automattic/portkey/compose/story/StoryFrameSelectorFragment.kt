@@ -1,10 +1,10 @@
 package com.automattic.portkey.compose.story
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -13,8 +13,14 @@ import com.automattic.portkey.compose.story.StoryViewModel.StoryFrameListUiState
 import kotlinx.android.synthetic.main.fragment_story_frame_selector.*
 import kotlinx.android.synthetic.main.fragment_story_frame_selector.view.*
 
+interface OnStoryFrameSelectorTappedListener {
+    fun onStoryFrameSelected(index: Int)
+    fun onStoryFrameAddTapped()
+}
+
 open class StoryFrameSelectorFragment : Fragment() {
     lateinit var storyViewModel: StoryViewModel
+    private var storyFrameTappedListener: OnStoryFrameSelectorTappedListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // TODO storyIndex here is hardcoded to 0, will need to change once we have multiple stories stored.
@@ -25,11 +31,15 @@ open class StoryFrameSelectorFragment : Fragment() {
 
         storyViewModel.onSelectedFrameIndex.observe(this, Observer<Pair<Int, Int>> { selectedFrameIndexChange ->
             updateContentUiStateSelection(selectedFrameIndexChange.first, selectedFrameIndexChange.second)
+            // storyFrameTappedListener?.onStoryFrameSelected(selectedFrameIndexChange.second)
+        })
+
+        storyViewModel.onUserSelectedFrame.observe(this, Observer { selectedFrameIndex ->
+            storyFrameTappedListener?.onStoryFrameSelected(selectedFrameIndex)
         })
 
         storyViewModel.addButtonClicked.observe(this, Observer {
-            // TODO here introduce the actual handler
-            Toast.makeText(requireContext(), "CLICKED ADD", Toast.LENGTH_SHORT).show()
+            storyFrameTappedListener?.onStoryFrameAddTapped()
         })
 
         storyViewModel.uiState.observe(this, Observer { uiState ->
@@ -53,19 +63,20 @@ open class StoryFrameSelectorFragment : Fragment() {
         return view
     }
 
+    override fun onAttach(context: Context) {
+        if (activity is OnStoryFrameSelectorTappedListener) {
+            storyFrameTappedListener = activity as OnStoryFrameSelectorTappedListener
+        }
+        super.onAttach(context)
+    }
+
     private fun updateContentUiState(contentState: StoryFrameListUiState) {
         (story_frames_view.adapter as StoryFrameSelectorAdapter).addAllItems(contentState.items)
     }
 
     private fun updateContentUiStateSelection(oldSelection: Int, newSelection: Int) {
-        val adapter = story_frames_view.adapter as StoryFrameSelectorAdapter
-        if (oldSelection == newSelection) {
-            // just call it once
-            adapter.notifyItemChanged(oldSelection)
-        } else {
-            adapter.notifyItemChanged(oldSelection)
-            adapter.notifyItemChanged(newSelection)
-        }
+        (story_frames_view.adapter as StoryFrameSelectorAdapter)
+            .updateContentUiStateSelection(oldSelection, newSelection)
     }
 
     fun show() {

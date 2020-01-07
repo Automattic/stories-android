@@ -52,7 +52,10 @@ import com.automattic.portkey.compose.photopicker.MediaBrowserType
 import com.automattic.portkey.compose.photopicker.PhotoPickerActivity
 import com.automattic.portkey.compose.photopicker.PhotoPickerFragment
 import com.automattic.portkey.compose.photopicker.RequestCodes
+import com.automattic.portkey.compose.story.OnStoryFrameSelectorTappedListener
 import com.automattic.portkey.compose.story.StoryFrameItem
+import com.automattic.portkey.compose.story.StoryFrameItemType
+import com.automattic.portkey.compose.story.StoryFrameItemType.VIDEO
 import com.automattic.portkey.compose.story.StoryFrameSelectorFragment
 import com.automattic.portkey.compose.story.StoryRepository
 import com.automattic.portkey.compose.story.StoryViewModel
@@ -85,7 +88,7 @@ fun Snackbar.config(context: Context) {
     ViewCompat.setElevation(this.view, 6f)
 }
 
-class ComposeLoopFrameActivity : AppCompatActivity() {
+class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTappedListener {
     private lateinit var photoEditor: PhotoEditor
     private lateinit var backgroundSurfaceManager: BackgroundSurfaceManager
     private var currentOriginalCapturedFile: File? = null
@@ -324,7 +327,8 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 }
 
                 // decide whether the picked media is a VIDEO or an IMAGE
-                if (isVideo(strMediaUri)) {
+                val isVideo = isVideo(strMediaUri)
+                if (isVideo) {
                     // now start playing the video we just recorded
                     showPlayVideo(Uri.parse(strMediaUri))
                 } else {
@@ -334,6 +338,11 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                         .transform(CenterCrop())
                         .into(photoEditorView.source)
                     showStaticBackground()
+                }
+                storyViewModel.apply {
+                    addStoryFrameItemToCurrentStory(StoryFrameItem(strMediaUri,
+                        if (isVideo) StoryFrameItemType.VIDEO else StoryFrameItemType.IMAGE))
+                    setSelectedFrame(0)
                 }
             }
         }
@@ -616,6 +625,14 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         backgroundSurfaceManager.startRecordingVideo(object : VideoRecorderFinished {
             override fun onVideoSaved(file: File?) {
                 currentOriginalCapturedFile = file
+                file?.let {
+                    runOnUiThread {
+                        storyViewModel.apply {
+                            addStoryFrameItemToCurrentStory(StoryFrameItem(it.path, VIDEO))
+                            setSelectedFrame(0)
+                        }
+                    }
+                }
                 runOnUiThread {
                     // now start playing the video we just recorded
                     showPlayVideo()
@@ -1046,6 +1063,25 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         val size = getDisplayPixelSize(this)
         screenSizeX = size.x
         screenSizeY = size.y
+    }
+
+    override fun onStoryFrameSelected(index: Int) {
+        val frameSelected = storyViewModel.getSelectedFrame()
+        currentOriginalCapturedFile = File(frameSelected.filePath)
+        if (frameSelected.frameItemType == VIDEO) {
+            // now start playing the video we just recorded
+            showPlayVideo(Uri.parse(frameSelected.filePath))
+        } else {
+            Glide.with(this@ComposeLoopFrameActivity)
+                .load(currentOriginalCapturedFile)
+                .transform(CenterCrop())
+                .into(photoEditorView.source)
+            showStaticBackground()
+        }
+    }
+
+    override fun onStoryFrameAddTapped() {
+        launchCameraPreview()
     }
 
     private inner class FlingGestureListener : GestureDetector.SimpleOnGestureListener() {

@@ -64,6 +64,16 @@ class StoryFrameSelectorAdapter : RecyclerView.Adapter<StoryFrameSelectorAdapter
         notifyDataSetChanged()
     }
 
+    fun updateContentUiStateSelection(oldSelection: Int, newSelection: Int) {
+        if (oldSelection == newSelection) {
+            // just call it once
+            notifyItemChanged(oldSelection)
+        } else {
+            notifyItemChanged(oldSelection)
+            notifyItemChanged(newSelection)
+        }
+    }
+
     sealed class StoryFrameHolder(v: View) : RecyclerView.ViewHolder(v) {
         val clickableView = v // entire view should be clickable
         val imageView: ImageView = v.frame_image
