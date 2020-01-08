@@ -10,6 +10,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.PopupMenu;
@@ -28,6 +29,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.automattic.portkey.R;
 import com.automattic.portkey.compose.photopicker.PhotoPickerAdapter.PhotoPickerAdapterListener;
 import com.automattic.portkey.compose.photopicker.utils.AniUtils;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -120,6 +122,17 @@ public class PhotoPickerFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.photo_picker_fragment, container, false);
+
+        FloatingActionButton takePicture = view.findViewById(R.id.take_picture);
+        takePicture.setOnClickListener(new OnClickListener() {
+            @Override public void onClick(View view) {
+                Toast.makeText(
+                        getActivity(),
+                        "not implemented yet",
+                        Toast.LENGTH_SHORT)
+                     .show();
+            }
+        });
 
         mRecycler = view.findViewById(R.id.recycler);
         mRecycler.setEmptyView(view.findViewById(R.id.actionable_empty_view));
