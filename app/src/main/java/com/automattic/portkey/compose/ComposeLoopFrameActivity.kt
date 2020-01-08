@@ -55,7 +55,9 @@ import com.automattic.portkey.compose.photopicker.PhotoPickerFragment
 import com.automattic.portkey.compose.photopicker.RequestCodes
 import com.automattic.portkey.compose.story.OnStoryFrameSelectorTappedListener
 import com.automattic.portkey.compose.story.StoryFrameItem
+import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource
 import com.automattic.portkey.compose.story.StoryFrameItemType
+import com.automattic.portkey.compose.story.StoryFrameItemType.IMAGE
 import com.automattic.portkey.compose.story.StoryFrameItemType.VIDEO
 import com.automattic.portkey.compose.story.StoryFrameSelectorFragment
 import com.automattic.portkey.compose.story.StoryRepository
@@ -341,8 +343,10 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     showStaticBackground()
                 }
                 storyViewModel.apply {
-                    addStoryFrameItemToCurrentStory(StoryFrameItem(strMediaUri,
-                        if (isVideo) StoryFrameItemType.VIDEO else StoryFrameItemType.IMAGE))
+                    addStoryFrameItemToCurrentStory(StoryFrameItem(
+                        BackgroundSource(contentUri = Uri.parse(strMediaUri)),
+                        frameItemType = if (isVideo) VIDEO else IMAGE
+                    ))
                     setSelectedFrame(0)
                 }
             }
@@ -582,7 +586,9 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                         .transform(CenterCrop())
                         .into(photoEditorView.source)
                     storyViewModel.apply {
-                        addStoryFrameItemToCurrentStory(StoryFrameItem(file.path))
+                        addStoryFrameItemToCurrentStory(
+                            StoryFrameItem(BackgroundSource(file = file), frameItemType = StoryFrameItemType.IMAGE)
+                        )
                         setSelectedFrame(0)
                     }
                     showStaticBackground()
@@ -629,7 +635,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 file?.let {
                     runOnUiThread {
                         storyViewModel.apply {
-                            addStoryFrameItemToCurrentStory(StoryFrameItem(it.path, VIDEO))
+                            addStoryFrameItemToCurrentStory(StoryFrameItem(BackgroundSource(file = it),
+                                frameItemType = VIDEO))
                             setSelectedFrame(0)
                         }
                     }
@@ -1069,7 +1076,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     override fun onStoryFrameSelected(oldIndex: Int, newIndex: Int) {
         if (newIndex != oldIndex) {
             // first, remember the currently added views
-            val currentStoryFrameItem = storyViewModel.getFrameAtIndex(oldIndex)
+            val currentStoryFrameItem = storyViewModel.getCurrentStoryFrameAt(oldIndex)
 
             // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
             currentStoryFrameItem.addedViews = AddedViewList(photoEditor.getViewsAdded())
@@ -1079,17 +1086,32 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
             // now set the current capturedFile to be the one pointed to by the index frame
             val newSelectedFrame = storyViewModel.setSelectedFrame(newIndex)
-            currentOriginalCapturedFile = File(newSelectedFrame.filePath)
+            val source = newSelectedFrame.source
+            if (source.isFile()) {
+                currentOriginalCapturedFile = source.file
+            }
+
+            // decide which background surface to activate here, possibilities are:
+            // 1. video/uri source
+            // 2. video/file source
+            // 3. image/uri source
+            // 4. image/file source
             if (newSelectedFrame.frameItemType == VIDEO) {
-                // now start playing the video we just recorded
-                showPlayVideo(Uri.parse(newSelectedFrame.filePath))
+                source.apply {
+                    if (isFile()) {
+                        showPlayVideo(file)
+                    } else contentUri?.let {
+                        showPlayVideo(it)
+                    }
+                }
             } else {
                 Glide.with(this@ComposeLoopFrameActivity)
-                    .load(currentOriginalCapturedFile)
+                    .load(source.file ?: source.contentUri)
                     .transform(CenterCrop())
                     .into(photoEditorView.source)
                 showStaticBackground()
             }
+
             // now call addViewToParent the addedViews remembered by this frame
             newSelectedFrame.addedViews.let {
                 for (oneView in it) {

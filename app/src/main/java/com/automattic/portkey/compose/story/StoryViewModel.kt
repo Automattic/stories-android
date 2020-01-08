@@ -72,10 +72,10 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: In
     }
 
     fun getSelectedFrame(): StoryFrameItem {
-        return getFrameAtIndex(currentSelectedFrameIndex)
+        return getCurrentStoryFrameAt(currentSelectedFrameIndex)
     }
 
-    fun getFrameAtIndex(index: Int): StoryFrameItem {
+    fun getCurrentStoryFrameAt(index: Int): StoryFrameItem {
         return repository.getImmutableCurrentStoryFrames()[index]
     }
 
@@ -106,7 +106,11 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: In
         }
         storyItems.forEachIndexed { index, model ->
             val isSelected = (getSelectedFrameIndex() == index)
-            val oneFrameUiState = StoryFrameListItemUiStateFrame(selected = isSelected, filePath = model.filePath)
+            val filePath =
+                if (model.source.isUri()) model.source.contentUri.toString() else model.source.file.toString()
+            val oneFrameUiState = StoryFrameListItemUiStateFrame(
+                selected = isSelected, filePath = filePath
+            )
             oneFrameUiState.onItemTapped = {
                 setSelectedFrameByUser(index)
             }

@@ -207,11 +207,11 @@ class BackgroundSurfaceManager(
                 // wanted (video player) once we're sure video has been successfully saved
                 val handler = Handler()
                 handler.postDelayed({
-                    cameraXAwareSurfaceDeactivator()
-                    videoPlayerHandling.currentFile = cameraBasicHandler.currentFile
-                    photoEditorView.turnTextureViewOn()
-                    videoPlayerHandling.activate()
-                }, 500
+                        cameraXAwareSurfaceDeactivator()
+                        videoPlayerHandling.currentFile = cameraBasicHandler.currentFile
+                        photoEditorView.turnTextureViewOn()
+                        videoPlayerHandling.activate()
+                    }, 500
                 )
                 return
             } else {

@@ -31,7 +31,6 @@ open class StoryFrameSelectorFragment : Fragment() {
 
         storyViewModel.onSelectedFrameIndex.observe(this, Observer<Pair<Int, Int>> { selectedFrameIndexChange ->
             updateContentUiStateSelection(selectedFrameIndexChange.first, selectedFrameIndexChange.second)
-            // storyFrameTappedListener?.onStoryFrameSelected(selectedFrameIndexChange.second)
         })
 
         storyViewModel.onUserSelectedFrame.observe(this, Observer { selectedFrameIndexChange ->
