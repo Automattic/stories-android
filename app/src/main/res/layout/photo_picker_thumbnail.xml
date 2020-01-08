@@ -38,7 +38,7 @@
         android:layout_marginBottom="@dimen/margin_medium"
         android:layout_marginEnd="@dimen/margin_medium"
         android:textColor="@android:color/white"
-        android:textSize="@dimen/text_sz_small"
+        android:textSize="@dimen/text_sz_medium"
         android:background="@color/black_transp"
         tools:text="0:30"
         android:layout_marginStart="@dimen/margin_medium"
