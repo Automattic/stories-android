@@ -25,11 +25,13 @@ import android.view.ViewGroup
 import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.PopupMenu
 import androidx.constraintlayout.widget.Group
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.ViewCompat
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.automattic.photoeditor.OnPhotoEditorListener
 import com.automattic.photoeditor.PhotoEditor
@@ -255,6 +257,15 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
             photoEditorView.postDelayed({
                 launchCameraPreview()
+                storyViewModel.uiState.observe(this, Observer {
+                    // if no frames in Story, lauch the capture mode
+                    if (storyViewModel.getCurrentStorySize() == 0) {
+                        photoEditor.clearAllViews()
+                        launchCameraPreview()
+                        // finally, delete the captured media
+                        deleteCapturedMedia()
+                    }
+                })
             }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
         } else {
             currentOriginalCapturedFile =
@@ -307,6 +318,18 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     override fun onBackPressed() {
         if (!backgroundSurfaceManager.cameraVisible()) {
             close_button.performClick()
+        } else if (storyViewModel.getCurrentStorySize() > 0) {
+            // get currently selected frame and check whether this is a video or an image
+            when (storyViewModel.getSelectedFrame().frameItemType) {
+                VIDEO -> runOnUiThread {
+                    // now start playing the video that was selected in the frame selector
+                    showPlayVideo()
+                }
+                IMAGE -> runOnUiThread {
+                    // switch to static background
+                    showStaticBackground()
+                }
+            }
         } else {
             super.onBackPressed()
         }
@@ -472,6 +495,27 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         save_button.setOnClickListener {
             saveLoopFrame()
         }
+
+        more_button.setOnClickListener {
+            showMoreOptionsPopup(it)
+        }
+    }
+
+    private fun showMoreOptionsPopup(view: View) {
+        val popup = PopupMenu(this, view)
+        val inflater = popup.getMenuInflater()
+        inflater.inflate(R.menu.edit_mode_more, popup.getMenu())
+        popup.setOnMenuItemClickListener {
+            // show dialog
+            DiscardDialog.newInstance(getString(R.string.dialog_discard_frame_message), object : DiscardOk {
+                override fun discardOkClicked() {
+                    // only discard the current frame
+                    storyViewModel.removeFrameAt(storyViewModel.getSelectedFrameIndex())
+                }
+            }).show(supportFragmentManager, FRAGMENT_DIALOG)
+            true
+        }
+        popup.show()
     }
 
     private fun showMediaPicker() {
@@ -536,6 +580,10 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 Manifest.permission.CAMERA
             )
             PermissionUtils.requestPermissions(this, permissions)
+            return
+        }
+
+        if (backgroundSurfaceManager.cameraVisible()) {
             return
         }
 
@@ -1074,49 +1122,47 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     override fun onStoryFrameSelected(oldIndex: Int, newIndex: Int) {
-        if (newIndex != oldIndex) {
-            // first, remember the currently added views
-            val currentStoryFrameItem = storyViewModel.getCurrentStoryFrameAt(oldIndex)
+        // first, remember the currently added views
+        val currentStoryFrameItem = storyViewModel.getCurrentStoryFrameAt(oldIndex)
 
-            // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
-            currentStoryFrameItem.addedViews = AddedViewList(photoEditor.getViewsAdded())
+        // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
+        currentStoryFrameItem.addedViews = AddedViewList(photoEditor.getViewsAdded())
 
-            // now clear addedViews so we don't leak View.Context
-            photoEditor.clearAllViews()
+        // now clear addedViews so we don't leak View.Context
+        photoEditor.clearAllViews()
 
-            // now set the current capturedFile to be the one pointed to by the index frame
-            val newSelectedFrame = storyViewModel.setSelectedFrame(newIndex)
-            val source = newSelectedFrame.source
-            if (source.isFile()) {
-                currentOriginalCapturedFile = source.file
-            }
+        // now set the current capturedFile to be the one pointed to by the index frame
+        val newSelectedFrame = storyViewModel.setSelectedFrame(newIndex)
+        val source = newSelectedFrame.source
+        if (source.isFile()) {
+            currentOriginalCapturedFile = source.file
+        }
 
-            // decide which background surface to activate here, possibilities are:
-            // 1. video/uri source
-            // 2. video/file source
-            // 3. image/uri source
-            // 4. image/file source
-            if (newSelectedFrame.frameItemType == VIDEO) {
-                source.apply {
-                    if (isFile()) {
-                        showPlayVideo(file)
-                    } else contentUri?.let {
-                        showPlayVideo(it)
-                    }
+        // decide which background surface to activate here, possibilities are:
+        // 1. video/uri source
+        // 2. video/file source
+        // 3. image/uri source
+        // 4. image/file source
+        if (newSelectedFrame.frameItemType == VIDEO) {
+            source.apply {
+                if (isFile()) {
+                    showPlayVideo(file)
+                } else contentUri?.let {
+                    showPlayVideo(it)
                 }
-            } else {
-                Glide.with(this@ComposeLoopFrameActivity)
-                    .load(source.file ?: source.contentUri)
-                    .transform(CenterCrop())
-                    .into(photoEditorView.source)
-                showStaticBackground()
             }
+        } else {
+            Glide.with(this@ComposeLoopFrameActivity)
+                .load(source.file ?: source.contentUri)
+                .transform(CenterCrop())
+                .into(photoEditorView.source)
+            showStaticBackground()
+        }
 
-            // now call addViewToParent the addedViews remembered by this frame
-            newSelectedFrame.addedViews.let {
-                for (oneView in it) {
-                    photoEditor.addViewToParent(oneView.view, oneView.viewType)
-                }
+        // now call addViewToParent the addedViews remembered by this frame
+        newSelectedFrame.addedViews.let {
+            for (oneView in it) {
+                photoEditor.addViewToParent(oneView.view, oneView.viewType)
             }
         }
     }

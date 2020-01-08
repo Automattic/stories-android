@@ -38,4 +38,12 @@ object StoryRepository {
     fun getImmutableCurrentStoryFrames(): List<StoryFrameItem> {
         return Collections.unmodifiableList<StoryFrameItem>(currentStoryFrames)
     }
+
+    fun getCurrentStorySize(): Int {
+        return currentStoryFrames.size
+    }
+
+    fun removeFrameAt(pos: Int) {
+        currentStoryFrames.removeAt(pos)
+    }
 }
