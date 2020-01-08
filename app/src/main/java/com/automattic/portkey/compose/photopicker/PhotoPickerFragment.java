@@ -127,11 +127,7 @@ public class PhotoPickerFragment extends Fragment {
         mTakePicture = view.findViewById(R.id.take_picture);
         mTakePicture.setOnClickListener(new OnClickListener() {
             @Override public void onClick(View view) {
-                Toast.makeText(
-                        getActivity(),
-                        "not implemented yet",
-                        Toast.LENGTH_SHORT)
-                     .show();
+                doIconClicked(PhotoPickerIcon.ANDROID_CAPTURE_PHOTO);
             }
         });
 
