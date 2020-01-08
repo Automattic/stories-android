@@ -5,7 +5,7 @@
     <color name="colorAccent">@color/colorAccent_wp</color>
 
     <color name="colorPrimary_wp">@color/text_color_blue</color>
-    <color name="colorPrimaryDark_wp">#00574B</color>
+    <color name="colorPrimaryDark_wp">@color/text_color_blue</color>
     <color name="colorAccent_wp">@color/white</color>
 
     <color name="colorPrimary_loop">#008577</color>
