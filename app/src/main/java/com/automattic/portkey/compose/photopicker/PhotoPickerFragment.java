@@ -73,6 +73,7 @@ public class PhotoPickerFragment extends Fragment {
 //    private SiteModel mSite;
     private ArrayList<Integer> mSelectedPositions;
     private TextView mChooseItemsDescription;
+    private FloatingActionButton mTakePicture;
 
 //    public static PhotoPickerFragment newInstance(@NonNull PhotoPickerListener listener,
 //                                                  @NonNull MediaBrowserType browserType,
@@ -123,8 +124,8 @@ public class PhotoPickerFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.photo_picker_fragment, container, false);
 
-        FloatingActionButton takePicture = view.findViewById(R.id.take_picture);
-        takePicture.setOnClickListener(new OnClickListener() {
+        mTakePicture = view.findViewById(R.id.take_picture);
+        mTakePicture.setOnClickListener(new OnClickListener() {
             @Override public void onClick(View view) {
                 Toast.makeText(
                         getActivity(),
@@ -370,11 +371,13 @@ public class PhotoPickerFragment extends Fragment {
         public void onSelectedCountChanged(int count) {
             if (count == 0) {
                 finishActionMode();
+                mTakePicture.show();
             } else {
                 if (mActionMode == null) {
                     ((AppCompatActivity) getActivity()).startSupportActionMode(new ActionModeCallback());
                 }
                 updateActionModeTitle(mAdapter.isSelectedSingleItemVideo());
+                mTakePicture.hide();
             }
         }
 
