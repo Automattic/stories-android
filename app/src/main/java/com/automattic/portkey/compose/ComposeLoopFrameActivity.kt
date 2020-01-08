@@ -31,6 +31,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.ViewCompat
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.automattic.photoeditor.OnPhotoEditorListener
 import com.automattic.photoeditor.PhotoEditor
@@ -256,6 +257,15 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
             photoEditorView.postDelayed({
                 launchCameraPreview()
+                storyViewModel.uiState.observe(this, Observer {
+                    // if no frames in Story, lauch the capture mode
+                    if (storyViewModel.getCurrentStorySize() == 0) {
+                        photoEditor.clearAllViews()
+                        launchCameraPreview()
+                        // finally, delete the captured media
+                        deleteCapturedMedia()
+                    }
+                })
             }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
         } else {
             currentOriginalCapturedFile =
@@ -499,19 +509,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             // show dialog
             DiscardDialog.newInstance(getString(R.string.dialog_discard_frame_message), object : DiscardOk {
                 override fun discardOkClicked() {
-                    // check if this is the last frame in this Story, if yes then discard the Story and launch camera
-                    // preview, if not then only
-                    if (storyViewModel.getCurrentStorySize() == 1) {
-                        photoEditor.clearAllViews()
-                        storyViewModel.discardCurrentStory()
-                        launchCameraPreview()
-                    } else {
-                        // only discard the current frame
-                        storyViewModel.removeFrameAt(storyViewModel.getSelectedFrameIndex())
-                    }
-
-                    // finally, delete the captured media
-                    deleteCapturedMedia()
+                    // only discard the current frame
+                    storyViewModel.removeFrameAt(storyViewModel.getSelectedFrameIndex())
                 }
             }).show(supportFragmentManager, FRAGMENT_DIALOG)
             true
@@ -581,6 +580,10 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 Manifest.permission.CAMERA
             )
             PermissionUtils.requestPermissions(this, permissions)
+            return
+        }
+
+        if (backgroundSurfaceManager.cameraVisible()) {
             return
         }
 
