@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#008577</color>
-    <color name="colorPrimaryDark">#00574B</color>
-    <color name="colorAccent">#D81B60</color>
+    <color name="colorPrimary">@color/colorPrimary_wp</color>
+    <color name="colorPrimaryDark">@color/colorPrimaryDark_wp</color>
+    <color name="colorAccent">@color/colorAccent_wp</color>
+
+    <color name="colorPrimary_wp">@color/text_color_blue</color>
+    <color name="colorPrimaryDark_wp">#00574B</color>
+    <color name="colorAccent_wp">@color/white</color>
+
+    <color name="colorPrimary_loop">#008577</color>
+    <color name="colorPrimaryDark_loop">#00574B</color>
+    <color name="colorAccent_loop">#D81B60</color>
 
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
