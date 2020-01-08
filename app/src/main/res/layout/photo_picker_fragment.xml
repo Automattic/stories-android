@@ -28,6 +28,7 @@
             android:layout_height="wrap_content"
             android:text="@string/photo_picker_add_photos_to_story"
             android:textSize="@dimen/text_sz_large"
+            android:textColor="@color/black"
             android:layout_margin="@dimen/margin_extra_large"
             />
 
