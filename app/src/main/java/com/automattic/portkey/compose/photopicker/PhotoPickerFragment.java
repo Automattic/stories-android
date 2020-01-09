@@ -10,9 +10,11 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.PopupMenu;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -27,6 +29,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.automattic.portkey.R;
 import com.automattic.portkey.compose.photopicker.PhotoPickerAdapter.PhotoPickerAdapterListener;
 import com.automattic.portkey.compose.photopicker.utils.AniUtils;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,6 +72,8 @@ public class PhotoPickerFragment extends Fragment {
     private MediaBrowserType mBrowserType;
 //    private SiteModel mSite;
     private ArrayList<Integer> mSelectedPositions;
+    private TextView mChooseItemsDescription;
+    private FloatingActionButton mTakePicture;
 
 //    public static PhotoPickerFragment newInstance(@NonNull PhotoPickerListener listener,
 //                                                  @NonNull MediaBrowserType browserType,
@@ -118,6 +123,13 @@ public class PhotoPickerFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.photo_picker_fragment, container, false);
+
+        mTakePicture = view.findViewById(R.id.take_picture);
+        mTakePicture.setOnClickListener(new OnClickListener() {
+            @Override public void onClick(View view) {
+                doIconClicked(PhotoPickerIcon.ANDROID_CAPTURE_PHOTO);
+            }
+        });
 
         mRecycler = view.findViewById(R.id.recycler);
         mRecycler.setEmptyView(view.findViewById(R.id.actionable_empty_view));
@@ -187,6 +199,8 @@ public class PhotoPickerFragment extends Fragment {
         }
 
         mSoftAskView = view.findViewById(R.id.soft_ask_view);
+
+        mChooseItemsDescription = view.findViewById(R.id.text_choose_items_to_add);
 
         return view;
     }
@@ -353,11 +367,13 @@ public class PhotoPickerFragment extends Fragment {
         public void onSelectedCountChanged(int count) {
             if (count == 0) {
                 finishActionMode();
+                mTakePicture.show();
             } else {
                 if (mActionMode == null) {
                     ((AppCompatActivity) getActivity()).startSupportActionMode(new ActionModeCallback());
                 }
                 updateActionModeTitle(mAdapter.isSelectedSingleItemVideo());
+                mTakePicture.hide();
             }
         }
 
@@ -372,6 +388,12 @@ public class PhotoPickerFragment extends Fragment {
             if (mRestoreState != null) {
                 mGridManager.onRestoreInstanceState(mRestoreState);
                 mRestoreState = null;
+            }
+
+            if (isEmpty) {
+                mChooseItemsDescription.setVisibility(View.GONE);
+            } else {
+                mChooseItemsDescription.setVisibility(View.VISIBLE);
             }
         }
     };

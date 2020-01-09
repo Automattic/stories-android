@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.transition.Slide;
+import android.util.Log;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.Gravity;
 import android.view.MenuItem;
@@ -22,7 +23,9 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.automattic.portkey.R;
+import com.automattic.portkey.compose.photopicker.utils.CameraIntentUtils;
 
+import java.io.File;
 import java.util.List;
 
 
@@ -175,17 +178,17 @@ public class PhotoPickerActivity extends AppCompatActivity
                     }
                 }
                 break;
-//            // user took a photo with the device camera
-//            case RequestCodes.TAKE_PHOTO:
-//                try {
-//                    WPMediaUtils.scanMediaFile(this, mMediaCapturePath);
-//                    File f = new File(mMediaCapturePath);
-//                    Uri capturedImageUri = Uri.fromFile(f);
-//                    doMediaUriSelected(capturedImageUri, PhotoPickerMediaSource.ANDROID_CAMERA);
-//                } catch (RuntimeException e) {
-//                    AppLog.e(AppLog.T.MEDIA, e);
-//                }
-//                break;
+            // user took a photo with the device camera
+            case RequestCodes.TAKE_PHOTO:
+                try {
+                    CameraIntentUtils.scanMediaFile(this, mMediaCapturePath);
+                    File f = new File(mMediaCapturePath);
+                    Uri capturedImageUri = Uri.fromFile(f);
+                    doMediaUriSelected(capturedImageUri, PhotoPickerMediaSource.ANDROID_CAMERA);
+                } catch (RuntimeException e) {
+                    Log.e(PhotoPickerActivity.class.getName(), e.getMessage());
+                }
+                break;
 //            // user selected from WP media library, extract the media ID and pass to caller
 //            case RequestCodes.SINGLE_SELECT_MEDIA_PICKER:
 //                if (data.hasExtra(MediaBrowserActivity.RESULT_IDS)) {
@@ -206,15 +209,15 @@ public class PhotoPickerActivity extends AppCompatActivity
         }
     }
 
-//    private void launchCamera() {
-//        WPMediaUtils.launchCamera(this, BuildConfig.APPLICATION_ID,
-//                                  new WPMediaUtils.LaunchCameraCallback() {
-//                                      @Override
-//                                      public void onMediaCapturePathReady(String mediaCapturePath) {
-//                                          mMediaCapturePath = mediaCapturePath;
-//                                      }
-//                                  });
-//    }
+    private void launchCamera() {
+        CameraIntentUtils.launchCamera(this, getApplicationContext().getPackageName(),
+                                  new CameraIntentUtils.LaunchCameraCallback() {
+                                      @Override
+                                      public void onMediaCapturePathReady(String mediaCapturePath) {
+                                          mMediaCapturePath = mediaCapturePath;
+                                      }
+                                  });
+    }
 
     private void launchPictureLibrary() {
 //        WPMediaUtils.launchPictureLibrary(this, false);
@@ -300,7 +303,7 @@ public class PhotoPickerActivity extends AppCompatActivity
     public void onPhotoPickerIconClicked(@NonNull PhotoPickerFragment.PhotoPickerIcon icon) {
         switch (icon) {
             case ANDROID_CAPTURE_PHOTO:
-//                launchCamera();
+                launchCamera();
                 break;
             case ANDROID_CHOOSE_PHOTO:
                 launchPictureLibrary();
