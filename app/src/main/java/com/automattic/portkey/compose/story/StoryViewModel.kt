@@ -86,6 +86,16 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: In
         return repository.getCurrentStorySize()
     }
 
+    fun anyOfCurrentStoryFramesHasViews(): Boolean {
+        val frames = repository.getImmutableCurrentStoryFrames()
+        for (frame in frames) {
+            if (frame.addedViews.size > 0) {
+                return true
+            }
+        }
+        return false
+    }
+
     fun removeFrameAt(pos: Int) {
         // remove from the repo
         repository.removeFrameAt(pos)
