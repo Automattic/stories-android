@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
 import androidx.fragment.app.DialogFragment
+import com.automattic.portkey.R
 
 interface DiscardOk {
     fun discardOkClicked()
@@ -12,7 +13,7 @@ interface DiscardOk {
 class DiscardDialog : DialogFragment() {
     private lateinit var discardOkListener: DiscardOk
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
-        AlertDialog.Builder(activity)
+        AlertDialog.Builder(activity, R.style.AlertDialogTheme)
             .setMessage(arguments?.getString(ARG_MESSAGE))
             .setPositiveButton(android.R.string.ok) { _, _ -> discardOkListener.discardOkClicked() }
             .setNegativeButton(android.R.string.cancel) { _, _ -> dismiss() }
