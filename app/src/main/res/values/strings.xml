@@ -69,6 +69,12 @@
     <string name="photo_picker_wpmedia_desc">pick from WordPress media</string>
     <string name="content_description_person_reading_device_notification">Person reading device with notifications</string>
 
+    <!-- Photo picker - Portkey   -->
+    <string name="photo_picker_add_photos_to_story">Choose the photos and videos you\'d like to add to your story</string>
+    <!-- SD Card errors -->
+    <string name="sdcard_title">SD Card Required</string>
+    <string name="sdcard_message">A mounted SD card is required to upload media</string>
+
     <!--preference keys-->
     <string name="pref_camera_selection" translatable="false">pref_camera_selection</string>
     <string name="pref_flash_mode_selection" translatable="false">pref_flash_mode_selection</string>
