@@ -31,6 +31,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.ViewCompat
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.automattic.photoeditor.OnPhotoEditorListener
 import com.automattic.photoeditor.PhotoEditor
@@ -256,6 +257,15 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
             photoEditorView.postDelayed({
                 launchCameraPreview()
+                storyViewModel.uiState.observe(this, Observer {
+                    // if no frames in Story, lauch the capture mode
+                    if (storyViewModel.getCurrentStorySize() == 0) {
+                        photoEditor.clearAllViews()
+                        launchCameraPreview()
+                        // finally, delete the captured media
+                        deleteCapturedMedia()
+                    }
+                })
             }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
         } else {
             currentOriginalCapturedFile =
@@ -499,22 +509,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             // show dialog
             DiscardDialog.newInstance(getString(R.string.dialog_discard_frame_message), object : DiscardOk {
                 override fun discardOkClicked() {
-                    // check if this is the last frame in this Story, if yes then discard the Story and launch camera
-                    // preview, if not then only
-                    if (storyViewModel.getCurrentStorySize() == 1) {
-                        photoEditor.clearAllViews()
-                        storyViewModel.discardCurrentStory()
-                        launchCameraPreview()
-                    } else {
-                        // get currentFrame value as it will change after calling onAboutToDeleteStoryFrame
-                        val currentFrameToDeleteIndex = storyViewModel.getSelectedFrameIndex()
-                        onAboutToDeleteStoryFrame(currentFrameToDeleteIndex)
-                        // now discard it from the viewModel
-                        storyViewModel.removeFrameAt(currentFrameToDeleteIndex)
-                    }
-
-                    // finally, delete the captured media
-                    deleteCapturedMedia()
+                    // get currentFrame value as it will change after calling onAboutToDeleteStoryFrame
+                    val currentFrameToDeleteIndex = storyViewModel.getSelectedFrameIndex()
+                    onAboutToDeleteStoryFrame(currentFrameToDeleteIndex)
+                    // now discard it from the viewModel
+                    storyViewModel.removeFrameAt(currentFrameToDeleteIndex)
                 }
             }).show(supportFragmentManager, FRAGMENT_DIALOG)
             true
@@ -584,6 +583,10 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 Manifest.permission.CAMERA
             )
             PermissionUtils.requestPermissions(this, permissions)
+            return
+        }
+
+        if (backgroundSurfaceManager.cameraVisible()) {
             return
         }
 
@@ -1133,7 +1136,9 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         } else {
             // if there are no items to the left and there are items to the right, then choose
             // an item to the right
-            nextIdxToSelect++
+            if (nextIdxToSelect < storyViewModel.getCurrentStorySize()-1) {
+                nextIdxToSelect++
+            }
         }
 
         onStoryFrameSelected(indexToDelete, nextIdxToSelect)
