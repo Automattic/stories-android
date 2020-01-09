@@ -1136,7 +1136,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         } else {
             // if there are no items to the left and there are items to the right, then choose
             // an item to the right
-            if (nextIdxToSelect < storyViewModel.getCurrentStorySize()-1) {
+            if (nextIdxToSelect < storyViewModel.getCurrentStorySize() - 1) {
                 nextIdxToSelect++
             }
         }
