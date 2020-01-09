@@ -453,7 +453,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
         close_button.setOnClickListener {
             // add discard dialog
-            if (photoEditor.anyViewsAdded()) {
+            if (storyViewModel.anyOfCurrentStoryFramesHasViews()) {
                 // show dialog
                 DiscardDialog.newInstance(getString(R.string.dialog_discard_message), object : DiscardOk {
                     override fun discardOkClicked() {
