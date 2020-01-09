@@ -20,6 +20,9 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: In
     }
     val onSelectedFrameIndex: SingleLiveEvent<Pair<Int, Int>> = _onSelectedFrameIndex
 
+    private val _onFrameIndexMoved = SingleLiveEvent<Pair<Int, Int>>()
+    val onFrameIndexMoved: SingleLiveEvent<Pair<Int, Int>> = _onFrameIndexMoved
+
     private val _addButtonClicked = SingleLiveEvent<Unit>()
     val addButtonClicked = _addButtonClicked
 
@@ -86,8 +89,9 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: In
     fun removeFrameAt(pos: Int) {
         // remove from the repo
         repository.removeFrameAt(pos)
+
         // adjust index
-        if (currentSelectedFrameIndex > 0) {
+        if (currentSelectedFrameIndex > 0 && pos <= currentSelectedFrameIndex) {
             currentSelectedFrameIndex--
         }
 
@@ -100,6 +104,29 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: In
             // now let's select the one to the left
             setSelectedFrameByUser(currentSelectedFrameIndex)
         }
+    }
+
+    fun swapItemsInPositions(pos1: Int, pos2: Int) {
+        repository.swapItemsInPositions(pos1, pos2)
+        // adjust currentSelectedFrameIndex so it reflects the movement only
+        // if the movement occurred entierly to the left of the selection, don't update it
+        // if the movement occurred from its left to its right, set the currentselection to be one position less
+        // if the movement occurred from its right to its left, an insertion occurred on the left so our position
+        // should get moved one position to the right
+        // if the movement occurred entirely to the right of the selection, don't update it
+        if (pos1 < currentSelectedFrameIndex && pos2 >= currentSelectedFrameIndex) {
+            currentSelectedFrameIndex--
+        } else if (pos1 > currentSelectedFrameIndex && pos2 <= currentSelectedFrameIndex) {
+            currentSelectedFrameIndex++
+        } else if (pos1 == currentSelectedFrameIndex) {
+            currentSelectedFrameIndex = pos2
+        }
+
+        updateUiStateForItemSwap(pos1, pos2)
+    }
+
+    fun onSwapActionEnded() {
+        updateUiState(createUiStateFromModelState(repository.getImmutableCurrentStoryFrames()))
     }
 
     private fun updateUiState(uiState: StoryFrameListUiState) {
@@ -117,6 +144,10 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: In
             }
             _onSelectedFrameIndex.value = Pair(oldSelectedIndex + 1, newSelectedIndex + 1)
         }
+    }
+
+    private fun updateUiStateForItemSwap(oldIndex: Int, newIndex: Int) {
+        _onFrameIndexMoved.value = Pair(oldIndex + 1, newIndex + 1)
     }
 
     private fun createUiStateFromModelState(storyItems: List<StoryFrameItem>): StoryFrameListUiState {

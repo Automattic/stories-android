@@ -46,4 +46,8 @@ object StoryRepository {
     fun removeFrameAt(pos: Int) {
         currentStoryFrames.removeAt(pos)
     }
+
+    fun swapItemsInPositions(pos1: Int, pos2: Int) {
+        Collections.swap(currentStoryFrames, pos1, pos2)
+    }
 }

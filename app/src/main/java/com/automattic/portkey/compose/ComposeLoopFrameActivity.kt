@@ -509,8 +509,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             // show dialog
             DiscardDialog.newInstance(getString(R.string.dialog_discard_frame_message), object : DiscardOk {
                 override fun discardOkClicked() {
-                    // only discard the current frame
-                    storyViewModel.removeFrameAt(storyViewModel.getSelectedFrameIndex())
+                    // get currentFrame value as it will change after calling onAboutToDeleteStoryFrame
+                    val currentFrameToDeleteIndex = storyViewModel.getSelectedFrameIndex()
+                    onAboutToDeleteStoryFrame(currentFrameToDeleteIndex)
+                    // now discard it from the viewModel
+                    storyViewModel.removeFrameAt(currentFrameToDeleteIndex)
                 }
             }).show(supportFragmentManager, FRAGMENT_DIALOG)
             true
@@ -1119,6 +1122,26 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         val size = getDisplayPixelSize(this)
         screenSizeX = size.x
         screenSizeY = size.y
+    }
+
+    // switch frames before deletion
+    fun onAboutToDeleteStoryFrame(indexToDelete: Int) {
+        // first let's make sure we update the added views on photoEditor and switch to the next
+        // available frame - then update the StoryViewModel
+        var nextIdxToSelect = indexToDelete
+        // adjust index
+        if (nextIdxToSelect > 0) {
+            // if there are items to the left, then prefer to select the next item to the left
+            nextIdxToSelect--
+        } else {
+            // if there are no items to the left and there are items to the right, then choose
+            // an item to the right
+            if (nextIdxToSelect < storyViewModel.getCurrentStorySize() - 1) {
+                nextIdxToSelect++
+            }
+        }
+
+        onStoryFrameSelected(indexToDelete, nextIdxToSelect)
     }
 
     override fun onStoryFrameSelected(oldIndex: Int, newIndex: Int) {
