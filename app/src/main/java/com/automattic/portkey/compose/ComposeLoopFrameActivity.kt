@@ -462,8 +462,14 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
 
         close_button.setOnClickListener {
+            // first, remember the currently added views
+            val currentStoryFrameItem = storyViewModel.getCurrentStoryFrameAt(storyViewModel.getSelectedFrameIndex())
+
+            // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
+            currentStoryFrameItem.addedViews = AddedViewList(photoEditor.getViewsAdded())
+
             // add discard dialog
-            if (photoEditor.anyViewsAdded()) {
+            if (storyViewModel.anyOfCurrentStoryFramesHasViews()) {
                 // show dialog
                 DiscardDialog.newInstance(getString(R.string.dialog_discard_message), object : DiscardOk {
                     override fun discardOkClicked() {
