@@ -25,11 +25,14 @@ import android.view.ViewGroup
 import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.PopupMenu
 import androidx.constraintlayout.widget.Group
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.ViewCompat
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import com.automattic.photoeditor.OnPhotoEditorListener
 import com.automattic.photoeditor.PhotoEditor
 import com.automattic.photoeditor.SaveSettings
@@ -43,6 +46,7 @@ import com.automattic.photoeditor.util.FileUtils.Companion.getLoopFrameFile
 import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.ViewType
 import com.automattic.photoeditor.views.ViewType.TEXT
+import com.automattic.photoeditor.views.added.AddedViewList
 import com.automattic.portkey.BuildConfig
 import com.automattic.portkey.R
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment
@@ -51,6 +55,16 @@ import com.automattic.portkey.compose.photopicker.MediaBrowserType
 import com.automattic.portkey.compose.photopicker.PhotoPickerActivity
 import com.automattic.portkey.compose.photopicker.PhotoPickerFragment
 import com.automattic.portkey.compose.photopicker.RequestCodes
+import com.automattic.portkey.compose.story.OnStoryFrameSelectorTappedListener
+import com.automattic.portkey.compose.story.StoryFrameItem
+import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource
+import com.automattic.portkey.compose.story.StoryFrameItemType
+import com.automattic.portkey.compose.story.StoryFrameItemType.IMAGE
+import com.automattic.portkey.compose.story.StoryFrameItemType.VIDEO
+import com.automattic.portkey.compose.story.StoryFrameSelectorFragment
+import com.automattic.portkey.compose.story.StoryRepository
+import com.automattic.portkey.compose.story.StoryViewModel
+import com.automattic.portkey.compose.story.StoryViewModelFactory
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
 import com.automattic.portkey.util.CrashLoggingUtils
 import com.automattic.portkey.util.getDisplayPixelSize
@@ -79,7 +93,7 @@ fun Snackbar.config(context: Context) {
     ViewCompat.setElevation(this.view, 6f)
 }
 
-class ComposeLoopFrameActivity : AppCompatActivity() {
+class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTappedListener {
     private lateinit var photoEditor: PhotoEditor
     private lateinit var backgroundSurfaceManager: BackgroundSurfaceManager
     private var currentOriginalCapturedFile: File? = null
@@ -100,6 +114,8 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     private var screenSizeY: Int = 0
     private var topControlsBaseTopMargin: Int = 0
     private var isEditingText: Boolean = false
+
+    private lateinit var storyViewModel: StoryViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -217,6 +233,11 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
         swipeDetector = GestureDetectorCompat(this, FlingGestureListener())
 
+        // TODO storyIndex here is hardcoded to 0, will need to change once we have multiple stories stored.
+        storyViewModel = ViewModelProviders.of(this,
+            StoryViewModelFactory(StoryRepository, 0)
+        )[StoryViewModel::class.java]
+
         if (savedInstanceState == null) {
             // small tweak to make sure to not show the background image for the static image background mode
             backgroundSurfaceManager.preTurnTextureViewOn()
@@ -236,6 +257,15 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
             photoEditorView.postDelayed({
                 launchCameraPreview()
+                storyViewModel.uiState.observe(this, Observer {
+                    // if no frames in Story, lauch the capture mode
+                    if (storyViewModel.getCurrentStorySize() == 0) {
+                        photoEditor.clearAllViews()
+                        launchCameraPreview()
+                        // finally, delete the captured media
+                        deleteCapturedMedia()
+                    }
+                })
             }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
         } else {
             currentOriginalCapturedFile =
@@ -279,7 +309,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         if (PermissionUtils.allRequiredPermissionsGranted(this)) {
-            backgroundSurfaceManager.switchCameraPreviewOn()
+            switchCameraPreviewOn()
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
@@ -288,6 +318,18 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
     override fun onBackPressed() {
         if (!backgroundSurfaceManager.cameraVisible()) {
             close_button.performClick()
+        } else if (storyViewModel.getCurrentStorySize() > 0) {
+            // get currently selected frame and check whether this is a video or an image
+            when (storyViewModel.getSelectedFrame().frameItemType) {
+                VIDEO -> runOnUiThread {
+                    // now start playing the video that was selected in the frame selector
+                    showPlayVideo()
+                }
+                IMAGE -> runOnUiThread {
+                    // switch to static background
+                    showStaticBackground()
+                }
+            }
         } else {
             super.onBackPressed()
         }
@@ -311,7 +353,8 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 }
 
                 // decide whether the picked media is a VIDEO or an IMAGE
-                if (isVideo(strMediaUri)) {
+                val isVideo = isVideo(strMediaUri)
+                if (isVideo) {
                     // now start playing the video we just recorded
                     showPlayVideo(Uri.parse(strMediaUri))
                 } else {
@@ -321,6 +364,13 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                         .transform(CenterCrop())
                         .into(photoEditorView.source)
                     showStaticBackground()
+                }
+                storyViewModel.apply {
+                    addStoryFrameItemToCurrentStory(StoryFrameItem(
+                        BackgroundSource(contentUri = Uri.parse(strMediaUri)),
+                        frameItemType = if (isVideo) VIDEO else IMAGE
+                    ))
+                    setSelectedFrame(0)
                 }
             }
         }
@@ -408,13 +458,15 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                 DiscardDialog.newInstance(getString(R.string.dialog_discard_message), object : DiscardOk {
                     override fun discardOkClicked() {
                         photoEditor.clearAllViews()
+                        storyViewModel.discardCurrentStory()
                         launchCameraPreview()
                         deleteCapturedMedia()
                     }
                 }).show(supportFragmentManager, FRAGMENT_DIALOG)
             } else {
-                deleteCapturedMedia()
+                storyViewModel.discardCurrentStory()
                 launchCameraPreview()
+                deleteCapturedMedia()
             }
         }
 
@@ -443,6 +495,30 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         save_button.setOnClickListener {
             saveLoopFrame()
         }
+
+        more_button.setOnClickListener {
+            showMoreOptionsPopup(it)
+        }
+    }
+
+    private fun showMoreOptionsPopup(view: View) {
+        val popup = PopupMenu(this, view)
+        val inflater = popup.getMenuInflater()
+        inflater.inflate(R.menu.edit_mode_more, popup.getMenu())
+        popup.setOnMenuItemClickListener {
+            // show dialog
+            DiscardDialog.newInstance(getString(R.string.dialog_discard_frame_message), object : DiscardOk {
+                override fun discardOkClicked() {
+                    // get currentFrame value as it will change after calling onAboutToDeleteStoryFrame
+                    val currentFrameToDeleteIndex = storyViewModel.getSelectedFrameIndex()
+                    onAboutToDeleteStoryFrame(currentFrameToDeleteIndex)
+                    // now discard it from the viewModel
+                    storyViewModel.removeFrameAt(currentFrameToDeleteIndex)
+                }
+            }).show(supportFragmentManager, FRAGMENT_DIALOG)
+            true
+        }
+        popup.show()
     }
 
     private fun showMediaPicker() {
@@ -460,6 +536,11 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
 
         // reset
         currentOriginalCapturedFile = null
+    }
+
+    private fun switchCameraPreviewOn() {
+        backgroundSurfaceManager.switchCameraPreviewOn()
+        hideStoryFrameSelector()
     }
 
     private fun testBrush() {
@@ -505,26 +586,34 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
             return
         }
 
+        if (backgroundSurfaceManager.cameraVisible()) {
+            return
+        }
+
+        hideStoryFrameSelector()
         hideEditModeUIControls()
 
         // set the correct camera as selected by the user last time they used the app
         backgroundSurfaceManager.selectCamera(cameraSelection)
         // same goes for flash state
         backgroundSurfaceManager.setFlashState(flashModeSelection)
-        backgroundSurfaceManager.switchCameraPreviewOn()
+        switchCameraPreviewOn()
     }
 
     private fun showPlayVideo(videoFile: File? = null) {
+        showStoryFrameSelector()
         showEditModeUIControls(false)
         backgroundSurfaceManager.switchVideoPlayerOnFromFile(videoFile)
     }
 
     private fun showPlayVideo(videoUri: Uri) {
+        showStoryFrameSelector()
         showEditModeUIControls(false)
         backgroundSurfaceManager.switchVideoPlayerOnFromUri(videoUri)
     }
 
     private fun showStaticBackground() {
+        showStoryFrameSelector()
         showEditModeUIControls(true)
         backgroundSurfaceManager.switchStaticImageBackgroundModeOn()
     }
@@ -547,6 +636,12 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                         .load(file)
                         .transform(CenterCrop())
                         .into(photoEditorView.source)
+                    storyViewModel.apply {
+                        addStoryFrameItemToCurrentStory(
+                            StoryFrameItem(BackgroundSource(file = file), frameItemType = StoryFrameItemType.IMAGE)
+                        )
+                        setSelectedFrame(0)
+                    }
                     showStaticBackground()
                     currentOriginalCapturedFile = file
                     waitToReenableCapture()
@@ -588,6 +683,15 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         backgroundSurfaceManager.startRecordingVideo(object : VideoRecorderFinished {
             override fun onVideoSaved(file: File?) {
                 currentOriginalCapturedFile = file
+                file?.let {
+                    runOnUiThread {
+                        storyViewModel.apply {
+                            addStoryFrameItemToCurrentStory(StoryFrameItem(BackgroundSource(file = it),
+                                frameItemType = VIDEO))
+                            setSelectedFrame(0)
+                        }
+                    }
+                }
                 runOnUiThread {
                     // now start playing the video we just recorded
                     showPlayVideo()
@@ -694,7 +798,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                             OnClickListener { shareAction(file) }
                         )
                         hideEditModeUIControls()
-                        backgroundSurfaceManager.switchCameraPreviewOn()
+                        switchCameraPreviewOn()
                     }
 
                     override fun onFailure(exception: Exception) {
@@ -747,7 +851,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
                                     OnClickListener { shareAction(file) }
                                 )
                                 hideEditModeUIControls()
-                                backgroundSurfaceManager.switchCameraPreviewOn()
+                                switchCameraPreviewOn()
                             }
                         }
 
@@ -883,15 +987,23 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         }
     }
 
+    private fun hideStoryFrameSelector() {
+        (bottom_strip_view as StoryFrameSelectorFragment).hide()
+    }
+
+    private fun showStoryFrameSelector() {
+        (bottom_strip_view as StoryFrameSelectorFragment).show()
+    }
+
     private fun hideEditModeUIControls() {
-        // show capturing mode controls
-        showVideoUIControls()
         camera_capture_button.visibility = View.VISIBLE
 
         // hide proper edit mode controls
         close_button.visibility = View.INVISIBLE
         edit_mode_controls.visibility = View.INVISIBLE
         save_button.visibility = View.INVISIBLE
+        // show capturing mode controls
+        showVideoUIControls()
     }
 
     private fun editModeHideAllUIControls(hideSaveButton: Boolean) {
@@ -899,6 +1011,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         close_button.visibility = View.INVISIBLE
         edit_mode_controls.visibility = View.INVISIBLE
         sound_button_group.visibility = View.INVISIBLE
+        hideStoryFrameSelector()
         if (hideSaveButton) {
             save_button.visibility = View.INVISIBLE
         }
@@ -919,6 +1032,7 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         } else {
             sound_button_group.visibility = View.VISIBLE
         }
+        showStoryFrameSelector()
     }
 
     private fun showSaveButtonIfViewsAdded() {
@@ -1008,6 +1122,85 @@ class ComposeLoopFrameActivity : AppCompatActivity() {
         val size = getDisplayPixelSize(this)
         screenSizeX = size.x
         screenSizeY = size.y
+    }
+
+    // switch frames before deletion
+    fun onAboutToDeleteStoryFrame(indexToDelete: Int) {
+        // first let's make sure we update the added views on photoEditor and switch to the next
+        // available frame - then update the StoryViewModel
+        var nextIdxToSelect = indexToDelete
+        // adjust index
+        if (nextIdxToSelect > 0) {
+            // if there are items to the left, then prefer to select the next item to the left
+            nextIdxToSelect--
+        } else {
+            // if there are no items to the left and there are items to the right, then choose
+            // an item to the right
+            if (nextIdxToSelect < storyViewModel.getCurrentStorySize() - 1) {
+                nextIdxToSelect++
+            }
+        }
+
+        onStoryFrameSelected(indexToDelete, nextIdxToSelect)
+    }
+
+    override fun onStoryFrameSelected(oldIndex: Int, newIndex: Int) {
+        // first, remember the currently added views
+        val currentStoryFrameItem = storyViewModel.getCurrentStoryFrameAt(oldIndex)
+
+        // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
+        currentStoryFrameItem.addedViews = AddedViewList(photoEditor.getViewsAdded())
+
+        // now clear addedViews so we don't leak View.Context
+        photoEditor.clearAllViews()
+
+        // now set the current capturedFile to be the one pointed to by the index frame
+        val newSelectedFrame = storyViewModel.setSelectedFrame(newIndex)
+        val source = newSelectedFrame.source
+        if (source.isFile()) {
+            currentOriginalCapturedFile = source.file
+        }
+
+        // decide which background surface to activate here, possibilities are:
+        // 1. video/uri source
+        // 2. video/file source
+        // 3. image/uri source
+        // 4. image/file source
+        if (newSelectedFrame.frameItemType == VIDEO) {
+            source.apply {
+                if (isFile()) {
+                    showPlayVideo(file)
+                } else contentUri?.let {
+                    showPlayVideo(it)
+                }
+            }
+        } else {
+            Glide.with(this@ComposeLoopFrameActivity)
+                .load(source.file ?: source.contentUri)
+                .transform(CenterCrop())
+                .into(photoEditorView.source)
+            showStaticBackground()
+        }
+
+        // now call addViewToParent the addedViews remembered by this frame
+        newSelectedFrame.addedViews.let {
+            for (oneView in it) {
+                photoEditor.addViewToParent(oneView.view, oneView.viewType)
+            }
+        }
+    }
+
+    override fun onStoryFrameAddTapped() {
+        // first, remember the currently added views
+        val currentStoryFrameItem = storyViewModel.getSelectedFrame()
+
+        // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
+        currentStoryFrameItem.addedViews = AddedViewList(photoEditor.getViewsAdded())
+
+        // now clear addedViews so we don't leak View.Context
+        photoEditor.clearAllViews()
+
+        launchCameraPreview()
     }
 
     private inner class FlingGestureListener : GestureDetector.SimpleOnGestureListener() {

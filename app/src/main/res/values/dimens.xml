@@ -96,4 +96,10 @@
     <dimen name="design_fab_size">56dp</dimen>
     <dimen name="margin_extra_extra_large">48dp</dimen>
 
+    <!--  bottom strip view-->
+    <dimen name="bottom_strip_height">64dp</dimen>
+    <dimen name="story_frame_item_width">28dp</dimen>
+    <dimen name="story_frame_item_height">38dp</dimen>
+    <dimen name="story_frame_item_padding">5dp</dimen>
+
 </resources>

@@ -299,6 +299,20 @@
                 android:textSize="@dimen/normal_button_font_size"/>
         </LinearLayout>
 
+        <ImageView
+            android:id="@+id/more_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/ic_more_vert_black_24dp"
+            android:backgroundTint="@color/white"
+            android:contentDescription="@string/stickers_button_alt"
+            android:scaleType="fitCenter"
+            android:paddingLeft="@dimen/top_button_group_margin"
+            android:paddingBottom="@dimen/top_button_group_margin"
+            android:layout_marginLeft="@dimen/top_button_group_margin"
+            />
+
     </LinearLayout>
 
     <ImageButton
@@ -320,8 +334,17 @@
         android:layout_marginBottom="@dimen/save_button_bottom_margin"
         android:layout_marginEnd="@dimen/save_button_right_margin"
         android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@id/bottom_strip_view"
+        app:layout_constraintRight_toRightOf="parent"/>
+
+
+    <fragment android:name="com.automattic.portkey.compose.story.StoryFrameSelectorFragment"
+        android:id="@+id/bottom_strip_view"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_strip_height"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"/>
+
 
     <FrameLayout
         android:id="@+id/translucent_view"
