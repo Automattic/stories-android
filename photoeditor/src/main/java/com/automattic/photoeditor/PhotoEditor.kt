@@ -1020,15 +1020,6 @@ class PhotoEditor private constructor(builder: Builder) :
         mOnPhotoEditorListener?.onStopViewChangeListener(ViewType.BRUSH_DRAWING)
     }
 
-    fun anyStickersAdded(): Boolean {
-        for (v: AddedView in addedViews) {
-            if (v.viewType == ViewType.STICKER_ANIMATED) {
-                return true
-            }
-        }
-        return false
-    }
-
     fun anyViewsAdded(): Boolean {
         return (addedViews.size > 0)
     }

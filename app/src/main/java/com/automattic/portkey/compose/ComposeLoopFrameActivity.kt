@@ -45,6 +45,7 @@ import com.automattic.photoeditor.state.BackgroundSurfaceManager
 import com.automattic.photoeditor.util.FileUtils.Companion.getLoopFrameFile
 import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.ViewType
+import com.automattic.photoeditor.views.ViewType.STICKER_ANIMATED
 import com.automattic.photoeditor.views.ViewType.TEXT
 import com.automattic.photoeditor.views.added.AddedViewList
 import com.automattic.portkey.BuildConfig
@@ -257,7 +258,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             photoEditorView.postDelayed({
                 launchCameraPreview()
                 storyViewModel.uiState.observe(this, Observer {
-                    // if no frames in Story, lauch the capture mode
+                    // if no frames in Story, launch the capture mode
                     if (storyViewModel.getCurrentStorySize() == 0) {
                         photoEditor.clearAllViews()
                         launchCameraPreview()
@@ -508,7 +509,13 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }
 
         next_button.setOnClickListener {
-            saveLoopFrame()
+            // TODO show bottom sheet
+            // then save everything if they hit PUBLISH
+            showToast("bottom sheet not implemented yet")
+
+            if (storyViewModel.getCurrentStorySize() > 0) {
+                saveStory()
+            }
         }
 
         more_button.setOnClickListener {
@@ -768,25 +775,33 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }, CAMERA_STILL_PICTURE_WAIT_FOR_NEXT_CAPTURE_MS)
     }
 
-    // TODO redefine this implementation to loop through all Story frames
-    // this one saves one composed unit: ether an Image or a Video
-    private fun saveLoopFrame() {
-        // check wether we have an Image or a Video, and call its save functionality accordingly
-        if (backgroundSurfaceManager.cameraVisible() || backgroundSurfaceManager.videoPlayerVisible()) {
-            val currentBkgMedia = backgroundSurfaceManager.getCurrentBackgroundMedia()
-            if (currentBkgMedia != null) {
-                saveVideo(currentBkgMedia)
-            } else {
-                CrashLoggingUtils.log("An error occurred trying to save video, current background media not found")
-                showToast("An error occurred trying to save video, current background media not found")
+    private fun saveLoopFrame(frame: StoryFrameItem) {
+        when (frame.frameItemType) {
+            VIDEO -> {
+                if (frame.source.isFile()) {
+                    frame.source.file?.let {
+                        saveVideo(Uri.parse(it.toString()))
+                    }
+                } else {
+                    frame.source.contentUri?.let {
+                        saveVideo(it)
+                    }
+                }
             }
-        } else {
-            // check whether there are any GIF stickers - if there are, we need to produce a video instead
-            if (photoEditor.anyStickersAdded()) {
-                saveVideoWithStaticBackground()
-            } else {
-                saveImage()
+            IMAGE -> {
+                // check whether there are any GIF stickers - if there are, we need to produce a video instead
+                if (frame.addedViews.containsAnyAddedViewsOfType(STICKER_ANIMATED)) {
+                    saveVideoWithStaticBackground()
+                } else {
+                    saveImage()
+                }
             }
+        }
+    }
+
+    private fun saveStory() {
+        for (frame in storyViewModel.getImmutableCurrentStoryFrames()) {
+            saveLoopFrame(frame)
         }
     }
 
