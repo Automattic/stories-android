@@ -522,6 +522,8 @@ public class PhotoPickerFragment extends Fragment {
             mActionMode = null;
             showBottomBar();
             getAdapter().clearSelection();
+            mNextButton.setVisibility(View.GONE);
+            mTakePicture.show();
         }
     }
 
