@@ -86,6 +86,10 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: In
         return repository.getCurrentStorySize()
     }
 
+    fun getImmutableCurrentStoryFrames(): List<StoryFrameItem> {
+        return repository.getImmutableCurrentStoryFrames()
+    }
+
     fun anyOfCurrentStoryFramesHasViews(): Boolean {
         val frames = repository.getImmutableCurrentStoryFrames()
         for (frame in frames) {
