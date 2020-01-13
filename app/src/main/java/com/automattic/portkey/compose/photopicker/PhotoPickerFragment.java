@@ -14,7 +14,6 @@ import android.view.View.OnClickListener;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.PopupMenu;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,6 +27,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.automattic.portkey.R;
+import com.automattic.portkey.compose.NextButton;
 import com.automattic.portkey.compose.photopicker.PhotoPickerAdapter.PhotoPickerAdapterListener;
 import com.automattic.portkey.compose.photopicker.utils.AniUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -75,7 +75,7 @@ public class PhotoPickerFragment extends Fragment {
     private ArrayList<Integer> mSelectedPositions;
     private TextView mChooseItemsDescription;
     private FloatingActionButton mTakePicture;
-    private RelativeLayout mNextButton;
+    private NextButton mNextButton;
 
 //    public static PhotoPickerFragment newInstance(@NonNull PhotoPickerListener listener,
 //                                                  @NonNull MediaBrowserType browserType,

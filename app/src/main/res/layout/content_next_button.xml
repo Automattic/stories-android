@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/next_button"
     android:layout_width="@dimen/save_button_total_width"
     android:layout_height="@dimen/save_button_total_height"
     android:background="@drawable/next_button_background"
