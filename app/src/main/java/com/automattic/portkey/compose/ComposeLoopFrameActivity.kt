@@ -169,12 +169,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             }
 
             override fun onAddViewListener(viewType: ViewType, numberOfAddedViews: Int) {
-                // only show save button if any views have been added
-                save_button.visibility = View.VISIBLE
+                // before: only show save button if any views have been added
             }
 
             override fun onRemoveViewListener(viewType: ViewType, numberOfAddedViews: Int) {
-                showSaveButtonIfViewsAdded()
+                next_button.visibility = View.VISIBLE
             }
 
             override fun onStartViewChangeListener(viewType: ViewType) {
@@ -508,7 +507,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             emojiPickerFragment.show(supportFragmentManager, emojiPickerFragment.tag)
         }
 
-        save_button.setOnClickListener {
+        next_button.setOnClickListener {
             saveLoopFrame()
         }
 
@@ -769,6 +768,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }, CAMERA_STILL_PICTURE_WAIT_FOR_NEXT_CAPTURE_MS)
     }
 
+    // TODO redefine this implementation to loop through all Story frames
     // this one saves one composed unit: ether an Image or a Video
     private fun saveLoopFrame() {
         // check wether we have an Image or a Video, and call its save functionality accordingly
@@ -933,13 +933,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
     private fun showLoading(message: String) {
         editModeHideAllUIControls(false)
-        save_button.setSaving(true)
         blockTouchOnPhotoEditor()
     }
 
     private fun hideLoading() {
         editModeRestoreAllUIControls()
-        save_button.setSaving(false)
         releaseTouchOnPhotoEditor()
     }
 
@@ -991,10 +989,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // show proper edit mode controls
         close_button.visibility = View.VISIBLE
         edit_mode_controls.visibility = View.VISIBLE
-//        if (photoEditor.anyViewsAdded()) {
-            // only show save button if any views have been added
-            save_button.visibility = View.VISIBLE
-//        }
+        next_button.visibility = View.VISIBLE
 
         if (noSound) {
             sound_button_group.visibility = View.INVISIBLE
@@ -1017,29 +1012,27 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // hide proper edit mode controls
         close_button.visibility = View.INVISIBLE
         edit_mode_controls.visibility = View.INVISIBLE
-        save_button.visibility = View.INVISIBLE
+        next_button.visibility = View.INVISIBLE
         // show capturing mode controls
         showVideoUIControls()
     }
 
-    private fun editModeHideAllUIControls(hideSaveButton: Boolean) {
+    private fun editModeHideAllUIControls(hideNextButton: Boolean) {
         // momentarily hide proper edit mode controls
         close_button.visibility = View.INVISIBLE
         edit_mode_controls.visibility = View.INVISIBLE
         sound_button_group.visibility = View.INVISIBLE
         hideStoryFrameSelector()
-        if (hideSaveButton) {
-            save_button.visibility = View.INVISIBLE
+        if (hideNextButton) {
+            next_button.visibility = View.INVISIBLE
         }
     }
 
     private fun editModeRestoreAllUIControls() {
-        // momentarily hide proper edit mode controls
+        // show all edit mode controls
         close_button.visibility = View.VISIBLE
         edit_mode_controls.visibility = View.VISIBLE
-
-        // restore Save button if it was hidden before
-        showSaveButtonIfViewsAdded()
+        next_button.visibility = View.VISIBLE
 
         // noSound parameter here should be true if video player is off
         val noSound = !backgroundSurfaceManager.videoPlayerVisible()
@@ -1049,15 +1042,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             sound_button_group.visibility = View.VISIBLE
         }
         showStoryFrameSelector()
-    }
-
-    private fun showSaveButtonIfViewsAdded() {
-//        if (photoEditor.anyViewsAdded()) {
-            // only show save button if any views have been added
-            save_button.visibility = View.VISIBLE
-//        } else {
-//            save_button.visibility = View.INVISIBLE
-//        }
     }
 
     private fun updateFlashModeSelectionIcon() {
