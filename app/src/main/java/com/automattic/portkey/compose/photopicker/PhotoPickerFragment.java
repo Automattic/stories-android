@@ -14,6 +14,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.PopupMenu;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -74,6 +75,7 @@ public class PhotoPickerFragment extends Fragment {
     private ArrayList<Integer> mSelectedPositions;
     private TextView mChooseItemsDescription;
     private FloatingActionButton mTakePicture;
+    private RelativeLayout mNextButton;
 
 //    public static PhotoPickerFragment newInstance(@NonNull PhotoPickerListener listener,
 //                                                  @NonNull MediaBrowserType browserType,
@@ -128,6 +130,14 @@ public class PhotoPickerFragment extends Fragment {
         mTakePicture.setOnClickListener(new OnClickListener() {
             @Override public void onClick(View view) {
                 doIconClicked(PhotoPickerIcon.ANDROID_CAPTURE_PHOTO);
+            }
+        });
+
+        mNextButton = view.findViewById(R.id.next_button);
+        mNextButton.setOnClickListener(new OnClickListener() {
+            @Override public void onClick(View view) {
+                ArrayList<Uri> uriList = getAdapter().getSelectedURIs();
+                mListener.onPhotoPickerMediaChosen(uriList);
             }
         });
 
@@ -368,12 +378,14 @@ public class PhotoPickerFragment extends Fragment {
             if (count == 0) {
                 finishActionMode();
                 mTakePicture.show();
+                mNextButton.setVisibility(View.GONE);
             } else {
                 if (mActionMode == null) {
                     ((AppCompatActivity) getActivity()).startSupportActionMode(new ActionModeCallback());
                 }
                 updateActionModeTitle(mAdapter.isSelectedSingleItemVideo());
                 mTakePicture.hide();
+                mNextButton.setVisibility(View.VISIBLE);
             }
         }
 
