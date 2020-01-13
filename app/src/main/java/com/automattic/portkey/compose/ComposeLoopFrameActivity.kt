@@ -514,7 +514,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             showToast("bottom sheet not implemented yet")
 
             if (storyViewModel.getCurrentStorySize() > 0) {
-                saveStory()
+                // TODO save all frrames sequentially
+                // saveStory()
             }
         }
 
