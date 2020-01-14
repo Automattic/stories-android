@@ -28,6 +28,7 @@ import androidx.emoji.text.EmojiCompat
 import com.automattic.photoeditor.gesture.MultiTouchListener
 import com.automattic.photoeditor.gesture.MultiTouchListener.OnMultiTouchListener
 import com.automattic.photoeditor.util.BitmapUtil
+import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.PhotoEditorView
 import com.automattic.photoeditor.views.ViewType
 import com.automattic.photoeditor.views.added.AddedView
@@ -48,7 +49,6 @@ import kotlinx.android.synthetic.main.view_photo_editor_emoji.view.*
 import kotlinx.android.synthetic.main.view_photo_editor_text.view.*
 import java.io.File
 import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.util.ArrayList
 import java.lang.ref.WeakReference
 
@@ -697,17 +697,8 @@ class PhotoEditor private constructor(builder: Builder) :
                     @SuppressLint("MissingPermission")
                     override fun doInBackground(vararg strings: String): Exception? {
                         // Create a media file name
-                        val file = File(imagePath)
                         try {
-                            val out = FileOutputStream(file, false)
-                            val wholeBitmap = if (saveSettings.isTransparencyEnabled)
-                                BitmapUtil.removeTransparency(BitmapUtil.createBitmapFromView(parentView))
-                            else
-                                BitmapUtil.createBitmapFromView(parentView)
-                            wholeBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
-                            out.flush()
-                            out.close()
-                            Log.d(TAG, "Filed Saved Successfully")
+                            FileUtils.saveViewToFile(imagePath, saveSettings, parentView)
                             return null
                         } catch (e: Exception) {
                             e.printStackTrace()
