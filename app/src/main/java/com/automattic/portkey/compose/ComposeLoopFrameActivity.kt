@@ -796,7 +796,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }, CAMERA_STILL_PICTURE_WAIT_FOR_NEXT_CAPTURE_MS)
     }
 
-    suspend private fun saveLoopFrame(frame: StoryFrameItem) {
+    private suspend fun saveLoopFrame(frame: StoryFrameItem) {
         when (frame.frameItemType) {
             VIDEO -> {
                 if (frame.source.isFile()) {
@@ -820,13 +820,13 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }
     }
 
-    suspend private fun saveImageFrame(frame: StoryFrameItem) {
+    private suspend fun saveImageFrame(frame: StoryFrameItem) {
         val file = frameSaveManager.saveImageFrame(this@ComposeLoopFrameActivity, frame, photoEditor)
         deleteCapturedMedia()
         sendNewLoopReadyBroadcast(file)
     }
 
-    suspend private fun saveStory() {
+    private suspend fun saveStory() {
         for (frame in storyViewModel.getImmutableCurrentStoryFrames()) {
             saveLoopFrame(frame)
         }
