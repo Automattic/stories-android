@@ -1,12 +1,11 @@
 package com.automattic.portkey.compose.frame
 
 import android.content.Context
+import android.graphics.BitmapFactory
 import com.automattic.photoeditor.PhotoEditor
 import com.automattic.photoeditor.SaveSettings
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.portkey.compose.story.StoryFrameItem
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -51,10 +50,12 @@ class FrameSaveManager : CoroutineScope { // } by MainScope() {
         // now clear addedViews so we don't leak View.Context
         photoEditor.clearAllViews()
 
-        Glide.with(context)
-            .load(frame.source.file ?: frame.source.contentUri)
-            .transform(CenterCrop())
-            .into(photoEditor.source)
+        frame.source.file?.let {
+            photoEditor.source.setImageBitmap(BitmapFactory.decodeFile(it.absolutePath))
+        }
+        frame.source.contentUri?.let {
+            photoEditor.source.setImageURI(it)
+        }
 
         // now call addViewToParent the addedViews remembered by this frame
         frame.addedViews.let {
