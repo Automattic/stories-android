@@ -830,6 +830,10 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         for (frame in storyViewModel.getImmutableCurrentStoryFrames()) {
             saveLoopFrame(frame)
         }
+        // TODO: process videos and image frames in parallel
+        // 1. collect videos and static image background Frames into two lists
+        // 2. call async on each one
+        // 3. call awaitAll on both lists (https://developer.android.com/kotlin/coroutines#parallel)
     }
 
     @SuppressLint("MissingPermission")
