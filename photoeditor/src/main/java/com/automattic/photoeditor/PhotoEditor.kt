@@ -23,6 +23,7 @@ import androidx.annotation.ColorInt
 import androidx.annotation.IntRange
 import androidx.annotation.RequiresPermission
 import androidx.annotation.UiThread
+import androidx.core.view.children
 import androidx.core.widget.TextViewCompat
 import androidx.emoji.text.EmojiCompat
 import com.automattic.photoeditor.gesture.MultiTouchListener
@@ -124,6 +125,12 @@ class PhotoEditor private constructor(builder: Builder) :
      */
     val isCacheEmpty: Boolean
         get() = addedViews.size == 0 && redoViews.size == 0
+
+    val source: ImageView
+        get() = parentView.source
+
+    val composedCanvas: PhotoEditorView
+        get() = parentView
 
     init {
         this.context = builder.context

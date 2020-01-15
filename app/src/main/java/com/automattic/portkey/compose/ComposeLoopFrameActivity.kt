@@ -52,6 +52,7 @@ import com.automattic.portkey.BuildConfig
 import com.automattic.portkey.R
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
+import com.automattic.portkey.compose.frame.FrameSaveManager
 import com.automattic.portkey.compose.photopicker.MediaBrowserType
 import com.automattic.portkey.compose.photopicker.PhotoPickerActivity
 import com.automattic.portkey.compose.photopicker.PhotoPickerFragment
@@ -67,7 +68,7 @@ import com.automattic.portkey.compose.story.StoryRepository
 import com.automattic.portkey.compose.story.StoryViewModel
 import com.automattic.portkey.compose.story.StoryViewModelFactory
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
-import com.automattic.portkey.util.CrashLoggingUtils
+// import com.automattic.portkey.util.CrashLoggingUtils
 import com.automattic.portkey.util.getDisplayPixelSize
 import com.automattic.portkey.util.isVideo
 import com.bumptech.glide.Glide
@@ -76,6 +77,7 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_composer.*
 import kotlinx.android.synthetic.main.content_composer.*
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.IOException
 import kotlin.math.abs
@@ -117,6 +119,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     private var isEditingText: Boolean = false
 
     private lateinit var storyViewModel: StoryViewModel
+    private val frameSaveManager: FrameSaveManager = FrameSaveManager()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -462,11 +465,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
 
         close_button.setOnClickListener {
-            // first, remember the currently added views
-            val currentStoryFrameItem = storyViewModel.getCurrentStoryFrameAt(storyViewModel.getSelectedFrameIndex())
-
-            // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
-            currentStoryFrameItem.addedViews = AddedViewList(photoEditor.getViewsAdded())
+            addCurrentViewsToCurrentFrame()
 
             // add discard dialog
             if (storyViewModel.anyOfCurrentStoryFramesHasViews()) {
@@ -509,19 +508,43 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }
 
         next_button.setOnClickListener {
+            addCurrentViewsToCurrentFrame()
+
             // TODO show bottom sheet
             // then save everything if they hit PUBLISH
             showToast("bottom sheet not implemented yet")
 
             if (storyViewModel.getCurrentStorySize() > 0) {
-                // TODO save all frrames sequentially
-                // saveStory()
+                // save all composed frames
+                if (PermissionUtils.checkAndRequestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    showLoading("Saving...")
+                    Log.d("PORTKEY", "NEXT tapped")
+                    runBlocking {
+                        Log.d("PORTKEY", "inside runBLocking")
+                        saveStory()
+                        // saveImage()
+                    }
+                    Log.d("PORTKEY", "runBLocking exited")
+                    hideLoading()
+
+                    showToast("READY")
+                    // hideEditModeUIControls()
+                    // switchCameraPreviewOn()
+                }
             }
         }
 
         more_button.setOnClickListener {
             showMoreOptionsPopup(it)
         }
+    }
+
+    private fun addCurrentViewsToCurrentFrame() {
+        // first, remember the currently added views
+        val currentStoryFrameItem = storyViewModel.getSelectedFrame()
+
+        // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
+        currentStoryFrameItem.addedViews = AddedViewList(photoEditor.getViewsAdded())
     }
 
     private fun showMoreOptionsPopup(view: View) {
@@ -776,7 +799,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }, CAMERA_STILL_PICTURE_WAIT_FOR_NEXT_CAPTURE_MS)
     }
 
-    private fun saveLoopFrame(frame: StoryFrameItem) {
+    suspend private fun saveLoopFrame(frame: StoryFrameItem) {
+        Log.d("PORTKEY", "saveLoopFrame")
         when (frame.frameItemType) {
             VIDEO -> {
                 if (frame.source.isFile()) {
@@ -794,14 +818,23 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 if (frame.addedViews.containsAnyAddedViewsOfType(STICKER_ANIMATED)) {
                     saveVideoWithStaticBackground()
                 } else {
-                    saveImage()
+                    saveImageFrame(frame)
                 }
             }
         }
     }
 
-    private fun saveStory() {
+    suspend private fun saveImageFrame(frame: StoryFrameItem) {
+        Log.d("PORTKEY", "saveImageFrame")
+        val file = frameSaveManager.saveImageFrame(this@ComposeLoopFrameActivity, frame, photoEditor)
+        deleteCapturedMedia()
+        sendNewLoopReadyBroadcast(file)
+    }
+
+    suspend private fun saveStory() {
+        Log.d("PORTKEY", "saveStory")
         for (frame in storyViewModel.getImmutableCurrentStoryFrames()) {
+            Log.d("PORTKEY", "call SaveLoopFrame")
             saveLoopFrame(frame)
         }
     }
@@ -1161,11 +1194,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     override fun onStoryFrameSelected(oldIndex: Int, newIndex: Int) {
-        // first, remember the currently added views
-        val currentStoryFrameItem = storyViewModel.getCurrentStoryFrameAt(oldIndex)
-
-        // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
-        currentStoryFrameItem.addedViews = AddedViewList(photoEditor.getViewsAdded())
+        addCurrentViewsToCurrentFrame()
 
         // now clear addedViews so we don't leak View.Context
         photoEditor.clearAllViews()
@@ -1207,15 +1236,9 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     override fun onStoryFrameAddTapped() {
-        // first, remember the currently added views
-        val currentStoryFrameItem = storyViewModel.getSelectedFrame()
-
-        // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
-        currentStoryFrameItem.addedViews = AddedViewList(photoEditor.getViewsAdded())
-
+        addCurrentViewsToCurrentFrame()
         // now clear addedViews so we don't leak View.Context
         photoEditor.clearAllViews()
-
         launchCameraPreview()
     }
 
