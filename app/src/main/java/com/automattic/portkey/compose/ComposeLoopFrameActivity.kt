@@ -465,7 +465,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
 
         close_button.setOnClickListener {
-            addCurrentViewsToCurrentFrame()
+            addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
 
             // add discard dialog
             if (storyViewModel.anyOfCurrentStoryFramesHasViews()) {
@@ -508,7 +508,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }
 
         next_button.setOnClickListener {
-            addCurrentViewsToCurrentFrame()
+            addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
 
             // TODO show bottom sheet
             // then save everything if they hit PUBLISH
@@ -518,13 +518,10 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 // save all composed frames
                 if (PermissionUtils.checkAndRequestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                     showLoading("Saving...")
-                    Log.d("PORTKEY", "NEXT tapped")
                     runBlocking {
-                        Log.d("PORTKEY", "inside runBLocking")
                         saveStory()
-                        // saveImage()
+                        onStoryFrameSelected(-1, storyViewModel.getSelectedFrameIndex())
                     }
-                    Log.d("PORTKEY", "runBLocking exited")
                     hideLoading()
 
                     showToast("READY")
@@ -539,9 +536,9 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }
     }
 
-    private fun addCurrentViewsToCurrentFrame() {
+    private fun addCurrentViewsToFrameAtIndex(index: Int) {
         // first, remember the currently added views
-        val currentStoryFrameItem = storyViewModel.getSelectedFrame()
+        val currentStoryFrameItem = storyViewModel.getCurrentStoryFrameAt(index)
 
         // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
         currentStoryFrameItem.addedViews = AddedViewList(photoEditor.getViewsAdded())
@@ -800,7 +797,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     suspend private fun saveLoopFrame(frame: StoryFrameItem) {
-        Log.d("PORTKEY", "saveLoopFrame")
         when (frame.frameItemType) {
             VIDEO -> {
                 if (frame.source.isFile()) {
@@ -825,16 +821,13 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     suspend private fun saveImageFrame(frame: StoryFrameItem) {
-        Log.d("PORTKEY", "saveImageFrame")
         val file = frameSaveManager.saveImageFrame(this@ComposeLoopFrameActivity, frame, photoEditor)
         deleteCapturedMedia()
         sendNewLoopReadyBroadcast(file)
     }
 
     suspend private fun saveStory() {
-        Log.d("PORTKEY", "saveStory")
         for (frame in storyViewModel.getImmutableCurrentStoryFrames()) {
-            Log.d("PORTKEY", "call SaveLoopFrame")
             saveLoopFrame(frame)
         }
     }
@@ -1194,7 +1187,10 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     override fun onStoryFrameSelected(oldIndex: Int, newIndex: Int) {
-        addCurrentViewsToCurrentFrame()
+        if (oldIndex >= 0) {
+            // only remember added views for frame if current index is valid
+            addCurrentViewsToFrameAtIndex(oldIndex)
+        }
 
         // now clear addedViews so we don't leak View.Context
         photoEditor.clearAllViews()
@@ -1236,7 +1232,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     override fun onStoryFrameAddTapped() {
-        addCurrentViewsToCurrentFrame()
+        addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
         // now clear addedViews so we don't leak View.Context
         photoEditor.clearAllViews()
         launchCameraPreview()
