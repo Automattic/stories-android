@@ -833,46 +833,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     @SuppressLint("MissingPermission")
-    private fun saveImage() {
-        if (PermissionUtils.checkAndRequestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            showLoading("Saving...")
-            val file = getLoopFrameFile(this, false)
-            try {
-                file.createNewFile()
-
-                val saveSettings = SaveSettings.Builder()
-                    .setClearViewsEnabled(true)
-                    .setTransparencyEnabled(true)
-                    .build()
-
-                photoEditor.saveAsFile(file.absolutePath, saveSettings, object : PhotoEditor.OnSaveListener {
-                    override fun onSuccess(filePath: String) {
-                        hideLoading()
-                        deleteCapturedMedia()
-                        sendNewLoopReadyBroadcast(file)
-                        showSnackbar(
-                            getString(R.string.label_snackbar_loop_frame_saved),
-                            getString(R.string.label_snackbar_share),
-                            OnClickListener { shareAction(file) }
-                        )
-                        hideEditModeUIControls()
-                        switchCameraPreviewOn()
-                    }
-
-                    override fun onFailure(exception: Exception) {
-                        hideLoading()
-                        showSnackbar("Failed to save Image")
-                    }
-                })
-            } catch (e: IOException) {
-                e.printStackTrace()
-                hideLoading()
-                e.message?.takeIf { it.isNotEmpty() }?.let { showSnackbar(it) }
-            }
-        }
-    }
-
-    @SuppressLint("MissingPermission")
     private fun saveVideo(inputFile: Uri) {
         if (PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             showLoading("Saving...")
