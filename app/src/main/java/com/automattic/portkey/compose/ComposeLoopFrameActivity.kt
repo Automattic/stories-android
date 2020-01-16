@@ -796,7 +796,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }, CAMERA_STILL_PICTURE_WAIT_FOR_NEXT_CAPTURE_MS)
     }
 
-    private suspend fun saveLoopFrame(frame: StoryFrameItem) {
+    private suspend fun saveLoopFrame(frame: StoryFrameItem): File {
+        lateinit var frameFile: File
         when (frame.frameItemType) {
             VIDEO -> {
                 if (frame.source.isFile()) {
@@ -814,22 +815,27 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 if (frame.addedViews.containsAnyAddedViewsOfType(STICKER_ANIMATED)) {
                     saveVideoWithStaticBackground()
                 } else {
-                    saveImageFrame(frame)
+                    frameFile = saveImageFrame(frame)
                 }
             }
         }
+        return frameFile
     }
 
-    private suspend fun saveImageFrame(frame: StoryFrameItem) {
+    private suspend fun saveImageFrame(frame: StoryFrameItem): File {
         val file = frameSaveManager.saveImageFrame(this@ComposeLoopFrameActivity, frame, photoEditor)
         deleteCapturedMedia()
-        sendNewStoryFrameReadyBroadcast(file)
+        return file
     }
 
     private suspend fun saveStory() {
+        val frameFileList = ArrayList<File>()
         for (frame in storyViewModel.getImmutableCurrentStoryFrames()) {
-            saveLoopFrame(frame)
+            frameFileList.add(saveLoopFrame(frame))
         }
+        // once all frames have been saved, issue a broadcast so the system knows these frames are ready
+        sendNewStoryReadyBroadcast(frameFileList)
+
         // TODO: process videos and image frames in parallel
         // 1. collect videos and static image background Frames into two lists
         // 2. call async on each one
@@ -1109,6 +1115,45 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             .getMimeTypeFromExtension(mediaFile.extension)
         MediaScannerConnection.scanFile(
             this, arrayOf(mediaFile.absolutePath), arrayOf(mimeType), null)
+    }
+
+    private fun sendNewStoryReadyBroadcast(mediaFileList: ArrayList<File>) {
+        // Implicit broadcasts will be ignored for devices running API
+        // level >= 24, so if you only target 24+ you can remove this statement
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            @Suppress("DEPRECATION")
+            for (mediaFile in mediaFileList) {
+                if (mediaFile.extension.startsWith("jpg")) {
+                    sendBroadcast(Intent(Camera.ACTION_NEW_PICTURE, Uri.fromFile(mediaFile)))
+                } else {
+                    sendBroadcast(Intent(Camera.ACTION_NEW_VIDEO, Uri.fromFile(mediaFile)))
+                }
+            }
+        }
+
+        // build
+        val mimeTypes = ArrayList<String?>()
+        val paths = ArrayList<String?>()
+        for (mediaFile in mediaFileList) {
+            val mimeType = MimeTypeMap.getSingleton()
+                .getMimeTypeFromExtension(mediaFile.extension)
+            mimeTypes.add(mimeType)
+
+            val path = mediaFile.absolutePath
+            paths.add(path)
+        }
+
+        val arrayOfPaths = arrayOfNulls<String>(paths.size)
+        paths.toArray(arrayOfPaths)
+
+        val arrayOfmimeTypes = arrayOfNulls<String>(mimeTypes.size)
+        mimeTypes.toArray(arrayOfmimeTypes)
+
+        // If the folder selected is an external media directory, this is unnecessary
+        // but otherwise other apps will not be able to access our images unless we
+        // scan them using [MediaScannerConnection]
+        MediaScannerConnection.scanFile(
+            this, arrayOfPaths, arrayOfmimeTypes, null)
     }
 
     private fun blockTouchOnPhotoEditor() {
