@@ -30,7 +30,7 @@ class FrameSaveManager : CoroutineScope { // } by MainScope() {
             .setTransparencyEnabled(false)
             .build()
 
-        preparePhotoEditorViewForSnapshot(context, frame, photoEditor)
+        preparePhotoEditorViewForSnapshot(frame, photoEditor)
 
         // switching coroutine to Dispatchers.IO scope to write image to file
         withContext(Dispatchers.IO) {
@@ -40,7 +40,7 @@ class FrameSaveManager : CoroutineScope { // } by MainScope() {
         return file
     }
 
-    private fun preparePhotoEditorViewForSnapshot(context: Context, frame: StoryFrameItem, photoEditor: PhotoEditor) {
+    private fun preparePhotoEditorViewForSnapshot(frame: StoryFrameItem, photoEditor: PhotoEditor) {
         // disable layout change animations, we need this to make added views immediately visible, otherwise
         // we may end up capturing a Bitmap of a backing drawable that still has not been updated
         // (i.e. no visible added Views)
