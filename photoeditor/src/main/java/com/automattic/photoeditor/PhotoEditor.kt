@@ -540,8 +540,8 @@ class PhotoEditor private constructor(builder: Builder) :
      * This will also clear the undo and redo stack
      */
     fun clearAllViews() {
-        for (i in addedViews.indices) {
-            parentView.removeView(addedViews[i].view)
+        for (addedView in addedViews) {
+            parentView.removeView(addedView.view)
         }
 
         if (addedViews.containsView(brushDrawingView)) {

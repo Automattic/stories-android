@@ -802,10 +802,12 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             VIDEO -> {
                 if (frame.source.isFile()) {
                     frame.source.file?.let {
+                        // TODO make saveVideo return File
                         saveVideo(Uri.parse(it.toString()))
                     }
                 } else {
                     frame.source.contentUri?.let {
+                        // TODO make saveVideo return File
                         saveVideo(it)
                     }
                 }
@@ -813,6 +815,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             IMAGE -> {
                 // check whether there are any GIF stickers - if there are, we need to produce a video instead
                 if (frame.addedViews.containsAnyAddedViewsOfType(STICKER_ANIMATED)) {
+                    // TODO make saveVideoWithStaticBackground return File
                     saveVideoWithStaticBackground()
                 } else {
                     frameFile = saveImageFrame(frame)
@@ -832,7 +835,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         val frameFileList = ArrayList<File>()
         for (frame in storyViewModel.getImmutableCurrentStoryFrames()) {
             frameFileList.add(saveLoopFrame(frame))
-        }
+        }/**/
         // once all frames have been saved, issue a broadcast so the system knows these frames are ready
         sendNewStoryReadyBroadcast(frameFileList)
 
