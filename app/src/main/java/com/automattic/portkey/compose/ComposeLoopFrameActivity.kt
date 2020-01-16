@@ -1134,7 +1134,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         val arrayOfmimeTypes = arrayOfNulls<String>(mediaFileList.size)
         val arrayOfPaths = arrayOfNulls<String>(mediaFileList.size)
         for ((index, mediaFile) in mediaFileList.withIndex()) {
-            arrayOfmimeTypes[index] =  MimeTypeMap.getSingleton()
+            arrayOfmimeTypes[index] = MimeTypeMap.getSingleton()
                 .getMimeTypeFromExtension(mediaFile.extension)
             arrayOfPaths[index] = mediaFile.absolutePath
         }
