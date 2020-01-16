@@ -1131,23 +1131,13 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             }
         }
 
-        // build
-        val mimeTypes = ArrayList<String?>()
-        val paths = ArrayList<String?>()
-        for (mediaFile in mediaFileList) {
-            val mimeType = MimeTypeMap.getSingleton()
+        val arrayOfmimeTypes = arrayOfNulls<String>(mediaFileList.size)
+        val arrayOfPaths = arrayOfNulls<String>(mediaFileList.size)
+        for ((index, mediaFile) in mediaFileList.withIndex()) {
+            arrayOfmimeTypes[index] =  MimeTypeMap.getSingleton()
                 .getMimeTypeFromExtension(mediaFile.extension)
-            mimeTypes.add(mimeType)
-
-            val path = mediaFile.absolutePath
-            paths.add(path)
+            arrayOfPaths[index] = mediaFile.absolutePath
         }
-
-        val arrayOfPaths = arrayOfNulls<String>(paths.size)
-        paths.toArray(arrayOfPaths)
-
-        val arrayOfmimeTypes = arrayOfNulls<String>(mimeTypes.size)
-        mimeTypes.toArray(arrayOfmimeTypes)
 
         // If the folder selected is an external media directory, this is unnecessary
         // but otherwise other apps will not be able to access our images unless we
