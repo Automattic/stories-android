@@ -13,7 +13,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import kotlin.coroutines.CoroutineContext
 
-class FrameSaveManager : CoroutineScope { // } by MainScope() {
+class FrameSaveManager : CoroutineScope {
     private val job = Job()
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
