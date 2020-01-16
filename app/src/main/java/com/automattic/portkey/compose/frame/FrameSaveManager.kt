@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams
 import android.widget.RelativeLayout
 import androidx.core.view.children
 import com.automattic.photoeditor.PhotoEditor
@@ -37,21 +38,26 @@ class FrameSaveManager : CoroutineScope {
             .build()
 
         // photoEditor.clearAllViews()
-        val ghostPhotoEditorView = createGhostPhotoEditor(context, photoEditor.composedCanvas)
-        preparePhotoEditorViewForSnapshot(frame, ghostPhotoEditorView)
-//        val ghostPhotoEditorView = createGhostPhotoEditor(context, photoEditor.composedCanvas)
-//        preparePhotoEditorViewForSnapshot(frame, photoEditor.composedCanvas)
+        val ghostPhotoEditorView = preparePhotoEditorViewForSnapshot(context, frame, photoEditor.composedCanvas)
 
         // switching coroutine to Dispatchers.IO scope to write image to file
         withContext(Dispatchers.IO) {
-//            FileUtils.saveViewToFile(file.absolutePath, saveSettings, photoEditor.composedCanvas)
             FileUtils.saveViewToFile(file.absolutePath, saveSettings, ghostPhotoEditorView)
         }
 
+        // don't forget to remove these views from ghost offscreen view before exiting
+        for (oneView in frame.addedViews) {
+            removeViewFromParent(oneView.view)
+        }
         return file
     }
 
-    private fun preparePhotoEditorViewForSnapshot(frame: StoryFrameItem, photoEditorView: PhotoEditorView) {
+    private fun preparePhotoEditorViewForSnapshot(
+        context: Context,
+        frame: StoryFrameItem,
+        photoEditorView: PhotoEditorView
+    ): PhotoEditorView {
+        val ghostPhotoEditorView = createGhostPhotoEditor(context, photoEditorView)
         // disable layout change animations, we need this to make added views immediately visible, otherwise
         // we may end up capturing a Bitmap of a backing drawable that still has not been updated
         // (i.e. no visible added Views)
@@ -59,32 +65,39 @@ class FrameSaveManager : CoroutineScope {
         photoEditorView.layoutTransition = null
 
         frame.source.file?.let {
-            photoEditorView.source.setImageBitmap(BitmapFactory.decodeFile(it.absolutePath))
+            ghostPhotoEditorView.source.setImageBitmap(BitmapFactory.decodeFile(it.absolutePath))
         }
         frame.source.contentUri?.let {
-            photoEditorView.source.setImageURI(it)
+            ghostPhotoEditorView.source.setImageURI(it)
         }
 
         // now call addViewToParent the addedViews remembered by this frame
-        val params = RelativeLayout.LayoutParams(
-            ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-        params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
         for (oneView in frame.addedViews) {
             removeViewFromParent(oneView.view)
-            // oneView.view.parent
-            photoEditorView.addView(oneView.view, params)
+            ghostPhotoEditorView.addView(oneView.view, getViewLayoutParams())
         }
 
         // re-enable layout change animations
         photoEditorView.layoutTransition = transition
+
+        return ghostPhotoEditorView
     }
 
     private fun removeViewFromParent(view: View) {
-        val parent = view.parent as ViewGroup
-        if (parent.children.contains(view)) {
-            parent.removeView(view)
+        view.parent?.let {
+            it as ViewGroup
+            if (it.children.contains(view)) {
+                it.removeView(view)
+            }
         }
+    }
+
+    private fun getViewLayoutParams(): LayoutParams {
+        val params = RelativeLayout.LayoutParams(
+            LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT
+        )
+        params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
+        return params
     }
 
     private fun createGhostPhotoEditor(context: Context, originalPhotoEditorView: PhotoEditorView): PhotoEditorView {

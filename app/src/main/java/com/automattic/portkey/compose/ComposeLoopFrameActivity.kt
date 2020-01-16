@@ -835,7 +835,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         val frameFileList = ArrayList<File>()
         for (frame in storyViewModel.getImmutableCurrentStoryFrames()) {
             frameFileList.add(saveLoopFrame(frame))
-        }/**/
+        }
         // once all frames have been saved, issue a broadcast so the system knows these frames are ready
         sendNewStoryReadyBroadcast(frameFileList)
 
@@ -1137,7 +1137,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         val arrayOfmimeTypes = arrayOfNulls<String>(mediaFileList.size)
         val arrayOfPaths = arrayOfNulls<String>(mediaFileList.size)
         for ((index, mediaFile) in mediaFileList.withIndex()) {
-            arrayOfmimeTypes[index] =  MimeTypeMap.getSingleton()
+            arrayOfmimeTypes[index] = MimeTypeMap.getSingleton()
                 .getMimeTypeFromExtension(mediaFile.extension)
             arrayOfPaths[index] = mediaFile.absolutePath
         }
@@ -1194,6 +1194,14 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             addCurrentViewsToFrameAtIndex(oldIndex)
         }
 
+        // This is tricky. See https://stackoverflow.com/questions/45860434/cant-remove-view-from-root-view
+        // we need to disable layout transition animations so changes in views' parent are set
+        // immediately. Otherwise a view's parent will only change once the animation ends, and hence
+        // we could reach an IllegalStateException where we are trying to add a view to another parent while it still
+        // belongs to a definite parent.
+        val transition = photoEditor.composedCanvas.getLayoutTransition()
+        photoEditor.composedCanvas.layoutTransition = null
+
         // now clear addedViews so we don't leak View.Context
         photoEditor.clearAllViews()
 
@@ -1231,6 +1239,9 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 photoEditor.addViewToParent(oneView.view, oneView.viewType)
             }
         }
+
+        // re-enable layout change animations
+        photoEditor.composedCanvas.layoutTransition = transition
     }
 
     override fun onStoryFrameAddTapped() {
