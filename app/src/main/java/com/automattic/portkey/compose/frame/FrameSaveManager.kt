@@ -37,7 +37,6 @@ class FrameSaveManager : CoroutineScope {
             .setTransparencyEnabled(false)
             .build()
 
-        // photoEditor.clearAllViews()
         val ghostPhotoEditorView = preparePhotoEditorViewForSnapshot(context, frame, photoEditor.composedCanvas)
 
         // switching coroutine to Dispatchers.IO scope to write image to file
