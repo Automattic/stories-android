@@ -823,7 +823,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     private suspend fun saveImageFrame(frame: StoryFrameItem) {
         val file = frameSaveManager.saveImageFrame(this@ComposeLoopFrameActivity, frame, photoEditor)
         deleteCapturedMedia()
-        sendNewLoopReadyBroadcast(file)
+        sendNewStoryFrameReadyBroadcast(file)
     }
 
     private suspend fun saveStory() {
@@ -866,7 +866,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                                 hideLoading()
                                 deleteCapturedMedia()
                                 photoEditor.clearAllViews()
-                                sendNewLoopReadyBroadcast(file)
+                                sendNewStoryFrameReadyBroadcast(file)
                                 showSnackbar(
                                     getString(R.string.label_snackbar_loop_frame_saved),
                                     getString(R.string.label_snackbar_share),
@@ -1090,7 +1090,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         startActivity(Intent.createChooser(shareIntent, resources.getText(R.string.label_share_to)))
     }
 
-    private fun sendNewLoopReadyBroadcast(mediaFile: File) {
+    private fun sendNewStoryFrameReadyBroadcast(mediaFile: File) {
         // Implicit broadcasts will be ignored for devices running API
         // level >= 24, so if you only target 24+ you can remove this statement
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
