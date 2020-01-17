@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
 import android.widget.RelativeLayout
 import androidx.core.view.children
-import com.automattic.photoeditor.PhotoEditor
 import com.automattic.photoeditor.SaveSettings
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.PhotoEditorView
@@ -25,7 +24,7 @@ class FrameSaveManager : CoroutineScope {
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
 
-    suspend fun saveImageFrame(context: Context, frame: StoryFrameItem, photoEditor: PhotoEditor): File {
+    suspend fun saveImageFrame(context: Context, frame: StoryFrameItem, ghostPhotoEditorView: PhotoEditorView): File {
         // creating a new file shouldn't be an expensive operation so, not switching Coroutine context here but staying
         // on the Main dispatcher seems reasonable
         // TODO fix the "video: false" parameter here and make a distinction on frame types here (VIDEO, IMAGE, etc)
@@ -37,7 +36,7 @@ class FrameSaveManager : CoroutineScope {
             .setTransparencyEnabled(false)
             .build()
 
-        val ghostPhotoEditorView = preparePhotoEditorViewForSnapshot(context, frame, photoEditor.composedCanvas)
+        preparePhotoEditorViewForSnapshot(frame, ghostPhotoEditorView)
 
         // switching coroutine to Dispatchers.IO scope to write image to file
         withContext(Dispatchers.IO) {
@@ -51,18 +50,8 @@ class FrameSaveManager : CoroutineScope {
         return file
     }
 
-    private fun preparePhotoEditorViewForSnapshot(
-        context: Context,
-        frame: StoryFrameItem,
-        photoEditorView: PhotoEditorView
-    ): PhotoEditorView {
-        val ghostPhotoEditorView = createGhostPhotoEditor(context, photoEditorView)
-        // disable layout change animations, we need this to make added views immediately visible, otherwise
-        // we may end up capturing a Bitmap of a backing drawable that still has not been updated
-        // (i.e. no visible added Views)
-        val transition = photoEditorView.getLayoutTransition()
-        photoEditorView.layoutTransition = null
-
+    private fun preparePhotoEditorViewForSnapshot(frame: StoryFrameItem, ghostPhotoEditorView: PhotoEditorView) {
+        // prepare background
         frame.source.file?.let {
             ghostPhotoEditorView.source.setImageBitmap(BitmapFactory.decodeFile(it.absolutePath))
         }
@@ -75,11 +64,6 @@ class FrameSaveManager : CoroutineScope {
             removeViewFromParent(oneView.view)
             ghostPhotoEditorView.addView(oneView.view, getViewLayoutParams())
         }
-
-        // re-enable layout change animations
-        photoEditorView.layoutTransition = transition
-
-        return ghostPhotoEditorView
     }
 
     private fun removeViewFromParent(view: View) {
@@ -99,7 +83,7 @@ class FrameSaveManager : CoroutineScope {
         return params
     }
 
-    private fun createGhostPhotoEditor(context: Context, originalPhotoEditorView: PhotoEditorView): PhotoEditorView {
+    fun createGhostPhotoEditor(context: Context, originalPhotoEditorView: PhotoEditorView): PhotoEditorView {
         val ghostPhotoView = PhotoEditorView(context)
         ghostPhotoView.setBackgroundColor(Color.BLACK)
         // get target measures from original PhotoEditorView

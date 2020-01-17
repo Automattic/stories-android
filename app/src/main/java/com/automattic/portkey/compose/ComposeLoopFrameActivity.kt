@@ -44,6 +44,7 @@ import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment.FlashS
 import com.automattic.photoeditor.state.BackgroundSurfaceManager
 import com.automattic.photoeditor.util.FileUtils.Companion.getLoopFrameFile
 import com.automattic.photoeditor.util.PermissionUtils
+import com.automattic.photoeditor.views.PhotoEditorView
 import com.automattic.photoeditor.views.ViewType
 import com.automattic.photoeditor.views.ViewType.STICKER_ANIMATED
 import com.automattic.photoeditor.views.ViewType.TEXT
@@ -800,7 +801,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }, CAMERA_STILL_PICTURE_WAIT_FOR_NEXT_CAPTURE_MS)
     }
 
-    private suspend fun saveLoopFrame(frame: StoryFrameItem): File {
+    private suspend fun saveLoopFrame(frame: StoryFrameItem, ghostPhotoEditorView: PhotoEditorView): File {
         lateinit var frameFile: File
         when (frame.frameItemType) {
             VIDEO -> {
@@ -822,37 +823,50 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     // TODO make saveVideoWithStaticBackground return File
                     saveVideoWithStaticBackground()
                 } else {
-                    frameFile = saveImageFrame(frame)
+                    frameFile = saveImageFrame(frame, ghostPhotoEditorView)
                 }
             }
         }
         return frameFile
     }
 
-    private suspend fun saveImageFrame(frame: StoryFrameItem): File {
-        val file = frameSaveManager.saveImageFrame(this@ComposeLoopFrameActivity, frame, photoEditor)
+    private suspend fun saveImageFrame(frame: StoryFrameItem, ghostPhotoEditorView: PhotoEditorView): File {
+        val file = frameSaveManager.saveImageFrame(this, frame, ghostPhotoEditorView)
         deleteCapturedMedia()
         return file
     }
 
     private suspend fun saveStory() = coroutineScope {
+        // disable layout change animations, we need this to make added views immediately visible, otherwise
+        // we may end up capturing a Bitmap of a backing drawable that still has not been updated
+        // (i.e. no visible added Views)
+        val transition = photoEditorView.getLayoutTransition()
+        photoEditorView.layoutTransition = null
+
+        // create ghost PhotoEditorView only once for the Story saving process (we'll reuse it)
+        val ghostPhotoEditorView = frameSaveManager.createGhostPhotoEditor(
+            this@ComposeLoopFrameActivity,
+            photoEditorView
+        )
+
+        // first, launch all frame save processes async
         val frameDeferreds = ArrayList<Deferred<File>>()
         for (frame in storyViewModel.getImmutableCurrentStoryFrames()) {
-            frameDeferreds.add(async { saveLoopFrame(frame) })
+            frameDeferreds.add(async { saveLoopFrame(frame, ghostPhotoEditorView) })
         }
         frameDeferreds.awaitAll()
 
+        // now that all of them have ended, let's get the files to notify the system with a broadcast file sync
         val frameFileList = ArrayList<File>()
         for (deferred in frameDeferreds) {
             frameFileList.add(deferred.getCompleted())
         }
+
+        // re-enable layout change animations
+        photoEditorView.layoutTransition = transition
+
         // once all frames have been saved, issue a broadcast so the system knows these frames are ready
         sendNewStoryReadyBroadcast(frameFileList)
-
-        // TODO: process videos and image frames in parallel
-        // 1. collect videos and static image background Frames into two lists
-        // 2. call async on each one
-        // 3. call awaitAll on both lists (https://developer.android.com/kotlin/coroutines#parallel)
     }
 
     @SuppressLint("MissingPermission")
