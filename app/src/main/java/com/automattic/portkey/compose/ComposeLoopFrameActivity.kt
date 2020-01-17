@@ -44,6 +44,7 @@ import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment.FlashS
 import com.automattic.photoeditor.state.BackgroundSurfaceManager
 import com.automattic.photoeditor.util.FileUtils.Companion.getLoopFrameFile
 import com.automattic.photoeditor.util.PermissionUtils
+import com.automattic.photoeditor.views.PhotoEditorView
 import com.automattic.photoeditor.views.ViewType
 import com.automattic.photoeditor.views.ViewType.STICKER_ANIMATED
 import com.automattic.photoeditor.views.ViewType.TEXT
@@ -796,7 +797,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }, CAMERA_STILL_PICTURE_WAIT_FOR_NEXT_CAPTURE_MS)
     }
 
-    private suspend fun saveLoopFrame(frame: StoryFrameItem): File {
+    private suspend fun saveLoopFrame(frame: StoryFrameItem, ghostPhotoEditorView: PhotoEditorView): File {
         lateinit var frameFile: File
         when (frame.frameItemType) {
             VIDEO -> {
@@ -818,24 +819,37 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     // TODO make saveVideoWithStaticBackground return File
                     saveVideoWithStaticBackground()
                 } else {
-                    frameFile = saveImageFrame(frame)
+                    frameFile = saveImageFrame(frame, ghostPhotoEditorView)
                 }
             }
         }
         return frameFile
     }
 
-    private suspend fun saveImageFrame(frame: StoryFrameItem): File {
-        val file = frameSaveManager.saveImageFrame(this@ComposeLoopFrameActivity, frame, photoEditor)
+    private suspend fun saveImageFrame(frame: StoryFrameItem, ghostPhotoEditorView: PhotoEditorView): File {
+        val file = frameSaveManager.saveImageFrame(this@ComposeLoopFrameActivity, frame, ghostPhotoEditorView)
         deleteCapturedMedia()
         return file
     }
 
     private suspend fun saveStory() {
+        // disable layout change animations, we need this to make added views immediately visible, otherwise
+        // we may end up capturing a Bitmap of a backing drawable that still has not been updated
+        // (i.e. no visible added Views)
+        val transition = photoEditorView.getLayoutTransition()
+        photoEditorView.layoutTransition = null
+
+        // create ghost PhotoEditorView only once for the Story saving process (we'll reuse it)
+        val ghostPhotoEditorView = frameSaveManager.createGhostPhotoEditor(this, photoEditorView)
+
         val frameFileList = ArrayList<File>()
         for (frame in storyViewModel.getImmutableCurrentStoryFrames()) {
-            frameFileList.add(saveLoopFrame(frame))
+            frameFileList.add(saveLoopFrame(frame, ghostPhotoEditorView))
         }
+
+        // re-enable layout change animations
+        photoEditorView.layoutTransition = transition
+
         // once all frames have been saved, issue a broadcast so the system knows these frames are ready
         sendNewStoryReadyBroadcast(frameFileList)
 
