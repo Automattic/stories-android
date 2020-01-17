@@ -77,6 +77,10 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_composer.*
 import kotlinx.android.synthetic.main.content_composer.*
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.IOException
@@ -831,10 +835,16 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         return file
     }
 
-    private suspend fun saveStory() {
-        val frameFileList = ArrayList<File>()
+    private suspend fun saveStory() = coroutineScope {
+        val frameDeferreds = ArrayList<Deferred<File>>()
         for (frame in storyViewModel.getImmutableCurrentStoryFrames()) {
-            frameFileList.add(saveLoopFrame(frame))
+            frameDeferreds.add(async { saveLoopFrame(frame) })
+        }
+        frameDeferreds.awaitAll()
+
+        val frameFileList = ArrayList<File>()
+        for (deferred in frameDeferreds) {
+            frameFileList.add(deferred.getCompleted())
         }
         // once all frames have been saved, issue a broadcast so the system knows these frames are ready
         sendNewStoryReadyBroadcast(frameFileList)
