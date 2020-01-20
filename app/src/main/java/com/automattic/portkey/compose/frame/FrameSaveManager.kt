@@ -4,17 +4,22 @@ import android.content.Context
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.view.View
-import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
 import android.widget.RelativeLayout
-import androidx.core.view.children
 import com.automattic.photoeditor.SaveSettings
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.PhotoEditorView
+import com.automattic.photoeditor.views.ViewType.STICKER_ANIMATED
 import com.automattic.portkey.compose.story.StoryFrameItem
+import com.automattic.portkey.compose.story.StoryFrameItemType.IMAGE
+import com.automattic.portkey.compose.story.StoryFrameItemType.VIDEO
+import com.automattic.portkey.util.removeViewFromParent
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import java.io.File
 import kotlin.coroutines.CoroutineContext
@@ -24,13 +29,72 @@ class FrameSaveManager : CoroutineScope {
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
 
+    suspend fun saveStory(
+        context: Context,
+        originalPhotoEditorView: PhotoEditorView,
+        frames: List<StoryFrameItem>
+    ): List<File> {
+        // create ghost PhotoEditorView only once for the Story saving process (we'll reuse it)
+        val ghostPhotoEditorView = createGhostPhotoEditor(context, originalPhotoEditorView)
+
+        // first, launch all frame save processes async
+        val frameDeferreds = ArrayList<Deferred<File>>()
+        for (frame in frames) {
+            frameDeferreds.add(
+                async {
+                    saveLoopFrame(context, frame, ghostPhotoEditorView)
+                }
+            )
+        }
+        frameDeferreds.awaitAll()
+
+        // now that all of them have ended, let's return the files saved as frames for the Story collection
+        val frameFileList = ArrayList<File>()
+        for (deferred in frameDeferreds) {
+            frameFileList.add(deferred.getCompleted())
+        }
+
+        return frameFileList
+    }
+
+    private suspend fun saveLoopFrame(
+        context: Context,
+        frame: StoryFrameItem,
+        ghostPhotoEditorView: PhotoEditorView
+    ): File {
+        lateinit var frameFile: File
+        when (frame.frameItemType) {
+            VIDEO -> {
+                if (frame.source.isFile()) {
+                    frame.source.file?.let {
+                        // TODO make saveVideo return File
+                        // saveVideo(Uri.parse(it.toString()))
+                    }
+                } else {
+                    frame.source.contentUri?.let {
+                        // TODO make saveVideo return File
+                        // saveVideo(it)
+                    }
+                }
+            }
+            IMAGE -> {
+                // check whether there are any GIF stickers - if there are, we need to produce a video instead
+                if (frame.addedViews.containsAnyAddedViewsOfType(STICKER_ANIMATED)) {
+                    // TODO make saveVideoWithStaticBackground return File
+                    // saveVideoWithStaticBackground()
+                } else {
+                    frameFile = saveImageFrame(context, frame, ghostPhotoEditorView)
+                }
+            }
+        }
+        return frameFile
+    }
+
     suspend fun saveImageFrame(context: Context, frame: StoryFrameItem, ghostPhotoEditorView: PhotoEditorView): File {
+        lateinit var file: File
         // creating a new file shouldn't be an expensive operation so, not switching Coroutine context here but staying
         // on the Main dispatcher seems reasonable
         // TODO fix the "video: false" parameter here and make a distinction on frame types here (VIDEO, IMAGE, etc)
-        val file = FileUtils.getLoopFrameFile(context, false)
-        file.createNewFile()
-
         val saveSettings = SaveSettings.Builder()
             .setClearViewsEnabled(true)
             .setTransparencyEnabled(false)
@@ -38,8 +102,9 @@ class FrameSaveManager : CoroutineScope {
 
         preparePhotoEditorViewForSnapshot(frame, ghostPhotoEditorView)
 
-        // switching coroutine to Dispatchers.IO scope to write image to file
         withContext(Dispatchers.IO) {
+            file = FileUtils.getLoopFrameFile(context, false)
+            file.createNewFile()
             FileUtils.saveViewToFile(file.absolutePath, saveSettings, ghostPhotoEditorView)
         }
 
@@ -66,15 +131,6 @@ class FrameSaveManager : CoroutineScope {
         }
     }
 
-    private fun removeViewFromParent(view: View) {
-        view.parent?.let {
-            it as ViewGroup
-            if (it.children.contains(view)) {
-                it.removeView(view)
-            }
-        }
-    }
-
     private fun getViewLayoutParams(): LayoutParams {
         val params = RelativeLayout.LayoutParams(
             LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT
@@ -83,7 +139,7 @@ class FrameSaveManager : CoroutineScope {
         return params
     }
 
-    fun createGhostPhotoEditor(context: Context, originalPhotoEditorView: PhotoEditorView): PhotoEditorView {
+    private fun createGhostPhotoEditor(context: Context, originalPhotoEditorView: PhotoEditorView): PhotoEditorView {
         val ghostPhotoView = PhotoEditorView(context)
         ghostPhotoView.setBackgroundColor(Color.BLACK)
         // get target measures from original PhotoEditorView
