@@ -39,10 +39,10 @@ class FrameSaveManager : CoroutineScope {
 
         // first, launch all frame save processes async
         val frameDeferreds = ArrayList<Deferred<File>>()
-        for (frame in frames) {
+        for ((index, frame) in frames.withIndex()) {
             frameDeferreds.add(
                 async {
-                    saveLoopFrame(context, frame, ghostPhotoEditorView)
+                    saveLoopFrame(context, frame, ghostPhotoEditorView, index)
                 }
             )
         }
@@ -60,7 +60,8 @@ class FrameSaveManager : CoroutineScope {
     private suspend fun saveLoopFrame(
         context: Context,
         frame: StoryFrameItem,
-        ghostPhotoEditorView: PhotoEditorView
+        ghostPhotoEditorView: PhotoEditorView,
+        sequenceId: Int
     ): File {
         lateinit var frameFile: File
         when (frame.frameItemType) {
@@ -83,14 +84,19 @@ class FrameSaveManager : CoroutineScope {
                     // TODO make saveVideoWithStaticBackground return File
                     // saveVideoWithStaticBackground()
                 } else {
-                    frameFile = saveImageFrame(context, frame, ghostPhotoEditorView)
+                    frameFile = saveImageFrame(context, frame, ghostPhotoEditorView, sequenceId)
                 }
             }
         }
         return frameFile
     }
 
-    suspend fun saveImageFrame(context: Context, frame: StoryFrameItem, ghostPhotoEditorView: PhotoEditorView): File {
+    suspend fun saveImageFrame(
+        context: Context,
+        frame: StoryFrameItem,
+        ghostPhotoEditorView: PhotoEditorView,
+        sequenceId: Int
+    ): File {
         lateinit var file: File
         // creating a new file shouldn't be an expensive operation so, not switching Coroutine context here but staying
         // on the Main dispatcher seems reasonable
@@ -103,9 +109,10 @@ class FrameSaveManager : CoroutineScope {
         preparePhotoEditorViewForSnapshot(frame, ghostPhotoEditorView)
 
         withContext(Dispatchers.IO) {
-            file = FileUtils.getLoopFrameFile(context, false)
-            file.createNewFile()
-            FileUtils.saveViewToFile(file.absolutePath, saveSettings, ghostPhotoEditorView)
+            val localFile = FileUtils.getLoopFrameFile(context, false, sequenceId.toString())
+            localFile.createNewFile()
+            FileUtils.saveViewToFile(localFile.absolutePath, saveSettings, ghostPhotoEditorView)
+            file = localFile
         }
 
         // don't forget to remove these views from ghost offscreen view before exiting

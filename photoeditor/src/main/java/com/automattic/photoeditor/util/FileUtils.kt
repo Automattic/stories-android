@@ -10,10 +10,10 @@ import java.io.FileOutputStream
 
 class FileUtils {
     companion object {
-        fun getLoopFrameFile(context: Context, video: Boolean, prefix: String = ""): File {
+        fun getLoopFrameFile(context: Context, video: Boolean, seqId: String = ""): File {
             return File(getOutputDirectory(context),
                 "loop_" +
-                        System.currentTimeMillis() + if (video) ".mp4" else ".jpg"
+                        System.currentTimeMillis() + "_" + seqId + if (video) ".mp4" else ".jpg"
             )
         }
 
