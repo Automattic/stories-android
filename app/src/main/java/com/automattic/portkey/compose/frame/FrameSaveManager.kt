@@ -34,14 +34,13 @@ class FrameSaveManager : CoroutineScope {
         originalPhotoEditorView: PhotoEditorView,
         frames: List<StoryFrameItem>
     ): List<File> {
-        // create ghost PhotoEditorView only once for the Story saving process (we'll reuse it)
-        val ghostPhotoEditorView = createGhostPhotoEditor(context, originalPhotoEditorView)
-
         // first, launch all frame save processes async
         val frameDeferreds = ArrayList<Deferred<File>>()
         for ((index, frame) in frames.withIndex()) {
             frameDeferreds.add(
                 async {
+                    // create ghost PhotoEditorView to be used for saving off-screen
+                    val ghostPhotoEditorView = createGhostPhotoEditor(context, originalPhotoEditorView)
                     saveLoopFrame(context, frame, ghostPhotoEditorView, index)
                 }
             )
