@@ -519,7 +519,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 // save all composed frames
                 if (PermissionUtils.checkAndRequestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                     CoroutineScope(Dispatchers.Main).launch {
-                        showLoading("Saving...")
+                        showLoading(getString(R.string.label_saving))
                         saveStory()
                         hideLoading()
                         showToast("READY")
@@ -816,7 +816,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     @SuppressLint("MissingPermission")
     private fun saveVideo(inputFile: Uri) {
         if (PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            showLoading("Saving...")
+            showLoading(getString(R.string.label_saving))
             try {
                 val file = getLoopFrameFile(this, true)
                 file.createNewFile()
@@ -874,7 +874,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     @SuppressLint("MissingPermission")
     private fun saveVideoWithStaticBackground() {
         if (PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            showLoading("Saving...")
+            showLoading(getString(R.string.label_saving))
             try {
                 val file = getLoopFrameFile(this, true, "tmp")
                 file.createNewFile()
@@ -916,7 +916,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
     private fun showLoading(message: String) {
         editModeHideAllUIControls(true)
-        blockTouchOnPhotoEditor()
+        blockTouchOnPhotoEditor(message)
     }
 
     private fun hideLoading() {
@@ -1117,8 +1117,9 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             this, arrayOfPaths, arrayOfmimeTypes, null)
     }
 
-    private fun blockTouchOnPhotoEditor() {
+    private fun blockTouchOnPhotoEditor(message: String) {
         translucent_view.visibility = View.VISIBLE
+        operation_text.text = message
         translucent_view.setOnTouchListener { _, _ ->
             // no op
             true
@@ -1127,6 +1128,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
     private fun releaseTouchOnPhotoEditor() {
         translucent_view.visibility = View.GONE
+        operation_text.text = null
         translucent_view.setOnTouchListener(null)
     }
 
