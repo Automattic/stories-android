@@ -126,7 +126,10 @@ class FrameSaveManager : CoroutineScope {
         return file
     }
 
-    private suspend fun preparePhotoEditorViewForSnapshot(frame: StoryFrameItem, ghostPhotoEditorView: PhotoEditorView) {
+    private suspend fun preparePhotoEditorViewForSnapshot(
+        frame: StoryFrameItem,
+        ghostPhotoEditorView: PhotoEditorView
+    ) {
         // prepare background
         frame.source.file?.let {
             ghostPhotoEditorView.source.setImageBitmap(BitmapFactory.decodeFile(it.absolutePath))
@@ -136,8 +139,7 @@ class FrameSaveManager : CoroutineScope {
         }
 
         // removeViewFromParent for views that were added in the UI thread need to also run on the main thread
-        // otherwise we'd get a
-        // android.view.ViewRootImpl$CalledFromWrongThreadException:
+        // otherwise we'd get a android.view.ViewRootImpl$CalledFromWrongThreadException:
         // Only the original thread that created a view hierarchy can touch its views.
         withContext(Dispatchers.Main) {
             // now call addViewToParent the addedViews remembered by this frame
