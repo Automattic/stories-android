@@ -67,7 +67,6 @@ import com.automattic.portkey.compose.story.StoryRepository
 import com.automattic.portkey.compose.story.StoryViewModel
 import com.automattic.portkey.compose.story.StoryViewModelFactory
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
-// import com.automattic.portkey.util.CrashLoggingUtils
 import com.automattic.portkey.util.getDisplayPixelSize
 import com.automattic.portkey.util.isVideo
 import com.bumptech.glide.Glide
