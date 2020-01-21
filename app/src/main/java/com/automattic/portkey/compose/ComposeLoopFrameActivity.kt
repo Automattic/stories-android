@@ -79,6 +79,7 @@ import kotlinx.android.synthetic.main.content_composer.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
 import kotlin.math.abs
@@ -521,13 +522,9 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     CoroutineScope(Dispatchers.Main).launch {
                         showLoading("Saving...")
                         saveStory()
-                        onStoryFrameSelected(-1, storyViewModel.getSelectedFrameIndex())
                         hideLoading()
-
                         showToast("READY")
                     }
-                    // hideEditModeUIControls()
-                    // switchCameraPreviewOn()
                 }
             }
         }
@@ -544,18 +541,19 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         val transition = photoEditorView.getLayoutTransition()
         photoEditorView.layoutTransition = null
 
-        val frameFileList =
-            frameSaveManager.saveStory(
-                this@ComposeLoopFrameActivity,
-                photoEditorView,
-                storyViewModel.getImmutableCurrentStoryFrames()
-            )
+        withContext(Dispatchers.Default) {
+            val frameFileList =
+                frameSaveManager.saveStory(
+                    this@ComposeLoopFrameActivity,
+                    photoEditorView,
+                    storyViewModel.getImmutableCurrentStoryFrames()
+                )
+            // once all frames have been saved, issue a broadcast so the system knows these frames are ready
+            sendNewStoryReadyBroadcast(frameFileList)
+        }
 
         // re-enable layout change animations
         photoEditorView.layoutTransition = transition
-
-        // once all frames have been saved, issue a broadcast so the system knows these frames are ready
-        sendNewStoryReadyBroadcast(frameFileList)
     }
 
     private fun addCurrentViewsToFrameAtIndex(index: Int) {
@@ -920,7 +918,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     private fun showLoading(message: String) {
-        editModeHideAllUIControls(false)
+        editModeHideAllUIControls(true)
         blockTouchOnPhotoEditor()
     }
 

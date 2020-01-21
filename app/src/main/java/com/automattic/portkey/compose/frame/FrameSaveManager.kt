@@ -97,19 +97,16 @@ class FrameSaveManager : CoroutineScope {
         sequenceId: Int
     ): File {
         lateinit var file: File
-        // creating a new file shouldn't be an expensive operation so, not switching Coroutine context here but staying
-        // on the Main dispatcher seems reasonable
-        // TODO fix the "video: false" parameter here and make a distinction on frame types here (VIDEO, IMAGE, etc)
-        val saveSettings = SaveSettings.Builder()
-            .setClearViewsEnabled(true)
-            .setTransparencyEnabled(false)
-            .build()
-
+        // prepare the ghostview with its background image and the AddedViews on top of it
         preparePhotoEditorViewForSnapshot(frame, ghostPhotoEditorView)
-
         withContext(Dispatchers.IO) {
+            // TODO fix the "video: false" parameter here and make a distinction on frame types here (VIDEO, IMAGE, etc)
             val localFile = FileUtils.getLoopFrameFile(context, false, sequenceId.toString())
             localFile.createNewFile()
+            val saveSettings = SaveSettings.Builder()
+                .setClearViewsEnabled(true)
+                .setTransparencyEnabled(false)
+                .build()
             FileUtils.saveViewToFile(localFile.absolutePath, saveSettings, ghostPhotoEditorView)
             file = localFile
         }
