@@ -21,6 +21,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
 import java.io.File
 import kotlin.coroutines.CoroutineContext
 
@@ -45,6 +46,7 @@ class FrameSaveManager : CoroutineScope {
         for ((index, frame) in frames.withIndex()) {
             frameDeferreds.add(
                 async {
+                    yield()
                     // create ghost PhotoEditorView to be used for saving off-screen
                     val ghostPhotoEditorView = createGhostPhotoEditor(context, originalPhotoEditorView)
                     saveLoopFrame(context, frame, ghostPhotoEditorView, index)
