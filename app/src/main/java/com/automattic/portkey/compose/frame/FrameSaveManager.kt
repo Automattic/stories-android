@@ -27,7 +27,7 @@ import kotlin.coroutines.CoroutineContext
 class FrameSaveManager : CoroutineScope {
     private val job = Job()
     override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main + job
+        get() = Dispatchers.Default + job
 
     suspend fun saveStory(
         context: Context,
