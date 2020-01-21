@@ -29,6 +29,12 @@ class FrameSaveManager : CoroutineScope {
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Default + job
 
+    // TODO: not sure whether we really want to cancel a Story frame saving operation, but for now I'll  let this
+    // one in to be a good citizen with Activity / CoroutineScope
+    fun onCancel() {
+        job.cancel()
+    }
+
     suspend fun saveStory(
         context: Context,
         originalPhotoEditorView: PhotoEditorView,
