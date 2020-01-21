@@ -78,7 +78,6 @@ import kotlinx.android.synthetic.main.content_composer.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
 import kotlin.math.abs
