@@ -3,7 +3,6 @@ package com.automattic.portkey.compose.frame
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.graphics.Color
-import android.view.View
 import android.view.ViewGroup.LayoutParams
 import android.widget.RelativeLayout
 import com.automattic.photoeditor.SaveSettings
@@ -13,6 +12,7 @@ import com.automattic.photoeditor.views.ViewType.STICKER_ANIMATED
 import com.automattic.portkey.compose.story.StoryFrameItem
 import com.automattic.portkey.compose.story.StoryFrameItemType.IMAGE
 import com.automattic.portkey.compose.story.StoryFrameItemType.VIDEO
+import com.automattic.portkey.util.cloneViewSpecs
 import com.automattic.portkey.util.removeViewFromParent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
@@ -117,14 +117,16 @@ class FrameSaveManager : CoroutineScope {
             file = localFile
         }
 
-        // don't forget to remove these views from ghost offscreen view before exiting
-        for (oneView in frame.addedViews) {
-            removeViewFromParent(oneView.view)
+        withContext(Dispatchers.Main) {
+            // don't forget to remove these views from ghost offscreen view before exiting
+            for (oneView in frame.addedViews) {
+                removeViewFromParent(oneView.view)
+            }
         }
         return file
     }
 
-    private fun preparePhotoEditorViewForSnapshot(frame: StoryFrameItem, ghostPhotoEditorView: PhotoEditorView) {
+    private suspend fun preparePhotoEditorViewForSnapshot(frame: StoryFrameItem, ghostPhotoEditorView: PhotoEditorView) {
         // prepare background
         frame.source.file?.let {
             ghostPhotoEditorView.source.setImageBitmap(BitmapFactory.decodeFile(it.absolutePath))
@@ -133,10 +135,16 @@ class FrameSaveManager : CoroutineScope {
             ghostPhotoEditorView.source.setImageURI(it)
         }
 
-        // now call addViewToParent the addedViews remembered by this frame
-        for (oneView in frame.addedViews) {
-            removeViewFromParent(oneView.view)
-            ghostPhotoEditorView.addView(oneView.view, getViewLayoutParams())
+        // removeViewFromParent for views that were added in the UI thread need to also run on the main thread
+        // otherwise we'd get a
+        // android.view.ViewRootImpl$CalledFromWrongThreadException:
+        // Only the original thread that created a view hierarchy can touch its views.
+        withContext(Dispatchers.Main) {
+            // now call addViewToParent the addedViews remembered by this frame
+            for (oneView in frame.addedViews) {
+                removeViewFromParent(oneView.view)
+                ghostPhotoEditorView.addView(oneView.view, getViewLayoutParams())
+            }
         }
     }
 
@@ -150,17 +158,8 @@ class FrameSaveManager : CoroutineScope {
 
     private fun createGhostPhotoEditor(context: Context, originalPhotoEditorView: PhotoEditorView): PhotoEditorView {
         val ghostPhotoView = PhotoEditorView(context)
+        cloneViewSpecs(context, originalPhotoEditorView, ghostPhotoView)
         ghostPhotoView.setBackgroundColor(Color.BLACK)
-        // get target measures from original PhotoEditorView
-        val originalWidth = originalPhotoEditorView.getWidth()
-        val originalHeight = originalPhotoEditorView.getHeight()
-
-        val measuredWidth = View.MeasureSpec.makeMeasureSpec(originalWidth, View.MeasureSpec.EXACTLY)
-        val measuredHeight = View.MeasureSpec.makeMeasureSpec(originalHeight, View.MeasureSpec.EXACTLY)
-
-        ghostPhotoView.measure(measuredWidth, measuredHeight)
-        ghostPhotoView.layout(0, 0, ghostPhotoView.getMeasuredWidth(), ghostPhotoView.getMeasuredHeight())
-
         return ghostPhotoView
     }
 }
