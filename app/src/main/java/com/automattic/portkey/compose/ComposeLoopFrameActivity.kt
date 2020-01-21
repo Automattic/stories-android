@@ -540,16 +540,14 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         val transition = photoEditorView.getLayoutTransition()
         photoEditorView.layoutTransition = null
 
-        withContext(Dispatchers.Default) {
-            val frameFileList =
-                frameSaveManager.saveStory(
-                    this@ComposeLoopFrameActivity,
-                    photoEditorView,
-                    storyViewModel.getImmutableCurrentStoryFrames()
-                )
-            // once all frames have been saved, issue a broadcast so the system knows these frames are ready
-            sendNewStoryReadyBroadcast(frameFileList)
-        }
+        val frameFileList =
+            frameSaveManager.saveStory(
+                this@ComposeLoopFrameActivity,
+                photoEditorView,
+                storyViewModel.getImmutableCurrentStoryFrames()
+            )
+        // once all frames have been saved, issue a broadcast so the system knows these frames are ready
+        sendNewStoryReadyBroadcast(frameFileList)
 
         // re-enable layout change animations
         photoEditorView.layoutTransition = transition
