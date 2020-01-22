@@ -27,6 +27,7 @@ import androidx.emoji.text.EmojiCompat
 import com.automattic.photoeditor.gesture.MultiTouchListener
 import com.automattic.photoeditor.gesture.MultiTouchListener.OnMultiTouchListener
 import com.automattic.photoeditor.util.BitmapUtil
+import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.PhotoEditorView
 import com.automattic.photoeditor.views.ViewType
 import com.automattic.photoeditor.views.added.AddedView
@@ -618,6 +619,17 @@ class PhotoEditor private constructor(builder: Builder) :
          * Call when user cancelled operation
          */
         fun onCancel(noAddedViews: Boolean = false)
+    }
+
+    fun saveImageFromPhotoEditorView(sequenceId: Int, photoEditorView: PhotoEditorView): File {
+        val localFile = FileUtils.getLoopFrameFile(context, false, sequenceId.toString())
+        localFile.createNewFile()
+        val saveSettings = SaveSettings.Builder()
+            .setClearViewsEnabled(true)
+            .setTransparencyEnabled(false)
+            .build()
+        FileUtils.saveViewToFile(localFile.absolutePath, saveSettings, photoEditorView)
+        return localFile
     }
 
     /**

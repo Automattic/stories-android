@@ -5,8 +5,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.view.ViewGroup.LayoutParams
 import android.widget.RelativeLayout
-import com.automattic.photoeditor.SaveSettings
-import com.automattic.photoeditor.util.FileUtils
+import com.automattic.photoeditor.PhotoEditor
 import com.automattic.photoeditor.views.PhotoEditorView
 import com.automattic.photoeditor.views.ViewType.STICKER_ANIMATED
 import com.automattic.portkey.compose.story.StoryFrameItem
@@ -25,7 +24,7 @@ import kotlinx.coroutines.yield
 import java.io.File
 import kotlin.coroutines.CoroutineContext
 
-class FrameSaveManager : CoroutineScope {
+class FrameSaveManager(val photoEditor: PhotoEditor) : CoroutineScope {
     private val job = Job()
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Default + job
@@ -38,7 +37,6 @@ class FrameSaveManager : CoroutineScope {
 
     suspend fun saveStory(
         context: Context,
-        originalPhotoEditorView: PhotoEditorView,
         frames: List<StoryFrameItem>
     ): List<File> {
         // first, launch all frame save processes async
@@ -48,8 +46,8 @@ class FrameSaveManager : CoroutineScope {
                 async {
                     yield()
                     // create ghost PhotoEditorView to be used for saving off-screen
-                    val ghostPhotoEditorView = createGhostPhotoEditor(context, originalPhotoEditorView)
-                    saveLoopFrame(context, frame, ghostPhotoEditorView, index)
+                    val ghostPhotoEditorView = createGhostPhotoEditor(context, photoEditor.composedCanvas)
+                    saveLoopFrame(frame, ghostPhotoEditorView, index)
                 }
             )
         }
@@ -65,7 +63,6 @@ class FrameSaveManager : CoroutineScope {
     }
 
     private suspend fun saveLoopFrame(
-        context: Context,
         frame: StoryFrameItem,
         ghostPhotoEditorView: PhotoEditorView,
         sequenceId: Int
@@ -91,7 +88,7 @@ class FrameSaveManager : CoroutineScope {
                     // TODO make saveVideoWithStaticBackground return File
                     // saveVideoWithStaticBackground()
                 } else {
-                    frameFile = saveImageFrame(context, frame, ghostPhotoEditorView, sequenceId)
+                    frameFile = saveImageFrame(frame, ghostPhotoEditorView, sequenceId)
                 }
             }
         }
@@ -99,7 +96,6 @@ class FrameSaveManager : CoroutineScope {
     }
 
     suspend fun saveImageFrame(
-        context: Context,
         frame: StoryFrameItem,
         ghostPhotoEditorView: PhotoEditorView,
         sequenceId: Int
@@ -108,15 +104,7 @@ class FrameSaveManager : CoroutineScope {
         // prepare the ghostview with its background image and the AddedViews on top of it
         preparePhotoEditorViewForSnapshot(frame, ghostPhotoEditorView)
         withContext(Dispatchers.IO) {
-            // TODO fix the "video: false" parameter here and make a distinction on frame types here (VIDEO, IMAGE, etc)
-            val localFile = FileUtils.getLoopFrameFile(context, false, sequenceId.toString())
-            localFile.createNewFile()
-            val saveSettings = SaveSettings.Builder()
-                .setClearViewsEnabled(true)
-                .setTransparencyEnabled(false)
-                .build()
-            FileUtils.saveViewToFile(localFile.absolutePath, saveSettings, ghostPhotoEditorView)
-            file = localFile
+            file = photoEditor.saveImageFromPhotoEditorView(sequenceId, ghostPhotoEditorView)
         }
 
         withContext(Dispatchers.Main) {

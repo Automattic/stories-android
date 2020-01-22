@@ -119,7 +119,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     private var isEditingText: Boolean = false
 
     private lateinit var storyViewModel: StoryViewModel
-    private val frameSaveManager: FrameSaveManager = FrameSaveManager()
+    private lateinit var frameSaveManager: FrameSaveManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -200,6 +200,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 delete_view.setReadyForDelete(ready)
             }
         })
+
+        frameSaveManager = FrameSaveManager(photoEditor)
 
         backgroundSurfaceManager = BackgroundSurfaceManager(
             savedInstanceState,
@@ -547,7 +549,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         val frameFileList =
             frameSaveManager.saveStory(
                 this@ComposeLoopFrameActivity,
-                photoEditorView,
                 storyViewModel.getImmutableCurrentStoryFrames()
             )
         // once all frames have been saved, issue a broadcast so the system knows these frames are ready
