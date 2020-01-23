@@ -26,14 +26,15 @@ public enum MediaBrowserType {
     }
 
     public boolean isSingleMediaItemPicker() {
-        return isSingleImagePicker() || this == PORTKEY_PICKER;
+        return isSingleImagePicker();
     }
 
     public boolean canMultiselect() {
         return this == EDITOR_PICKER
                || this == AZTEC_EDITOR_PICKER
                || this == GUTENBERG_IMAGE_PICKER
-               || this == GUTENBERG_VIDEO_PICKER;
+               || this == GUTENBERG_VIDEO_PICKER
+               || this == PORTKEY_PICKER;
     }
 
     public boolean canFilter() {

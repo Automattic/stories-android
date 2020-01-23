@@ -26,6 +26,7 @@ import com.automattic.portkey.R;
 import com.automattic.portkey.compose.photopicker.utils.CameraIntentUtils;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -35,6 +36,7 @@ public class PhotoPickerActivity extends AppCompatActivity
     private static final String KEY_MEDIA_CAPTURE_PATH = "media_capture_path";
 
     public static final String EXTRA_MEDIA_URI = "media_uri";
+    public static final String EXTRA_MEDIA_URI_LIST = "media_uri_list";
     public static final String EXTRA_MEDIA_ID = "media_id";
     public static final String EXTRA_MEDIA_QUEUED = "media_queued";
 
@@ -284,6 +286,17 @@ public class PhotoPickerActivity extends AppCompatActivity
 //        }
     }
 
+
+    // ToDo: this method added in Portkey, will most probably need to be added in WPAndroid's
+    //  PhotoPicker when integrating there
+    private void doMediaUriListSelected(@NonNull ArrayList<Uri> mediaUriList, @NonNull PhotoPickerMediaSource source) {
+        Intent intent = new Intent()
+                .putExtra(EXTRA_MEDIA_URI_LIST, mediaUriList)
+                .putExtra(EXTRA_MEDIA_SOURCE, source.name());
+        setResult(RESULT_OK, intent);
+        finish();
+    }
+
     private void doMediaIdSelected(long mediaId, @NonNull PhotoPickerMediaSource source) {
         Intent data = new Intent()
                 .putExtra(EXTRA_MEDIA_ID, mediaId)
@@ -294,7 +307,9 @@ public class PhotoPickerActivity extends AppCompatActivity
 
     @Override
     public void onPhotoPickerMediaChosen(@NonNull List<Uri> uriList) {
-        if (uriList.size() > 0) {
+        if (uriList.size() > 1) {
+            doMediaUriListSelected(new ArrayList<>(uriList), PhotoPickerMediaSource.APP_PICKER);
+        } else {
             doMediaUriSelected(uriList.get(0), PhotoPickerMediaSource.APP_PICKER);
         }
     }

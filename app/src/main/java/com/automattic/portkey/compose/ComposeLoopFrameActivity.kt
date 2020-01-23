@@ -345,35 +345,45 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
         when (requestCode) {
             RequestCodes.PHOTO_PICKER -> if (resultCode == Activity.RESULT_OK && data != null) {
-                val strMediaUri = data.getStringExtra(PhotoPickerActivity.EXTRA_MEDIA_URI)
-                if (strMediaUri == null) {
-                    Log.e("Composer", "Can't resolve picked media")
-                    showToast("Can't resolve picked media")
-                    return
-                }
-
-                // decide whether the picked media is a VIDEO or an IMAGE
-                val isVideo = isVideo(strMediaUri)
-                if (isVideo) {
-                    // now start playing the video we just recorded
-                    showPlayVideo(Uri.parse(strMediaUri))
+                if (data.hasExtra(PhotoPickerActivity.EXTRA_MEDIA_URI_LIST)) {
+                    val uriList = data.getParcelableArrayListExtra<Uri>(PhotoPickerActivity.EXTRA_MEDIA_URI_LIST)
+                    addFramesToStoryFromMediaUriList(uriList)
+                    setDefaultSelectionAndUpdateBackgroundSurfaceUI()
                 } else {
-                    // assuming image for now
-                    Glide.with(this@ComposeLoopFrameActivity)
-                        .load(strMediaUri)
-                        .transform(CenterCrop())
-                        .into(photoEditorView.source)
-                    showStaticBackground()
-                }
-                storyViewModel.apply {
-                    addStoryFrameItemToCurrentStory(StoryFrameItem(
-                        BackgroundSource(contentUri = Uri.parse(strMediaUri)),
-                        frameItemType = if (isVideo) VIDEO else IMAGE
-                    ))
-                    setSelectedFrame(0)
+                    val mediaUri = data.getStringExtra(PhotoPickerActivity.EXTRA_MEDIA_URI)
+                    if (mediaUri == null) {
+                        Log.e("Composer", "Can't resolve picked media")
+                        showToast("Can't resolve picked media")
+                        return
+                    }
+                    addFrameToStoryFromMediaUri(Uri.parse(mediaUri))
+                    setDefaultSelectionAndUpdateBackgroundSurfaceUI()
                 }
             }
         }
+    }
+
+    private fun setDefaultSelectionAndUpdateBackgroundSurfaceUI() {
+        storyViewModel.setSelectedFrame(0)
+        updateBackgroundSurfaceUIWithStoryFrame(0)
+    }
+
+    private fun addFramesToStoryFromMediaUriList(uriList: ArrayList<Uri>) {
+        for (mediaUri in uriList) {
+            addFrameToStoryFromMediaUri(mediaUri)
+        }
+    }
+
+    private fun addFrameToStoryFromMediaUri(mediaUri: Uri) {
+        storyViewModel
+            .addStoryFrameItemToCurrentStory(StoryFrameItem(
+                BackgroundSource(contentUri = Uri.parse(mediaUri.toString())),
+                frameItemType = if (isVideo(mediaUri.toString())) VIDEO else IMAGE
+            ))
+    }
+
+    private fun updateBackgroundSurfaceUIWithStoryFrame(storyFrameIndex: Int) {
+        onStoryFrameSelected(storyViewModel.getSelectedFrameIndex(), storyFrameIndex)
     }
 
     private fun addClickListeners() {
