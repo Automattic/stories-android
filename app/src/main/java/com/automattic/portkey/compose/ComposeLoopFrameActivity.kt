@@ -1196,10 +1196,17 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 }
             }
         } else {
-            Glide.with(this@ComposeLoopFrameActivity)
-                .load((source as FileBackgroundSource).file ?: (source as UriBackgroundSource).contentUri)
-                .transform(CenterCrop())
-                .into(photoEditorView.source)
+            if (source is FileBackgroundSource) {
+                Glide.with(this@ComposeLoopFrameActivity)
+                    .load(source.file)
+                    .transform(CenterCrop())
+                    .into(photoEditorView.source)
+            } else {
+                Glide.with(this@ComposeLoopFrameActivity)
+                    .load((source as UriBackgroundSource).contentUri)
+                    .transform(CenterCrop())
+                    .into(photoEditorView.source)
+            }
             showStaticBackground()
         }
 
