@@ -38,6 +38,13 @@
     <dimen name="save_button_total_width">100dp</dimen>
     <dimen name="save_button_total_height">40dp</dimen>
 
+    <dimen name="next_button_bottom_margin">24dp</dimen>
+    <dimen name="next_button_right_margin">16dp</dimen>
+    <dimen name="next_button_text_width">72dp</dimen>
+    <dimen name="next_button_total_width">100dp</dimen>
+    <dimen name="next_button_total_height">40dp</dimen>
+    <dimen name="next_button_elevation">6dp</dimen>
+
     <dimen name="editor_initial_text_size">40sp</dimen>
     <dimen name="emoji_picker_initial_text_size">35sp</dimen>
 <!-- emoji_picker_initial_size can be anything, it needs be fixed but we are going to calculate it

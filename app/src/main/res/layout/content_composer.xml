@@ -327,13 +327,14 @@
         android:backgroundTint="@color/white"
         />
 
-    <com.automattic.portkey.compose.SaveButton
-        android:id="@+id/save_button"
-        android:layout_width="@dimen/save_button_total_width"
-        android:layout_height="@dimen/save_button_total_height"
-        android:layout_marginBottom="@dimen/save_button_bottom_margin"
-        android:layout_marginEnd="@dimen/save_button_right_margin"
-        android:visibility="invisible"
+    <com.automattic.portkey.compose.NextButton
+        android:id="@+id/next_button"
+        android:layout_width="@dimen/next_button_total_width"
+        android:layout_height="@dimen/next_button_total_height"
+        android:layout_marginBottom="@dimen/next_button_bottom_margin"
+        android:layout_marginEnd="@dimen/next_button_right_margin"
+        android:background="@drawable/next_button_background"
+        android:elevation="@dimen/next_button_elevation"
         app:layout_constraintBottom_toTopOf="@id/bottom_strip_view"
         app:layout_constraintRight_toRightOf="parent"/>
 
