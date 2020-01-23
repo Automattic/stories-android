@@ -24,7 +24,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import java.io.File
@@ -173,7 +172,7 @@ class FrameSaveManager(val photoEditor: PhotoEditor) : CoroutineScope {
         frame: StoryFrameItem,
         sequenceId: Int,
         onSaveListener: OnSaveWithCancelListener
-        ): Boolean {
+    ): Boolean {
         var callMade = false
         // we only need the width and height of a model canvas, not creating a canvas clone in the case of videos
         // as these are all processed in the background
