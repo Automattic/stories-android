@@ -176,8 +176,6 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: In
         }
         storyItems.forEachIndexed { index, model ->
             val isSelected = (getSelectedFrameIndex() == index)
-//            val filePath =
-//                if (model.source.isUri()) model.source.contentUri.toString() else model.source.file.toString()
             val filePath =
                 if ((model.source is UriBackgroundSource)) {
                     model.source.contentUri.toString()
