@@ -3,12 +3,16 @@ package com.automattic.portkey.compose.frame
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.net.Uri
 import android.view.ViewGroup.LayoutParams
 import android.widget.RelativeLayout
 import com.automattic.photoeditor.PhotoEditor
+import com.automattic.photoeditor.PhotoEditor.OnSaveWithCancelListener
 import com.automattic.photoeditor.views.PhotoEditorView
 import com.automattic.photoeditor.views.ViewType.STICKER_ANIMATED
 import com.automattic.portkey.compose.story.StoryFrameItem
+import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource.FileBackgroundSource
+import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource.UriBackgroundSource
 import com.automattic.portkey.compose.story.StoryFrameItemType.IMAGE
 import com.automattic.portkey.compose.story.StoryFrameItemType.VIDEO
 import com.automattic.portkey.util.cloneViewSpecs
@@ -19,6 +23,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import java.io.File
@@ -40,14 +46,12 @@ class FrameSaveManager(val photoEditor: PhotoEditor) : CoroutineScope {
         frames: List<StoryFrameItem>
     ): List<File> {
         // first, launch all frame save processes async
-        val frameDeferreds = ArrayList<Deferred<File>>()
+        val frameDeferreds = ArrayList<Deferred<File?>>()
         for ((index, frame) in frames.withIndex()) {
             frameDeferreds.add(
                 async {
                     yield()
-                    // create ghost PhotoEditorView to be used for saving off-screen
-                    val ghostPhotoEditorView = createGhostPhotoEditor(context, photoEditor.composedCanvas)
-                    saveLoopFrame(frame, ghostPhotoEditorView, index)
+                    saveLoopFrame(context, frame, index)
                 }
             )
         }
@@ -56,31 +60,23 @@ class FrameSaveManager(val photoEditor: PhotoEditor) : CoroutineScope {
         // now that all of them have ended, let's return the files saved as frames for the Story collection
         val frameFileList = ArrayList<File>()
         for (deferred in frameDeferreds) {
-            frameFileList.add(deferred.getCompleted())
+            deferred.getCompleted()?.let {
+                frameFileList.add(it)
+            }
         }
 
         return frameFileList
     }
 
     private suspend fun saveLoopFrame(
+        context: Context,
         frame: StoryFrameItem,
-        ghostPhotoEditorView: PhotoEditorView,
         sequenceId: Int
-    ): File {
-        lateinit var frameFile: File
+    ): File? {
+        var frameFile: File? = null
         when (frame.frameItemType) {
             VIDEO -> {
-                if (frame.source.isFile()) {
-                    frame.source.file?.let {
-                        // TODO make saveVideo return File
-                        // saveVideo(Uri.parse(it.toString()))
-                    }
-                } else {
-                    frame.source.contentUri?.let {
-                        // TODO make saveVideo return File
-                        // saveVideo(it)
-                    }
-                }
+                frameFile = saveVideoFrame(frame, sequenceId)
             }
             IMAGE -> {
                 // check whether there are any GIF stickers - if there are, we need to produce a video instead
@@ -88,6 +84,8 @@ class FrameSaveManager(val photoEditor: PhotoEditor) : CoroutineScope {
                     // TODO make saveVideoWithStaticBackground return File
                     // saveVideoWithStaticBackground()
                 } else {
+                    // create ghost PhotoEditorView to be used for saving off-screen
+                    val ghostPhotoEditorView = createGhostPhotoEditor(context, photoEditor.composedCanvas)
                     frameFile = saveImageFrame(frame, ghostPhotoEditorView, sequenceId)
                 }
             }
@@ -95,16 +93,16 @@ class FrameSaveManager(val photoEditor: PhotoEditor) : CoroutineScope {
         return frameFile
     }
 
-    suspend fun saveImageFrame(
+    private suspend fun saveImageFrame(
         frame: StoryFrameItem,
         ghostPhotoEditorView: PhotoEditorView,
         sequenceId: Int
-    ): File {
-        lateinit var file: File
+    ): File? {
+        var file: File? = null
         // prepare the ghostview with its background image and the AddedViews on top of it
         preparePhotoEditorViewForSnapshot(frame, ghostPhotoEditorView)
         withContext(Dispatchers.IO) {
-            file = photoEditor.saveImageFromPhotoEditorView(sequenceId, ghostPhotoEditorView)
+            file = photoEditor.saveImageFromPhotoEditorViewAsLoopFrameFile(sequenceId, ghostPhotoEditorView)
         }
 
         withContext(Dispatchers.Main) {
@@ -116,16 +114,111 @@ class FrameSaveManager(val photoEditor: PhotoEditor) : CoroutineScope {
         return file
     }
 
+    private suspend fun saveVideoFrame(
+        frame: StoryFrameItem,
+        sequenceId: Int
+    ): File? {
+        var file: File? = null
+
+        withContext(Dispatchers.IO) {
+            var listenerDone = false
+            val saveListener = object : PhotoEditor.OnSaveWithCancelListener {
+                override fun onCancel(noAddedViews: Boolean) {
+//                    runOnUiThread {
+//                        hideLoading()
+//                        showSnackbar("No views added - original video saved")
+//                    }
+                    listenerDone = true
+                }
+
+                override fun onSuccess(filePath: String) {
+//                    runOnUiThread {
+//                        hideLoading()
+//                        deleteCapturedMedia()
+//                        photoEditor.clearAllViews()
+//                        sendNewStoryFrameReadyBroadcast(file)
+//                        showSnackbar(
+//                            getString(R.string.label_snackbar_loop_frame_saved),
+//                            getString(R.string.label_snackbar_share),
+//                            OnClickListener { shareAction(file) }
+//                        )
+//                        hideEditModeUIControls()
+//                        switchCameraPreviewOn()
+//                    }
+                    file = File(filePath)
+                    listenerDone = true
+                }
+
+                override fun onFailure(exception: Exception) {
+//                    runOnUiThread {
+//                        hideLoading()
+//                        showSnackbar("Failed to save Video")
+//                    }
+                    listenerDone = true
+                }
+            }
+
+            if (saveVideoAsLoopFrameFile(frame, sequenceId, saveListener)) {
+                // don't return until we get a signal in the listener
+                while (!listenerDone) {
+                    delay(100)
+                }
+            }
+        }
+
+        return file
+    }
+
+    private fun saveVideoAsLoopFrameFile(
+        frame: StoryFrameItem,
+        sequenceId: Int,
+        onSaveListener: OnSaveWithCancelListener
+        ): Boolean {
+        var callMade = false
+        // we only need the width and height of a model canvas, not creating a canvas clone in the case of videos
+        // as these are all processed in the background
+        if (frame.source is UriBackgroundSource) {
+            frame.source.contentUri?.let {
+                photoEditor.saveVideoAsLoopFrameFile(
+                    sequenceId,
+                    it,
+                    photoEditor.composedCanvas.width,
+                    photoEditor.composedCanvas.height,
+                    frame.addedViews,
+                    onSaveListener
+                )
+                callMade = true
+            }
+        } else {
+            (frame.source as FileBackgroundSource).file?.let {
+                photoEditor.saveVideoAsLoopFrameFile(
+                    sequenceId,
+                    Uri.parse(it.absolutePath),
+                    photoEditor.composedCanvas.width,
+                    photoEditor.composedCanvas.height,
+                    frame.addedViews,
+                    onSaveListener
+                )
+                callMade = true
+            }
+        }
+        return callMade
+    }
+
     private suspend fun preparePhotoEditorViewForSnapshot(
         frame: StoryFrameItem,
         ghostPhotoEditorView: PhotoEditorView
     ) {
         // prepare background
-        frame.source.file?.let {
-            ghostPhotoEditorView.source.setImageBitmap(BitmapFactory.decodeFile(it.absolutePath))
+        if (frame.source is FileBackgroundSource) {
+            frame.source.file?.let {
+                ghostPhotoEditorView.source.setImageBitmap(BitmapFactory.decodeFile(it.absolutePath))
+            }
         }
-        frame.source.contentUri?.let {
-            ghostPhotoEditorView.source.setImageURI(it)
+        if (frame.source is UriBackgroundSource) {
+            frame.source.contentUri?.let {
+                ghostPhotoEditorView.source.setImageURI(it)
+            }
         }
 
         // removeViewFromParent for views that were added in the UI thread need to also run on the main thread
