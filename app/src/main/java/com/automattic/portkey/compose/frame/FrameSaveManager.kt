@@ -123,36 +123,18 @@ class FrameSaveManager(val photoEditor: PhotoEditor) : CoroutineScope {
             var listenerDone = false
             val saveListener = object : PhotoEditor.OnSaveWithCancelListener {
                 override fun onCancel(noAddedViews: Boolean) {
-//                    runOnUiThread {
-//                        hideLoading()
-//                        showSnackbar("No views added - original video saved")
-//                    }
+                    // TODO: error handling
                     listenerDone = true
                 }
 
                 override fun onSuccess(filePath: String) {
-//                    runOnUiThread {
-//                        hideLoading()
-//                        deleteCapturedMedia()
-//                        photoEditor.clearAllViews()
-//                        sendNewStoryFrameReadyBroadcast(file)
-//                        showSnackbar(
-//                            getString(R.string.label_snackbar_loop_frame_saved),
-//                            getString(R.string.label_snackbar_share),
-//                            OnClickListener { shareAction(file) }
-//                        )
-//                        hideEditModeUIControls()
-//                        switchCameraPreviewOn()
-//                    }
+                    // all good here, continue success path
                     file = File(filePath)
                     listenerDone = true
                 }
 
                 override fun onFailure(exception: Exception) {
-//                    runOnUiThread {
-//                        hideLoading()
-//                        showSnackbar("Failed to save Video")
-//                    }
+                    // TODO: error handling
                     listenerDone = true
                 }
             }
