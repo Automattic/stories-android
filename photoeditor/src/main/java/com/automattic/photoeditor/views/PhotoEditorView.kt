@@ -12,6 +12,7 @@ import android.view.TextureView.SurfaceTextureListener
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.ImageView.ScaleType.CENTER_CROP
 import android.widget.RelativeLayout
 import androidx.annotation.RequiresApi
 import com.automattic.photoeditor.OnSaveBitmap
@@ -105,6 +106,7 @@ class PhotoEditorView : RelativeLayout {
         backgroundImage = BackgroundImageView(context).apply {
             id = imgSrcId
             adjustViewBounds = true
+            scaleType = CENTER_CROP
         }
 
         val imgSrcParam = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT).apply {

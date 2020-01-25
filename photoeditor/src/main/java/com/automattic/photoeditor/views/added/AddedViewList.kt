@@ -1,6 +1,7 @@
 package com.automattic.photoeditor.views.added
 
 import android.view.View
+import com.automattic.photoeditor.views.ViewType
 import java.util.ArrayList
 
 class AddedViewList(addedViewList: AddedViewList? = null) : ArrayList<AddedView>() {
@@ -34,5 +35,14 @@ class AddedViewList(addedViewList: AddedViewList? = null) : ArrayList<AddedView>
             }
         }
         return -1
+    }
+
+    fun containsAnyAddedViewsOfType(type: ViewType): Boolean {
+        for (v: AddedView in this) {
+            if (v.viewType == type) {
+                return true
+            }
+        }
+        return false
     }
 }
