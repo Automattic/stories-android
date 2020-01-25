@@ -44,6 +44,7 @@ import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment.FlashS
 import com.automattic.photoeditor.state.BackgroundSurfaceManager
 import com.automattic.photoeditor.util.FileUtils.Companion.getLoopFrameFile
 import com.automattic.photoeditor.util.PermissionUtils
+import com.automattic.photoeditor.views.PhotoEditorView
 import com.automattic.photoeditor.views.ViewType
 import com.automattic.photoeditor.views.ViewType.STICKER_ANIMATED
 import com.automattic.photoeditor.views.ViewType.TEXT
@@ -796,16 +797,18 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }, CAMERA_STILL_PICTURE_WAIT_FOR_NEXT_CAPTURE_MS)
     }
 
-    private suspend fun saveLoopFrame(frame: StoryFrameItem): File {
+    private suspend fun saveLoopFrame(frame: StoryFrameItem, ghostPhotoEditorView: PhotoEditorView): File {
         lateinit var frameFile: File
         when (frame.frameItemType) {
             VIDEO -> {
                 if (frame.source.isFile()) {
                     frame.source.file?.let {
+                        // TODO make saveVideo return File
                         saveVideo(Uri.parse(it.toString()))
                     }
                 } else {
                     frame.source.contentUri?.let {
+                        // TODO make saveVideo return File
                         saveVideo(it)
                     }
                 }
@@ -813,26 +816,40 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             IMAGE -> {
                 // check whether there are any GIF stickers - if there are, we need to produce a video instead
                 if (frame.addedViews.containsAnyAddedViewsOfType(STICKER_ANIMATED)) {
+                    // TODO make saveVideoWithStaticBackground return File
                     saveVideoWithStaticBackground()
                 } else {
-                    frameFile = saveImageFrame(frame)
+                    frameFile = saveImageFrame(frame, ghostPhotoEditorView)
                 }
             }
         }
         return frameFile
     }
 
-    private suspend fun saveImageFrame(frame: StoryFrameItem): File {
-        val file = frameSaveManager.saveImageFrame(this@ComposeLoopFrameActivity, frame, photoEditor)
+    private suspend fun saveImageFrame(frame: StoryFrameItem, ghostPhotoEditorView: PhotoEditorView): File {
+        val file = frameSaveManager.saveImageFrame(this@ComposeLoopFrameActivity, frame, ghostPhotoEditorView)
         deleteCapturedMedia()
         return file
     }
 
     private suspend fun saveStory() {
+        // disable layout change animations, we need this to make added views immediately visible, otherwise
+        // we may end up capturing a Bitmap of a backing drawable that still has not been updated
+        // (i.e. no visible added Views)
+        val transition = photoEditorView.getLayoutTransition()
+        photoEditorView.layoutTransition = null
+
+        // create ghost PhotoEditorView only once for the Story saving process (we'll reuse it)
+        val ghostPhotoEditorView = frameSaveManager.createGhostPhotoEditor(this, photoEditorView)
+
         val frameFileList = ArrayList<File>()
         for (frame in storyViewModel.getImmutableCurrentStoryFrames()) {
-            frameFileList.add(saveLoopFrame(frame))
+            frameFileList.add(saveLoopFrame(frame, ghostPhotoEditorView))
         }
+
+        // re-enable layout change animations
+        photoEditorView.layoutTransition = transition
+
         // once all frames have been saved, issue a broadcast so the system knows these frames are ready
         sendNewStoryReadyBroadcast(frameFileList)
 
@@ -1191,6 +1208,14 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             addCurrentViewsToFrameAtIndex(oldIndex)
         }
 
+        // This is tricky. See https://stackoverflow.com/questions/45860434/cant-remove-view-from-root-view
+        // we need to disable layout transition animations so changes in views' parent are set
+        // immediately. Otherwise a view's parent will only change once the animation ends, and hence
+        // we could reach an IllegalStateException where we are trying to add a view to another parent while it still
+        // belongs to a definite parent.
+        val transition = photoEditor.composedCanvas.getLayoutTransition()
+        photoEditor.composedCanvas.layoutTransition = null
+
         // now clear addedViews so we don't leak View.Context
         photoEditor.clearAllViews()
 
@@ -1228,6 +1253,9 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 photoEditor.addViewToParent(oneView.view, oneView.viewType)
             }
         }
+
+        // re-enable layout change animations
+        photoEditor.composedCanvas.layoutTransition = transition
     }
 
     override fun onStoryFrameAddTapped() {
