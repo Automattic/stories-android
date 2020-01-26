@@ -1196,17 +1196,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 }
             }
         } else {
-            if (source is FileBackgroundSource) {
-                Glide.with(this@ComposeLoopFrameActivity)
-                    .load(source.file)
-                    .transform(CenterCrop())
-                    .into(photoEditorView.source)
-            } else {
-                Glide.with(this@ComposeLoopFrameActivity)
-                    .load((source as UriBackgroundSource).contentUri)
-                    .transform(CenterCrop())
-                    .into(photoEditorView.source)
-            }
+            val model = (source as? FileBackgroundSource)?.file ?: (source as UriBackgroundSource).contentUri
+            Glide.with(this@ComposeLoopFrameActivity)
+                .load(model)
+                .transform(CenterCrop())
+                .into(photoEditorView.source)
             showStaticBackground()
         }
 
