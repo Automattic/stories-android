@@ -18,7 +18,6 @@ import com.automattic.portkey.compose.story.StoryFrameItemType.VIDEO
 import com.automattic.portkey.util.cloneViewSpecs
 import com.automattic.portkey.util.removeViewFromParent
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -43,28 +42,16 @@ class FrameSaveManager(val photoEditor: PhotoEditor) : CoroutineScope {
     suspend fun saveStory(
         context: Context,
         frames: List<StoryFrameItem>
-    ): List<File> {
+    ): List<File?> {
         // first, launch all frame save processes async
-        val frameDeferreds = ArrayList<Deferred<File?>>()
-        for ((index, frame) in frames.withIndex()) {
-            frameDeferreds.add(
-                async {
+        return frames.mapIndexed { index, frame ->
+            async {
+                withContext(coroutineContext) {
                     yield()
                     saveLoopFrame(context, frame, index)
                 }
-            )
-        }
-        frameDeferreds.awaitAll()
-
-        // now that all of them have ended, let's return the files saved as frames for the Story collection
-        val frameFileList = ArrayList<File>()
-        for (deferred in frameDeferreds) {
-            deferred.getCompleted()?.let {
-                frameFileList.add(it)
             }
-        }
-
-        return frameFileList
+        }.awaitAll()
     }
 
     private suspend fun saveLoopFrame(
