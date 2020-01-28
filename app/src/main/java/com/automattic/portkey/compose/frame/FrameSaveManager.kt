@@ -46,10 +46,12 @@ class FrameSaveManager : CoroutineScope {
         for ((index, frame) in frames.withIndex()) {
             frameDeferreds.add(
                 async {
-                    yield()
-                    // create ghost PhotoEditorView to be used for saving off-screen
-                    val ghostPhotoEditorView = createGhostPhotoEditor(context, originalPhotoEditorView)
-                    saveLoopFrame(context, frame, ghostPhotoEditorView, index)
+                    withContext(coroutineContext) {
+                        yield()
+                        // create ghost PhotoEditorView to be used for saving off-screen
+                        val ghostPhotoEditorView = createGhostPhotoEditor(context, originalPhotoEditorView)
+                        saveLoopFrame(context, frame, ghostPhotoEditorView, index)
+                    }
                 }
             )
         }
