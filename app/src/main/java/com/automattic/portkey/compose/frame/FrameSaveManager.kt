@@ -53,15 +53,7 @@ class FrameSaveManager : CoroutineScope {
                 }
             )
         }
-        frameDeferreds.awaitAll()
-
-        // now that all of them have ended, let's return the files saved as frames for the Story collection
-        val frameFileList = ArrayList<File>()
-        for (deferred in frameDeferreds) {
-            frameFileList.add(deferred.getCompleted())
-        }
-
-        return frameFileList
+        return frameDeferreds.awaitAll()
     }
 
     private suspend fun saveLoopFrame(
