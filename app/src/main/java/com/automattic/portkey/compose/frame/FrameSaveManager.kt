@@ -83,12 +83,11 @@ class FrameSaveManager(val photoEditor: PhotoEditor) : CoroutineScope {
         frame: StoryFrameItem,
         ghostPhotoEditorView: PhotoEditorView,
         sequenceId: Int
-    ): File? {
-        var file: File? = null
+    ): File {
         // prepare the ghostview with its background image and the AddedViews on top of it
         preparePhotoEditorViewForSnapshot(frame, ghostPhotoEditorView)
-        withContext(Dispatchers.IO) {
-            file = photoEditor.saveImageFromPhotoEditorViewAsLoopFrameFile(sequenceId, ghostPhotoEditorView)
+        val file = withContext(Dispatchers.IO) {
+            return@withContext photoEditor.saveImageFromPhotoEditorViewAsLoopFrameFile(sequenceId, ghostPhotoEditorView)
         }
 
         withContext(Dispatchers.Main) {
