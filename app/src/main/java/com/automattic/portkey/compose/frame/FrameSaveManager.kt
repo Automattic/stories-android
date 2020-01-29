@@ -45,8 +45,8 @@ class FrameSaveManager(val photoEditor: PhotoEditor) : CoroutineScope {
     ): List<File?> {
         // first, launch all frame save processes async
         return frames.mapIndexed { index, frame ->
-            async {
-                withContext(coroutineContext) {
+            withContext(coroutineContext) {
+                async {
                     yield()
                     saveLoopFrame(context, frame, index)
                 }
