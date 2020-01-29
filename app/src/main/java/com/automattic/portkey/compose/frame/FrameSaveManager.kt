@@ -42,8 +42,8 @@ class FrameSaveManager : CoroutineScope {
     ): List<File> {
         // first, launch all frame save processes async
         return frames.mapIndexed { index, frame ->
-            async {
-                withContext(coroutineContext) {
+            withContext(coroutineContext) {
+                async {
                     yield()
                     // create ghost PhotoEditorView to be used for saving off-screen
                     val ghostPhotoEditorView = createGhostPhotoEditor(context, originalPhotoEditorView)
