@@ -44,9 +44,7 @@ import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment.FlashS
 import com.automattic.photoeditor.state.BackgroundSurfaceManager
 import com.automattic.photoeditor.util.FileUtils.Companion.getLoopFrameFile
 import com.automattic.photoeditor.util.PermissionUtils
-import com.automattic.photoeditor.views.PhotoEditorView
 import com.automattic.photoeditor.views.ViewType
-import com.automattic.photoeditor.views.ViewType.STICKER_ANIMATED
 import com.automattic.photoeditor.views.ViewType.TEXT
 import com.automattic.photoeditor.views.added.AddedViewList
 import com.automattic.portkey.BuildConfig
@@ -69,7 +67,6 @@ import com.automattic.portkey.compose.story.StoryRepository
 import com.automattic.portkey.compose.story.StoryViewModel
 import com.automattic.portkey.compose.story.StoryViewModelFactory
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
-// import com.automattic.portkey.util.CrashLoggingUtils
 import com.automattic.portkey.util.getDisplayPixelSize
 import com.automattic.portkey.util.isVideo
 import com.bumptech.glide.Glide
@@ -78,7 +75,9 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_composer.*
 import kotlinx.android.synthetic.main.content_composer.*
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.IOException
 import kotlin.math.abs
@@ -289,6 +288,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 }
             }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
         }
+    }
+
+    override fun onDestroy() {
+        frameSaveManager.onCancel()
+        super.onDestroy()
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -518,16 +522,12 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             if (storyViewModel.getCurrentStorySize() > 0) {
                 // save all composed frames
                 if (PermissionUtils.checkAndRequestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                    showLoading("Saving...")
-                    runBlocking {
+                    CoroutineScope(Dispatchers.Main).launch {
+                        showLoading(getString(R.string.label_saving))
                         saveStory()
-                        onStoryFrameSelected(-1, storyViewModel.getSelectedFrameIndex())
+                        hideLoading()
+                        showToast("READY")
                     }
-                    hideLoading()
-
-                    showToast("READY")
-                    // hideEditModeUIControls()
-                    // switchCameraPreviewOn()
                 }
             }
         }
@@ -535,6 +535,26 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         more_button.setOnClickListener {
             showMoreOptionsPopup(it)
         }
+    }
+
+    private suspend fun saveStory() {
+        // disable layout change animations, we need this to make added views immediately visible, otherwise
+        // we may end up capturing a Bitmap of a backing drawable that still has not been updated
+        // (i.e. no visible added Views)
+        val transition = photoEditorView.getLayoutTransition()
+        photoEditorView.layoutTransition = null
+
+        val frameFileList =
+            frameSaveManager.saveStory(
+                this@ComposeLoopFrameActivity,
+                photoEditorView,
+                storyViewModel.getImmutableCurrentStoryFrames()
+            )
+        // once all frames have been saved, issue a broadcast so the system knows these frames are ready
+        sendNewStoryReadyBroadcast(frameFileList)
+
+        // re-enable layout change animations
+        photoEditorView.layoutTransition = transition
     }
 
     private fun addCurrentViewsToFrameAtIndex(index: Int) {
@@ -797,72 +817,10 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }, CAMERA_STILL_PICTURE_WAIT_FOR_NEXT_CAPTURE_MS)
     }
 
-    private suspend fun saveLoopFrame(frame: StoryFrameItem, ghostPhotoEditorView: PhotoEditorView): File {
-        lateinit var frameFile: File
-        when (frame.frameItemType) {
-            VIDEO -> {
-                if (frame.source.isFile()) {
-                    frame.source.file?.let {
-                        // TODO make saveVideo return File
-                        saveVideo(Uri.parse(it.toString()))
-                    }
-                } else {
-                    frame.source.contentUri?.let {
-                        // TODO make saveVideo return File
-                        saveVideo(it)
-                    }
-                }
-            }
-            IMAGE -> {
-                // check whether there are any GIF stickers - if there are, we need to produce a video instead
-                if (frame.addedViews.containsAnyAddedViewsOfType(STICKER_ANIMATED)) {
-                    // TODO make saveVideoWithStaticBackground return File
-                    saveVideoWithStaticBackground()
-                } else {
-                    frameFile = saveImageFrame(frame, ghostPhotoEditorView)
-                }
-            }
-        }
-        return frameFile
-    }
-
-    private suspend fun saveImageFrame(frame: StoryFrameItem, ghostPhotoEditorView: PhotoEditorView): File {
-        val file = frameSaveManager.saveImageFrame(this@ComposeLoopFrameActivity, frame, ghostPhotoEditorView)
-        deleteCapturedMedia()
-        return file
-    }
-
-    private suspend fun saveStory() {
-        // disable layout change animations, we need this to make added views immediately visible, otherwise
-        // we may end up capturing a Bitmap of a backing drawable that still has not been updated
-        // (i.e. no visible added Views)
-        val transition = photoEditorView.getLayoutTransition()
-        photoEditorView.layoutTransition = null
-
-        // create ghost PhotoEditorView only once for the Story saving process (we'll reuse it)
-        val ghostPhotoEditorView = frameSaveManager.createGhostPhotoEditor(this, photoEditorView)
-
-        val frameFileList = ArrayList<File>()
-        for (frame in storyViewModel.getImmutableCurrentStoryFrames()) {
-            frameFileList.add(saveLoopFrame(frame, ghostPhotoEditorView))
-        }
-
-        // re-enable layout change animations
-        photoEditorView.layoutTransition = transition
-
-        // once all frames have been saved, issue a broadcast so the system knows these frames are ready
-        sendNewStoryReadyBroadcast(frameFileList)
-
-        // TODO: process videos and image frames in parallel
-        // 1. collect videos and static image background Frames into two lists
-        // 2. call async on each one
-        // 3. call awaitAll on both lists (https://developer.android.com/kotlin/coroutines#parallel)
-    }
-
     @SuppressLint("MissingPermission")
     private fun saveVideo(inputFile: Uri) {
         if (PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            showLoading("Saving...")
+            showLoading(getString(R.string.label_saving))
             try {
                 val file = getLoopFrameFile(this, true)
                 file.createNewFile()
@@ -920,7 +878,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     @SuppressLint("MissingPermission")
     private fun saveVideoWithStaticBackground() {
         if (PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            showLoading("Saving...")
+            showLoading(getString(R.string.label_saving))
             try {
                 val file = getLoopFrameFile(this, true, "tmp")
                 file.createNewFile()
@@ -961,8 +919,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     private fun showLoading(message: String) {
-        editModeHideAllUIControls(false)
-        blockTouchOnPhotoEditor()
+        editModeHideAllUIControls(true)
+        blockTouchOnPhotoEditor(message)
     }
 
     private fun hideLoading() {
@@ -1134,7 +1092,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             this, arrayOf(mediaFile.absolutePath), arrayOf(mimeType), null)
     }
 
-    private fun sendNewStoryReadyBroadcast(mediaFileList: ArrayList<File>) {
+    private fun sendNewStoryReadyBroadcast(mediaFileList: List<File>) {
         // Implicit broadcasts will be ignored for devices running API
         // level >= 24, so if you only target 24+ you can remove this statement
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
@@ -1163,8 +1121,9 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             this, arrayOfPaths, arrayOfmimeTypes, null)
     }
 
-    private fun blockTouchOnPhotoEditor() {
+    private fun blockTouchOnPhotoEditor(message: String) {
         translucent_view.visibility = View.VISIBLE
+        operation_text.text = message
         translucent_view.setOnTouchListener { _, _ ->
             // no op
             true
@@ -1173,6 +1132,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
     private fun releaseTouchOnPhotoEditor() {
         translucent_view.visibility = View.GONE
+        operation_text.text = null
         translucent_view.setOnTouchListener(null)
     }
 
