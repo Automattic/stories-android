@@ -8,7 +8,6 @@ import android.graphics.Canvas
 import android.graphics.Typeface
 import android.media.MediaMetadataRetriever
 import android.net.Uri
-import android.os.AsyncTask
 import android.text.TextUtils
 import android.util.Log
 import android.util.TypedValue
@@ -28,7 +27,6 @@ import androidx.emoji.text.EmojiCompat
 import com.automattic.photoeditor.gesture.MultiTouchListener
 import com.automattic.photoeditor.gesture.MultiTouchListener.OnMultiTouchListener
 import com.automattic.photoeditor.util.BitmapUtil
-import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.PhotoEditorView
 import com.automattic.photoeditor.views.ViewType
 import com.automattic.photoeditor.views.added.AddedView
@@ -462,14 +460,6 @@ class PhotoEditor private constructor(builder: Builder) :
         brushDrawingView.brushEraser()
     }
 
-    /*private void viewUndo() {
-        if (addedViews.size() > 0) {
-            parentView.removeView(addedViews.remove(addedViews.size() - 1));
-            if (mOnPhotoEditorListener != null)
-                mOnPhotoEditorListener.onRemoveViewListener(addedViews.size());
-        }
-    }*/
-
     fun viewUndo(removedView: View, viewType: ViewType, addToRedoList: Boolean = true) {
         if (addedViews.size > 0) {
             if (addedViews.containsView(removedView)) {
@@ -609,25 +599,6 @@ class PhotoEditor private constructor(builder: Builder) :
     /**
      * A callback to save the edited media asynchronously
      */
-    interface OnSaveListener {
-        /**
-         * Call when edited media is saved successfully on given path
-         *
-         * @param filePath path on which file is saved
-         */
-        fun onSuccess(filePath: String)
-
-        /**
-         * Call when failed to saved media on given path
-         *
-         * @param exception exception thrown while saving media
-         */
-        fun onFailure(exception: Exception)
-    }
-
-    /**
-     * A callback to save the edited media asynchronously
-     */
     interface OnSaveWithCancelListener {
         /**
          * Call when edited media is saved successfully on given path
@@ -647,89 +618,6 @@ class PhotoEditor private constructor(builder: Builder) :
          * Call when user cancelled operation
          */
         fun onCancel(noAddedViews: Boolean = false)
-    }
-
-    /**
-     * @param imagePath path on which image to be saved
-     * @param onSaveListener callback for saving image
-     * @see OnSaveListener
-     *
-     */
-    @SuppressLint("StaticFieldLeak")
-    @RequiresPermission(allOf = [Manifest.permission.WRITE_EXTERNAL_STORAGE])
-    @Deprecated("Use {@link #saveAsFile(String, OnSaveListener)} instead",
-        ReplaceWith("saveAsFile(imagePath, onSaveListener)")
-    )
-    fun saveImage(imagePath: String, onSaveListener: OnSaveListener) {
-        saveAsFile(imagePath, onSaveListener)
-    }
-
-    /**
-     * Save the edited image on given path
-     *
-     * @param imagePath path on which image to be saved
-     * @param onSaveListener callback for saving image
-     * @see OnSaveListener
-     */
-    @RequiresPermission(allOf = [Manifest.permission.WRITE_EXTERNAL_STORAGE])
-    fun saveAsFile(imagePath: String, onSaveListener: OnSaveListener) {
-        saveAsFile(imagePath, SaveSettings.Builder().build(), onSaveListener)
-    }
-
-    /**
-     * Save the edited image on given path
-     *
-     * @param imagePath path on which image to be saved
-     * @param saveSettings builder for multiple save options [SaveSettings]
-     * @param onSaveListener callback for saving image
-     * @see OnSaveListener
-     */
-    @SuppressLint("StaticFieldLeak")
-    @RequiresPermission(allOf = [Manifest.permission.WRITE_EXTERNAL_STORAGE])
-    fun saveAsFile(
-        imagePath: String,
-        saveSettings: SaveSettings,
-        onSaveListener: OnSaveListener
-    ) {
-        Log.d(TAG, "Image Path: $imagePath")
-        parentView.saveFilter(object : OnSaveBitmap {
-            override fun onBitmapReady(saveBitmap: Bitmap) {
-                object : AsyncTask<String, String, Exception>() {
-                    override fun onPreExecute() {
-                        super.onPreExecute()
-                        clearHelperBox()
-                    }
-
-                    @SuppressLint("MissingPermission")
-                    override fun doInBackground(vararg strings: String): Exception? {
-                        // Create a media file name
-                        try {
-                            FileUtils.saveViewToFile(imagePath, saveSettings, parentView)
-                            return null
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            Log.d(TAG, "Failed to save File")
-                            return e
-                        }
-                    }
-
-                    override fun onPostExecute(e: Exception?) {
-                        super.onPostExecute(e)
-                        if (e == null) {
-                            // Clear all views if its enabled in save settings
-                            if (saveSettings.isClearViewsEnabled) clearAllViews()
-                            onSaveListener.onSuccess(imagePath)
-                        } else {
-                            onSaveListener.onFailure(e)
-                        }
-                    }
-                }.execute()
-            }
-
-            override fun onFailure(e: Exception) {
-                onSaveListener.onFailure(e)
-            }
-        })
     }
 
     /**
@@ -897,62 +785,6 @@ class PhotoEditor private constructor(builder: Builder) :
                 }
             })
             .start()
-    }
-
-    /**
-     * Save the edited image as bitmap
-     *
-     * @param onSaveBitmap callback for saving image as bitmap
-     * @see OnSaveBitmap
-     */
-    @SuppressLint("StaticFieldLeak")
-    fun saveAsBitmap(onSaveBitmap: OnSaveBitmap) {
-        saveAsBitmap(SaveSettings.Builder().build(), onSaveBitmap)
-    }
-
-    /**
-     * Save the edited image as bitmap
-     *
-     * @param saveSettings builder for multiple save options [SaveSettings]
-     * @param onSaveBitmap callback for saving image as bitmap
-     * @see OnSaveBitmap
-     */
-    @SuppressLint("StaticFieldLeak")
-    fun saveAsBitmap(
-        saveSettings: SaveSettings,
-        onSaveBitmap: OnSaveBitmap
-    ) {
-        parentView.saveFilter(object : OnSaveBitmap {
-            override fun onBitmapReady(saveBitmap: Bitmap) {
-                object : AsyncTask<String, String, Bitmap>() {
-                    override fun onPreExecute() {
-                        super.onPreExecute()
-                        clearHelperBox()
-                    }
-
-                    override fun doInBackground(vararg strings: String): Bitmap? {
-                        return if (saveSettings.isTransparencyEnabled)
-                            BitmapUtil.removeTransparency(BitmapUtil.createBitmapFromView(parentView))
-                        else
-                            BitmapUtil.createBitmapFromView(parentView)
-                    }
-
-                    override fun onPostExecute(bitmap: Bitmap?) {
-                        super.onPostExecute(bitmap)
-                        if (bitmap != null) {
-                            if (saveSettings.isClearViewsEnabled) clearAllViews()
-                            onSaveBitmap.onBitmapReady(bitmap)
-                        } else {
-                            onSaveBitmap.onFailure(Exception("Failed to load the bitmap"))
-                        }
-                    }
-                }.execute()
-            }
-
-            override fun onFailure(e: Exception) {
-                onSaveBitmap.onFailure(e)
-            }
-        })
     }
 
     // TODO to be used in conjunction with mp4composer
