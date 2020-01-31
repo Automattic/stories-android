@@ -142,32 +142,20 @@ class FrameSaveManager(val photoEditor: PhotoEditor) : CoroutineScope {
         onSaveListener: OnSaveWithCancelListener
     ): Boolean {
         var callMade = false
+        val uri: Uri? = (frame.source as? UriBackgroundSource)?.contentUri
+            ?: Uri.parse((frame.source as FileBackgroundSource).file?.absolutePath)
         // we only need the width and height of a model canvas, not creating a canvas clone in the case of videos
         // as these are all processed in the background
-        if (frame.source is UriBackgroundSource) {
-            frame.source.contentUri?.let {
-                photoEditor.saveVideoAsLoopFrameFile(
-                    sequenceId,
-                    it,
-                    photoEditor.composedCanvas.width,
-                    photoEditor.composedCanvas.height,
-                    frame.addedViews,
-                    onSaveListener
-                )
-                callMade = true
-            }
-        } else {
-            (frame.source as FileBackgroundSource).file?.let {
-                photoEditor.saveVideoAsLoopFrameFile(
-                    sequenceId,
-                    Uri.parse(it.absolutePath),
-                    photoEditor.composedCanvas.width,
-                    photoEditor.composedCanvas.height,
-                    frame.addedViews,
-                    onSaveListener
-                )
-                callMade = true
-            }
+        uri?.let {
+            photoEditor.saveVideoAsLoopFrameFile(
+                sequenceId,
+                it,
+                photoEditor.composedCanvas.width,
+                photoEditor.composedCanvas.height,
+                frame.addedViews,
+                onSaveListener
+            )
+            callMade = true
         }
         return callMade
     }
