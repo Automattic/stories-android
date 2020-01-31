@@ -555,8 +555,16 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // once all frames have been saved, issue a broadcast so the system knows these frames are ready
         sendNewStoryReadyBroadcast(frameFileList)
 
+        // given saveStory for static images works with a ghost off screen buffer by removing / adding views to it,
+        // we need to refresh the selection so added views get properly re-added after frame iteration ends
+        refreshStoryFrameSelection()
+
         // re-enable layout change animations
         photoEditorView.layoutTransition = transition
+    }
+
+    private fun refreshStoryFrameSelection() {
+        storyViewModel.setSelectedFrameByUser(storyViewModel.getSelectedFrameIndex())
     }
 
     private fun addCurrentViewsToFrameAtIndex(index: Int) {
