@@ -28,7 +28,7 @@ import kotlinx.coroutines.yield
 import java.io.File
 import kotlin.coroutines.CoroutineContext
 
-class FrameSaveManager(val photoEditor: PhotoEditor) : CoroutineScope {
+class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
     private val job = Job()
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Default + job
