@@ -3,6 +3,8 @@ package com.automattic.portkey.compose.story
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource.FileBackgroundSource
+import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource.UriBackgroundSource
 import com.automattic.portkey.compose.story.StoryViewModel.StoryFrameListItemUiState.StoryFrameListItemUiStateFrame
 import com.automattic.portkey.compose.story.StoryViewModel.StoryFrameListItemUiState.StoryFrameListItemUiStatePlusIcon
 import com.automattic.portkey.util.SingleLiveEvent
@@ -84,6 +86,10 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: In
 
     fun getCurrentStorySize(): Int {
         return repository.getCurrentStorySize()
+    }
+
+    fun getImmutableCurrentStoryFrames(): List<StoryFrameItem> {
+        return repository.getImmutableCurrentStoryFrames()
     }
 
     fun anyOfCurrentStoryFramesHasViews(): Boolean {
@@ -171,7 +177,11 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: In
         storyItems.forEachIndexed { index, model ->
             val isSelected = (getSelectedFrameIndex() == index)
             val filePath =
-                if (model.source.isUri()) model.source.contentUri.toString() else model.source.file.toString()
+                if ((model.source is UriBackgroundSource)) {
+                    model.source.contentUri.toString()
+                } else {
+                    (model.source as FileBackgroundSource).file.toString()
+                }
             val oneFrameUiState = StoryFrameListItemUiStateFrame(
                 selected = isSelected, filePath = filePath
             )

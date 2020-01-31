@@ -1,15 +1,19 @@
 package com.automattic.photoeditor.util
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.view.View
 import com.automattic.photoeditor.R
+import com.automattic.photoeditor.SaveSettings
 import java.io.File
+import java.io.FileOutputStream
 
 class FileUtils {
     companion object {
-        fun getLoopFrameFile(context: Context, video: Boolean, prefix: String = ""): File {
+        fun getLoopFrameFile(context: Context, video: Boolean, seqId: String = ""): File {
             return File(getOutputDirectory(context),
                 "loop_" +
-                        System.currentTimeMillis() + if (video) ".mp4" else ".jpg"
+                        System.currentTimeMillis() + "_" + seqId + if (video) ".mp4" else ".jpg"
             )
         }
 
@@ -32,6 +36,22 @@ class FileUtils {
                 "loop_tmp" +
                         System.currentTimeMillis() + if (video) ".mp4" else ".jpg"
             )
+        }
+
+        fun saveViewToFile(
+            imagePath: String,
+            saveSettings: SaveSettings,
+            view: View
+        ) {
+            val file = File(imagePath)
+            val out = FileOutputStream(file, false)
+            val wholeBitmap = if (saveSettings.isTransparencyEnabled)
+                BitmapUtil.removeTransparency(BitmapUtil.createBitmapFromView(view))
+            else
+                BitmapUtil.createBitmapFromView(view)
+            wholeBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
+            out.flush()
+            out.close()
         }
     }
 }

@@ -8,7 +8,6 @@ import android.graphics.Canvas
 import android.graphics.Typeface
 import android.media.MediaMetadataRetriever
 import android.net.Uri
-import android.os.AsyncTask
 import android.text.TextUtils
 import android.util.Log
 import android.util.TypedValue
@@ -28,6 +27,7 @@ import androidx.emoji.text.EmojiCompat
 import com.automattic.photoeditor.gesture.MultiTouchListener
 import com.automattic.photoeditor.gesture.MultiTouchListener.OnMultiTouchListener
 import com.automattic.photoeditor.util.BitmapUtil
+import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.PhotoEditorView
 import com.automattic.photoeditor.views.ViewType
 import com.automattic.photoeditor.views.added.AddedView
@@ -48,7 +48,6 @@ import kotlinx.android.synthetic.main.view_photo_editor_emoji.view.*
 import kotlinx.android.synthetic.main.view_photo_editor_text.view.*
 import java.io.File
 import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.util.ArrayList
 import java.lang.ref.WeakReference
 
@@ -124,6 +123,12 @@ class PhotoEditor private constructor(builder: Builder) :
      */
     val isCacheEmpty: Boolean
         get() = addedViews.size == 0 && redoViews.size == 0
+
+    val source: ImageView
+        get() = parentView.source
+
+    val composedCanvas: PhotoEditorView
+        get() = parentView
 
     init {
         this.context = builder.context
@@ -456,14 +461,6 @@ class PhotoEditor private constructor(builder: Builder) :
         brushDrawingView.brushEraser()
     }
 
-    /*private void viewUndo() {
-        if (addedViews.size() > 0) {
-            parentView.removeView(addedViews.remove(addedViews.size() - 1));
-            if (mOnPhotoEditorListener != null)
-                mOnPhotoEditorListener.onRemoveViewListener(addedViews.size());
-        }
-    }*/
-
     fun viewUndo(removedView: View, viewType: ViewType, addToRedoList: Boolean = true) {
         if (addedViews.size > 0) {
             if (addedViews.containsView(removedView)) {
@@ -534,8 +531,8 @@ class PhotoEditor private constructor(builder: Builder) :
      * This will also clear the undo and redo stack
      */
     fun clearAllViews() {
-        for (i in addedViews.indices) {
-            parentView.removeView(addedViews[i].view)
+        for (addedView in addedViews) {
+            parentView.removeView(addedView.view)
         }
 
         if (addedViews.containsView(brushDrawingView)) {
@@ -603,25 +600,6 @@ class PhotoEditor private constructor(builder: Builder) :
     /**
      * A callback to save the edited media asynchronously
      */
-    interface OnSaveListener {
-        /**
-         * Call when edited media is saved successfully on given path
-         *
-         * @param filePath path on which file is saved
-         */
-        fun onSuccess(filePath: String)
-
-        /**
-         * Call when failed to saved media on given path
-         *
-         * @param exception exception thrown while saving media
-         */
-        fun onFailure(exception: Exception)
-    }
-
-    /**
-     * A callback to save the edited media asynchronously
-     */
     interface OnSaveWithCancelListener {
         /**
          * Call when edited media is saved successfully on given path
@@ -643,119 +621,49 @@ class PhotoEditor private constructor(builder: Builder) :
         fun onCancel(noAddedViews: Boolean = false)
     }
 
-    /**
-     * @param imagePath path on which image to be saved
-     * @param onSaveListener callback for saving image
-     * @see OnSaveListener
-     *
-     */
-    @SuppressLint("StaticFieldLeak")
-    @RequiresPermission(allOf = [Manifest.permission.WRITE_EXTERNAL_STORAGE])
-    @Deprecated("Use {@link #saveAsFile(String, OnSaveListener)} instead",
-        ReplaceWith("saveAsFile(imagePath, onSaveListener)")
-    )
-    fun saveImage(imagePath: String, onSaveListener: OnSaveListener) {
-        saveAsFile(imagePath, onSaveListener)
+    fun saveImageFromPhotoEditorViewAsLoopFrameFile(sequenceId: Int, photoEditorView: PhotoEditorView): File {
+        val localFile = FileUtils.getLoopFrameFile(context, false, sequenceId.toString())
+        localFile.createNewFile()
+        val saveSettings = SaveSettings.Builder()
+            .setClearViewsEnabled(true)
+            .setTransparencyEnabled(false)
+            .build()
+        FileUtils.saveViewToFile(localFile.absolutePath, saveSettings, photoEditorView)
+        return localFile
     }
 
-    /**
-     * Save the edited image on given path
-     *
-     * @param imagePath path on which image to be saved
-     * @param onSaveListener callback for saving image
-     * @see OnSaveListener
-     */
-    @RequiresPermission(allOf = [Manifest.permission.WRITE_EXTERNAL_STORAGE])
-    fun saveAsFile(imagePath: String, onSaveListener: OnSaveListener) {
-        saveAsFile(imagePath, SaveSettings.Builder().build(), onSaveListener)
+    fun saveVideoAsLoopFrameFile(
+        sequenceId: Int,
+        videoInputPath: Uri,
+        canvasWidth: Int,
+        canvasHeight: Int,
+        customAddedViews: AddedViewList,
+        onSaveListener: OnSaveWithCancelListener
+    ): File {
+        val localFile = FileUtils.getLoopFrameFile(context, true, sequenceId.toString())
+        localFile.createNewFile()
+        saveVideoAsFile(
+            videoInputPath = videoInputPath,
+            videoOutputPath = localFile.absolutePath,
+            originalCanvasWidth = canvasWidth,
+            originalCanvasHeight = canvasHeight,
+            customAddedViews = customAddedViews,
+            onSaveListener = onSaveListener
+        )
+        return localFile
     }
 
-    /**
-     * Save the edited image on given path
-     *
-     * @param imagePath path on which image to be saved
-     * @param saveSettings builder for multiple save options [SaveSettings]
-     * @param onSaveListener callback for saving image
-     * @see OnSaveListener
-     */
-    @SuppressLint("StaticFieldLeak")
-    @RequiresPermission(allOf = [Manifest.permission.WRITE_EXTERNAL_STORAGE])
-    fun saveAsFile(
-        imagePath: String,
-        saveSettings: SaveSettings,
-        onSaveListener: OnSaveListener
-    ) {
-        Log.d(TAG, "Image Path: $imagePath")
-        parentView.saveFilter(object : OnSaveBitmap {
-            override fun onBitmapReady(saveBitmap: Bitmap) {
-                object : AsyncTask<String, String, Exception>() {
-                    override fun onPreExecute() {
-                        super.onPreExecute()
-                        clearHelperBox()
-                    }
-
-                    @SuppressLint("MissingPermission")
-                    override fun doInBackground(vararg strings: String): Exception? {
-                        // Create a media file name
-                        val file = File(imagePath)
-                        try {
-                            val out = FileOutputStream(file, false)
-                            val wholeBitmap = if (saveSettings.isTransparencyEnabled)
-                                BitmapUtil.removeTransparency(BitmapUtil.createBitmapFromView(parentView))
-                            else
-                                BitmapUtil.createBitmapFromView(parentView)
-                            wholeBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
-                            out.flush()
-                            out.close()
-                            Log.d(TAG, "Filed Saved Successfully")
-                            return null
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                            Log.d(TAG, "Failed to save File")
-                            return e
-                        }
-                    }
-
-                    override fun onPostExecute(e: Exception?) {
-                        super.onPostExecute(e)
-                        if (e == null) {
-                            // Clear all views if its enabled in save settings
-                            if (saveSettings.isClearViewsEnabled) clearAllViews()
-                            onSaveListener.onSuccess(imagePath)
-                        } else {
-                            onSaveListener.onFailure(e)
-                        }
-                    }
-                }.execute()
-            }
-
-            override fun onFailure(e: Exception) {
-                onSaveListener.onFailure(e)
-            }
-        })
-    }
-
-    /**
-     * Save the edited VIDEO on given path
-     *
-     * @param videoInputPath path on which video to be saved
-     * @param saveSettings builder for multiple save options [SaveSettings]
-     * @param onSaveListener callback for saving video
-     * @see OnSaveListener
-     */
-    @SuppressLint("StaticFieldLeak")
-    @RequiresPermission(allOf = [Manifest.permission.WRITE_EXTERNAL_STORAGE])
     fun saveVideoAsFile(
         videoInputPath: Uri,
         videoOutputPath: String,
-        saveSettings: SaveSettings,
+        originalCanvasWidth: Int,
+        originalCanvasHeight: Int,
+        customAddedViews: AddedViewList,
         onSaveListener: OnSaveWithCancelListener
     ) {
         Log.d(TAG, "Video Path: $videoInputPath")
-        val widthParent = parentView.width
-        val heightParent = parentView.height
 
-        if (addedViews.size == 0) {
+        if (customAddedViews.size == 0) {
             onSaveListener.onCancel(true)
             return
         }
@@ -773,10 +681,10 @@ class PhotoEditor private constructor(builder: Builder) :
 
         // get the images currently on top of the screen, and add them as Filters to the mp4composer
         val filterCollection = ArrayList<GlFilter>()
-        for (v in addedViews) {
+        for (v in customAddedViews) {
             val viewPositionInfo = ViewPositionInfo(
-                widthParent,
-                heightParent,
+                originalCanvasWidth,
+                originalCanvasHeight,
                 v.view.width,
                 v.view.height,
                 v.view.matrix
@@ -802,7 +710,7 @@ class PhotoEditor private constructor(builder: Builder) :
             // IMPORTANT: as we aim at a WYSIWYG UX, we need to produce a video of size equal to that of the phone
             // screen, given the user may be seeing a letterbox landscape video and placing emoji / text around
             // the black parts of the screen.
-            .size(widthParent, heightParent)
+            .size(originalCanvasWidth, originalCanvasHeight)
             .fillMode(FillMode.PRESERVE_ASPECT_FIT)
             .filter(GlFilterGroup(filterCollection))
             .listener(object : Mp4Composer.Listener {
@@ -827,6 +735,29 @@ class PhotoEditor private constructor(builder: Builder) :
                 }
             })
             .start()
+    }
+
+    /**
+     * Save the edited VIDEO on given path
+     *
+     * @param videoInputPath path on which video to be saved
+     * @param saveSettings builder for multiple save options [SaveSettings]
+     * @param onSaveListener callback for saving video
+     * @see OnSaveListener
+     */
+    fun saveVideoAsFile(
+        videoInputPath: Uri,
+        videoOutputPath: String,
+        onSaveListener: OnSaveWithCancelListener
+    ) {
+        saveVideoAsFile(
+            videoInputPath,
+            videoOutputPath,
+            parentView.width,
+            parentView.height,
+            addedViews,
+            onSaveListener
+        )
     }
 
     /**
@@ -902,62 +833,6 @@ class PhotoEditor private constructor(builder: Builder) :
             .start()
     }
 
-    /**
-     * Save the edited image as bitmap
-     *
-     * @param onSaveBitmap callback for saving image as bitmap
-     * @see OnSaveBitmap
-     */
-    @SuppressLint("StaticFieldLeak")
-    fun saveAsBitmap(onSaveBitmap: OnSaveBitmap) {
-        saveAsBitmap(SaveSettings.Builder().build(), onSaveBitmap)
-    }
-
-    /**
-     * Save the edited image as bitmap
-     *
-     * @param saveSettings builder for multiple save options [SaveSettings]
-     * @param onSaveBitmap callback for saving image as bitmap
-     * @see OnSaveBitmap
-     */
-    @SuppressLint("StaticFieldLeak")
-    fun saveAsBitmap(
-        saveSettings: SaveSettings,
-        onSaveBitmap: OnSaveBitmap
-    ) {
-        parentView.saveFilter(object : OnSaveBitmap {
-            override fun onBitmapReady(saveBitmap: Bitmap) {
-                object : AsyncTask<String, String, Bitmap>() {
-                    override fun onPreExecute() {
-                        super.onPreExecute()
-                        clearHelperBox()
-                    }
-
-                    override fun doInBackground(vararg strings: String): Bitmap? {
-                        return if (saveSettings.isTransparencyEnabled)
-                            BitmapUtil.removeTransparency(BitmapUtil.createBitmapFromView(parentView))
-                        else
-                            BitmapUtil.createBitmapFromView(parentView)
-                    }
-
-                    override fun onPostExecute(bitmap: Bitmap?) {
-                        super.onPostExecute(bitmap)
-                        if (bitmap != null) {
-                            if (saveSettings.isClearViewsEnabled) clearAllViews()
-                            onSaveBitmap.onBitmapReady(bitmap)
-                        } else {
-                            onSaveBitmap.onFailure(Exception("Failed to load the bitmap"))
-                        }
-                    }
-                }.execute()
-            }
-
-            override fun onFailure(e: Exception) {
-                onSaveBitmap.onFailure(e)
-            }
-        })
-    }
-
     // TODO to be used in conjunction with mp4composer
     private fun createBitmapFromView(v: View): Bitmap {
         val bitmap = Bitmap.createBitmap(v.width,
@@ -1018,15 +893,6 @@ class PhotoEditor private constructor(builder: Builder) :
 
     override fun onStopDrawing() {
         mOnPhotoEditorListener?.onStopViewChangeListener(ViewType.BRUSH_DRAWING)
-    }
-
-    fun anyStickersAdded(): Boolean {
-        for (v: AddedView in addedViews) {
-            if (v.viewType == ViewType.STICKER_ANIMATED) {
-                return true
-            }
-        }
-        return false
     }
 
     fun anyViewsAdded(): Boolean {

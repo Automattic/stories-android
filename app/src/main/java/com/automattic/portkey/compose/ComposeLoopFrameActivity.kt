@@ -51,13 +51,15 @@ import com.automattic.portkey.BuildConfig
 import com.automattic.portkey.R
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
+import com.automattic.portkey.compose.frame.FrameSaveManager
 import com.automattic.portkey.compose.photopicker.MediaBrowserType
 import com.automattic.portkey.compose.photopicker.PhotoPickerActivity
 import com.automattic.portkey.compose.photopicker.PhotoPickerFragment
 import com.automattic.portkey.compose.photopicker.RequestCodes
 import com.automattic.portkey.compose.story.OnStoryFrameSelectorTappedListener
 import com.automattic.portkey.compose.story.StoryFrameItem
-import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource
+import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource.FileBackgroundSource
+import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource.UriBackgroundSource
 import com.automattic.portkey.compose.story.StoryFrameItemType
 import com.automattic.portkey.compose.story.StoryFrameItemType.IMAGE
 import com.automattic.portkey.compose.story.StoryFrameItemType.VIDEO
@@ -66,7 +68,6 @@ import com.automattic.portkey.compose.story.StoryRepository
 import com.automattic.portkey.compose.story.StoryViewModel
 import com.automattic.portkey.compose.story.StoryViewModelFactory
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
-import com.automattic.portkey.util.CrashLoggingUtils
 import com.automattic.portkey.util.getDisplayPixelSize
 import com.automattic.portkey.util.isVideo
 import com.bumptech.glide.Glide
@@ -75,6 +76,9 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_composer.*
 import kotlinx.android.synthetic.main.content_composer.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.IOException
 import kotlin.math.abs
@@ -116,6 +120,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     private var isEditingText: Boolean = false
 
     private lateinit var storyViewModel: StoryViewModel
+    private lateinit var frameSaveManager: FrameSaveManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -197,6 +202,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             }
         })
 
+        frameSaveManager = FrameSaveManager(photoEditor)
+
         backgroundSurfaceManager = BackgroundSurfaceManager(
             savedInstanceState,
             lifecycle,
@@ -257,7 +264,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             photoEditorView.postDelayed({
                 launchCameraPreview()
                 storyViewModel.uiState.observe(this, Observer {
-                    // if no frames in Story, lauch the capture mode
+                    // if no frames in Story, launch the capture mode
                     if (storyViewModel.getCurrentStorySize() == 0) {
                         photoEditor.clearAllViews()
                         launchCameraPreview()
@@ -284,6 +291,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 }
             }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
         }
+    }
+
+    override fun onDestroy() {
+        frameSaveManager.onCancel()
+        super.onDestroy()
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -376,7 +388,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     private fun addFrameToStoryFromMediaUri(mediaUri: Uri) {
         storyViewModel
             .addStoryFrameItemToCurrentStory(StoryFrameItem(
-                BackgroundSource(contentUri = Uri.parse(mediaUri.toString())),
+                UriBackgroundSource(contentUri = Uri.parse(mediaUri.toString())),
                 frameItemType = if (isVideo(mediaUri.toString())) VIDEO else IMAGE
             ))
     }
@@ -461,11 +473,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
 
         close_button.setOnClickListener {
-            // first, remember the currently added views
-            val currentStoryFrameItem = storyViewModel.getCurrentStoryFrameAt(storyViewModel.getSelectedFrameIndex())
-
-            // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
-            currentStoryFrameItem.addedViews = AddedViewList(photoEditor.getViewsAdded())
+            addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
 
             // add discard dialog
             if (storyViewModel.anyOfCurrentStoryFramesHasViews()) {
@@ -508,12 +516,63 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }
 
         next_button.setOnClickListener {
-            saveLoopFrame()
+            addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
+
+            // TODO show bottom sheet
+            // then save everything if they hit PUBLISH
+            showToast("bottom sheet not implemented yet")
+
+            if (storyViewModel.getCurrentStorySize() > 0) {
+                // save all composed frames
+                if (PermissionUtils.checkAndRequestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    CoroutineScope(Dispatchers.Main).launch {
+                        showLoading(getString(R.string.label_saving))
+                        saveStory()
+                        hideLoading()
+                        showToast("READY")
+                    }
+                }
+            }
         }
 
         more_button.setOnClickListener {
             showMoreOptionsPopup(it)
         }
+    }
+
+    private suspend fun saveStory() {
+        // disable layout change animations, we need this to make added views immediately visible, otherwise
+        // we may end up capturing a Bitmap of a backing drawable that still has not been updated
+        // (i.e. no visible added Views)
+        val transition = photoEditorView.getLayoutTransition()
+        photoEditorView.layoutTransition = null
+
+        val frameFileList =
+            frameSaveManager.saveStory(
+                this@ComposeLoopFrameActivity,
+                storyViewModel.getImmutableCurrentStoryFrames()
+            )
+        // once all frames have been saved, issue a broadcast so the system knows these frames are ready
+        sendNewStoryReadyBroadcast(frameFileList)
+
+        // given saveStory for static images works with a ghost off screen buffer by removing / adding views to it,
+        // we need to refresh the selection so added views get properly re-added after frame iteration ends
+        refreshStoryFrameSelection()
+
+        // re-enable layout change animations
+        photoEditorView.layoutTransition = transition
+    }
+
+    private fun refreshStoryFrameSelection() {
+        storyViewModel.setSelectedFrameByUser(storyViewModel.getSelectedFrameIndex())
+    }
+
+    private fun addCurrentViewsToFrameAtIndex(index: Int) {
+        // first, remember the currently added views
+        val currentStoryFrameItem = storyViewModel.getCurrentStoryFrameAt(index)
+
+        // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
+        currentStoryFrameItem.addedViews = AddedViewList(photoEditor.getViewsAdded())
     }
 
     private fun showMoreOptionsPopup(view: View) {
@@ -653,7 +712,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                         .into(photoEditorView.source)
                     storyViewModel.apply {
                         addStoryFrameItemToCurrentStory(
-                            StoryFrameItem(BackgroundSource(file = file), frameItemType = StoryFrameItemType.IMAGE)
+                            StoryFrameItem(FileBackgroundSource(file = file), frameItemType = StoryFrameItemType.IMAGE)
                         )
                         setSelectedFrame(0)
                     }
@@ -701,7 +760,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 file?.let {
                     runOnUiThread {
                         storyViewModel.apply {
-                            addStoryFrameItemToCurrentStory(StoryFrameItem(BackgroundSource(file = it),
+                            addStoryFrameItemToCurrentStory(StoryFrameItem(FileBackgroundSource(file = it),
                                 frameItemType = VIDEO))
                             setSelectedFrame(0)
                         }
@@ -768,85 +827,17 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }, CAMERA_STILL_PICTURE_WAIT_FOR_NEXT_CAPTURE_MS)
     }
 
-    // TODO redefine this implementation to loop through all Story frames
-    // this one saves one composed unit: ether an Image or a Video
-    private fun saveLoopFrame() {
-        // check wether we have an Image or a Video, and call its save functionality accordingly
-        if (backgroundSurfaceManager.cameraVisible() || backgroundSurfaceManager.videoPlayerVisible()) {
-            val currentBkgMedia = backgroundSurfaceManager.getCurrentBackgroundMedia()
-            if (currentBkgMedia != null) {
-                saveVideo(currentBkgMedia)
-            } else {
-                CrashLoggingUtils.log("An error occurred trying to save video, current background media not found")
-                showToast("An error occurred trying to save video, current background media not found")
-            }
-        } else {
-            // check whether there are any GIF stickers - if there are, we need to produce a video instead
-            if (photoEditor.anyStickersAdded()) {
-                saveVideoWithStaticBackground()
-            } else {
-                saveImage()
-            }
-        }
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun saveImage() {
-        if (PermissionUtils.checkAndRequestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            showLoading("Saving...")
-            val file = getLoopFrameFile(this, false)
-            try {
-                file.createNewFile()
-
-                val saveSettings = SaveSettings.Builder()
-                    .setClearViewsEnabled(true)
-                    .setTransparencyEnabled(true)
-                    .build()
-
-                photoEditor.saveAsFile(file.absolutePath, saveSettings, object : PhotoEditor.OnSaveListener {
-                    override fun onSuccess(filePath: String) {
-                        hideLoading()
-                        deleteCapturedMedia()
-                        sendNewLoopReadyBroadcast(file)
-                        showSnackbar(
-                            getString(R.string.label_snackbar_loop_frame_saved),
-                            getString(R.string.label_snackbar_share),
-                            OnClickListener { shareAction(file) }
-                        )
-                        hideEditModeUIControls()
-                        switchCameraPreviewOn()
-                    }
-
-                    override fun onFailure(exception: Exception) {
-                        hideLoading()
-                        showSnackbar("Failed to save Image")
-                    }
-                })
-            } catch (e: IOException) {
-                e.printStackTrace()
-                hideLoading()
-                e.message?.takeIf { it.isNotEmpty() }?.let { showSnackbar(it) }
-            }
-        }
-    }
-
     @SuppressLint("MissingPermission")
     private fun saveVideo(inputFile: Uri) {
         if (PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            showLoading("Saving...")
+            showLoading(getString(R.string.label_saving))
             try {
                 val file = getLoopFrameFile(this, true)
                 file.createNewFile()
 
-                val saveSettings = SaveSettings.Builder()
-                    .setClearViewsEnabled(true)
-                    .setTransparencyEnabled(true)
-                    .build()
-
                 photoEditor.saveVideoAsFile(
                     inputFile,
                     file.absolutePath,
-                    saveSettings,
                     object : PhotoEditor.OnSaveWithCancelListener {
                     override fun onCancel(noAddedViews: Boolean) {
                             runOnUiThread {
@@ -860,7 +851,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                                 hideLoading()
                                 deleteCapturedMedia()
                                 photoEditor.clearAllViews()
-                                sendNewLoopReadyBroadcast(file)
+                                sendNewStoryFrameReadyBroadcast(file)
                                 showSnackbar(
                                     getString(R.string.label_snackbar_loop_frame_saved),
                                     getString(R.string.label_snackbar_share),
@@ -891,7 +882,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     @SuppressLint("MissingPermission")
     private fun saveVideoWithStaticBackground() {
         if (PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            showLoading("Saving...")
+            showLoading(getString(R.string.label_saving))
             try {
                 val file = getLoopFrameFile(this, true, "tmp")
                 file.createNewFile()
@@ -932,8 +923,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     private fun showLoading(message: String) {
-        editModeHideAllUIControls(false)
-        blockTouchOnPhotoEditor()
+        editModeHideAllUIControls(true)
+        blockTouchOnPhotoEditor(message)
     }
 
     private fun hideLoading() {
@@ -1084,7 +1075,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         startActivity(Intent.createChooser(shareIntent, resources.getText(R.string.label_share_to)))
     }
 
-    private fun sendNewLoopReadyBroadcast(mediaFile: File) {
+    private fun sendNewStoryFrameReadyBroadcast(mediaFile: File) {
         // Implicit broadcasts will be ignored for devices running API
         // level >= 24, so if you only target 24+ you can remove this statement
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
@@ -1105,8 +1096,39 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             this, arrayOf(mediaFile.absolutePath), arrayOf(mimeType), null)
     }
 
-    private fun blockTouchOnPhotoEditor() {
+    private fun sendNewStoryReadyBroadcast(rawMediaFileList: List<File?>) {
+        // Implicit broadcasts will be ignored for devices running API
+        // level >= 24, so if you only target 24+ you can remove this statement
+        val mediaFileList = rawMediaFileList.filterNotNull()
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            @Suppress("DEPRECATION")
+            for (mediaFile in mediaFileList) {
+                if (mediaFile.extension.startsWith("jpg")) {
+                    sendBroadcast(Intent(Camera.ACTION_NEW_PICTURE, Uri.fromFile(mediaFile)))
+                } else {
+                    sendBroadcast(Intent(Camera.ACTION_NEW_VIDEO, Uri.fromFile(mediaFile)))
+                }
+            }
+        }
+
+        val arrayOfmimeTypes = arrayOfNulls<String>(mediaFileList.size)
+        val arrayOfPaths = arrayOfNulls<String>(mediaFileList.size)
+        for ((index, mediaFile) in mediaFileList.withIndex()) {
+            arrayOfmimeTypes[index] = MimeTypeMap.getSingleton()
+                .getMimeTypeFromExtension(mediaFile.extension)
+            arrayOfPaths[index] = mediaFile.absolutePath
+        }
+
+        // If the folder selected is an external media directory, this is unnecessary
+        // but otherwise other apps will not be able to access our images unless we
+        // scan them using [MediaScannerConnection]
+        MediaScannerConnection.scanFile(
+            this, arrayOfPaths, arrayOfmimeTypes, null)
+    }
+
+    private fun blockTouchOnPhotoEditor(message: String) {
         translucent_view.visibility = View.VISIBLE
+        operation_text.text = message
         translucent_view.setOnTouchListener { _, _ ->
             // no op
             true
@@ -1115,6 +1137,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
     private fun releaseTouchOnPhotoEditor() {
         translucent_view.visibility = View.GONE
+        operation_text.text = null
         translucent_view.setOnTouchListener(null)
     }
 
@@ -1145,11 +1168,18 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     override fun onStoryFrameSelected(oldIndex: Int, newIndex: Int) {
-        // first, remember the currently added views
-        val currentStoryFrameItem = storyViewModel.getCurrentStoryFrameAt(oldIndex)
+        if (oldIndex >= 0) {
+            // only remember added views for frame if current index is valid
+            addCurrentViewsToFrameAtIndex(oldIndex)
+        }
 
-        // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
-        currentStoryFrameItem.addedViews = AddedViewList(photoEditor.getViewsAdded())
+        // This is tricky. See https://stackoverflow.com/questions/45860434/cant-remove-view-from-root-view
+        // we need to disable layout transition animations so changes in views' parent are set
+        // immediately. Otherwise a view's parent will only change once the animation ends, and hence
+        // we could reach an IllegalStateException where we are trying to add a view to another parent while it still
+        // belongs to a definite parent.
+        val transition = photoEditor.composedCanvas.getLayoutTransition()
+        photoEditor.composedCanvas.layoutTransition = null
 
         // now clear addedViews so we don't leak View.Context
         photoEditor.clearAllViews()
@@ -1157,7 +1187,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // now set the current capturedFile to be the one pointed to by the index frame
         val newSelectedFrame = storyViewModel.setSelectedFrame(newIndex)
         val source = newSelectedFrame.source
-        if (source.isFile()) {
+        if (source is FileBackgroundSource) {
             currentOriginalCapturedFile = source.file
         }
 
@@ -1168,15 +1198,16 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // 4. image/file source
         if (newSelectedFrame.frameItemType == VIDEO) {
             source.apply {
-                if (isFile()) {
+                if (this is FileBackgroundSource) {
                     showPlayVideo(file)
-                } else contentUri?.let {
+                } else (source as UriBackgroundSource).contentUri?.let {
                     showPlayVideo(it)
                 }
             }
         } else {
+            val model = (source as? FileBackgroundSource)?.file ?: (source as UriBackgroundSource).contentUri
             Glide.with(this@ComposeLoopFrameActivity)
-                .load(source.file ?: source.contentUri)
+                .load(model)
                 .transform(CenterCrop())
                 .into(photoEditorView.source)
             showStaticBackground()
@@ -1188,18 +1219,15 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 photoEditor.addViewToParent(oneView.view, oneView.viewType)
             }
         }
+
+        // re-enable layout change animations
+        photoEditor.composedCanvas.layoutTransition = transition
     }
 
     override fun onStoryFrameAddTapped() {
-        // first, remember the currently added views
-        val currentStoryFrameItem = storyViewModel.getSelectedFrame()
-
-        // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
-        currentStoryFrameItem.addedViews = AddedViewList(photoEditor.getViewsAdded())
-
+        addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
         // now clear addedViews so we don't leak View.Context
         photoEditor.clearAllViews()
-
         launchCameraPreview()
     }
 
