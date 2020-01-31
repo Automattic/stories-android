@@ -3,13 +3,16 @@ package com.automattic.portkey.compose.frame
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.net.Uri
 import android.view.ViewGroup.LayoutParams
 import android.widget.RelativeLayout
-import com.automattic.photoeditor.SaveSettings
-import com.automattic.photoeditor.util.FileUtils
+import com.automattic.photoeditor.PhotoEditor
+import com.automattic.photoeditor.PhotoEditor.OnSaveWithCancelListener
 import com.automattic.photoeditor.views.PhotoEditorView
 import com.automattic.photoeditor.views.ViewType.STICKER_ANIMATED
 import com.automattic.portkey.compose.story.StoryFrameItem
+import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource.FileBackgroundSource
+import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource.UriBackgroundSource
 import com.automattic.portkey.compose.story.StoryFrameItemType.IMAGE
 import com.automattic.portkey.compose.story.StoryFrameItemType.VIDEO
 import com.automattic.portkey.util.cloneViewSpecs
@@ -19,12 +22,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import java.io.File
 import kotlin.coroutines.CoroutineContext
 
-class FrameSaveManager : CoroutineScope {
+class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
     private val job = Job()
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Default + job
@@ -37,17 +41,14 @@ class FrameSaveManager : CoroutineScope {
 
     suspend fun saveStory(
         context: Context,
-        originalPhotoEditorView: PhotoEditorView,
         frames: List<StoryFrameItem>
-    ): List<File> {
+    ): List<File?> {
         // first, launch all frame save processes async
         return frames.mapIndexed { index, frame ->
             withContext(coroutineContext) {
                 async {
                     yield()
-                    // create ghost PhotoEditorView to be used for saving off-screen
-                    val ghostPhotoEditorView = createGhostPhotoEditor(context, originalPhotoEditorView)
-                    saveLoopFrame(context, frame, ghostPhotoEditorView, index)
+                    saveLoopFrame(context, frame, index)
                 }
             }
         }.awaitAll()
@@ -56,23 +57,12 @@ class FrameSaveManager : CoroutineScope {
     private suspend fun saveLoopFrame(
         context: Context,
         frame: StoryFrameItem,
-        ghostPhotoEditorView: PhotoEditorView,
         sequenceId: Int
-    ): File {
-        lateinit var frameFile: File
+    ): File? {
+        var frameFile: File? = null
         when (frame.frameItemType) {
             VIDEO -> {
-                if (frame.source.isFile()) {
-                    frame.source.file?.let {
-                        // TODO make saveVideo return File
-                        // saveVideo(Uri.parse(it.toString()))
-                    }
-                } else {
-                    frame.source.contentUri?.let {
-                        // TODO make saveVideo return File
-                        // saveVideo(it)
-                    }
-                }
+                frameFile = saveVideoFrame(frame, sequenceId)
             }
             IMAGE -> {
                 // check whether there are any GIF stickers - if there are, we need to produce a video instead
@@ -80,15 +70,16 @@ class FrameSaveManager : CoroutineScope {
                     // TODO make saveVideoWithStaticBackground return File
                     // saveVideoWithStaticBackground()
                 } else {
-                    frameFile = saveImageFrame(context, frame, ghostPhotoEditorView, sequenceId)
+                    // create ghost PhotoEditorView to be used for saving off-screen
+                    val ghostPhotoEditorView = createGhostPhotoEditor(context, photoEditor.composedCanvas)
+                    frameFile = saveImageFrame(frame, ghostPhotoEditorView, sequenceId)
                 }
             }
         }
         return frameFile
     }
 
-    suspend fun saveImageFrame(
-        context: Context,
+    private suspend fun saveImageFrame(
         frame: StoryFrameItem,
         ghostPhotoEditorView: PhotoEditorView,
         sequenceId: Int
@@ -96,15 +87,7 @@ class FrameSaveManager : CoroutineScope {
         // prepare the ghostview with its background image and the AddedViews on top of it
         preparePhotoEditorViewForSnapshot(frame, ghostPhotoEditorView)
         val file = withContext(Dispatchers.IO) {
-            // TODO fix the "video: false" parameter here and make a distinction on frame types here (VIDEO, IMAGE, etc)
-            val localFile = FileUtils.getLoopFrameFile(context, false, sequenceId.toString())
-            localFile.createNewFile()
-            val saveSettings = SaveSettings.Builder()
-                .setClearViewsEnabled(true)
-                .setTransparencyEnabled(false)
-                .build()
-            FileUtils.saveViewToFile(localFile.absolutePath, saveSettings, ghostPhotoEditorView)
-            return@withContext localFile
+            return@withContext photoEditor.saveImageFromPhotoEditorViewAsLoopFrameFile(sequenceId, ghostPhotoEditorView)
         }
 
         withContext(Dispatchers.Main) {
@@ -116,16 +99,81 @@ class FrameSaveManager : CoroutineScope {
         return file
     }
 
+    private suspend fun saveVideoFrame(
+        frame: StoryFrameItem,
+        sequenceId: Int
+    ): File? {
+        var file: File? = null
+
+        withContext(Dispatchers.IO) {
+            var listenerDone = false
+            val saveListener = object : PhotoEditor.OnSaveWithCancelListener {
+                override fun onCancel(noAddedViews: Boolean) {
+                    // TODO: error handling
+                    listenerDone = true
+                }
+
+                override fun onSuccess(filePath: String) {
+                    // all good here, continue success path
+                    file = File(filePath)
+                    listenerDone = true
+                }
+
+                override fun onFailure(exception: Exception) {
+                    // TODO: error handling
+                    listenerDone = true
+                }
+            }
+
+            if (saveVideoAsLoopFrameFile(frame, sequenceId, saveListener)) {
+                // don't return until we get a signal in the listener
+                while (!listenerDone) {
+                    delay(100)
+                }
+            }
+        }
+
+        return file
+    }
+
+    private fun saveVideoAsLoopFrameFile(
+        frame: StoryFrameItem,
+        sequenceId: Int,
+        onSaveListener: OnSaveWithCancelListener
+    ): Boolean {
+        var callMade = false
+        val uri: Uri? = (frame.source as? UriBackgroundSource)?.contentUri
+            ?: Uri.parse((frame.source as FileBackgroundSource).file?.absolutePath)
+        // we only need the width and height of a model canvas, not creating a canvas clone in the case of videos
+        // as these are all processed in the background
+        uri?.let {
+            photoEditor.saveVideoAsLoopFrameFile(
+                sequenceId,
+                it,
+                photoEditor.composedCanvas.width,
+                photoEditor.composedCanvas.height,
+                frame.addedViews,
+                onSaveListener
+            )
+            callMade = true
+        }
+        return callMade
+    }
+
     private suspend fun preparePhotoEditorViewForSnapshot(
         frame: StoryFrameItem,
         ghostPhotoEditorView: PhotoEditorView
     ) {
         // prepare background
-        frame.source.file?.let {
-            ghostPhotoEditorView.source.setImageBitmap(BitmapFactory.decodeFile(it.absolutePath))
+        if (frame.source is FileBackgroundSource) {
+            frame.source.file?.let {
+                ghostPhotoEditorView.source.setImageBitmap(BitmapFactory.decodeFile(it.absolutePath))
+            }
         }
-        frame.source.contentUri?.let {
-            ghostPhotoEditorView.source.setImageURI(it)
+        if (frame.source is UriBackgroundSource) {
+            frame.source.contentUri?.let {
+                ghostPhotoEditorView.source.setImageURI(it)
+            }
         }
 
         // removeViewFromParent for views that were added in the UI thread need to also run on the main thread
