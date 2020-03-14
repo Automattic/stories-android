@@ -1,17 +1,21 @@
 package com.automattic.portkey.compose
 
 import android.Manifest
+import android.animation.LayoutTransition
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityOptions
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.hardware.Camera
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.os.IBinder
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.text.TextUtils
@@ -52,6 +56,8 @@ import com.automattic.portkey.R
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
 import com.automattic.portkey.compose.frame.FrameSaveManager
+import com.automattic.portkey.compose.frame.FrameSaveService
+import com.automattic.portkey.compose.frame.FrameSaveService.StorySaveResult
 import com.automattic.portkey.compose.photopicker.MediaBrowserType
 import com.automattic.portkey.compose.photopicker.PhotoPickerActivity
 import com.automattic.portkey.compose.photopicker.PhotoPickerFragment
@@ -79,6 +85,9 @@ import kotlinx.android.synthetic.main.content_composer.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import java.io.File
 import java.io.IOException
 import kotlin.math.abs
@@ -121,10 +130,30 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
     private lateinit var storyViewModel: StoryViewModel
     private lateinit var frameSaveManager: FrameSaveManager
+    private lateinit var transition: LayoutTransition
+
+    private lateinit var frameSaveService: FrameSaveService
+    private var saveServiceBound: Boolean = false
+
+    private val connection = object : ServiceConnection {
+        override fun onServiceConnected(className: ComponentName, service: IBinder) {
+            Log.d("ComposeLoopFrame", "onServiceConnected()")
+            val binder = service as FrameSaveService.FrameSaveServiceBinder
+            frameSaveService = binder.getService()
+            frameSaveService.saveStoryFrames(0, frameSaveManager, StoryRepository.getImmutableCurrentStoryFrames())
+            saveServiceBound = true
+        }
+
+        override fun onServiceDisconnected(arg0: ComponentName) {
+            Log.d("ComposeLoopFrame", "onServiceDisconnected()")
+            saveServiceBound = false
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_composer)
+        EventBus.getDefault().register(this)
 
         topControlsBaseTopMargin = getLayoutTopMarginBeforeInset(edit_mode_controls.layoutParams)
         ViewCompat.setOnApplyWindowInsetsListener(compose_loop_frame_layout) { view, insets ->
@@ -295,6 +324,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
     override fun onDestroy() {
         frameSaveManager.onCancel()
+        doUnbindService()
+        EventBus.getDefault().unregister(this)
         super.onDestroy()
     }
 
@@ -528,8 +559,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     CoroutineScope(Dispatchers.Main).launch {
                         showLoading(getString(R.string.label_saving))
                         saveStory()
-                        hideLoading()
-                        showToast("READY")
                     }
                 }
             }
@@ -540,20 +569,24 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }
     }
 
-    private suspend fun saveStory() {
+    private fun saveStory() {
+        saveStoryPreHook()
+        // Bind to FrameSaveService
+        FrameSaveService.startServiceAndGetSaveStoryIntent(this).also { intent ->
+            bindService(intent, connection, Context.BIND_AUTO_CREATE)
+        }
+    }
+
+    private fun saveStoryPreHook() {
         // disable layout change animations, we need this to make added views immediately visible, otherwise
         // we may end up capturing a Bitmap of a backing drawable that still has not been updated
         // (i.e. no visible added Views)
-        val transition = photoEditorView.getLayoutTransition()
+        transition = photoEditorView.getLayoutTransition()
         photoEditorView.layoutTransition = null
+    }
 
-        val frameFileList =
-            frameSaveManager.saveStory(
-                this@ComposeLoopFrameActivity,
-                storyViewModel.getImmutableCurrentStoryFrames()
-            )
-        // once all frames have been saved, issue a broadcast so the system knows these frames are ready
-        sendNewStoryReadyBroadcast(frameFileList)
+    private fun saveStoryPostHook() {
+        doUnbindService()
 
         // given saveStory for static images works with a ghost off screen buffer by removing / adding views to it,
         // we need to refresh the selection so added views get properly re-added after frame iteration ends
@@ -561,6 +594,9 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
         // re-enable layout change animations
         photoEditorView.layoutTransition = transition
+
+        hideLoading()
+        showToast("READY")
     }
 
     private fun refreshStoryFrameSelection() {
@@ -1260,6 +1296,19 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             }
             return super.onFling(e1, e2, velocityX, velocityY)
         }
+    }
+
+    private fun doUnbindService() {
+        if (saveServiceBound) {
+            unbindService(connection)
+            saveServiceBound = false
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onStorySaveResult(event: StorySaveResult) {
+        // TODO do something to treat the errors here
+        saveStoryPostHook()
     }
 
     companion object {

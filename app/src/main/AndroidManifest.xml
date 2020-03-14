@@ -59,6 +59,11 @@
             android:theme="@style/AppTheme.NoActionBar"
             />
 
+        <!-- Services -->
+        <service
+            android:name=".compose.frame.FrameSaveService"
+            android:label="Frame Save Service" />
+
         <!-- FileProvider used to share photos with other apps -->
         <provider
             android:name="androidx.core.content.FileProvider"
