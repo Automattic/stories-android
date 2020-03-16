@@ -72,13 +72,13 @@ class FrameSaveService : Service() {
             )
 
         // once all frames have been saved, issue a broadcast so the system knows these frames are ready
-        sendNewStoryReadyBroadcast(frameFileList)
+        sendNewMediaReadyBroadcast(frameFileList)
 
         // TODO collect all the errors somehow before posting the SaveResult for the whole Story
         EventBus.getDefault().post(StorySaveResult(true, storyIndex, null))
     }
 
-    private fun sendNewStoryReadyBroadcast(rawMediaFileList: List<File?>) {
+    private fun sendNewMediaReadyBroadcast(rawMediaFileList: List<File?>) {
         // Implicit broadcasts will be ignored for devices running API
         // level >= 24, so if you only target 24+ you can remove this statement
         val mediaFileList = rawMediaFileList.filterNotNull()
