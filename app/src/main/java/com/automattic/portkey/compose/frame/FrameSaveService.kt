@@ -66,8 +66,6 @@ class FrameSaveService : Service() {
         val frameFileList =
             frameSaveManager.saveStory(
                 this,
-                // TODO don't assume the `current` storyFrames in the Repository but rather take it from the passed
-                // index in the intent extras bundle
                 frames
             )
 
