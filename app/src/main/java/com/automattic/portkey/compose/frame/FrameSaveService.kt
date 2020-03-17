@@ -127,26 +127,30 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
 
     // FrameSaveProgressListener overrides
     override fun onFrameSaveStart(index: Int) {
-        // TODO call the FrameSaveNotifier here
         Log.d("PORTKEY", "START save frame idx: " + index)
+        frameSaveNotifier.addMediaInfoToForegroundNotification(index.toString())
     }
 
     override fun onFrameSaveProgress(index: Int, progress: Double) {
-        // TODO call the FrameSaveNotifier here
-        Log.d("PORTKEY", "PROGERSS save frame idx: " + index + " %: " + progress)
+        Log.d("PORTKEY", "PROGRESS save frame idx: " + index + " %: " + progress)
+        frameSaveNotifier.updateNotificationProgressForMedia(index.toString(), progress.toFloat())
     }
 
     override fun onFrameSaveCompleted(index: Int) {
-        // TODO call the FrameSaveNotifier here
         Log.d("PORTKEY", "END save frame idx: " + index)
+        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(index.toString())
     }
 
     override fun onFrameSaveCanceled(index: Int) {
-        // TODO call the FrameSaveNotifier here
+        // TODO HANDLE ERROR HERE - SHOW ERROR NOTIFICATION
+        // remove one from the count
+        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(index.toString())
     }
 
     override fun onFrameSaveFailed(index: Int) {
-        // TODO call the FrameSaveNotifier here
+        // TODO HANDLE ERROR HERE - SHOW ERROR NOTIFICATION
+        // remove one from the count
+        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(index.toString())
     }
 
     inner class FrameSaveServiceBinder : Binder() {
