@@ -33,6 +33,8 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Default + job
 
+    var saveProgressListener: FrameSaveProgressListener? = null
+
     // TODO: not sure whether we really want to cancel a Story frame saving operation, but for now I'll  let this
     // one in to be a good citizen with Activity / CoroutineScope
     fun onCancel() {
@@ -60,6 +62,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         sequenceId: Int
     ): File? {
         var frameFile: File? = null
+        saveProgressListener?.onFrameSaveStart(sequenceId)
         when (frame.frameItemType) {
             VIDEO -> {
                 frameFile = saveVideoFrame(frame, sequenceId)
@@ -76,6 +79,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
                 }
             }
         }
+        saveProgressListener?.onFrameSaveCompleted(sequenceId)
         return frameFile
     }
 
@@ -201,5 +205,14 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         cloneViewSpecs(context, originalPhotoEditorView, ghostPhotoView)
         ghostPhotoView.setBackgroundColor(Color.BLACK)
         return ghostPhotoView
+    }
+
+    interface FrameSaveProgressListener {
+        // only one Story gets saved at a time, index is the frame's position within the Story array
+        fun onFrameSaveStart(index: Int)
+        fun onFrameSaveProgress(index: Int, progress: Double)
+        fun onFrameSaveCompleted(index: Int)
+        fun onFrameSaveCanceled(index: Int)
+        fun onFrameSaveFailed(index: Int)
     }
 }

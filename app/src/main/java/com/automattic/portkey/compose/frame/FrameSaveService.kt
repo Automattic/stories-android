@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import android.webkit.MimeTypeMap
+import com.automattic.portkey.compose.frame.FrameSaveManager.FrameSaveProgressListener
 import com.automattic.portkey.compose.story.StoryFrameItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,7 +19,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 import org.greenrobot.eventbus.EventBus
 
-class FrameSaveService : Service() {
+class FrameSaveService : Service(), FrameSaveProgressListener {
     private val binder = FrameSaveServiceBinder()
     private var storyIndex: Int = 0
     private lateinit var frameSaveNotifier: FrameSaveNotifier
@@ -56,8 +57,10 @@ class FrameSaveService : Service() {
     fun saveStoryFrames(storyIndex: Int, frameSaveManager: FrameSaveManager, frames: List<StoryFrameItem>) {
         Log.d("FrameSaveService", "saveStoryFrames()")
         this.storyIndex = storyIndex
+        attachProgressListener(frameSaveManager)
         CoroutineScope(Dispatchers.Default).launch {
             saveStoryFramesAndDispatchNewFileBroadcast(frameSaveManager, frames)
+            detachProgressListener(frameSaveManager)
             stopSelf()
         }
     }
@@ -112,6 +115,37 @@ class FrameSaveService : Service() {
     override fun onDestroy() {
         Log.d("FrameSaveService", "onDestroy()")
         super.onDestroy()
+    }
+
+    private fun attachProgressListener(frameSaveManager: FrameSaveManager) {
+        frameSaveManager.saveProgressListener = this
+    }
+
+    private fun detachProgressListener(frameSaveManager: FrameSaveManager) {
+        frameSaveManager.saveProgressListener = null
+    }
+
+    // FrameSaveProgressListener overrides
+    override fun onFrameSaveStart(index: Int) {
+        // TODO call the FrameSaveNotifier here
+        Log.d("PORTKEY", "START save frame idx: " + index)
+    }
+
+    override fun onFrameSaveProgress(index: Int, progress: Double) {
+        // TODO call the FrameSaveNotifier here
+    }
+
+    override fun onFrameSaveCompleted(index: Int) {
+        // TODO call the FrameSaveNotifier here
+        Log.d("PORTKEY", "END save frame idx: " + index)
+    }
+
+    override fun onFrameSaveCanceled(index: Int) {
+        // TODO call the FrameSaveNotifier here
+    }
+
+    override fun onFrameSaveFailed(index: Int) {
+        // TODO call the FrameSaveNotifier here
     }
 
     inner class FrameSaveServiceBinder : Binder() {
