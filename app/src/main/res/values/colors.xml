@@ -46,4 +46,8 @@
     <color name="divider">@color/gray_5</color>
     <color name="gray_5">#e3dfe2</color>
 
+    <!-- WordPress colors-->
+    <color name="wordpress_blue_50">#006088</color>
+    <color name="primary_50">@color/wordpress_blue_50</color>
+
 </resources>

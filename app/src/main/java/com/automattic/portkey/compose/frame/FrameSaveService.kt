@@ -21,9 +21,11 @@ import org.greenrobot.eventbus.EventBus
 class FrameSaveService : Service() {
     private val binder = FrameSaveServiceBinder()
     private var storyIndex: Int = 0
+    private lateinit var frameSaveNotifier: FrameSaveNotifier
 
     override fun onCreate() {
         super.onCreate()
+        frameSaveNotifier = FrameSaveNotifier(applicationContext, this)
         // TODO add logging
         Log.d("FrameSaveService", "onCreate()")
     }
@@ -47,6 +49,7 @@ class FrameSaveService : Service() {
             // AppLog.e(T.MAIN, "UploadService > Killed and restarted with an empty intent")
             stopSelf()
         }
+
         return START_NOT_STICKY
     }
 
