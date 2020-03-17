@@ -17,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 import org.greenrobot.eventbus.EventBus
+import kotlin.system.measureTimeMillis
 
 class FrameSaveService : Service() {
     private val binder = FrameSaveServiceBinder()
@@ -63,17 +64,20 @@ class FrameSaveService : Service() {
         frameSaveManager: FrameSaveManager,
         frames: List<StoryFrameItem>
     ) {
-        val frameFileList =
-            frameSaveManager.saveStory(
-                this,
-                frames
-            )
+        val time = measureTimeMillis {
+            val frameFileList =
+                frameSaveManager.saveStory(
+                    this,
+                    frames
+                )
 
-        // once all frames have been saved, issue a broadcast so the system knows these frames are ready
-        sendNewMediaReadyBroadcast(frameFileList)
+            // once all frames have been saved, issue a broadcast so the system knows these frames are ready
+            sendNewMediaReadyBroadcast(frameFileList)
 
-        // TODO collect all the errors somehow before posting the SaveResult for the whole Story
-        EventBus.getDefault().post(StorySaveResult(true, storyIndex, null))
+            // TODO collect all the errors somehow before posting the SaveResult for the whole Story
+            EventBus.getDefault().post(StorySaveResult(true, storyIndex, null))
+        }
+        Log.d("PORTKEY", "TOTAL TIME: " + time)
     }
 
     private fun sendNewMediaReadyBroadcast(rawMediaFileList: List<File?>) {
