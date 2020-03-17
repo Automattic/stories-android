@@ -62,7 +62,6 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         sequenceId: Int
     ): File? {
         var frameFile: File? = null
-        saveProgressListener?.onFrameSaveStart(sequenceId)
         when (frame.frameItemType) {
             VIDEO -> {
                 frameFile = saveVideoFrame(frame, sequenceId)
@@ -73,13 +72,14 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
                     // TODO make saveVideoWithStaticBackground return File
                     // saveVideoWithStaticBackground()
                 } else {
+                    saveProgressListener?.onFrameSaveStart(sequenceId)
                     // create ghost PhotoEditorView to be used for saving off-screen
                     val ghostPhotoEditorView = createGhostPhotoEditor(context, photoEditor.composedCanvas)
                     frameFile = saveImageFrame(frame, ghostPhotoEditorView, sequenceId)
+                    saveProgressListener?.onFrameSaveCompleted(sequenceId)
                 }
             }
         }
-        saveProgressListener?.onFrameSaveCompleted(sequenceId)
         return frameFile
     }
 
@@ -108,6 +108,8 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         sequenceId: Int
     ): File? {
         var file: File? = null
+
+        saveProgressListener?.onFrameSaveStart(sequenceId)
 
         withContext(Dispatchers.IO) {
             var listenerDone = false
