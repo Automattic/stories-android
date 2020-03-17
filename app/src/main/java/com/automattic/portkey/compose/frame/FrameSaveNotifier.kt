@@ -62,7 +62,9 @@ class FrameSaveNotifier(val context: Context, val service: FrameSaveService) {
             if (title != null) {
                 mNotificationBuilder.setContentTitle(buildNotificationTitleForFrameSaveProcess(title))
             } else {
-                mNotificationBuilder.setContentTitle(null)
+                mNotificationBuilder.setContentTitle(buildNotificationTitleForFrameSaveProcess(
+                    context.getString(R.string.story_saving_untitled))
+                )
             }
             mNotificationBuilder.setContentText(buildNotificationSubtitleForFrameSaveProcess())
         }
@@ -203,20 +205,20 @@ class FrameSaveNotifier(val context: Context, val service: FrameSaveService) {
         }
     }
 
-    fun addMediaInfoToForegroundNotification(idList: List<String>) {
+    fun addStoryPageInfoToForegroundNotification(idList: List<String>, title: String) {
         sNotificationData.mTotalMediaItems += idList.size
         // setup progresses for each media item
         for (id in idList) {
             setProgressForMediaItem(id, 0.0f)
         }
-        startOrUpdateForegroundNotification(null)
+        startOrUpdateForegroundNotification(title)
     }
 
-    fun addMediaInfoToForegroundNotification(id: String) {
+    fun addStoryPageInfoToForegroundNotification(id: String, title: String) {
         sNotificationData.mTotalMediaItems++
         // setup progress for media item
         setProgressForMediaItem(id, 0.0f)
-        startOrUpdateForegroundNotification(null)
+        startOrUpdateForegroundNotification(title)
     }
 
     // TODO change signature to receive a CPT (Post) as parameter instead of a plain String

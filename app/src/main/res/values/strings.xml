@@ -83,6 +83,7 @@
     <string name="pref_key_send_crash" translatable="false">pref_key_send_crash</string>
 
     <!-- Save Frame process strings-->
+    <string name="story_saving_untitled">Untitled</string>
     <string name="story_saving_title">Saving "%1$s"...</string>
     <string name="story_saving_subtitle_frames_remaining_singular">1 page remaining</string>
     <string name="story_saving_subtitle_frames_remaining_plural">%1$d pages remaining</string>

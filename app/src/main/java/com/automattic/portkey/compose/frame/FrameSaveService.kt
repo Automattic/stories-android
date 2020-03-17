@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import android.webkit.MimeTypeMap
+import com.automattic.portkey.R
 import com.automattic.portkey.compose.frame.FrameSaveManager.FrameSaveProgressListener
 import com.automattic.portkey.compose.story.StoryFrameItem
 import kotlinx.coroutines.CoroutineScope
@@ -128,7 +129,10 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
     // FrameSaveProgressListener overrides
     override fun onFrameSaveStart(index: Int) {
         Log.d("PORTKEY", "START save frame idx: " + index)
-        frameSaveNotifier.addMediaInfoToForegroundNotification(index.toString())
+        frameSaveNotifier.addStoryPageInfoToForegroundNotification(
+            index.toString(),
+            getString(R.string.story_saving_untitled)
+        )
     }
 
     override fun onFrameSaveProgress(index: Int, progress: Double) {
