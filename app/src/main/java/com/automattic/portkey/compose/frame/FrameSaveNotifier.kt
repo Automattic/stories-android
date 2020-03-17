@@ -75,7 +75,7 @@ class FrameSaveNotifier(val context: Context, val service: FrameSaveService) {
             sNotificationData.mCurrentMediaItem
     }
 
-    fun updateNotificationProgressForMedia(fileName: String, progress: Float) {
+    fun updateNotificationProgressForMedia(id: String, progress: Float) {
         if (sNotificationData.mTotalMediaItems == 0) {
             return
         }
@@ -84,10 +84,10 @@ class FrameSaveNotifier(val context: Context, val service: FrameSaveService) {
         // only update if media item is in our map - this check is performed because
         // it could happen that a media item is already done uploading but we receive an upload
         // progress event from FluxC after that. We just need to avoid re-adding the item to the map.
-        val currentProgress = sNotificationData.mediaItemToProgressMap.get(fileName)
+        val currentProgress = sNotificationData.mediaItemToProgressMap.get(id)
         // also, only set updates in increments of 5% per media item to avoid lots of notification updates
         if (currentProgress != null && progress > currentProgress + 0.05f) {
-            setProgressForMediaItem(fileName, progress)
+            setProgressForMediaItem(id, progress)
             updateNotificationProgress()
         }
     }
@@ -131,8 +131,8 @@ class FrameSaveNotifier(val context: Context, val service: FrameSaveService) {
         doNotify(sNotificationData.mNotificationId.toLong(), mNotificationBuilder.build())
     }
 
-    private fun setProgressForMediaItem(fileName: String, progress: Float) {
-        sNotificationData.mediaItemToProgressMap.put(fileName, progress)
+    private fun setProgressForMediaItem(id: String, progress: Float) {
+        sNotificationData.mediaItemToProgressMap.put(id, progress)
     }
 
     private fun getCurrentOverallProgress(): Float {
@@ -156,6 +156,7 @@ class FrameSaveNotifier(val context: Context, val service: FrameSaveService) {
         return currentMediaProgress
     }
 
+    // TODO: uncomment these lines when migrating code to WPAndroid
     @Synchronized private fun doNotify(
         id: Long,
         notification: Notification
@@ -186,9 +187,9 @@ class FrameSaveNotifier(val context: Context, val service: FrameSaveService) {
         sNotificationData.mTotalMediaItems = totalMediaItems
     }
 
-    fun removeMediaInfoFromForegroundNotification(fileNameList: List<String>) {
-        if (sNotificationData.mTotalMediaItems >= fileNameList.size) {
-            sNotificationData.mTotalMediaItems -= fileNameList.size
+    fun removeMediaInfoFromForegroundNotification(idList: List<String>) {
+        if (sNotificationData.mTotalMediaItems >= idList.size) {
+            sNotificationData.mTotalMediaItems -= idList.size
             // update Notification now
             updateForegroundNotification(null)
         }
@@ -202,19 +203,19 @@ class FrameSaveNotifier(val context: Context, val service: FrameSaveService) {
         }
     }
 
-    fun addMediaInfoToForegroundNotification(fileNameList: List<String>) {
-        sNotificationData.mTotalMediaItems += fileNameList.size
+    fun addMediaInfoToForegroundNotification(idList: List<String>) {
+        sNotificationData.mTotalMediaItems += idList.size
         // setup progresses for each media item
-        for (fileName in fileNameList) {
-            setProgressForMediaItem(fileName, 0.0f)
+        for (id in idList) {
+            setProgressForMediaItem(id, 0.0f)
         }
         startOrUpdateForegroundNotification(null)
     }
 
-    fun addMediaInfoToForegroundNotification(fileName: String) {
+    fun addMediaInfoToForegroundNotification(id: String) {
         sNotificationData.mTotalMediaItems++
         // setup progress for media item
-        setProgressForMediaItem(fileName, 0.0f)
+        setProgressForMediaItem(id, 0.0f)
         startOrUpdateForegroundNotification(null)
     }
 
