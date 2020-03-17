@@ -57,8 +57,8 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
     fun saveStoryFrames(storyIndex: Int, frameSaveManager: FrameSaveManager, frames: List<StoryFrameItem>) {
         Log.d("FrameSaveService", "saveStoryFrames()")
         this.storyIndex = storyIndex
-        attachProgressListener(frameSaveManager)
         CoroutineScope(Dispatchers.Default).launch {
+            attachProgressListener(frameSaveManager)
             saveStoryFramesAndDispatchNewFileBroadcast(frameSaveManager, frames)
             detachProgressListener(frameSaveManager)
             stopSelf()
@@ -133,6 +133,7 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
 
     override fun onFrameSaveProgress(index: Int, progress: Double) {
         // TODO call the FrameSaveNotifier here
+        Log.d("PORTKEY", "PROGERSS save frame idx: " + index + " %: " + progress)
     }
 
     override fun onFrameSaveCompleted(index: Int) {

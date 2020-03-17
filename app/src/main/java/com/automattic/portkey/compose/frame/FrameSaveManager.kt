@@ -7,7 +7,7 @@ import android.net.Uri
 import android.view.ViewGroup.LayoutParams
 import android.widget.RelativeLayout
 import com.automattic.photoeditor.PhotoEditor
-import com.automattic.photoeditor.PhotoEditor.OnSaveWithCancelListener
+import com.automattic.photoeditor.PhotoEditor.OnSaveWithCanceAndProgessListener
 import com.automattic.photoeditor.views.PhotoEditorView
 import com.automattic.photoeditor.views.ViewType.STICKER_ANIMATED
 import com.automattic.portkey.compose.story.StoryFrameItem
@@ -111,21 +111,28 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
 
         withContext(Dispatchers.IO) {
             var listenerDone = false
-            val saveListener = object : PhotoEditor.OnSaveWithCancelListener {
+            val saveListener = object : OnSaveWithCanceAndProgessListener {
                 override fun onCancel(noAddedViews: Boolean) {
                     // TODO: error handling
+                    saveProgressListener?.onFrameSaveCanceled(sequenceId)
                     listenerDone = true
                 }
 
                 override fun onSuccess(filePath: String) {
                     // all good here, continue success path
                     file = File(filePath)
+                    saveProgressListener?.onFrameSaveCompleted(sequenceId)
                     listenerDone = true
                 }
 
                 override fun onFailure(exception: Exception) {
                     // TODO: error handling
+                    saveProgressListener?.onFrameSaveFailed(sequenceId)
                     listenerDone = true
+                }
+                override fun onProgress(progress: Double) {
+                    // TODO inform progress
+                    saveProgressListener?.onFrameSaveProgress(sequenceId, progress)
                 }
             }
 
@@ -143,7 +150,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
     private fun saveVideoAsLoopFrameFile(
         frame: StoryFrameItem,
         sequenceId: Int,
-        onSaveListener: OnSaveWithCancelListener
+        onSaveListener: OnSaveWithCanceAndProgessListener
     ): Boolean {
         var callMade = false
         val uri: Uri? = (frame.source as? UriBackgroundSource)?.contentUri

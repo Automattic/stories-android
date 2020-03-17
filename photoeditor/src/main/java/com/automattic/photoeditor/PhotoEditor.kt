@@ -621,6 +621,16 @@ class PhotoEditor private constructor(builder: Builder) :
         fun onCancel(noAddedViews: Boolean = false)
     }
 
+    /**
+     * A callback to save the edited media asynchronously, with progress
+     */
+    interface OnSaveWithCanceAndProgessListener : OnSaveWithCancelListener {
+        /**
+         * Call to show progress on lengthy operations
+         */
+        fun onProgress(progress: Double)
+    }
+
     fun saveImageFromPhotoEditorViewAsLoopFrameFile(sequenceId: Int, photoEditorView: PhotoEditorView): File {
         val localFile = FileUtils.getLoopFrameFile(context, false, sequenceId.toString())
         localFile.createNewFile()
@@ -638,7 +648,7 @@ class PhotoEditor private constructor(builder: Builder) :
         canvasWidth: Int,
         canvasHeight: Int,
         customAddedViews: AddedViewList,
-        onSaveListener: OnSaveWithCancelListener
+        onSaveListener: OnSaveWithCanceAndProgessListener
     ): File {
         val localFile = FileUtils.getLoopFrameFile(context, true, sequenceId.toString())
         localFile.createNewFile()
@@ -659,7 +669,7 @@ class PhotoEditor private constructor(builder: Builder) :
         originalCanvasWidth: Int,
         originalCanvasHeight: Int,
         customAddedViews: AddedViewList,
-        onSaveListener: OnSaveWithCancelListener
+        onSaveListener: OnSaveWithCanceAndProgessListener
     ) {
         Log.d(TAG, "Video Path: $videoInputPath")
 
@@ -716,7 +726,7 @@ class PhotoEditor private constructor(builder: Builder) :
             .listener(object : Mp4Composer.Listener {
                 override fun onProgress(progress: Double) {
                     Log.d(TAG, "onProgress = $progress")
-                    // TODO: show progress to user
+                    onSaveListener.onProgress(progress)
                 }
 
                 override fun onCompleted() {
@@ -748,7 +758,7 @@ class PhotoEditor private constructor(builder: Builder) :
     fun saveVideoAsFile(
         videoInputPath: Uri,
         videoOutputPath: String,
-        onSaveListener: OnSaveWithCancelListener
+        onSaveListener: OnSaveWithCanceAndProgessListener
     ) {
         saveVideoAsFile(
             videoInputPath,
