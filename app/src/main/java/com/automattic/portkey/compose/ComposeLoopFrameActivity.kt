@@ -323,7 +323,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     override fun onDestroy() {
-        frameSaveManager.onCancel()
         doUnbindService()
         EventBus.getDefault().unregister(this)
         super.onDestroy()
@@ -1120,7 +1119,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // level >= 24, so if you only target 24+ you can remove this statement
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             @Suppress("DEPRECATION")
-            if (mediaFile.extension.startsWith("jpg")) {
+            if (mediaFile.extension == "jpg") {
                 sendBroadcast(Intent(Camera.ACTION_NEW_PICTURE, Uri.fromFile(mediaFile)))
             } else {
                 sendBroadcast(Intent(Camera.ACTION_NEW_VIDEO, Uri.fromFile(mediaFile)))
@@ -1143,7 +1142,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             @Suppress("DEPRECATION")
             for (mediaFile in mediaFileList) {
-                if (mediaFile.extension.startsWith("jpg")) {
+                if (mediaFile.extension == "jpg") {
                     sendBroadcast(Intent(Camera.ACTION_NEW_PICTURE, Uri.fromFile(mediaFile)))
                 } else {
                     sendBroadcast(Intent(Camera.ACTION_NEW_VIDEO, Uri.fromFile(mediaFile)))

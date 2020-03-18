@@ -24,6 +24,7 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
     private val binder = FrameSaveServiceBinder()
     private var storyIndex: Int = 0
     private lateinit var frameSaveNotifier: FrameSaveNotifier
+    private lateinit var frameSaveManager: FrameSaveManager
 
     override fun onCreate() {
         super.onCreate()
@@ -38,7 +39,7 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
     }
 
     // we won't really use intents to start the Service but we need it to be a started Service so we can make it
-    // a forergorund Service as well. Hence, here we override onStartCommand() as well.
+    // a foreground Service as well. Hence, here we override onStartCommand() as well.
     // So basically we're using a bound Service to be able to pass the FrameSaveManager instance to it, which in turn
     // has an instance of PhotoEditor, which is needed to save each frame.
     // And, we're making it a started Service so we can also make it a foreground Service (bound services alone
@@ -58,6 +59,7 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
     fun saveStoryFrames(storyIndex: Int, frameSaveManager: FrameSaveManager, frames: List<StoryFrameItem>) {
         Log.d("FrameSaveService", "saveStoryFrames()")
         this.storyIndex = storyIndex
+        this.frameSaveManager = frameSaveManager
         CoroutineScope(Dispatchers.Default).launch {
             attachProgressListener(frameSaveManager)
             saveStoryFramesAndDispatchNewFileBroadcast(frameSaveManager, frames)
@@ -80,7 +82,7 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
         sendNewMediaReadyBroadcast(frameFileList)
 
         // TODO collect all the errors somehow before posting the SaveResult for the whole Story
-        EventBus.getDefault().post(StorySaveResult(true, storyIndex, null))
+        EventBus.getDefault().post(StorySaveResult(true, storyIndex))
     }
 
     private fun sendNewMediaReadyBroadcast(rawMediaFileList: List<File?>) {
@@ -90,7 +92,7 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             @Suppress("DEPRECATION")
             for (mediaFile in mediaFileList) {
-                if (mediaFile.extension.startsWith("jpg")) {
+                if (mediaFile.extension == "jpg") {
                     sendBroadcast(Intent(Camera.ACTION_NEW_PICTURE, Uri.fromFile(mediaFile)))
                 } else {
                     sendBroadcast(Intent(Camera.ACTION_NEW_VIDEO, Uri.fromFile(mediaFile)))
@@ -115,6 +117,7 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
 
     override fun onDestroy() {
         Log.d("FrameSaveService", "onDestroy()")
+        frameSaveManager.onCancel()
         super.onDestroy()
     }
 
