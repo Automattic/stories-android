@@ -21,6 +21,7 @@ import org.greenrobot.eventbus.EventBus
 class FrameSaveService : Service() {
     private val binder = FrameSaveServiceBinder()
     private var storyIndex: Int = 0
+    private lateinit var frameSaveManager: FrameSaveManager
 
     override fun onCreate() {
         super.onCreate()
@@ -53,6 +54,7 @@ class FrameSaveService : Service() {
     fun saveStoryFrames(storyIndex: Int, frameSaveManager: FrameSaveManager, frames: List<StoryFrameItem>) {
         Log.d("FrameSaveService", "saveStoryFrames()")
         this.storyIndex = storyIndex
+        this.frameSaveManager = frameSaveManager
         CoroutineScope(Dispatchers.Default).launch {
             saveStoryFramesAndDispatchNewFileBroadcast(frameSaveManager, frames)
             stopSelf()
@@ -108,6 +110,7 @@ class FrameSaveService : Service() {
 
     override fun onDestroy() {
         Log.d("FrameSaveService", "onDestroy()")
+        frameSaveManager.onCancel()
         super.onDestroy()
     }
 

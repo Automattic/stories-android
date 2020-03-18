@@ -323,7 +323,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     override fun onDestroy() {
-        frameSaveManager.onCancel()
         doUnbindService()
         EventBus.getDefault().unregister(this)
         super.onDestroy()
