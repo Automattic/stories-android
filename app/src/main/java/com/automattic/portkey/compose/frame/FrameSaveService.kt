@@ -35,7 +35,7 @@ class FrameSaveService : Service() {
     }
 
     // we won't really use intents to start the Service but we need it to be a started Service so we can make it
-    // a forergorund Service as well. Hence, here we override onStartCommand() as well.
+    // a foreground Service as well. Hence, here we override onStartCommand() as well.
     // So basically we're using a bound Service to be able to pass the FrameSaveManager instance to it, which in turn
     // has an instance of PhotoEditor, which is needed to save each frame.
     // And, we're making it a started Service so we can also make it a foreground Service (bound services alone
