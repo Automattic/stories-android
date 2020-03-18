@@ -55,7 +55,6 @@ import com.automattic.portkey.BuildConfig
 import com.automattic.portkey.R
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
-import com.automattic.portkey.compose.frame.FrameSaveManager
 import com.automattic.portkey.compose.frame.FrameSaveService
 import com.automattic.portkey.compose.frame.FrameSaveService.StorySaveResult
 import com.automattic.portkey.compose.photopicker.MediaBrowserType
@@ -136,10 +135,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             Log.d("ComposeLoopFrame", "onServiceConnected()")
             val binder = service as FrameSaveService.FrameSaveServiceBinder
             frameSaveService = binder.getService()
-            frameSaveService.saveStoryFrames(0,
-                FrameSaveManager(photoEditor),
-                StoryRepository.getImmutableCurrentStoryFrames()
-            )
+            frameSaveService.saveStoryFrames(0, photoEditor, StoryRepository.getImmutableCurrentStoryFrames())
             saveServiceBound = true
         }
 

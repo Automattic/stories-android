@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import android.webkit.MimeTypeMap
+import com.automattic.photoeditor.PhotoEditor
 import com.automattic.portkey.compose.story.StoryFrameItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -51,9 +52,9 @@ class FrameSaveService : Service() {
         return START_NOT_STICKY
     }
 
-    fun saveStoryFrames(storyIndex: Int, frameSaveManager: FrameSaveManager, frames: List<StoryFrameItem>) {
+    fun saveStoryFrames(storyIndex: Int, photoEditor: PhotoEditor, frames: List<StoryFrameItem>) {
         this.storyIndex = storyIndex
-        this.frameSaveManager = frameSaveManager
+        this.frameSaveManager = FrameSaveManager(photoEditor)
         CoroutineScope(Dispatchers.Default).launch {
             saveStoryFramesAndDispatchNewFileBroadcast(frameSaveManager, frames)
             stopSelf()
