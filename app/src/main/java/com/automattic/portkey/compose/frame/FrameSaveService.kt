@@ -85,7 +85,7 @@ class FrameSaveService : Service() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             @Suppress("DEPRECATION")
             for (mediaFile in mediaFileList) {
-                if (mediaFile.extension.startsWith("jpg")) {
+                if (mediaFile.extension == "jpg") {
                     sendBroadcast(Intent(Camera.ACTION_NEW_PICTURE, Uri.fromFile(mediaFile)))
                 } else {
                     sendBroadcast(Intent(Camera.ACTION_NEW_VIDEO, Uri.fromFile(mediaFile)))
