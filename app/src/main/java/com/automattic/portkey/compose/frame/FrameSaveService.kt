@@ -75,7 +75,7 @@ class FrameSaveService : Service() {
         sendNewMediaReadyBroadcast(frameFileList)
 
         // TODO collect all the errors somehow before posting the SaveResult for the whole Story
-        EventBus.getDefault().post(StorySaveResult(true, storyIndex, null))
+        EventBus.getDefault().post(StorySaveResult(true, storyIndex))
     }
 
     private fun sendNewMediaReadyBroadcast(rawMediaFileList: List<File?>) {
