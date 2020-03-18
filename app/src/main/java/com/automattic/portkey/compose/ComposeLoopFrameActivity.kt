@@ -129,7 +129,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     private var isEditingText: Boolean = false
 
     private lateinit var storyViewModel: StoryViewModel
-    private lateinit var frameSaveManager: FrameSaveManager
     private lateinit var transition: LayoutTransition
 
     private lateinit var frameSaveService: FrameSaveService
@@ -140,7 +139,10 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             Log.d("ComposeLoopFrame", "onServiceConnected()")
             val binder = service as FrameSaveService.FrameSaveServiceBinder
             frameSaveService = binder.getService()
-            frameSaveService.saveStoryFrames(0, frameSaveManager, StoryRepository.getImmutableCurrentStoryFrames())
+            frameSaveService.saveStoryFrames(0,
+                FrameSaveManager(photoEditor),
+                StoryRepository.getImmutableCurrentStoryFrames()
+            )
             saveServiceBound = true
         }
 
@@ -230,8 +232,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 delete_view.setReadyForDelete(ready)
             }
         })
-
-        frameSaveManager = FrameSaveManager(photoEditor)
 
         backgroundSurfaceManager = BackgroundSurfaceManager(
             savedInstanceState,
@@ -324,7 +324,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
     override fun onDestroy() {
         doUnbindService()
-        frameSaveManager.onCancel()
         EventBus.getDefault().unregister(this)
         super.onDestroy()
     }
