@@ -48,7 +48,7 @@ class FrameSaveNotifier(val context: Context, val service: FrameSaveService) {
         }
     }
 
-    private fun updateForegroundNotification(title: String?) {
+    private fun updateForegroundNotification(title: String? = null) {
         updateNotificationBuilder(title)
         updateNotificationProgress()
     }
@@ -94,11 +94,11 @@ class FrameSaveNotifier(val context: Context, val service: FrameSaveService) {
         }
     }
 
-    @Synchronized fun incrementUploadedMediaCountFromProgressNotification(title: String) {
+    @Synchronized fun incrementUploadedMediaCountFromProgressNotification() {
         sNotificationData.mCurrentMediaItem++
         if (!removeNotificationAndStopForegroundServiceIfNoItemsInQueue()) {
             // update Notification now
-            updateForegroundNotification(title)
+            updateForegroundNotification()
         }
     }
 
