@@ -77,7 +77,7 @@ class FrameSaveNotifier(val context: Context, val service: FrameSaveService) {
             sNotificationData.mCurrentMediaItem
     }
 
-    fun updateNotificationProgressForMedia(id: String, progress: Float) {
+    @Synchronized fun updateNotificationProgressForMedia(id: String, progress: Float) {
         if (sNotificationData.mTotalMediaItems == 0) {
             return
         }
@@ -94,7 +94,7 @@ class FrameSaveNotifier(val context: Context, val service: FrameSaveService) {
         }
     }
 
-    fun incrementUploadedMediaCountFromProgressNotification(title: String) {
+    @Synchronized fun incrementUploadedMediaCountFromProgressNotification(title: String) {
         sNotificationData.mCurrentMediaItem++
         if (!removeNotificationAndStopForegroundServiceIfNoItemsInQueue()) {
             // update Notification now
@@ -102,7 +102,7 @@ class FrameSaveNotifier(val context: Context, val service: FrameSaveService) {
         }
     }
 
-    private fun removeNotificationAndStopForegroundServiceIfNoItemsInQueue(): Boolean {
+    @Synchronized private fun removeNotificationAndStopForegroundServiceIfNoItemsInQueue(): Boolean {
         if (sNotificationData.mCurrentMediaItem == sNotificationData.mTotalMediaItems) {
             mNotificationManager.cancel(sNotificationData.mNotificationId)
             // reset the notification id so a new one is generated next time the service is started
@@ -114,7 +114,7 @@ class FrameSaveNotifier(val context: Context, val service: FrameSaveService) {
         return false
     }
 
-    private fun resetNotificationCounters() {
+    @Synchronized private fun resetNotificationCounters() {
         sNotificationData.mCurrentMediaItem = 0
         sNotificationData.mTotalMediaItems = 0
         sNotificationData.mediaItemToProgressMap.clear()
@@ -133,7 +133,7 @@ class FrameSaveNotifier(val context: Context, val service: FrameSaveService) {
         doNotify(sNotificationData.mNotificationId.toLong(), mNotificationBuilder.build())
     }
 
-    private fun setProgressForMediaItem(id: String, progress: Float) {
+    @Synchronized private fun setProgressForMediaItem(id: String, progress: Float) {
         sNotificationData.mediaItemToProgressMap.put(id, progress)
     }
 
@@ -185,11 +185,11 @@ class FrameSaveNotifier(val context: Context, val service: FrameSaveService) {
         }
     }
 
-    fun setTotalMediaItems(totalMediaItems: Int) {
+    @Synchronized fun setTotalMediaItems(totalMediaItems: Int) {
         sNotificationData.mTotalMediaItems = totalMediaItems
     }
 
-    fun removeMediaInfoFromForegroundNotification(idList: List<String>) {
+    @Synchronized fun removeMediaInfoFromForegroundNotification(idList: List<String>) {
         if (sNotificationData.mTotalMediaItems >= idList.size) {
             sNotificationData.mTotalMediaItems -= idList.size
             // update Notification now
@@ -197,7 +197,7 @@ class FrameSaveNotifier(val context: Context, val service: FrameSaveService) {
         }
     }
 
-    fun removeOneMediaItemInfoFromForegroundNotification() {
+    @Synchronized fun removeOneMediaItemInfoFromForegroundNotification() {
         if (sNotificationData.mTotalMediaItems >= 1) {
             sNotificationData.mTotalMediaItems--
             // update Notification now
@@ -205,7 +205,7 @@ class FrameSaveNotifier(val context: Context, val service: FrameSaveService) {
         }
     }
 
-    fun addStoryPageInfoToForegroundNotification(idList: List<String>, title: String) {
+    @Synchronized fun addStoryPageInfoToForegroundNotification(idList: List<String>, title: String) {
         sNotificationData.mTotalMediaItems += idList.size
         // setup progresses for each media item
         for (id in idList) {
@@ -214,7 +214,7 @@ class FrameSaveNotifier(val context: Context, val service: FrameSaveService) {
         startOrUpdateForegroundNotification(title)
     }
 
-    fun addStoryPageInfoToForegroundNotification(id: String, title: String) {
+    @Synchronized fun addStoryPageInfoToForegroundNotification(id: String, title: String) {
         sNotificationData.mTotalMediaItems++
         // setup progress for media item
         setProgressForMediaItem(id, 0.0f)
