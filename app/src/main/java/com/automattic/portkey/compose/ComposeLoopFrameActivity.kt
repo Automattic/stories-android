@@ -55,7 +55,6 @@ import com.automattic.portkey.BuildConfig
 import com.automattic.portkey.R
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
-import com.automattic.portkey.compose.frame.FrameSaveManager
 import com.automattic.portkey.compose.frame.FrameSaveService
 import com.automattic.portkey.compose.frame.FrameSaveService.StorySaveResult
 import com.automattic.portkey.compose.photopicker.MediaBrowserType
@@ -82,9 +81,6 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_composer.*
 import kotlinx.android.synthetic.main.content_composer.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -129,7 +125,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     private var isEditingText: Boolean = false
 
     private lateinit var storyViewModel: StoryViewModel
-    private lateinit var frameSaveManager: FrameSaveManager
     private lateinit var transition: LayoutTransition
 
     private lateinit var frameSaveService: FrameSaveService
@@ -140,7 +135,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             Log.d("ComposeLoopFrame", "onServiceConnected()")
             val binder = service as FrameSaveService.FrameSaveServiceBinder
             frameSaveService = binder.getService()
-            frameSaveService.saveStoryFrames(0, frameSaveManager, StoryRepository.getImmutableCurrentStoryFrames())
+            frameSaveService.saveStoryFrames(0, photoEditor, StoryRepository.getImmutableCurrentStoryFrames())
             saveServiceBound = true
         }
 
@@ -230,8 +225,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 delete_view.setReadyForDelete(ready)
             }
         })
-
-        frameSaveManager = FrameSaveManager(photoEditor)
 
         backgroundSurfaceManager = BackgroundSurfaceManager(
             savedInstanceState,
@@ -555,10 +548,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             if (storyViewModel.getCurrentStorySize() > 0) {
                 // save all composed frames
                 if (PermissionUtils.checkAndRequestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                    CoroutineScope(Dispatchers.Main).launch {
-                        showLoading(getString(R.string.label_saving))
-                        saveStory()
-                    }
+                    saveStory()
                 }
             }
         }
@@ -577,6 +567,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     private fun saveStoryPreHook() {
+        showLoading(getString(R.string.label_saving))
         // disable layout change animations, we need this to make added views immediately visible, otherwise
         // we may end up capturing a Bitmap of a backing drawable that still has not been updated
         // (i.e. no visible added Views)

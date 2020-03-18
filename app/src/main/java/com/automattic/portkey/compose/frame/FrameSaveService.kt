@@ -13,6 +13,7 @@ import android.util.Log
 import android.webkit.MimeTypeMap
 import com.automattic.portkey.R
 import com.automattic.portkey.compose.frame.FrameSaveManager.FrameSaveProgressListener
+import com.automattic.photoeditor.PhotoEditor
 import com.automattic.portkey.compose.story.StoryFrameItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -56,10 +57,9 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
         return START_NOT_STICKY
     }
 
-    fun saveStoryFrames(storyIndex: Int, frameSaveManager: FrameSaveManager, frames: List<StoryFrameItem>) {
-        Log.d("FrameSaveService", "saveStoryFrames()")
+    fun saveStoryFrames(storyIndex: Int, photoEditor: PhotoEditor, frames: List<StoryFrameItem>) {
         this.storyIndex = storyIndex
-        this.frameSaveManager = frameSaveManager
+        this.frameSaveManager = FrameSaveManager(photoEditor)
         CoroutineScope(Dispatchers.Default).launch {
             attachProgressListener(frameSaveManager)
             saveStoryFramesAndDispatchNewFileBroadcast(frameSaveManager, frames)
