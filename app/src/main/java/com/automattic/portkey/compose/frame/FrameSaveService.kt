@@ -22,6 +22,7 @@ import kotlin.system.measureTimeMillis
 class FrameSaveService : Service() {
     private val binder = FrameSaveServiceBinder()
     private var storyIndex: Int = 0
+    private lateinit var frameSaveManager: FrameSaveManager
 
     override fun onCreate() {
         super.onCreate()
@@ -54,7 +55,9 @@ class FrameSaveService : Service() {
     fun saveStoryFrames(storyIndex: Int, frameSaveManager: FrameSaveManager, frames: List<StoryFrameItem>) {
         Log.d("FrameSaveService", "saveStoryFrames()")
         this.storyIndex = storyIndex
+        this.frameSaveManager = frameSaveManager
         CoroutineScope(Dispatchers.Default).launch {
+            Log.d("FrameSaveService", "saveStoryFrames() coroutine")
             saveStoryFramesAndDispatchNewFileBroadcast(frameSaveManager, frames)
             stopSelf()
         }
@@ -65,14 +68,19 @@ class FrameSaveService : Service() {
         frames: List<StoryFrameItem>
     ) {
         val time = measureTimeMillis {
+            Log.d("FrameSaveService", "saveStoryFramesAndDispatchNewFileBroadcast() 1")
             val frameFileList =
                 frameSaveManager.saveStory(
                     this,
                     frames
                 )
 
+            Log.d("FrameSaveService", "saveStoryFramesAndDispatchNewFileBroadcast() 2")
+
             // once all frames have been saved, issue a broadcast so the system knows these frames are ready
-            sendNewMediaReadyBroadcast(frameFileList)
+            frameFileList?.let {
+                sendNewMediaReadyBroadcast(frameFileList)
+            }
 
             // TODO collect all the errors somehow before posting the SaveResult for the whole Story
             EventBus.getDefault().post(StorySaveResult(true, storyIndex, null))
@@ -112,6 +120,7 @@ class FrameSaveService : Service() {
 
     override fun onDestroy() {
         Log.d("FrameSaveService", "onDestroy()")
+        frameSaveManager.onCancel()
         super.onDestroy()
     }
 

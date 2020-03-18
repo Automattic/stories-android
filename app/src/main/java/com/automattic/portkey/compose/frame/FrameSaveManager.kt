@@ -24,6 +24,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import java.io.File
@@ -44,16 +45,19 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
     suspend fun saveStory(
         context: Context,
         frames: List<StoryFrameItem>
-    ): List<File?> {
+    ): List<File?>? {
+        var result: List<File?>? = null
+        Log.d("FrameSaveService", "saveStory() core 1")
         // first, launch all frame save processes async
-        return frames.mapIndexed { index, frame ->
-            withContext(coroutineContext) {
-                async {
-                    yield()
-                    saveLoopFrame(context, frame, index)
-                }
+        result = frames.mapIndexed { index, frame ->
+            async {
+                yield()
+                Log.d("FrameSaveService", "saveStory() core 2")
+                saveLoopFrame(context, frame, index)
             }
         }.awaitAll()
+        Log.d("FrameSaveService", "saveStory() core 3")
+        return result
     }
 
     private suspend fun saveLoopFrame(

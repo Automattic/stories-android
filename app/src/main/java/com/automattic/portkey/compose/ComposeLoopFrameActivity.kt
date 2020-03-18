@@ -323,8 +323,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     override fun onDestroy() {
-        frameSaveManager.onCancel()
         doUnbindService()
+        frameSaveManager.onCancel()
         EventBus.getDefault().unregister(this)
         super.onDestroy()
     }
@@ -556,10 +556,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             if (storyViewModel.getCurrentStorySize() > 0) {
                 // save all composed frames
                 if (PermissionUtils.checkAndRequestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                    CoroutineScope(Dispatchers.Main).launch {
-                        showLoading(getString(R.string.label_saving))
-                        saveStory()
-                    }
+                    saveStory()
                 }
             }
         }
@@ -578,6 +575,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     private fun saveStoryPreHook() {
+        showLoading(getString(R.string.label_saving))
         // disable layout change animations, we need this to make added views immediately visible, otherwise
         // we may end up capturing a Bitmap of a backing drawable that still has not been updated
         // (i.e. no visible added Views)
