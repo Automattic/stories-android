@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
-import android.util.Log
 import android.view.ViewGroup.LayoutParams
 import android.widget.RelativeLayout
 import com.automattic.photoeditor.PhotoEditor
@@ -24,12 +23,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import java.io.File
 import kotlin.coroutines.CoroutineContext
-import kotlin.system.measureTimeMillis
 
 class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
     private val job = Job()
@@ -45,19 +42,14 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
     suspend fun saveStory(
         context: Context,
         frames: List<StoryFrameItem>
-    ): List<File?>? {
-        var result: List<File?>? = null
-        Log.d("FrameSaveService", "saveStory() core 1")
+    ): List<File?> {
         // first, launch all frame save processes async
-        result = frames.mapIndexed { index, frame ->
+        return frames.mapIndexed { index, frame ->
             async {
                 yield()
-                Log.d("FrameSaveService", "saveStory() core 2")
                 saveLoopFrame(context, frame, index)
             }
         }.awaitAll()
-        Log.d("FrameSaveService", "saveStory() core 3")
-        return result
     }
 
     private suspend fun saveLoopFrame(
@@ -66,26 +58,22 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         sequenceId: Int
     ): File? {
         var frameFile: File? = null
-        Log.d("PORTKEY", "START SAVE: " + sequenceId)
-        val time = measureTimeMillis {
-            when (frame.frameItemType) {
-                VIDEO -> {
-                    frameFile = saveVideoFrame(frame, sequenceId)
-                }
-                IMAGE -> {
-                    // check whether there are any GIF stickers - if there are, we need to produce a video instead
-                    if (frame.addedViews.containsAnyAddedViewsOfType(STICKER_ANIMATED)) {
-                        // TODO make saveVideoWithStaticBackground return File
-                        // saveVideoWithStaticBackground()
-                    } else {
-                        // create ghost PhotoEditorView to be used for saving off-screen
-                        val ghostPhotoEditorView = createGhostPhotoEditor(context, photoEditor.composedCanvas)
-                        frameFile = saveImageFrame(frame, ghostPhotoEditorView, sequenceId)
-                    }
+        when (frame.frameItemType) {
+            VIDEO -> {
+                frameFile = saveVideoFrame(frame, sequenceId)
+            }
+            IMAGE -> {
+                // check whether there are any GIF stickers - if there are, we need to produce a video instead
+                if (frame.addedViews.containsAnyAddedViewsOfType(STICKER_ANIMATED)) {
+                    // TODO make saveVideoWithStaticBackground return File
+                    // saveVideoWithStaticBackground()
+                } else {
+                    // create ghost PhotoEditorView to be used for saving off-screen
+                    val ghostPhotoEditorView = createGhostPhotoEditor(context, photoEditor.composedCanvas)
+                    frameFile = saveImageFrame(frame, ghostPhotoEditorView, sequenceId)
                 }
             }
         }
-        Log.d("PORTKEY", "END SAVE: " + sequenceId + " time: " + time)
         return frameFile
     }
 

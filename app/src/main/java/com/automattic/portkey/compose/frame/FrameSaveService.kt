@@ -17,7 +17,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 import org.greenrobot.eventbus.EventBus
-import kotlin.system.measureTimeMillis
 
 class FrameSaveService : Service() {
     private val binder = FrameSaveServiceBinder()
@@ -53,11 +52,9 @@ class FrameSaveService : Service() {
     }
 
     fun saveStoryFrames(storyIndex: Int, frameSaveManager: FrameSaveManager, frames: List<StoryFrameItem>) {
-        Log.d("FrameSaveService", "saveStoryFrames()")
         this.storyIndex = storyIndex
         this.frameSaveManager = frameSaveManager
         CoroutineScope(Dispatchers.Default).launch {
-            Log.d("FrameSaveService", "saveStoryFrames() coroutine")
             saveStoryFramesAndDispatchNewFileBroadcast(frameSaveManager, frames)
             stopSelf()
         }
@@ -67,25 +64,17 @@ class FrameSaveService : Service() {
         frameSaveManager: FrameSaveManager,
         frames: List<StoryFrameItem>
     ) {
-        val time = measureTimeMillis {
-            Log.d("FrameSaveService", "saveStoryFramesAndDispatchNewFileBroadcast() 1")
-            val frameFileList =
-                frameSaveManager.saveStory(
-                    this,
-                    frames
-                )
+        val frameFileList =
+            frameSaveManager.saveStory(
+                this,
+                frames
+            )
 
-            Log.d("FrameSaveService", "saveStoryFramesAndDispatchNewFileBroadcast() 2")
+        // once all frames have been saved, issue a broadcast so the system knows these frames are ready
+        sendNewMediaReadyBroadcast(frameFileList)
 
-            // once all frames have been saved, issue a broadcast so the system knows these frames are ready
-            frameFileList?.let {
-                sendNewMediaReadyBroadcast(frameFileList)
-            }
-
-            // TODO collect all the errors somehow before posting the SaveResult for the whole Story
-            EventBus.getDefault().post(StorySaveResult(true, storyIndex))
-        }
-        Log.d("PORTKEY", "TOTAL TIME: " + time)
+        // TODO collect all the errors somehow before posting the SaveResult for the whole Story
+        EventBus.getDefault().post(StorySaveResult(true, storyIndex))
     }
 
     private fun sendNewMediaReadyBroadcast(rawMediaFileList: List<File?>) {
