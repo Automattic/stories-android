@@ -145,19 +145,19 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
 
     override fun onFrameSaveCompleted(index: Int) {
         Log.d("PORTKEY", "END save frame idx: " + index)
-        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification()
+        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(index.toString(), true)
     }
 
     override fun onFrameSaveCanceled(index: Int) {
         // TODO HANDLE ERROR HERE - SHOW ERROR NOTIFICATION
         // remove one from the count
-        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification()
+        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(index.toString())
     }
 
     override fun onFrameSaveFailed(index: Int) {
         // TODO HANDLE ERROR HERE - SHOW ERROR NOTIFICATION
         // remove one from the count
-        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification()
+        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(index.toString())
     }
 
     inner class FrameSaveServiceBinder : Binder() {

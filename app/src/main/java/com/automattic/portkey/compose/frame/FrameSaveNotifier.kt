@@ -94,8 +94,11 @@ class FrameSaveNotifier(val context: Context, val service: FrameSaveService) {
         }
     }
 
-    @Synchronized fun incrementUploadedMediaCountFromProgressNotification() {
+    @Synchronized fun incrementUploadedMediaCountFromProgressNotification(id: String, success: Boolean = false) {
         sNotificationData.mCurrentMediaItem++
+        if (success) {
+            setProgressForMediaItem(id, 1f)
+        }
         if (!removeNotificationAndStopForegroundServiceIfNoItemsInQueue()) {
             // update Notification now
             updateForegroundNotification()
@@ -138,11 +141,10 @@ class FrameSaveNotifier(val context: Context, val service: FrameSaveService) {
     }
 
     private fun getCurrentOverallProgress(): Float {
-        val totalItemCount = sNotificationData.mTotalMediaItems
         val currentMediaProgress = getCurrentMediaProgress()
         var overAllProgress: Float
         overAllProgress = (if (sNotificationData.mTotalMediaItems > 0)
-            sNotificationData.mCurrentMediaItem / sNotificationData.mTotalMediaItems * totalItemCount
+            sNotificationData.mCurrentMediaItem / sNotificationData.mTotalMediaItems
         else
             0).toFloat()
         overAllProgress += currentMediaProgress
