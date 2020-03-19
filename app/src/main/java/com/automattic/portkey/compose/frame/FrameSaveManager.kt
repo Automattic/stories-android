@@ -127,7 +127,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
 
                 override fun onFailure(exception: Exception) {
                     // TODO: error handling
-                    saveProgressListener?.onFrameSaveFailed(sequenceId)
+                    saveProgressListener?.onFrameSaveFailed(sequenceId, exception.message)
                     listenerDone = true
                 }
                 override fun onProgress(progress: Double) {
@@ -220,6 +220,6 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         fun onFrameSaveProgress(index: Int, progress: Double)
         fun onFrameSaveCompleted(index: Int)
         fun onFrameSaveCanceled(index: Int)
-        fun onFrameSaveFailed(index: Int)
+        fun onFrameSaveFailed(index: Int, reason: String?)
     }
 }

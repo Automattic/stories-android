@@ -14,6 +14,8 @@ import android.webkit.MimeTypeMap
 import com.automattic.portkey.R
 import com.automattic.portkey.compose.frame.FrameSaveManager.FrameSaveProgressListener
 import com.automattic.photoeditor.PhotoEditor
+import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveError
+import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveSuccess
 import com.automattic.portkey.compose.story.StoryFrameItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,11 +28,11 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
     private var storyIndex: Int = 0
     private lateinit var frameSaveNotifier: FrameSaveNotifier
     private lateinit var frameSaveManager: FrameSaveManager
+    private val storySaveResult = StorySaveResult(false, 0)
 
     override fun onCreate() {
         super.onCreate()
         frameSaveNotifier = FrameSaveNotifier(applicationContext, this)
-        // TODO add logging
         Log.d("FrameSaveService", "onCreate()")
     }
 
@@ -81,8 +83,29 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
         // once all frames have been saved, issue a broadcast so the system knows these frames are ready
         sendNewMediaReadyBroadcast(frameFileList)
 
-        // TODO collect all the errors somehow before posting the SaveResult for the whole Story
-        EventBus.getDefault().post(StorySaveResult(true, storyIndex))
+        prepareSaveResult(frames.size, frameFileList.size)
+    }
+
+    private fun prepareSaveResult(expectedSuccessCases: Int, actualSuccessCases: Int) {
+        storySaveResult.storyIndex = this.storyIndex
+        // if we got the same amount of output files it means all went good
+        if (actualSuccessCases == expectedSuccessCases) {
+            storySaveResult.success = true
+        } else {
+            // otherwise, let's handle these errors
+            handleErrors(storySaveResult)
+        }
+
+        // collect all the errors and post the SaveResult for the whole Story
+        EventBus.getDefault().post(storySaveResult)
+    }
+
+    private fun handleErrors(storyResult: StorySaveResult) {
+        val fails = storyResult.frameSaveResult.filterNot { it.resultReason == SaveSuccess }
+        // val count = fails.count()
+        fails.forEach {
+            // TODO HERE do something
+        }
     }
 
     private fun sendNewMediaReadyBroadcast(rawMediaFileList: List<File?>) {
@@ -146,18 +169,22 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
     override fun onFrameSaveCompleted(index: Int) {
         Log.d("PORTKEY", "END save frame idx: " + index)
         frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(index.toString(), true)
+        // add success data to StorySaveResult
+        storySaveResult.frameSaveResult.add(FrameSaveResult(index, SaveSuccess))
     }
 
     override fun onFrameSaveCanceled(index: Int) {
-        // TODO HANDLE ERROR HERE - SHOW ERROR NOTIFICATION
         // remove one from the count
         frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(index.toString())
+        // add error data to StorySaveResult
+        storySaveResult.frameSaveResult.add(FrameSaveResult(index, SaveError(REASON_CANCELLED)))
     }
 
-    override fun onFrameSaveFailed(index: Int) {
-        // TODO HANDLE ERROR HERE - SHOW ERROR NOTIFICATION
+    override fun onFrameSaveFailed(index: Int, reason: String?) {
         // remove one from the count
         frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(index.toString())
+        // add error data to StorySaveResult
+        storySaveResult.frameSaveResult.add(FrameSaveResult(index, SaveError(reason)))
     }
 
     inner class FrameSaveServiceBinder : Binder() {
@@ -167,11 +194,21 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
     data class StorySaveResult(
         var success: Boolean,
         var storyIndex: Int,
-        var frameSaveResult: List<FrameSaveResult>? = null
+        val frameSaveResult: MutableList<FrameSaveResult> = mutableListOf<FrameSaveResult>()
     )
-    data class FrameSaveResult(val success: Boolean, val frameIndex: Int)
+
+    data class FrameSaveResult(val frameIndex: Int, val resultReason: SaveResultReason)
+
+    sealed class SaveResultReason {
+        object SaveSuccess : SaveResultReason()
+
+        data class SaveError(
+            var reason: String? = null
+        ) : SaveResultReason()
+    }
 
     companion object {
+        private const val REASON_CANCELLED = "cancelled"
         fun startServiceAndGetSaveStoryIntent(context: Context): Intent {
             Log.d("FrameSaveService", "startServiceAndGetSaveStoryIntent()")
             val intent = Intent(context, FrameSaveService::class.java)
