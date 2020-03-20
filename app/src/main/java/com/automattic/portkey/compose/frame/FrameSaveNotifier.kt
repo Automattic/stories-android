@@ -27,12 +27,13 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         notificationData = NotificationData()
         notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationBuilder = NotificationCompat.Builder(
-            context.getApplicationContext(),
+            context.applicationContext,
             context.getString(R.string.notification_channel_transient_id)
-        )
-        notificationBuilder.setSmallIcon(android.R.drawable.stat_sys_upload)
-            .setColor(context.resources.getColor(R.color.primary_50))
-            .setOnlyAlertOnce(true)
+        ).apply {
+                setSmallIcon(android.R.drawable.stat_sys_upload)
+                color = context.resources.getColor(R.color.primary_50)
+                setOnlyAlertOnce(true)
+        }
     }
 
     private fun buildNotificationTitleForFrameSaveProcess(title: String): String {
