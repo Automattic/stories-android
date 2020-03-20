@@ -111,11 +111,12 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
 
         saveProgressListener?.onFrameSaveStart(frameIndex)
 
+        var testProgress: Double = 0.0
+
         withContext(Dispatchers.IO) {
             var listenerDone = false
             val saveListener = object : OnSaveWithCancelAndProgressListener {
                 override fun onCancel(noAddedViews: Boolean) {
-                    // TODO: error handling
                     saveProgressListener?.onFrameSaveCanceled(frameIndex)
                     listenerDone = true
                 }
@@ -128,13 +129,12 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
                 }
 
                 override fun onFailure(exception: Exception) {
-                    // TODO: error handling
                     saveProgressListener?.onFrameSaveFailed(frameIndex, exception.message)
                     listenerDone = true
                 }
                 override fun onProgress(progress: Double) {
-                    // TODO inform progress
                     saveProgressListener?.onFrameSaveProgress(frameIndex, progress)
+                    testProgress = progress
                 }
             }
 
@@ -142,6 +142,12 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
                 // don't return until we get a signal in the listener
                 while (!listenerDone) {
                     delay(100)
+
+                    // TODO DELETE this piece, this is just a test to break the code and simulate an exception\
+                    // while a save to disk operation is happening.
+                    if (testProgress > 0.8) {
+                        throw Exception("TEST")
+                    }
                 }
             }
         }
