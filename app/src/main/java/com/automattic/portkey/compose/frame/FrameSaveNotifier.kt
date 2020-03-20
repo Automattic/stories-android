@@ -307,7 +307,7 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
 
         // TODO post eventBus event when adding Snackbars, when we integrate with WPAndroid
 //        EventBus.getDefault().postSticky(UploadService.UploadErrorEvent(mediaList, snackbarMessage))
-        doNotify(notificationId, notificationBuilder.build()) //, notificationType)
+        doNotify(notificationId, notificationBuilder.build()) // , notificationType)
     }
 
     fun getNotificationIdForError(): Long {
