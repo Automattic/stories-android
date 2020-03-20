@@ -8,7 +8,7 @@ import androidx.core.app.NotificationCompat
 import com.automattic.portkey.R
 import java.util.Random
 
-class FrameSaveNotifier(val context: Context, val service: FrameSaveService) {
+class FrameSaveNotifier(private val context: Context, private val service: FrameSaveService) {
     private var mNotificationManager: NotificationManager
     private var mNotificationBuilder: NotificationCompat.Builder
 
