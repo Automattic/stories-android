@@ -29,6 +29,7 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
     private lateinit var frameSaveNotifier: FrameSaveNotifier
     private lateinit var frameSaveManager: FrameSaveManager
     private val storySaveResult = StorySaveResult(false, 0)
+    private var storyTitle: String? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -54,6 +55,8 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
         if (intent == null) { // || !intent.hasExtra(KEY_MEDIA_LIST) && !intent.hasExtra(KEY_LOCAL_POST_ID)) {
             // AppLog.e(T.MAIN, "UploadService > Killed and restarted with an empty intent")
             stopSelf()
+        } else if (intent.hasExtra(KEY_STORY_TITLE)) {
+            storyTitle = intent.getStringExtra(KEY_STORY_TITLE)
         }
 
         return START_NOT_STICKY
@@ -103,9 +106,10 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
     private fun handleErrors(storyResult: StorySaveResult) {
         val fails = storyResult.frameSaveResult.filterNot { it.resultReason == SaveSuccess }
         // val count = fails.count()
-        fails.forEach {
-            // TODO HERE do something
-        }
+        frameSaveNotifier.updateNotificationErrorForStoryFramesSave(storyTitle, fails)
+//        fails.forEach {
+//            // TODO HERE do something
+//        }
     }
 
     private fun sendNewMediaReadyBroadcast(rawMediaFileList: List<File?>) {
@@ -209,9 +213,11 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
 
     companion object {
         private const val REASON_CANCELLED = "cancelled"
-        fun startServiceAndGetSaveStoryIntent(context: Context): Intent {
+        private const val KEY_STORY_TITLE = "key_story_title"
+        fun startServiceAndGetSaveStoryIntent(context: Context, storyTitle: String? = null): Intent {
             Log.d("FrameSaveService", "startServiceAndGetSaveStoryIntent()")
             val intent = Intent(context, FrameSaveService::class.java)
+            intent.putExtra(KEY_STORY_TITLE, storyTitle)
             context.startService(intent)
             return intent
         }
