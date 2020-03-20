@@ -13,8 +13,8 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
     private var notificationBuilder: NotificationCompat.Builder
 
     // used to hold notification data for everything (only one outstanding foreground notification
-    // for the live FrameSaveService instance
-    private val sNotificationData: NotificationData
+    // for the live FrameSaveService instance)
+    private val notificationData: NotificationData
 
     private inner class NotificationData {
         internal var notificationId: Int = 0
@@ -24,7 +24,7 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
     }
 
     init {
-        sNotificationData = NotificationData()
+        notificationData = NotificationData()
         notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationBuilder = NotificationCompat.Builder(
             context.getApplicationContext(),
@@ -40,11 +40,11 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
     }
 
     private fun buildNotificationSubtitleForFrameSaveProcess(): String {
-        if (sNotificationData.totalMediaItems == 1) {
+        if (notificationData.totalMediaItems == 1) {
             return context.getString(R.string.story_saving_subtitle_frames_remaining_singular)
         } else {
             return String.format(context.getString(R.string.story_saving_subtitle_frames_remaining_plural),
-                sNotificationData.totalMediaItems - getCurrentMediaItem())
+                notificationData.totalMediaItems - getCurrentMediaItem())
         }
     }
 
@@ -56,7 +56,7 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
     private fun updateNotificationBuilder(title: String?) {
         // set the Notification's title and prepare the Notifications message text,
         // i.e. "Saving story... 3 frames remaining"
-        if (sNotificationData.totalMediaItems > 0) {
+        if (notificationData.totalMediaItems > 0) {
             // only media items are being uploaded
             // check if special case for ONE media item
             if (title != null) {
@@ -71,14 +71,14 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
     }
 
     private fun getCurrentMediaItem(): Int {
-        return if (sNotificationData.currentMediaItem >= sNotificationData.totalMediaItems)
-            sNotificationData.totalMediaItems - 1
+        return if (notificationData.currentMediaItem >= notificationData.totalMediaItems)
+            notificationData.totalMediaItems - 1
         else
-            sNotificationData.currentMediaItem
+            notificationData.currentMediaItem
     }
 
     @Synchronized fun updateNotificationProgressForMedia(id: String, progress: Float) {
-        if (sNotificationData.totalMediaItems == 0) {
+        if (notificationData.totalMediaItems == 0) {
             return
         }
 
@@ -86,7 +86,7 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         // only update if media item is in our map - this check is performed because
         // it could happen that a media item is already done uploading but we receive an upload
         // progress event from FluxC after that. We just need to avoid re-adding the item to the map.
-        val currentProgress = sNotificationData.mediaItemToProgressMap.get(id)
+        val currentProgress = notificationData.mediaItemToProgressMap.get(id)
         // also, only set updates in increments of 5% per media item to avoid lots of notification updates
         if (currentProgress != null && progress > currentProgress + 0.05f) {
             setProgressForMediaItem(id, progress)
@@ -95,7 +95,7 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
     }
 
     @Synchronized fun incrementUploadedMediaCountFromProgressNotification(id: String, success: Boolean = false) {
-        sNotificationData.currentMediaItem++
+        notificationData.currentMediaItem++
         if (success) {
             setProgressForMediaItem(id, 1f)
         }
@@ -106,10 +106,10 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
     }
 
     @Synchronized private fun removeNotificationAndStopForegroundServiceIfNoItemsInQueue(): Boolean {
-        if (sNotificationData.currentMediaItem == sNotificationData.totalMediaItems) {
-            notificationManager.cancel(sNotificationData.notificationId)
+        if (notificationData.currentMediaItem == notificationData.totalMediaItems) {
+            notificationManager.cancel(notificationData.notificationId)
             // reset the notification id so a new one is generated next time the service is started
-            sNotificationData.notificationId = 0
+            notificationData.notificationId = 0
             resetNotificationCounters()
             service.stopForeground(true)
             return true
@@ -118,13 +118,13 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
     }
 
     @Synchronized private fun resetNotificationCounters() {
-        sNotificationData.currentMediaItem = 0
-        sNotificationData.totalMediaItems = 0
-        sNotificationData.mediaItemToProgressMap.clear()
+        notificationData.currentMediaItem = 0
+        notificationData.totalMediaItems = 0
+        notificationData.mediaItemToProgressMap.clear()
     }
 
     private fun updateNotificationProgress() {
-        if (sNotificationData.totalMediaItems == 0) {
+        if (notificationData.totalMediaItems == 0) {
             return
         }
 
@@ -133,18 +133,18 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
             Math.ceil((getCurrentOverallProgress() * 100).toDouble()).toInt(),
             false
         )
-        doNotify(sNotificationData.notificationId.toLong(), notificationBuilder.build())
+        doNotify(notificationData.notificationId.toLong(), notificationBuilder.build())
     }
 
     @Synchronized private fun setProgressForMediaItem(id: String, progress: Float) {
-        sNotificationData.mediaItemToProgressMap.put(id, progress)
+        notificationData.mediaItemToProgressMap.put(id, progress)
     }
 
     private fun getCurrentOverallProgress(): Float {
         val currentMediaProgress = getCurrentMediaProgress()
         var overAllProgress: Float
-        overAllProgress = (if (sNotificationData.totalMediaItems > 0)
-            sNotificationData.currentMediaItem / sNotificationData.totalMediaItems
+        overAllProgress = (if (notificationData.totalMediaItems > 0)
+            notificationData.currentMediaItem / notificationData.totalMediaItems
         else
             0).toFloat()
         overAllProgress += currentMediaProgress
@@ -153,8 +153,8 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
 
     private fun getCurrentMediaProgress(): Float {
         var currentMediaProgress = 0.0f
-        val size = sNotificationData.mediaItemToProgressMap.size
-        for (oneItemProgess in sNotificationData.mediaItemToProgressMap.values) {
+        val size = notificationData.mediaItemToProgressMap.size
+        for (oneItemProgess in notificationData.mediaItemToProgressMap.values) {
             currentMediaProgress += oneItemProgess / size
         }
         return currentMediaProgress
@@ -188,27 +188,27 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
     }
 
     @Synchronized fun setTotalMediaItems(totalMediaItems: Int) {
-        sNotificationData.totalMediaItems = totalMediaItems
+        notificationData.totalMediaItems = totalMediaItems
     }
 
     @Synchronized fun removeMediaInfoFromForegroundNotification(idList: List<String>) {
-        if (sNotificationData.totalMediaItems >= idList.size) {
-            sNotificationData.totalMediaItems -= idList.size
+        if (notificationData.totalMediaItems >= idList.size) {
+            notificationData.totalMediaItems -= idList.size
             // update Notification now
             updateForegroundNotification(null)
         }
     }
 
     @Synchronized fun removeOneMediaItemInfoFromForegroundNotification() {
-        if (sNotificationData.totalMediaItems >= 1) {
-            sNotificationData.totalMediaItems--
+        if (notificationData.totalMediaItems >= 1) {
+            notificationData.totalMediaItems--
             // update Notification now
             updateForegroundNotification(null)
         }
     }
 
     @Synchronized fun addStoryPageInfoToForegroundNotification(idList: List<String>, title: String) {
-        sNotificationData.totalMediaItems += idList.size
+        notificationData.totalMediaItems += idList.size
         // setup progresses for each media item
         for (id in idList) {
             setProgressForMediaItem(id, 0.0f)
@@ -217,7 +217,7 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
     }
 
     @Synchronized fun addStoryPageInfoToForegroundNotification(id: String, title: String) {
-        sNotificationData.totalMediaItems++
+        notificationData.totalMediaItems++
         // setup progress for media item
         setProgressForMediaItem(id, 0.0f)
         startOrUpdateForegroundNotification(title)
@@ -226,15 +226,15 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
     // TODO change signature to receive a CPT (Post) as parameter instead of a plain String
     @Synchronized private fun startOrUpdateForegroundNotification(title: String?) {
         updateNotificationBuilder(title)
-        if (sNotificationData.notificationId == 0) {
-            sNotificationData.notificationId = Random().nextInt()
+        if (notificationData.notificationId == 0) {
+            notificationData.notificationId = Random().nextInt()
             service.startForeground(
-                sNotificationData.notificationId,
+                notificationData.notificationId,
                 notificationBuilder.build()
             )
         } else {
             // service was already started, let's just modify the notification
-            doNotify(sNotificationData.notificationId.toLong(), notificationBuilder.build())
+            doNotify(notificationData.notificationId.toLong(), notificationBuilder.build())
         }
     }
 }
