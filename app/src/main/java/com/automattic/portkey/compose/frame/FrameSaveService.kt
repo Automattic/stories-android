@@ -130,7 +130,7 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
     }
 
     // FrameSaveProgressListener overrides
-    override fun onFrameSaveStart(frameIndex: Int) {
+    override fun onFrameSaveStart(frameIndex: FrameIndex) {
         Log.d("PORTKEY", "START save frame idx: " + frameIndex)
         frameSaveNotifier.addStoryPageInfoToForegroundNotification(
             frameIndex.toString(),
@@ -138,23 +138,23 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
         )
     }
 
-    override fun onFrameSaveProgress(frameIndex: Int, progress: Double) {
+    override fun onFrameSaveProgress(frameIndex: FrameIndex, progress: Double) {
         Log.d("PORTKEY", "PROGRESS save frame idx: " + frameIndex + " %: " + progress)
         frameSaveNotifier.updateNotificationProgressForMedia(frameIndex.toString(), progress.toFloat())
     }
 
-    override fun onFrameSaveCompleted(frameIndex: Int) {
+    override fun onFrameSaveCompleted(frameIndex: FrameIndex) {
         Log.d("PORTKEY", "END save frame idx: " + frameIndex)
         frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(frameIndex.toString(), true)
     }
 
-    override fun onFrameSaveCanceled(frameIndex: Int) {
+    override fun onFrameSaveCanceled(frameIndex: FrameIndex) {
         // TODO HANDLE ERROR HERE - SHOW ERROR NOTIFICATION
         // remove one from the count
         frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(frameIndex.toString())
     }
 
-    override fun onFrameSaveFailed(frameIndex: Int) {
+    override fun onFrameSaveFailed(frameIndex: FrameIndex) {
         // TODO HANDLE ERROR HERE - SHOW ERROR NOTIFICATION
         // remove one from the count
         frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(frameIndex.toString())
@@ -169,7 +169,7 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
         var storyIndex: Int,
         var frameSaveResult: List<FrameSaveResult>? = null
     )
-    data class FrameSaveResult(val success: Boolean, val frameIndex: Int)
+    data class FrameSaveResult(val success: Boolean, val frameIndex: FrameIndex)
 
     companion object {
         fun startServiceAndGetSaveStoryIntent(context: Context): Intent {
