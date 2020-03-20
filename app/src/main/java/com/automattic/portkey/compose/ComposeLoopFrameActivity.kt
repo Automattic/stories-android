@@ -865,7 +865,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 photoEditor.saveVideoAsFile(
                     inputFile,
                     file.absolutePath,
-                    object : PhotoEditor.OnSaveWithCancelAndProgessListener {
+                    object : PhotoEditor.OnSaveWithCancelAndProgressListener {
                         override fun onProgress(progress: Double) {
                             // TODO implement progress
                         }

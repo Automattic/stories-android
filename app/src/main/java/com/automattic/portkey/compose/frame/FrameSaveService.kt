@@ -157,38 +157,38 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
     }
 
     // FrameSaveProgressListener overrides
-    override fun onFrameSaveStart(index: Int) {
-        Log.d("PORTKEY", "START save frame idx: " + index)
+    override fun onFrameSaveStart(frameIndex: Int) {
+        Log.d("PORTKEY", "START save frame idx: " + frameIndex)
         frameSaveNotifier.addStoryPageInfoToForegroundNotification(
-            index.toString(),
+            frameIndex.toString(),
             getString(R.string.story_saving_untitled)
         )
     }
 
-    override fun onFrameSaveProgress(index: Int, progress: Double) {
-        Log.d("PORTKEY", "PROGRESS save frame idx: " + index + " %: " + progress)
-        frameSaveNotifier.updateNotificationProgressForMedia(index.toString(), progress.toFloat())
+    override fun onFrameSaveProgress(frameIndex: Int, progress: Double) {
+        Log.d("PORTKEY", "PROGRESS save frame idx: " + frameIndex + " %: " + progress)
+        frameSaveNotifier.updateNotificationProgressForMedia(frameIndex.toString(), progress.toFloat())
     }
 
-    override fun onFrameSaveCompleted(index: Int) {
-        Log.d("PORTKEY", "END save frame idx: " + index)
-        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(index.toString(), true)
+    override fun onFrameSaveCompleted(frameIndex: Int) {
+        Log.d("PORTKEY", "END save frame idx: " + frameIndex)
+        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(frameIndex.toString(), true)
         // add success data to StorySaveResult
-        storySaveResult.frameSaveResult.add(FrameSaveResult(index, SaveSuccess))
+        storySaveResult.frameSaveResult.add(FrameSaveResult(frameIndex, SaveSuccess))
     }
 
-    override fun onFrameSaveCanceled(index: Int) {
+    override fun onFrameSaveCanceled(frameIndex: Int) {
         // remove one from the count
-        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(index.toString())
+        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(frameIndex.toString())
         // add error data to StorySaveResult
-        storySaveResult.frameSaveResult.add(FrameSaveResult(index, SaveError(REASON_CANCELLED)))
+        storySaveResult.frameSaveResult.add(FrameSaveResult(frameIndex, SaveError(REASON_CANCELLED)))
     }
 
-    override fun onFrameSaveFailed(index: Int, reason: String?) {
+    override fun onFrameSaveFailed(frameIndex: Int, reason: String?) {
         // remove one from the count
-        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(index.toString())
+        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(frameIndex.toString())
         // add error data to StorySaveResult
-        storySaveResult.frameSaveResult.add(FrameSaveResult(index, SaveError(reason)))
+        storySaveResult.frameSaveResult.add(FrameSaveResult(frameIndex, SaveError(reason)))
     }
 
     inner class FrameSaveServiceBinder : Binder() {

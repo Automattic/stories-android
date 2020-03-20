@@ -7,7 +7,7 @@ import android.net.Uri
 import android.view.ViewGroup.LayoutParams
 import android.widget.RelativeLayout
 import com.automattic.photoeditor.PhotoEditor
-import com.automattic.photoeditor.PhotoEditor.OnSaveWithCancelAndProgessListener
+import com.automattic.photoeditor.PhotoEditor.OnSaveWithCancelAndProgressListener
 import com.automattic.photoeditor.views.PhotoEditorView
 import com.automattic.photoeditor.views.ViewType.STICKER_ANIMATED
 import com.automattic.portkey.compose.story.StoryFrameItem
@@ -27,6 +27,8 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import java.io.File
 import kotlin.coroutines.CoroutineContext
+
+typealias FrameIndex = Int
 
 class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
     private val job = Job()
@@ -57,12 +59,12 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
     private suspend fun saveLoopFrame(
         context: Context,
         frame: StoryFrameItem,
-        sequenceId: Int
+        frameIndex: FrameIndex
     ): File? {
         var frameFile: File? = null
         when (frame.frameItemType) {
             VIDEO -> {
-                frameFile = saveVideoFrame(frame, sequenceId)
+                frameFile = saveVideoFrame(frame, frameIndex)
             }
             IMAGE -> {
                 // check whether there are any GIF stickers - if there are, we need to produce a video instead
@@ -70,11 +72,11 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
                     // TODO make saveVideoWithStaticBackground return File
                     // saveVideoWithStaticBackground()
                 } else {
-                    saveProgressListener?.onFrameSaveStart(sequenceId)
+                    saveProgressListener?.onFrameSaveStart(frameIndex)
                     // create ghost PhotoEditorView to be used for saving off-screen
                     val ghostPhotoEditorView = createGhostPhotoEditor(context, photoEditor.composedCanvas)
-                    frameFile = saveImageFrame(frame, ghostPhotoEditorView, sequenceId)
-                    saveProgressListener?.onFrameSaveCompleted(sequenceId)
+                    frameFile = saveImageFrame(frame, ghostPhotoEditorView, frameIndex)
+                    saveProgressListener?.onFrameSaveCompleted(frameIndex)
                 }
             }
         }
@@ -84,12 +86,12 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
     private suspend fun saveImageFrame(
         frame: StoryFrameItem,
         ghostPhotoEditorView: PhotoEditorView,
-        sequenceId: Int
+        frameIndex: FrameIndex
     ): File {
         // prepare the ghostview with its background image and the AddedViews on top of it
         preparePhotoEditorViewForSnapshot(frame, ghostPhotoEditorView)
         val file = withContext(Dispatchers.IO) {
-            return@withContext photoEditor.saveImageFromPhotoEditorViewAsLoopFrameFile(sequenceId, ghostPhotoEditorView)
+            return@withContext photoEditor.saveImageFromPhotoEditorViewAsLoopFrameFile(frameIndex, ghostPhotoEditorView)
         }
 
         withContext(Dispatchers.Main) {
@@ -103,40 +105,40 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
 
     private suspend fun saveVideoFrame(
         frame: StoryFrameItem,
-        sequenceId: Int
+        frameIndex: FrameIndex
     ): File? {
         var file: File? = null
 
-        saveProgressListener?.onFrameSaveStart(sequenceId)
+        saveProgressListener?.onFrameSaveStart(frameIndex)
 
         withContext(Dispatchers.IO) {
             var listenerDone = false
-            val saveListener = object : OnSaveWithCancelAndProgessListener {
+            val saveListener = object : OnSaveWithCancelAndProgressListener {
                 override fun onCancel(noAddedViews: Boolean) {
                     // TODO: error handling
-                    saveProgressListener?.onFrameSaveCanceled(sequenceId)
+                    saveProgressListener?.onFrameSaveCanceled(frameIndex)
                     listenerDone = true
                 }
 
                 override fun onSuccess(filePath: String) {
                     // all good here, continue success path
                     file = File(filePath)
-                    saveProgressListener?.onFrameSaveCompleted(sequenceId)
+                    saveProgressListener?.onFrameSaveCompleted(frameIndex)
                     listenerDone = true
                 }
 
                 override fun onFailure(exception: Exception) {
                     // TODO: error handling
-                    saveProgressListener?.onFrameSaveFailed(sequenceId, exception.message)
+                    saveProgressListener?.onFrameSaveFailed(frameIndex, exception.message)
                     listenerDone = true
                 }
                 override fun onProgress(progress: Double) {
                     // TODO inform progress
-                    saveProgressListener?.onFrameSaveProgress(sequenceId, progress)
+                    saveProgressListener?.onFrameSaveProgress(frameIndex, progress)
                 }
             }
 
-            if (saveVideoAsLoopFrameFile(frame, sequenceId, saveListener)) {
+            if (saveVideoAsLoopFrameFile(frame, frameIndex, saveListener)) {
                 // don't return until we get a signal in the listener
                 while (!listenerDone) {
                     delay(100)
@@ -149,8 +151,8 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
 
     private fun saveVideoAsLoopFrameFile(
         frame: StoryFrameItem,
-        sequenceId: Int,
-        onSaveListener: OnSaveWithCancelAndProgessListener
+        frameIndex: FrameIndex,
+        onSaveListener: OnSaveWithCancelAndProgressListener
     ): Boolean {
         var callMade = false
         val uri: Uri? = (frame.source as? UriBackgroundSource)?.contentUri
@@ -159,7 +161,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         // as these are all processed in the background
         uri?.let {
             photoEditor.saveVideoAsLoopFrameFile(
-                sequenceId,
+                frameIndex,
                 it,
                 photoEditor.composedCanvas.width,
                 photoEditor.composedCanvas.height,
@@ -215,11 +217,11 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
     }
 
     interface FrameSaveProgressListener {
-        // only one Story gets saved at a time, index is the frame's position within the Story array
-        fun onFrameSaveStart(index: Int)
-        fun onFrameSaveProgress(index: Int, progress: Double)
-        fun onFrameSaveCompleted(index: Int)
-        fun onFrameSaveCanceled(index: Int)
-        fun onFrameSaveFailed(index: Int, reason: String?)
+        // only one Story gets saved at a time, frameIndex is the frame's position within the Story array
+        fun onFrameSaveStart(frameIndex: FrameIndex)
+        fun onFrameSaveProgress(frameIndex: FrameIndex, progress: Double)
+        fun onFrameSaveCompleted(frameIndex: FrameIndex)
+        fun onFrameSaveCanceled(frameIndex: FrameIndex)
+        fun onFrameSaveFailed(frameIndex: FrameIndex, reason: String?)
     }
 }

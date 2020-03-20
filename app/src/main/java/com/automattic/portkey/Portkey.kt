@@ -69,10 +69,11 @@ class Portkey : Application() {
                 getString(string.notification_channel_transient_id),
                 getString(string.notification_channel_transient_title),
                 NotificationManager.IMPORTANCE_DEFAULT
-            )
-            transientChannel.setSound(null, null)
-            transientChannel.enableVibration(false)
-            transientChannel.enableLights(false)
+            ).apply {
+                setSound(null, null)
+                enableVibration(false)
+                enableLights(false)
+            }
             // Register the channel with the system; you can't change the importance
             // or other notification behaviors after this
             notificationManager.createNotificationChannel(transientChannel)
