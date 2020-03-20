@@ -7,7 +7,7 @@ import android.net.Uri
 import android.view.ViewGroup.LayoutParams
 import android.widget.RelativeLayout
 import com.automattic.photoeditor.PhotoEditor
-import com.automattic.photoeditor.PhotoEditor.OnSaveWithCancelAndProgessListener
+import com.automattic.photoeditor.PhotoEditor.OnSaveWithCancelAndProgressListener
 import com.automattic.photoeditor.views.PhotoEditorView
 import com.automattic.photoeditor.views.ViewType.STICKER_ANIMATED
 import com.automattic.portkey.compose.story.StoryFrameItem
@@ -111,7 +111,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
 
         withContext(Dispatchers.IO) {
             var listenerDone = false
-            val saveListener = object : OnSaveWithCancelAndProgessListener {
+            val saveListener = object : OnSaveWithCancelAndProgressListener {
                 override fun onCancel(noAddedViews: Boolean) {
                     // TODO: error handling
                     saveProgressListener?.onFrameSaveCanceled(sequenceId)
@@ -150,7 +150,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
     private fun saveVideoAsLoopFrameFile(
         frame: StoryFrameItem,
         sequenceId: Int,
-        onSaveListener: OnSaveWithCancelAndProgessListener
+        onSaveListener: OnSaveWithCancelAndProgressListener
     ): Boolean {
         var callMade = false
         val uri: Uri? = (frame.source as? UriBackgroundSource)?.contentUri

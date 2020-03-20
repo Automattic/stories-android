@@ -624,7 +624,7 @@ class PhotoEditor private constructor(builder: Builder) :
     /**
      * A callback to save the edited media asynchronously, with progress
      */
-    interface OnSaveWithCancelAndProgessListener : OnSaveWithCancelListener {
+    interface OnSaveWithCancelAndProgressListener : OnSaveWithCancelListener {
         /**
          * Call to show progress on lengthy operations
          */
@@ -648,7 +648,7 @@ class PhotoEditor private constructor(builder: Builder) :
         canvasWidth: Int,
         canvasHeight: Int,
         customAddedViews: AddedViewList,
-        onSaveListener: OnSaveWithCancelAndProgessListener
+        onSaveListener: OnSaveWithCancelAndProgressListener
     ): File {
         val localFile = FileUtils.getLoopFrameFile(context, true, sequenceId.toString())
         localFile.createNewFile()
@@ -669,7 +669,7 @@ class PhotoEditor private constructor(builder: Builder) :
         originalCanvasWidth: Int,
         originalCanvasHeight: Int,
         customAddedViews: AddedViewList,
-        onSaveListener: OnSaveWithCancelAndProgessListener
+        onSaveListener: OnSaveWithCancelAndProgressListener
     ) {
         Log.d(TAG, "Video Path: $videoInputPath")
 
@@ -758,7 +758,7 @@ class PhotoEditor private constructor(builder: Builder) :
     fun saveVideoAsFile(
         videoInputPath: Uri,
         videoOutputPath: String,
-        onSaveListener: OnSaveWithCancelAndProgessListener
+        onSaveListener: OnSaveWithCancelAndProgressListener
     ) {
         saveVideoAsFile(
             videoInputPath,
