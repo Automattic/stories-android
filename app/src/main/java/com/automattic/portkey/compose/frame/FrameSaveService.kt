@@ -157,7 +157,7 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
     }
 
     // FrameSaveProgressListener overrides
-    override fun onFrameSaveStart(frameIndex: Int) {
+    override fun onFrameSaveStart(frameIndex: FrameIndex) {
         Log.d("PORTKEY", "START save frame idx: " + frameIndex)
         frameSaveNotifier.addStoryPageInfoToForegroundNotification(
             frameIndex.toString(),
@@ -165,26 +165,26 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
         )
     }
 
-    override fun onFrameSaveProgress(frameIndex: Int, progress: Double) {
+    override fun onFrameSaveProgress(frameIndex: FrameIndex, progress: Double) {
         Log.d("PORTKEY", "PROGRESS save frame idx: " + frameIndex + " %: " + progress)
         frameSaveNotifier.updateNotificationProgressForMedia(frameIndex.toString(), progress.toFloat())
     }
 
-    override fun onFrameSaveCompleted(frameIndex: Int) {
+    override fun onFrameSaveCompleted(frameIndex: FrameIndex) {
         Log.d("PORTKEY", "END save frame idx: " + frameIndex)
         frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(frameIndex.toString(), true)
         // add success data to StorySaveResult
         storySaveResult.frameSaveResult.add(FrameSaveResult(frameIndex, SaveSuccess))
     }
 
-    override fun onFrameSaveCanceled(frameIndex: Int) {
+    override fun onFrameSaveCanceled(frameIndex: FrameIndex) {
         // remove one from the count
         frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(frameIndex.toString())
         // add error data to StorySaveResult
         storySaveResult.frameSaveResult.add(FrameSaveResult(frameIndex, SaveError(REASON_CANCELLED)))
     }
 
-    override fun onFrameSaveFailed(frameIndex: Int, reason: String?) {
+    override fun onFrameSaveFailed(frameIndex: FrameIndex, reason: String?) {
         // remove one from the count
         frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(frameIndex.toString())
         // add error data to StorySaveResult
@@ -200,8 +200,7 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
         var storyIndex: Int,
         val frameSaveResult: MutableList<FrameSaveResult> = mutableListOf<FrameSaveResult>()
     )
-
-    data class FrameSaveResult(val frameIndex: Int, val resultReason: SaveResultReason)
+    data class FrameSaveResult(val frameIndex: FrameIndex, val resultReason: SaveResultReason)
 
     sealed class SaveResultReason {
         object SaveSuccess : SaveResultReason()
