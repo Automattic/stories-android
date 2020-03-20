@@ -130,34 +130,34 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
     }
 
     // FrameSaveProgressListener overrides
-    override fun onFrameSaveStart(index: Int) {
-        Log.d("PORTKEY", "START save frame idx: " + index)
+    override fun onFrameSaveStart(frameIndex: Int) {
+        Log.d("PORTKEY", "START save frame idx: " + frameIndex)
         frameSaveNotifier.addStoryPageInfoToForegroundNotification(
-            index.toString(),
+            frameIndex.toString(),
             getString(R.string.story_saving_untitled)
         )
     }
 
-    override fun onFrameSaveProgress(index: Int, progress: Double) {
-        Log.d("PORTKEY", "PROGRESS save frame idx: " + index + " %: " + progress)
-        frameSaveNotifier.updateNotificationProgressForMedia(index.toString(), progress.toFloat())
+    override fun onFrameSaveProgress(frameIndex: Int, progress: Double) {
+        Log.d("PORTKEY", "PROGRESS save frame idx: " + frameIndex + " %: " + progress)
+        frameSaveNotifier.updateNotificationProgressForMedia(frameIndex.toString(), progress.toFloat())
     }
 
-    override fun onFrameSaveCompleted(index: Int) {
-        Log.d("PORTKEY", "END save frame idx: " + index)
-        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(index.toString(), true)
+    override fun onFrameSaveCompleted(frameIndex: Int) {
+        Log.d("PORTKEY", "END save frame idx: " + frameIndex)
+        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(frameIndex.toString(), true)
     }
 
-    override fun onFrameSaveCanceled(index: Int) {
+    override fun onFrameSaveCanceled(frameIndex: Int) {
         // TODO HANDLE ERROR HERE - SHOW ERROR NOTIFICATION
         // remove one from the count
-        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(index.toString())
+        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(frameIndex.toString())
     }
 
-    override fun onFrameSaveFailed(index: Int) {
+    override fun onFrameSaveFailed(frameIndex: Int) {
         // TODO HANDLE ERROR HERE - SHOW ERROR NOTIFICATION
         // remove one from the count
-        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(index.toString())
+        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(frameIndex.toString())
     }
 
     inner class FrameSaveServiceBinder : Binder() {
