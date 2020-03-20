@@ -144,10 +144,11 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
     private fun getCurrentOverallProgress(): Float {
         val currentMediaProgress = getCurrentMediaProgress()
         var overAllProgress: Float
-        overAllProgress = (if (notificationData.totalMediaItems > 0)
+        overAllProgress = (if (notificationData.totalMediaItems > 0) {
             notificationData.currentMediaItem / notificationData.totalMediaItems
-        else
-            0).toFloat()
+        } else {
+            0
+        }).toFloat()
         overAllProgress += currentMediaProgress
         return overAllProgress
     }
