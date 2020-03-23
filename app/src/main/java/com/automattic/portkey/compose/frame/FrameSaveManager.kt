@@ -77,11 +77,15 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
                     // TODO make saveVideoWithStaticBackground return File
                     // saveVideoWithStaticBackground()
                 } else {
-                    saveProgressListener?.onFrameSaveStart(frameIndex)
-                    // create ghost PhotoEditorView to be used for saving off-screen
-                    val ghostPhotoEditorView = createGhostPhotoEditor(context, photoEditor.composedCanvas)
-                    frameFile = saveImageFrame(frame, ghostPhotoEditorView, frameIndex)
-                    saveProgressListener?.onFrameSaveCompleted(frameIndex)
+                    try {
+                        saveProgressListener?.onFrameSaveStart(frameIndex)
+                        // create ghost PhotoEditorView to be used for saving off-screen
+                        val ghostPhotoEditorView = createGhostPhotoEditor(context, photoEditor.composedCanvas)
+                        frameFile = saveImageFrame(frame, ghostPhotoEditorView, frameIndex)
+                        saveProgressListener?.onFrameSaveCompleted(frameIndex)
+                    } catch (ex: Exception) {
+                        saveProgressListener?.onFrameSaveFailed(frameIndex, ex.message)
+                    }
                 }
             }
         }
