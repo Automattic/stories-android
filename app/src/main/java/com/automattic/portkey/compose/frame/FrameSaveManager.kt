@@ -19,7 +19,6 @@ import com.automattic.portkey.util.cloneViewSpecs
 import com.automattic.portkey.util.removeViewFromParent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -27,7 +26,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import java.io.File
-import java.io.IOException
 import kotlin.coroutines.CoroutineContext
 
 typealias FrameIndex = Int
