@@ -20,18 +20,23 @@ import com.automattic.portkey.util.removeViewFromParent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import java.io.File
+import java.io.IOException
 import kotlin.coroutines.CoroutineContext
 
 typealias FrameIndex = Int
 
 class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
-    private val job = Job()
+    // we're using SupervisorJob as the topmost job, so some children async{}
+    // calls can fail without affecting the parent (and thus, all of its children) while we wait for each frame to get
+    // saved
+    private val job = SupervisorJob()
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Default + job
 
@@ -142,12 +147,6 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
                 // don't return until we get a signal in the listener
                 while (!listenerDone) {
                     delay(100)
-
-                    // TODO DELETE this piece, this is just a test to break the code and simulate an exception\
-                    // while a save to disk operation is happening.
-                    if (testProgress > 0.8) {
-                        throw Exception("TEST")
-                    }
                 }
             }
         }
