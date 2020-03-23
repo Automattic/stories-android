@@ -265,7 +265,8 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         // TODO add SITE param later when integrating with WPAndroid
         // notificationIntent.putExtra(WordPress.SITE, site)
         notificationIntent.setAction(notificationId.toString())
-//        val notificationType = NotificationType.MEDIA_UPLOAD_ERROR
+        // TODO add NotificationType.MEDIA_SAVE_ERROR param later when integrating with WPAndroid
+//        val notificationType = NotificationType.MEDIA_SAVE_ERROR
 //        notificationIntent.putExtra(ARG_NOTIFICATION_TYPE, notificationType)
 
         val pendingIntent = PendingIntent.getActivity(
