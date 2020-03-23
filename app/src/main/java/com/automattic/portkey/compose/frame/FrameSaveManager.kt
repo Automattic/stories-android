@@ -143,11 +143,17 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
                 }
             }
 
-            if (saveVideoAsLoopFrameFile(frame, frameIndex, saveListener)) {
-                // don't return until we get a signal in the listener
-                while (!listenerDone) {
-                    delay(100)
+            try {
+                if (saveVideoAsLoopFrameFile(frame, frameIndex, saveListener)) {
+                    // don't return until we get a signal in the listener
+                    while (!listenerDone) {
+                        delay(100)
+                    }
+                } else {
+                    throw Exception("Save not called")
                 }
+            } catch (ex: Exception) {
+                saveProgressListener?.onFrameSaveFailed(frameIndex, ex.message)
             }
         }
 
