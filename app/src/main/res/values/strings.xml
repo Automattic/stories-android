@@ -81,4 +81,22 @@
     <string name="pref_camera_selection" translatable="false">pref_camera_selection</string>
     <string name="pref_flash_mode_selection" translatable="false">pref_flash_mode_selection</string>
     <string name="pref_key_send_crash" translatable="false">pref_key_send_crash</string>
+
+    <!-- Save Frame process strings-->
+    <string name="story_saving_untitled">Untitled</string>
+    <string name="story_saving_title">Saving "%1$s"...</string>
+    <string name="story_saving_subtitle_frames_remaining_singular">1 page remaining</string>
+    <string name="story_saving_subtitle_frames_remaining_plural">%1$d pages remaining</string>
+
+    <!-- WordPress Android strings - matching in case of future integration -->
+    <!-- Android O notification channels, these show in the Android app settings -->
+    <string name="notification_channel_general_title">General</string>
+    <string name="notification_channel_important_title">Important</string>
+    <string name="notification_channel_transient_title">Transient</string>
+    <string name="notification_channel_reminder_title">Reminder</string>
+
+    <string name="notification_channel_normal_id" translatable="false">wpandroid_notification_normal_channel_id</string>
+    <string name="notification_channel_important_id" translatable="false">wpandroid_notification_important_channel_id</string>
+    <string name="notification_channel_transient_id" translatable="false">wpandroid_notification_transient_channel_id</string>
+    <string name="notification_channel_reminder_id" translatable="false">wpandroid_notification_reminder_channel_id</string>
 </resources>

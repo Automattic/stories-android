@@ -11,6 +11,8 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import android.webkit.MimeTypeMap
+import com.automattic.portkey.R
+import com.automattic.portkey.compose.frame.FrameSaveManager.FrameSaveProgressListener
 import com.automattic.photoeditor.PhotoEditor
 import com.automattic.portkey.compose.story.StoryFrameItem
 import kotlinx.coroutines.CoroutineScope
@@ -19,13 +21,15 @@ import kotlinx.coroutines.launch
 import java.io.File
 import org.greenrobot.eventbus.EventBus
 
-class FrameSaveService : Service() {
+class FrameSaveService : Service(), FrameSaveProgressListener {
     private val binder = FrameSaveServiceBinder()
     private var storyIndex: Int = 0
+    private lateinit var frameSaveNotifier: FrameSaveNotifier
     private lateinit var frameSaveManager: FrameSaveManager
 
     override fun onCreate() {
         super.onCreate()
+        frameSaveNotifier = FrameSaveNotifier(applicationContext, this)
         // TODO add logging
         Log.d("FrameSaveService", "onCreate()")
     }
@@ -49,6 +53,7 @@ class FrameSaveService : Service() {
             // AppLog.e(T.MAIN, "UploadService > Killed and restarted with an empty intent")
             stopSelf()
         }
+
         return START_NOT_STICKY
     }
 
@@ -56,7 +61,9 @@ class FrameSaveService : Service() {
         this.storyIndex = storyIndex
         this.frameSaveManager = FrameSaveManager(photoEditor)
         CoroutineScope(Dispatchers.Default).launch {
+            attachProgressListener(frameSaveManager)
             saveStoryFramesAndDispatchNewFileBroadcast(frameSaveManager, frames)
+            detachProgressListener(frameSaveManager)
             stopSelf()
         }
     }
@@ -114,6 +121,45 @@ class FrameSaveService : Service() {
         super.onDestroy()
     }
 
+    private fun attachProgressListener(frameSaveManager: FrameSaveManager) {
+        frameSaveManager.saveProgressListener = this
+    }
+
+    private fun detachProgressListener(frameSaveManager: FrameSaveManager) {
+        frameSaveManager.saveProgressListener = null
+    }
+
+    // FrameSaveProgressListener overrides
+    override fun onFrameSaveStart(frameIndex: FrameIndex) {
+        Log.d("PORTKEY", "START save frame idx: " + frameIndex)
+        frameSaveNotifier.addStoryPageInfoToForegroundNotification(
+            frameIndex.toString(),
+            getString(R.string.story_saving_untitled)
+        )
+    }
+
+    override fun onFrameSaveProgress(frameIndex: FrameIndex, progress: Double) {
+        Log.d("PORTKEY", "PROGRESS save frame idx: " + frameIndex + " %: " + progress)
+        frameSaveNotifier.updateNotificationProgressForMedia(frameIndex.toString(), progress.toFloat())
+    }
+
+    override fun onFrameSaveCompleted(frameIndex: FrameIndex) {
+        Log.d("PORTKEY", "END save frame idx: " + frameIndex)
+        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(frameIndex.toString(), true)
+    }
+
+    override fun onFrameSaveCanceled(frameIndex: FrameIndex) {
+        // TODO HANDLE ERROR HERE - SHOW ERROR NOTIFICATION
+        // remove one from the count
+        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(frameIndex.toString())
+    }
+
+    override fun onFrameSaveFailed(frameIndex: FrameIndex) {
+        // TODO HANDLE ERROR HERE - SHOW ERROR NOTIFICATION
+        // remove one from the count
+        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(frameIndex.toString())
+    }
+
     inner class FrameSaveServiceBinder : Binder() {
         fun getService(): FrameSaveService = this@FrameSaveService
     }
@@ -123,7 +169,7 @@ class FrameSaveService : Service() {
         var storyIndex: Int,
         var frameSaveResult: List<FrameSaveResult>? = null
     )
-    data class FrameSaveResult(val success: Boolean, val frameIndex: Int)
+    data class FrameSaveResult(val success: Boolean, val frameIndex: FrameIndex)
 
     companion object {
         fun startServiceAndGetSaveStoryIntent(context: Context): Intent {

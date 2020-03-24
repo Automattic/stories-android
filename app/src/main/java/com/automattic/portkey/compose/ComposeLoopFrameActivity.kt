@@ -864,8 +864,12 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 photoEditor.saveVideoAsFile(
                     inputFile,
                     file.absolutePath,
-                    object : PhotoEditor.OnSaveWithCancelListener {
-                    override fun onCancel(noAddedViews: Boolean) {
+                    object : PhotoEditor.OnSaveWithCancelAndProgressListener {
+                        override fun onProgress(progress: Double) {
+                            // TODO implement progress
+                        }
+
+                        override fun onCancel(noAddedViews: Boolean) {
                             runOnUiThread {
                                 hideLoading()
                                 showSnackbar("No views added - original video saved")
