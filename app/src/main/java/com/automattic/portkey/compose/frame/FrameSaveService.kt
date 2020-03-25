@@ -99,7 +99,7 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
             handleErrors(storySaveResult)
         }
 
-        // collect all the errors and post the SaveResult for the whole Story
+        // errors have beem collected, post the SaveResult for the whole Story
         EventBus.getDefault().post(storySaveResult)
     }
 
