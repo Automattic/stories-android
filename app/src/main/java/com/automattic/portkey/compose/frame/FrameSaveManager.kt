@@ -139,7 +139,6 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
                 }
                 override fun onProgress(progress: Double) {
                     saveProgressListener?.onFrameSaveProgress(frameIndex, progress)
-                    testProgress = progress
                 }
             }
 
