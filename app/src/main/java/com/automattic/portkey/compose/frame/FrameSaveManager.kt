@@ -118,8 +118,6 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
 
         saveProgressListener?.onFrameSaveStart(frameIndex)
 
-        var testProgress = 0.0
-
         withContext(Dispatchers.IO) {
             var listenerDone = false
             val saveListener = object : OnSaveWithCancelAndProgressListener {
