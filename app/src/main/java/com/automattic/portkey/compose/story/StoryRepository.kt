@@ -22,8 +22,8 @@ object StoryRepository {
     }
 
     // when the user finishes a story, just add it to our repo for now and clear currentStory
-    fun finishCurrentStory() {
-        stories.add(Story(currentStoryFrames)) // create new Story wrapper with the finished frames in there
+    fun finishCurrentStory(title: String? = null) {
+        stories.add(Story(title, currentStoryFrames)) // create new Story wrapper with the finished frames in there
         currentStoryFrames.clear()
     }
 
