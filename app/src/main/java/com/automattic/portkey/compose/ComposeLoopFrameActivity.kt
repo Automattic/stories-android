@@ -35,6 +35,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.ViewCompat
+import androidx.lifecycle.Lifecycle.State
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.automattic.photoeditor.OnPhotoEditorListener
@@ -73,7 +74,9 @@ import com.automattic.portkey.compose.story.StoryRepository
 import com.automattic.portkey.compose.story.StoryViewModel
 import com.automattic.portkey.compose.story.StoryViewModelFactory
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
+import com.automattic.portkey.util.STATE_KEY_CURRENT_STORY_INDEX
 import com.automattic.portkey.util.getDisplayPixelSize
+import com.automattic.portkey.util.getStoryIndexFromIntentOrBundle
 import com.automattic.portkey.util.isVideo
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
@@ -130,14 +133,28 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     private lateinit var frameSaveService: FrameSaveService
     private var saveServiceBound: Boolean = false
     private var storyTitle: String? = null
+    private var storyIndexToSelect = -1
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
             Log.d("ComposeLoopFrame", "onServiceConnected()")
             val binder = service as FrameSaveService.FrameSaveServiceBinder
             frameSaveService = binder.getService()
-            frameSaveService.saveStoryFrames(0, photoEditor, StoryRepository.getImmutableCurrentStoryFrames())
+
+            // keep these as they're changing when we call `storyViewModel.finishCurrentStory()`
+            val index = storyViewModel.getCurrentStoryIndex()
+            val storyFrames = storyViewModel.getImmutableCurrentStoryFrames()
+
+            // TODO obtain the real Story title as assigned by the user when the BOTTOM SHEET is ready, and pass it up
+            storyViewModel.setCurrentStoryTitle(getString(R.string.story_saving_untitled))
+
+            frameSaveService.saveStoryFrames(index, photoEditor, storyFrames)
             saveServiceBound = true
+
+            // leave the Activity - now it's all the app's responsibility to deal with saving, uploading and
+            // publishing. Users can't edit this Story now, unless an error happens and then we'll notify them
+            // and let them open the Composer screen again.
+            forceBackPressed()
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
@@ -262,9 +279,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
         swipeDetector = GestureDetectorCompat(this, FlingGestureListener())
 
-        // TODO storyIndex here is hardcoded to 0, will need to change once we have multiple stories stored.
+        // before instantiating the ViewModel, we need to get the storyIndexToSelect
+        storyIndexToSelect = getStoryIndexFromIntentOrBundle(savedInstanceState, intent)
+
         storyViewModel = ViewModelProviders.of(this,
-            StoryViewModelFactory(StoryRepository, 0)
+            StoryViewModelFactory(StoryRepository, storyIndexToSelect)
         )[StoryViewModel::class.java]
 
         if (savedInstanceState == null) {
@@ -285,16 +304,28 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             updateFlashModeSelectionIcon()
 
             photoEditorView.postDelayed({
-                launchCameraPreview()
-                storyViewModel.uiState.observe(this, Observer {
-                    // if no frames in Story, launch the capture mode
-                    if (storyViewModel.getCurrentStorySize() == 0) {
-                        photoEditor.clearAllViews()
-                        launchCameraPreview()
-                        // finally, delete the captured media
-                        deleteCapturedMedia()
+                val storySaveResult = intent.getSerializableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
+                if (StoryRepository.getCurrentStorySize() > 0) {
+                    // if the StoryRepository contains a story, load it right away to continue editing
+                    // TODO load the background surface for this Story's first page
+                    // TODO load the AddedViews for this Story's first page
+
+                    // do we have a saveResult to check?
+                    storySaveResult?.let {
+                        // TODO check pages in this Story and mark them errored according to the StorySaveResult
                     }
-                })
+                } else {
+                    launchCameraPreview()
+                    storyViewModel.uiState.observe(this, Observer {
+                        // if no frames in Story, launch the capture mode
+                        if (storyViewModel.getCurrentStorySize() == 0) {
+                            photoEditor.clearAllViews()
+                            launchCameraPreview()
+                            // finally, delete the captured media
+                            deleteCapturedMedia()
+                        }
+                    })
+                }
             }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
         } else {
             currentOriginalCapturedFile =
@@ -339,6 +370,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     override fun onSaveInstanceState(outState: Bundle) {
         backgroundSurfaceManager.saveStateToBundle(outState)
         outState.putSerializable(STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE, currentOriginalCapturedFile)
+        outState.putInt(STATE_KEY_CURRENT_STORY_INDEX, storyIndexToSelect)
         super.onSaveInstanceState(outState)
     }
 
@@ -348,6 +380,10 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
+    }
+
+    private fun forceBackPressed() {
+        super.onBackPressed()
     }
 
     override fun onBackPressed() {
@@ -576,12 +612,16 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         photoEditorView.layoutTransition = null
     }
 
-    private fun saveStoryPostHook() {
+    private fun saveStoryPostHook(result: StorySaveResult) {
         doUnbindService()
 
-        // given saveStory for static images works with a ghost off screen buffer by removing / adding views to it,
-        // we need to refresh the selection so added views get properly re-added after frame iteration ends
-        refreshStoryFrameSelection()
+        // if error: don't finish the current story (keep it), just refresh the selection
+        if (!result.success && lifecycle.currentState.isAtLeast(State.STARTED)) {
+            // given saveStory for static images works with a ghost off screen buffer by removing /
+            // adding views to it,
+            // we need to refresh the selection so added views get properly re-added after frame iteration ends
+            refreshStoryFrameSelection()
+        }
 
         // re-enable layout change animations
         photoEditorView.layoutTransition = transition
@@ -1303,11 +1343,12 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onStorySaveResult(event: StorySaveResult) {
         // TODO do something to treat the errors here
-        saveStoryPostHook()
+        saveStoryPostHook(event)
     }
 
     companion object {
         private const val FRAGMENT_DIALOG = "dialog"
+        const val KEY_STORY_SAVE_RESULT = "key_story_save_result"
 
         private const val SURFACE_MANAGER_READY_LAUNCH_DELAY = 500L
         private const val CAMERA_VIDEO_RECORD_MAX_LENGTH_MS = 10000L

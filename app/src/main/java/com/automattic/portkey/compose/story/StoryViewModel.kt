@@ -32,10 +32,11 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: In
     val onUserSelectedFrame = _onUserSelectedFrame
 
     fun loadStory(storyIndex: Int) {
-        repository.loadStory(storyIndex)
-        updateUiState(createUiStateFromModelState(repository.getImmutableCurrentStoryFrames()))
-        // default selected frame when loading a new Story
-        _onSelectedFrameIndex.value = Pair(DEFAULT_SELECTION, DEFAULT_SELECTION)
+        repository.loadStory(storyIndex)?.let {
+            updateUiState(createUiStateFromModelState(repository.getImmutableCurrentStoryFrames()))
+            // default selected frame when loading a new Story
+            _onSelectedFrameIndex.value = Pair(DEFAULT_SELECTION, DEFAULT_SELECTION)
+        }
     }
 
     fun addStoryFrameItemToCurrentStory(item: StoryFrameItem) {
@@ -44,8 +45,8 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: In
     }
 
     // when the user finishes a story, just add it to our repo for now and clear currentStory
-    fun finishCurrentStory() {
-        repository.finishCurrentStory()
+    fun finishCurrentStory(title: String) {
+        repository.finishCurrentStory(title)
         updateUiState(createUiStateFromModelState(repository.getImmutableCurrentStoryFrames()))
         currentSelectedFrameIndex = DEFAULT_SELECTION // default selected frame when loading a new Story
         _onSelectedFrameIndex.value = Pair(DEFAULT_SELECTION, currentSelectedFrameIndex)
@@ -56,6 +57,10 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: In
         currentSelectedFrameIndex = DEFAULT_SELECTION // default selected frame when loading a new Story
         _onSelectedFrameIndex.value = Pair(DEFAULT_SELECTION, currentSelectedFrameIndex)
         updateUiState(createUiStateFromModelState(repository.getImmutableCurrentStoryFrames()))
+    }
+
+    fun setCurrentStoryTitle(title: String) {
+        repository.setCurrentStoryTitle(title)
     }
 
     fun setSelectedFrame(index: Int): StoryFrameItem {
@@ -90,6 +95,10 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: In
 
     fun getImmutableCurrentStoryFrames(): List<StoryFrameItem> {
         return repository.getImmutableCurrentStoryFrames()
+    }
+
+    fun getCurrentStoryIndex(): Int {
+        return repository.currentStoryIndex
     }
 
     fun anyOfCurrentStoryFramesHasViews(): Boolean {

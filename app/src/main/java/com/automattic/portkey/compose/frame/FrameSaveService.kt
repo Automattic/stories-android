@@ -17,6 +17,7 @@ import com.automattic.photoeditor.PhotoEditor
 import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveError
 import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveSuccess
 import com.automattic.portkey.compose.story.StoryFrameItem
+import com.automattic.portkey.compose.story.StoryRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -66,9 +67,12 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
         this.storyIndex = storyIndex
         this.frameSaveManager = FrameSaveManager(photoEditor)
         CoroutineScope(Dispatchers.Default).launch {
+            EventBus.getDefault().post(StorySaveProcessStart(storyIndex))
+
             attachProgressListener(frameSaveManager)
             saveStoryFramesAndDispatchNewFileBroadcast(frameSaveManager, frames)
             detachProgressListener(frameSaveManager)
+
             stopSelf()
         }
     }
@@ -94,13 +98,14 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
         // if we got the same amount of output files it means all went good
         if (actualSuccessCases == expectedSuccessCases) {
             storySaveResult.success = true
+            StoryRepository.finishCurrentStory(getString(R.string.story_saving_untitled))
         } else {
             // otherwise, let's handle these errors
             handleErrors(storySaveResult)
         }
 
         // errors have beem collected, post the SaveResult for the whole Story
-        EventBus.getDefault().post(storySaveResult)
+        EventBus.getDefault().postSticky(storySaveResult)
     }
 
     private fun handleErrors(storyResult: StorySaveResult) {
@@ -209,6 +214,10 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
             var reason: String? = null
         ) : SaveResultReason()
     }
+
+    data class StorySaveProcessStart(
+        var storyIndex: Int
+    )
 
     companion object {
         private const val REASON_CANCELLED = "cancelled"
