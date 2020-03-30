@@ -96,10 +96,10 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
 
     private fun prepareSaveResult(expectedSuccessCases: Int, actualSuccessCases: Int) {
         storySaveResult.storyIndex = this.storyIndex
+        StoryRepository.finishCurrentStory(getString(R.string.story_saving_untitled))
         // if we got the same amount of output files it means all went good
         if (actualSuccessCases == expectedSuccessCases) {
             storySaveResult.success = true
-            StoryRepository.finishCurrentStory(getString(R.string.story_saving_untitled))
         } else {
             // otherwise, let's handle these errors
             handleErrors(storySaveResult)

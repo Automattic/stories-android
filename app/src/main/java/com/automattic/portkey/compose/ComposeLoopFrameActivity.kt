@@ -74,6 +74,7 @@ import com.automattic.portkey.compose.story.StoryRepository
 import com.automattic.portkey.compose.story.StoryViewModel
 import com.automattic.portkey.compose.story.StoryViewModelFactory
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
+import com.automattic.portkey.util.KEY_STORY_SAVE_RESULT
 import com.automattic.portkey.util.STATE_KEY_CURRENT_STORY_INDEX
 import com.automattic.portkey.util.getDisplayPixelSize
 import com.automattic.portkey.util.getStoryIndexFromIntentOrBundle
@@ -1352,7 +1353,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
     companion object {
         private const val FRAGMENT_DIALOG = "dialog"
-        const val KEY_STORY_SAVE_RESULT = "key_story_save_result"
 
         private const val SURFACE_MANAGER_READY_LAUNCH_DELAY = 500L
         private const val CAMERA_VIDEO_RECORD_MAX_LENGTH_MS = 10000L
