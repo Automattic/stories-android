@@ -9,7 +9,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.Navigation
 import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.portkey.compose.ComposeLoopFrameActivity
-import com.automattic.portkey.compose.ComposeLoopFrameActivity.Companion
 import com.automattic.portkey.compose.ComposeLoopFrameActivity.Companion.KEY_STORY_SAVE_RESULT
 import com.automattic.portkey.compose.frame.FrameSaveNotifier
 import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveError
@@ -17,7 +16,6 @@ import com.automattic.portkey.compose.frame.FrameSaveService.StorySaveProcessSta
 import com.automattic.portkey.compose.frame.FrameSaveService.StorySaveResult
 import com.automattic.portkey.compose.story.StoryRepository
 import com.automattic.portkey.intro.IntroActivity
-import com.automattic.portkey.util.KEY_STORY_INDEX
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
 import org.greenrobot.eventbus.EventBus
@@ -92,15 +90,13 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
                 errorText
             )
             val snackbar = Snackbar.make(findViewById(android.R.id.content), snackbarMessage, Snackbar.LENGTH_LONG)
-            snackbar.setAction("MANAGE", object: OnClickListener {
-                override fun onClick(p0: View?) {
-                    // here go to the ComposeActivity, passing the SaveResult
-                    val intent = Intent(this@MainActivity, ComposeLoopFrameActivity::class.java)
-                    val bundle = Bundle()
-                    bundle.putSerializable(KEY_STORY_SAVE_RESULT, event)
-                    intent.putExtras(bundle)
-                    startActivity(intent)
-                }
+            snackbar.setAction("MANAGE", { view ->
+                // here go to the ComposeActivity, passing the SaveResult
+                val intent = Intent(this@MainActivity, ComposeLoopFrameActivity::class.java)
+                val bundle = Bundle()
+                bundle.putSerializable(KEY_STORY_SAVE_RESULT, event)
+                intent.putExtras(bundle)
+                startActivity(intent)
             })
             snackbar.show()
         }
