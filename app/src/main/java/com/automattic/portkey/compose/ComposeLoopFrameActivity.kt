@@ -304,15 +304,19 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             updateFlashModeSelectionIcon()
 
             photoEditorView.postDelayed({
-                val storySaveResult = intent.getSerializableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
-                if (StoryRepository.getCurrentStorySize() > 0) {
-                    // if the StoryRepository contains a story, load it right away to continue editing
-                    // TODO load the background surface for this Story's first page
-                    // TODO load the AddedViews for this Story's first page
+                if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
+                    val storySaveResult = intent.getSerializableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
+                    if (storySaveResult != null &&
+                        StoryRepository.getStoryAtIndex(storySaveResult.storyIndex).frames.size > 0) {
+                        // if the StoryRepository contains a story, load it right away to continue editing
+                        // TODO load the background surface for this Story's first page
+                        // TODO load the AddedViews for this Story's first page
 
-                    // do we have a saveResult to check?
-                    storySaveResult?.let {
                         // TODO check pages in this Story and mark them errored according to the StorySaveResult
+                        // see https://github.com/Automattic/portkey-android/issues/285 for details
+                        Log.d("PORTKEY", "Being passed a SaveResult, render the Story")
+                    } else {
+                        // TODO couldn't find the story frames? Show some Error Dialog - we can't recover here
                     }
                 } else {
                     launchCameraPreview()

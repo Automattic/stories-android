@@ -3,15 +3,21 @@ package com.automattic.portkey
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
+import android.view.View.OnClickListener
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.Navigation
 import com.automattic.photoeditor.util.PermissionUtils
+import com.automattic.portkey.compose.ComposeLoopFrameActivity
+import com.automattic.portkey.compose.ComposeLoopFrameActivity.Companion
+import com.automattic.portkey.compose.ComposeLoopFrameActivity.Companion.KEY_STORY_SAVE_RESULT
 import com.automattic.portkey.compose.frame.FrameSaveNotifier
 import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveError
 import com.automattic.portkey.compose.frame.FrameSaveService.StorySaveProcessStart
 import com.automattic.portkey.compose.frame.FrameSaveService.StorySaveResult
 import com.automattic.portkey.compose.story.StoryRepository
 import com.automattic.portkey.intro.IntroActivity
+import com.automattic.portkey.util.KEY_STORY_INDEX
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
 import org.greenrobot.eventbus.EventBus
@@ -85,7 +91,18 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
                 event.frameSaveResult.count { it.resultReason is SaveError },
                 errorText
             )
-            Snackbar.make(findViewById(android.R.id.content), snackbarMessage, Snackbar.LENGTH_LONG).show()
+            val snackbar = Snackbar.make(findViewById(android.R.id.content), snackbarMessage, Snackbar.LENGTH_LONG)
+            snackbar.setAction("MANAGE", object: OnClickListener {
+                override fun onClick(p0: View?) {
+                    // here go to the ComposeActivity, passing the SaveResult
+                    val intent = Intent(this@MainActivity, ComposeLoopFrameActivity::class.java)
+                    val bundle = Bundle()
+                    bundle.putSerializable(KEY_STORY_SAVE_RESULT, event)
+                    intent.putExtras(bundle)
+                    startActivity(intent)
+                }
+            })
+            snackbar.show()
         }
     }
 

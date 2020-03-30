@@ -23,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 import org.greenrobot.eventbus.EventBus
+import java.io.Serializable
 
 class FrameSaveService : Service(), FrameSaveProgressListener {
     private val binder = FrameSaveServiceBinder()
@@ -200,14 +201,14 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
         fun getService(): FrameSaveService = this@FrameSaveService
     }
 
-    data class StorySaveResult(
+    data class StorySaveResult (
         var success: Boolean,
         var storyIndex: Int,
         val frameSaveResult: MutableList<FrameSaveResult> = mutableListOf<FrameSaveResult>()
-    )
-    data class FrameSaveResult(val frameIndex: FrameIndex, val resultReason: SaveResultReason)
+    ) : Serializable
+    data class FrameSaveResult(val frameIndex: FrameIndex, val resultReason: SaveResultReason) : Serializable
 
-    sealed class SaveResultReason {
+    sealed class SaveResultReason : Serializable {
         object SaveSuccess : SaveResultReason()
 
         data class SaveError(
@@ -217,7 +218,7 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
 
     data class StorySaveProcessStart(
         var storyIndex: Int
-    )
+    ) : Serializable
 
     companion object {
         private const val REASON_CANCELLED = "cancelled"
