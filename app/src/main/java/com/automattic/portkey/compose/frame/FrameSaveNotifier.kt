@@ -281,9 +281,7 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
             String.format(context.getString(R.string.story_saving_failed_title),
                 storyTitle ?: context.getString(R.string.story_saving_untitled))
 
-        val newErrorMessage = buildErrorMessageForMedia(frameSaveErrorList.size)
-        // TODO add snackbarMessage later when integrating with WPAndroid
-//        val snackbarMessage = buildSnackbarErrorMessage(newErrorMessage, errorMessage)
+        val newErrorMessage = buildErrorMessageForMedia(context, frameSaveErrorList.size)
 
         notificationBuilder.setContentTitle(notificationTitle)
         notificationBuilder.setContentText(newErrorMessage)
@@ -306,8 +304,6 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
             pendingIntent
         ).color = context.getResources().getColor(R.color.colorAccent)
 
-        // TODO post eventBus event when adding Snackbars, when we integrate with WPAndroid
-//        EventBus.getDefault().postSticky(UploadService.UploadErrorEvent(mediaList, snackbarMessage))
         doNotify(notificationId, notificationBuilder.build()) // , notificationType)
     }
 
@@ -315,21 +311,30 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         return BASE_MEDIA_ERROR_NOTIFICATION_ID.toLong()
     }
 
-    private fun buildErrorMessageForMedia(mediaItemsNotUploaded: Int): String {
-        var newErrorMessage = ""
-        if (mediaItemsNotUploaded == 1) {
-            newErrorMessage += context.getString(R.string.story_saving_failed_message_singular)
-        } else {
-            newErrorMessage += String.format(
-                context.getString(R.string.story_saving_failed_message_plural),
-                mediaItemsNotUploaded
-            )
-        }
-
-        return newErrorMessage
-    }
-
     companion object {
         private const val BASE_MEDIA_ERROR_NOTIFICATION_ID = 72300
+
+        fun buildErrorMessageForMedia(context: Context, mediaItemsNotUploaded: Int): String {
+            var newErrorMessage = ""
+            if (mediaItemsNotUploaded == 1) {
+                newErrorMessage += context.getString(R.string.story_saving_failed_message_singular)
+            } else {
+                newErrorMessage += String.format(
+                    context.getString(R.string.story_saving_failed_message_plural),
+                    mediaItemsNotUploaded
+                )
+            }
+
+            return newErrorMessage
+        }
+
+        fun buildSnackbarErrorMessage(
+            context: Context,
+            mediaItemsNotUploaded: Int,
+            errorMessage: String
+        ): String {
+            var snackbarMessage = errorMessage + "\n" + buildErrorMessageForMedia(context, mediaItemsNotUploaded)
+            return snackbarMessage
+        }
     }
 }

@@ -6,6 +6,8 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.Navigation
 import com.automattic.photoeditor.util.PermissionUtils
+import com.automattic.portkey.compose.frame.FrameSaveNotifier
+import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveError
 import com.automattic.portkey.compose.frame.FrameSaveService.StorySaveProcessStart
 import com.automattic.portkey.compose.frame.FrameSaveService.StorySaveResult
 import com.automattic.portkey.compose.story.StoryRepository
@@ -73,6 +75,17 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
         } else {
             // TODO show snackbar and add the PendingIntent with the StorySaveResult as a Serialized object if errors
             // TODO replace this with calls to snackbarSequencer.enqueue() when integrating code in WPAndroid
+
+            val errorText = String.format(
+                getString(R.string.story_saving_snackbar_finished_with_error),
+                StoryRepository.getStoryAtIndex(event.storyIndex).title
+            )
+            val snackbarMessage = FrameSaveNotifier.buildSnackbarErrorMessage(
+                this,
+                event.frameSaveResult.count { it.resultReason is SaveError },
+                errorText
+            )
+            Snackbar.make(findViewById(android.R.id.content), snackbarMessage, Snackbar.LENGTH_LONG).show()
         }
     }
 
