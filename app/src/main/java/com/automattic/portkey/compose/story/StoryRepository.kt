@@ -50,10 +50,12 @@ object StoryRepository {
         frameList.addAll(currentStoryFrames)
         stories[currentStoryIndex] = Story(frameList, title)
         currentStoryFrames.clear()
+        currentStoryIndex = DEFAULT_NONE_SELECTED
     }
 
     fun discardCurrentStory() {
         currentStoryFrames.clear()
+        currentStoryIndex = DEFAULT_NONE_SELECTED
     }
 
     fun setCurrentStoryTitle(title: String) {
