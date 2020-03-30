@@ -28,11 +28,11 @@ object StoryRepository {
         }
     }
 
-    fun getStoryAtIndex(index: Int) : Story {
+    fun getStoryAtIndex(index: Int): Story {
         return stories[index]
     }
 
-    fun createNewStory() : Int {
+    fun createNewStory(): Int {
         currentStoryFrames.clear()
         val story = Story(ArrayList())
         stories.add(story)
