@@ -110,9 +110,8 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
     }
 
     private fun handleErrors(storyResult: StorySaveResult) {
-        val fails = storyResult.frameSaveResult.filterNot { it.resultReason == SaveSuccess }
         // val count = fails.count()
-        frameSaveNotifier.updateNotificationErrorForStoryFramesSave(storyTitle, fails)
+        frameSaveNotifier.updateNotificationErrorForStoryFramesSave(storyTitle, storyResult)
 //        fails.forEach {
 //            // TODO HERE do something
 //        }
