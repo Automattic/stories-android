@@ -134,6 +134,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
     private lateinit var frameSaveService: FrameSaveService
     private var saveServiceBound: Boolean = false
+    private var preHookRun: Boolean = false
     private var storyIndexToSelect = -1
 
     private val connection = object : ServiceConnection {
@@ -621,6 +622,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // (i.e. no visible added Views)
         transition = photoEditorView.getLayoutTransition()
         photoEditorView.layoutTransition = null
+        preHookRun = true
     }
 
     private fun saveStoryPostHook(result: StorySaveResult) {
@@ -634,8 +636,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             refreshStoryFrameSelection()
         }
 
-        // re-enable layout change animations
-        photoEditorView.layoutTransition = transition
+        // only re-set the layout transition if preHook has been run for this Activity's instance.
+        if (preHookRun) {
+            // re-enable layout change animations
+            photoEditorView.layoutTransition = transition
+        }
 
         hideLoading()
         showToast("READY")
