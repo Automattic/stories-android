@@ -28,7 +28,7 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
     private var storyIndex: Int = 0
     private lateinit var frameSaveNotifier: FrameSaveNotifier
     private lateinit var frameSaveManager: FrameSaveManager
-    private val storySaveResult = StorySaveResult(false, 0)
+    private val storySaveResult = StorySaveResult()
     private var storyTitle: String? = null
 
     override fun onCreate() {
@@ -196,8 +196,8 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
     }
 
     data class StorySaveResult(
-        var success: Boolean,
-        var storyIndex: Int,
+        var success: Boolean = false,
+        var storyIndex: Int = 0,
         val frameSaveResult: MutableList<FrameSaveResult> = mutableListOf<FrameSaveResult>()
     )
     data class FrameSaveResult(val frameIndex: FrameIndex, val resultReason: SaveResultReason)
