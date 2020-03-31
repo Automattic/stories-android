@@ -31,6 +31,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
 import androidx.constraintlayout.widget.Group
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.GestureDetectorCompat
@@ -309,6 +310,13 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     val storySaveResult = intent.getSerializableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
                     if (storySaveResult != null &&
                         StoryRepository.getStoryAtIndex(storySaveResult.storyIndex).frames.size > 0) {
+                        // dismiss the error notification
+                        // TODO use NativeNotificationUtils.dismissNotification() when migrating to WPAndroid
+                        intent.action?.let {
+                            val notificationManager = NotificationManagerCompat.from(this)
+                            notificationManager.cancel(it.toInt())
+                        }
+
                         // if the StoryRepository contains a story, load it right away to continue editing
                         // TODO check pages in this Story and mark them errored according to the StorySaveResult
                         // see https://github.com/Automattic/portkey-android/issues/285 for details
