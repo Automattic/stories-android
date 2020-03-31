@@ -6,7 +6,7 @@ import com.automattic.portkey.compose.frame.FrameSaveService.StorySaveResult
 import com.automattic.portkey.compose.story.StoryRepository.DEFAULT_NONE_SELECTED
 
 fun getStoryIndexFromIntentOrBundle(savedInstanceState: Bundle?, intent: Intent?): Int {
-    var index: Int = DEFAULT_INDEX
+    var index: Int = DEFAULT_NONE_SELECTED
     // before instantiating the ViewModel, we need to get the storyIndex
     if (savedInstanceState == null) {
         intent?.let {
@@ -28,7 +28,6 @@ fun getStoryIndexFromIntentOrBundle(savedInstanceState: Bundle?, intent: Intent?
     return index
 }
 
-const val DEFAULT_INDEX = -1
 const val KEY_STORY_INDEX = "key_story_index"
 const val KEY_STORY_SAVE_RESULT = "key_story_save_result"
 const val STATE_KEY_CURRENT_STORY_INDEX = "key_current_story_index"
