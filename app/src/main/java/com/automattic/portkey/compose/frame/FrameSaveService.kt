@@ -27,7 +27,6 @@ import java.io.Serializable
 
 class FrameSaveService : Service(), FrameSaveProgressListener {
     private val binder = FrameSaveServiceBinder()
-    private var storyIndex: Int = 0
     private lateinit var frameSaveNotifier: FrameSaveNotifier
     private lateinit var frameSaveManager: FrameSaveManager
     private val storySaveResult = StorySaveResult()
@@ -62,13 +61,12 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
     }
 
     fun saveStoryFrames(storyIndex: Int, photoEditor: PhotoEditor, frames: List<StoryFrameItem>) {
-        this.storyIndex = storyIndex
         this.frameSaveManager = FrameSaveManager(photoEditor)
         CoroutineScope(Dispatchers.Default).launch {
             EventBus.getDefault().post(StorySaveProcessStart(storyIndex))
 
             attachProgressListener(frameSaveManager)
-            saveStoryFramesAndDispatchNewFileBroadcast(frameSaveManager, frames)
+            saveStoryFramesAndDispatchNewFileBroadcast(frameSaveManager, storyIndex, frames)
             detachProgressListener(frameSaveManager)
 
             stopSelf()
@@ -77,6 +75,7 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
 
     private suspend fun saveStoryFramesAndDispatchNewFileBroadcast(
         frameSaveManager: FrameSaveManager,
+        storyIndex: Int,
         frames: List<StoryFrameItem>
     ) {
         val frameFileList =
@@ -88,11 +87,11 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
         // once all frames have been saved, issue a broadcast so the system knows these frames are ready
         sendNewMediaReadyBroadcast(frameFileList)
 
-        prepareSaveResult(frames.size, frameFileList.size)
+        prepareStorySaveResult(storyIndex, frames.size, frameFileList.size)
     }
 
-    private fun prepareSaveResult(expectedSuccessCases: Int, actualSuccessCases: Int) {
-        storySaveResult.storyIndex = this.storyIndex
+    private fun prepareStorySaveResult(storyIndex: Int, expectedSuccessCases: Int, actualSuccessCases: Int) {
+        storySaveResult.storyIndex = storyIndex
         StoryRepository.finishCurrentStory(getString(R.string.story_saving_untitled))
         // if we got the same amount of output files it means all went good
         if (actualSuccessCases == expectedSuccessCases) {
