@@ -81,7 +81,7 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
             frameSaveManager.saveStory(
                 this,
                 frames
-            ).filterNotNull()
+            )
 
         // once all frames have been saved, issue a broadcast so the system knows these frames are ready
         sendNewMediaReadyBroadcast(frameFileList)

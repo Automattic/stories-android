@@ -56,7 +56,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
                 yield()
                 saveLoopFrame(context, frame, index)
             }
-        }.awaitAll()
+        }.awaitAll().filterNotNull()
     }
 
     private suspend fun saveLoopFrame(
