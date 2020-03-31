@@ -134,7 +134,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
     private lateinit var frameSaveService: FrameSaveService
     private var saveServiceBound: Boolean = false
-    private var storyTitle: String? = null
     private var storyIndexToSelect = -1
 
     private val connection = object : ServiceConnection {
