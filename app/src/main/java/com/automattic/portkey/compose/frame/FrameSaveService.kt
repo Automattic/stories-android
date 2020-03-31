@@ -198,7 +198,7 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
     data class StorySaveResult(
         var success: Boolean = false,
         var storyIndex: Int = 0,
-        val frameSaveResult: MutableList<FrameSaveResult> = mutableListOf<FrameSaveResult>()
+        val frameSaveResult: MutableList<FrameSaveResult> = mutableListOf()
     )
     data class FrameSaveResult(val frameIndex: FrameIndex, val resultReason: SaveResultReason)
 
