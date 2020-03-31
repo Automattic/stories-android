@@ -25,11 +25,10 @@ import java.io.File
 import org.greenrobot.eventbus.EventBus
 import java.io.Serializable
 
-class FrameSaveService : Service(), FrameSaveProgressListener {
+class FrameSaveService : Service() {
     private val binder = FrameSaveServiceBinder()
     private lateinit var frameSaveNotifier: FrameSaveNotifier
-    private lateinit var frameSaveManager: FrameSaveManager
-    private val storySaveResult = StorySaveResult()
+    private val storySaveProcessors = StorySaveProcessorList()
 
     override fun onCreate() {
         super.onCreate()
@@ -61,25 +60,40 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
     }
 
     fun saveStoryFrames(storyIndex: Int, photoEditor: PhotoEditor, frames: List<StoryFrameItem>) {
-        this.frameSaveManager = FrameSaveManager(photoEditor)
+        val processor = createOneProcessor(storyIndex, photoEditor)
         CoroutineScope(Dispatchers.Default).launch {
             EventBus.getDefault().post(StorySaveProcessStart(storyIndex))
 
-            attachProgressListener(frameSaveManager)
-            saveStoryFramesAndDispatchNewFileBroadcast(frameSaveManager, storyIndex, frames)
-            detachProgressListener(frameSaveManager)
+            processor.attachProgressListener()
+            saveStoryFramesAndDispatchNewFileBroadcast(processor, storyIndex, frames)
+            processor.detachProgressListener()
+
+            // remove the processor from the list once it's done processing this Story's frames
+            storySaveProcessors.remove(processor)
 
             stopSelf()
         }
     }
 
+    private fun createOneProcessor(storyIndex: Int, photoEditor: PhotoEditor): StorySaveProcessor {
+        val oneProcessor = StorySaveProcessor(
+            this,
+            storyIndex,
+            frameSaveNotifier,
+            FrameSaveManager(photoEditor),
+            StorySaveResult()
+        )
+        storySaveProcessors.add(oneProcessor)
+        return oneProcessor
+    }
+
     private suspend fun saveStoryFramesAndDispatchNewFileBroadcast(
-        frameSaveManager: FrameSaveManager,
+        storySaveProcessor: StorySaveProcessor,
         storyIndex: Int,
         frames: List<StoryFrameItem>
     ) {
         val frameFileList =
-            frameSaveManager.saveStory(
+            storySaveProcessor.frameSaveManager.saveStory(
                 this,
                 frames
             )
@@ -87,22 +101,26 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
         // once all frames have been saved, issue a broadcast so the system knows these frames are ready
         sendNewMediaReadyBroadcast(frameFileList)
 
-        prepareStorySaveResult(storyIndex, frames.size, frameFileList.size)
+        // if we got the same amount of output files it means all went good, otherwise there were errors
+        prepareStorySaveResult(storySaveProcessor, storyIndex, frames.size == frameFileList.size)
     }
 
-    private fun prepareStorySaveResult(storyIndex: Int, expectedSuccessCases: Int, actualSuccessCases: Int) {
-        storySaveResult.storyIndex = storyIndex
-        StoryRepository.finishCurrentStory(getString(R.string.story_saving_untitled))
-        // if we got the same amount of output files it means all went good
-        if (actualSuccessCases == expectedSuccessCases) {
-            storySaveResult.success = true
+    private fun prepareStorySaveResult(
+        storySaveProcessor: StorySaveProcessor,
+        storyIndex: Int,
+        noErrors: Boolean
+    ) {
+        storySaveProcessor.storySaveResult.storyIndex = storyIndex
+        StoryRepository.finishCurrentStory()
+        if (noErrors) {
+            storySaveProcessor.storySaveResult.success = true
         } else {
             // otherwise, let's handle these errors
-            handleErrors(storySaveResult)
+            handleErrors(storySaveProcessor.storySaveResult)
         }
 
         // errors have beem collected, post the SaveResult for the whole Story
-        EventBus.getDefault().postSticky(storySaveResult)
+        EventBus.getDefault().postSticky(storySaveProcessor.storySaveResult)
     }
 
     private fun handleErrors(storyResult: StorySaveResult) {
@@ -142,51 +160,10 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
 
     override fun onDestroy() {
         Log.d("FrameSaveService", "onDestroy()")
-        frameSaveManager.onCancel()
+        for (processor in storySaveProcessors) {
+            processor.frameSaveManager.onCancel()
+        }
         super.onDestroy()
-    }
-
-    private fun attachProgressListener(frameSaveManager: FrameSaveManager) {
-        frameSaveManager.saveProgressListener = this
-    }
-
-    private fun detachProgressListener(frameSaveManager: FrameSaveManager) {
-        frameSaveManager.saveProgressListener = null
-    }
-
-    // FrameSaveProgressListener overrides
-    override fun onFrameSaveStart(frameIndex: FrameIndex) {
-        Log.d("PORTKEY", "START save frame idx: " + frameIndex)
-        frameSaveNotifier.addStoryPageInfoToForegroundNotification(
-            frameIndex.toString(),
-            getString(R.string.story_saving_untitled)
-        )
-    }
-
-    override fun onFrameSaveProgress(frameIndex: FrameIndex, progress: Double) {
-        Log.d("PORTKEY", "PROGRESS save frame idx: " + frameIndex + " %: " + progress)
-        frameSaveNotifier.updateNotificationProgressForMedia(frameIndex.toString(), progress.toFloat())
-    }
-
-    override fun onFrameSaveCompleted(frameIndex: FrameIndex) {
-        Log.d("PORTKEY", "END save frame idx: " + frameIndex)
-        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(frameIndex.toString(), true)
-        // add success data to StorySaveResult
-        storySaveResult.frameSaveResult.add(FrameSaveResult(frameIndex, SaveSuccess))
-    }
-
-    override fun onFrameSaveCanceled(frameIndex: FrameIndex) {
-        // remove one from the count
-        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(frameIndex.toString())
-        // add error data to StorySaveResult
-        storySaveResult.frameSaveResult.add(FrameSaveResult(frameIndex, SaveError(REASON_CANCELLED)))
-    }
-
-    override fun onFrameSaveFailed(frameIndex: FrameIndex, reason: String?) {
-        // remove one from the count
-        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(frameIndex.toString())
-        // add error data to StorySaveResult
-        storySaveResult.frameSaveResult.add(FrameSaveResult(frameIndex, SaveError(reason)))
     }
 
     inner class FrameSaveServiceBinder : Binder() {
@@ -211,6 +188,58 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
     data class StorySaveProcessStart(
         var storyIndex: Int
     ) : Serializable
+
+    class StorySaveProcessor(
+        val context: Context,
+        val storyIndex: Int,
+        val frameSaveNotifier: FrameSaveNotifier,
+        val frameSaveManager: FrameSaveManager,
+        val storySaveResult: StorySaveResult
+    ) : FrameSaveProgressListener {
+        // FrameSaveProgressListener overrides
+        override fun onFrameSaveStart(frameIndex: FrameIndex) {
+            Log.d("PORTKEY", "START save frame idx: " + frameIndex)
+            frameSaveNotifier.addStoryPageInfoToForegroundNotification(
+                frameIndex.toString(),
+                StoryRepository.getStoryAtIndex(storyIndex).title ?: context.getString(R.string.story_saving_untitled)
+            )
+        }
+
+        override fun onFrameSaveProgress(frameIndex: FrameIndex, progress: Double) {
+            Log.d("PORTKEY", "PROGRESS save frame idx: " + frameIndex + " %: " + progress)
+            frameSaveNotifier.updateNotificationProgressForMedia(frameIndex.toString(), progress.toFloat())
+        }
+
+        override fun onFrameSaveCompleted(frameIndex: FrameIndex) {
+            Log.d("PORTKEY", "END save frame idx: " + frameIndex)
+            frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(frameIndex.toString(), true)
+            // add success data to StorySaveResult
+            storySaveResult.frameSaveResult.add(FrameSaveResult(frameIndex, SaveSuccess))
+        }
+
+        override fun onFrameSaveCanceled(frameIndex: FrameIndex) {
+            // remove one from the count
+            frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(frameIndex.toString())
+            // add error data to StorySaveResult
+            storySaveResult.frameSaveResult.add(FrameSaveResult(frameIndex, SaveError(REASON_CANCELLED)))
+        }
+
+        override fun onFrameSaveFailed(frameIndex: FrameIndex, reason: String?) {
+            // remove one from the count
+            frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(frameIndex.toString())
+            // add error data to StorySaveResult
+            storySaveResult.frameSaveResult.add(FrameSaveResult(frameIndex, SaveError(reason)))
+        }
+
+        fun attachProgressListener() {
+            frameSaveManager.saveProgressListener = this
+        }
+
+        fun detachProgressListener() {
+            frameSaveManager.saveProgressListener = null
+        }
+    }
+    class StorySaveProcessorList : ArrayList<StorySaveProcessor>()
 
     companion object {
         private const val REASON_CANCELLED = "cancelled"

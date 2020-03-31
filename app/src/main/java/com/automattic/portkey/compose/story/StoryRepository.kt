@@ -48,7 +48,8 @@ object StoryRepository {
     fun finishCurrentStory(title: String? = null) {
         val frameList = ArrayList<StoryFrameItem>()
         frameList.addAll(currentStoryFrames)
-        stories[currentStoryIndex] = Story(frameList, title)
+        // override with passed title if not null, otherwise keep it from already existing current Story
+        stories[currentStoryIndex] = Story(frameList, title ?: stories[currentStoryIndex].title)
         currentStoryFrames.clear()
         currentStoryIndex = DEFAULT_NONE_SELECTED
     }
