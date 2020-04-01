@@ -49,7 +49,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
     suspend fun saveStory(
         context: Context,
         frames: List<StoryFrameItem>
-    ): List<File?> {
+    ): List<File> {
         // first, launch all frame save processes async
         return frames.mapIndexed { index, frame ->
             async {

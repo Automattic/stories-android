@@ -128,10 +128,9 @@ class FrameSaveService : Service() {
         frameSaveNotifier.updateNotificationErrorForStoryFramesSave(storyTitle, storyResult)
     }
 
-    private fun sendNewMediaReadyBroadcast(rawMediaFileList: List<File?>) {
+    private fun sendNewMediaReadyBroadcast(mediaFileList: List<File>) {
         // Implicit broadcasts will be ignored for devices running API
         // level >= 24, so if you only target 24+ you can remove this statement
-        val mediaFileList = rawMediaFileList.filterNotNull()
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             @Suppress("DEPRECATION")
             for (mediaFile in mediaFileList) {
