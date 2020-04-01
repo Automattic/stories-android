@@ -636,11 +636,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             refreshStoryFrameSelection()
         }
 
-        // only re-set the layout transition if preHook has been run for this Activity's instance.
-        if (preHookRun) {
-            // re-enable layout change animations
-            photoEditorView.layoutTransition = transition
-        }
+        // re-enable layout change animations
+        photoEditorView.layoutTransition = transition
 
         hideLoading()
         showToast("READY")
@@ -1358,8 +1355,10 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onStorySaveResult(event: StorySaveResult) {
-        // TODO do something to treat the errors here
-        saveStoryPostHook(event)
+        // only run saveStoryPostHook if preHook has been run for this Activity's instance lifespan.
+        if (preHookRun) {
+            saveStoryPostHook(event)
+        }
     }
 
     companion object {
