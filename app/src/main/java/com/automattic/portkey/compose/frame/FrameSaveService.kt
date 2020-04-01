@@ -80,8 +80,7 @@ class FrameSaveService : Service() {
             this,
             storyIndex,
             frameSaveNotifier,
-            FrameSaveManager(photoEditor),
-            StorySaveResult()
+            FrameSaveManager(photoEditor)
         )
         storySaveProcessors.add(oneProcessor)
         return oneProcessor
@@ -192,9 +191,10 @@ class FrameSaveService : Service() {
         val context: Context,
         val storyIndex: Int,
         val frameSaveNotifier: FrameSaveNotifier,
-        val frameSaveManager: FrameSaveManager,
-        val storySaveResult: StorySaveResult
+        val frameSaveManager: FrameSaveManager
     ) : FrameSaveProgressListener {
+        val storySaveResult = StorySaveResult()
+
         // FrameSaveProgressListener overrides
         override fun onFrameSaveStart(frameIndex: FrameIndex) {
             Log.d("PORTKEY", "START save frame idx: " + frameIndex)
