@@ -87,6 +87,11 @@
     <string name="story_saving_title">Saving "%1$s"...</string>
     <string name="story_saving_subtitle_frames_remaining_singular">1 page remaining</string>
     <string name="story_saving_subtitle_frames_remaining_plural">%1$d pages remaining</string>
+    <!-- Save Frame process error notification strings-->
+    <string name="story_saving_failed_title">Unable to upload "%1$s"</string>
+    <string name="story_saving_failed_message_singular">1 page requires action</string>
+    <string name="story_saving_failed_message_plural">%1$d pages require action</string>
+    <string name="story_saving_failed_quick_action_manage">Manage</string>
 
     <!-- WordPress Android strings - matching in case of future integration -->
     <!-- Android O notification channels, these show in the Android app settings -->

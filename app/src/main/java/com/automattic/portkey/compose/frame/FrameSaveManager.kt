@@ -19,7 +19,7 @@ import com.automattic.portkey.util.cloneViewSpecs
 import com.automattic.portkey.util.removeViewFromParent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
@@ -31,7 +31,10 @@ import kotlin.coroutines.CoroutineContext
 typealias FrameIndex = Int
 
 class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
-    private val job = Job()
+    // we're using SupervisorJob as the topmost job, so some children async{}
+    // calls can fail without affecting the parent (and thus, all of its children) while we wait for each frame to get
+    // saved
+    private val job = SupervisorJob()
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Default + job
 
@@ -46,14 +49,14 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
     suspend fun saveStory(
         context: Context,
         frames: List<StoryFrameItem>
-    ): List<File?> {
+    ): List<File> {
         // first, launch all frame save processes async
         return frames.mapIndexed { index, frame ->
             async {
                 yield()
                 saveLoopFrame(context, frame, index)
             }
-        }.awaitAll()
+        }.awaitAll().filterNotNull()
     }
 
     private suspend fun saveLoopFrame(
@@ -72,11 +75,15 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
                     // TODO make saveVideoWithStaticBackground return File
                     // saveVideoWithStaticBackground()
                 } else {
-                    saveProgressListener?.onFrameSaveStart(frameIndex)
-                    // create ghost PhotoEditorView to be used for saving off-screen
-                    val ghostPhotoEditorView = createGhostPhotoEditor(context, photoEditor.composedCanvas)
-                    frameFile = saveImageFrame(frame, ghostPhotoEditorView, frameIndex)
-                    saveProgressListener?.onFrameSaveCompleted(frameIndex)
+                    try {
+                        saveProgressListener?.onFrameSaveStart(frameIndex)
+                        // create ghost PhotoEditorView to be used for saving off-screen
+                        val ghostPhotoEditorView = createGhostPhotoEditor(context, photoEditor.composedCanvas)
+                        frameFile = saveImageFrame(frame, ghostPhotoEditorView, frameIndex)
+                        saveProgressListener?.onFrameSaveCompleted(frameIndex)
+                    } catch (ex: Exception) {
+                        saveProgressListener?.onFrameSaveFailed(frameIndex, ex.message)
+                    }
                 }
             }
         }
@@ -115,7 +122,6 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
             var listenerDone = false
             val saveListener = object : OnSaveWithCancelAndProgressListener {
                 override fun onCancel(noAddedViews: Boolean) {
-                    // TODO: error handling
                     saveProgressListener?.onFrameSaveCanceled(frameIndex)
                     listenerDone = true
                 }
@@ -128,21 +134,25 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
                 }
 
                 override fun onFailure(exception: Exception) {
-                    // TODO: error handling
-                    saveProgressListener?.onFrameSaveFailed(frameIndex)
+                    saveProgressListener?.onFrameSaveFailed(frameIndex, exception.message)
                     listenerDone = true
                 }
                 override fun onProgress(progress: Double) {
-                    // TODO inform progress
                     saveProgressListener?.onFrameSaveProgress(frameIndex, progress)
                 }
             }
 
-            if (saveVideoAsLoopFrameFile(frame, frameIndex, saveListener)) {
-                // don't return until we get a signal in the listener
-                while (!listenerDone) {
-                    delay(100)
+            try {
+                if (saveVideoAsLoopFrameFile(frame, frameIndex, saveListener)) {
+                    // don't return until we get a signal in the listener
+                    while (!listenerDone) {
+                        delay(100)
+                    }
+                } else {
+                    throw Exception("Save not called")
                 }
+            } catch (ex: Exception) {
+                saveProgressListener?.onFrameSaveFailed(frameIndex, ex.message)
             }
         }
 
@@ -222,6 +232,6 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         fun onFrameSaveProgress(frameIndex: FrameIndex, progress: Double)
         fun onFrameSaveCompleted(frameIndex: FrameIndex)
         fun onFrameSaveCanceled(frameIndex: FrameIndex)
-        fun onFrameSaveFailed(frameIndex: FrameIndex)
+        fun onFrameSaveFailed(frameIndex: FrameIndex, reason: String?)
     }
 }

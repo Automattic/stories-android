@@ -129,6 +129,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
     private lateinit var frameSaveService: FrameSaveService
     private var saveServiceBound: Boolean = false
+    private var storyTitle: String? = null
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
