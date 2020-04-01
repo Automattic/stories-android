@@ -14,10 +14,10 @@ object StoryRepository {
             // if there's no specific Story to select, create and add a new empty Story, and return it
             createNewStory()
             return stories[currentStoryIndex]
-        } else if (currentStoryIndex == storyIndex) {
+        } else if (currentStoryIndex == storyIndex && isStoryIndexValid(storyIndex)) {
             // if they ask to load the same Story that is already loaded, return the current Story
             return stories[storyIndex]
-        } else if (stories.size > storyIndex) {
+        } else if (stories.size > storyIndex && isStoryIndexValid(storyIndex)) {
             // otherwise update the currentStoryIndex and currentStoryFrames values
             currentStoryIndex = storyIndex
             currentStoryFrames.clear()
@@ -26,6 +26,10 @@ object StoryRepository {
         } else {
             return null
         }
+    }
+
+    private fun isStoryIndexValid(storyIndex: Int): Boolean {
+        return storyIndex > DEFAULT_NONE_SELECTED
     }
 
     fun getStoryAtIndex(index: Int): Story {
