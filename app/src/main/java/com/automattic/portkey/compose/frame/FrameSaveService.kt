@@ -59,20 +59,37 @@ class FrameSaveService : Service() {
         return START_NOT_STICKY
     }
 
-    fun saveStoryFrames(storyIndex: Int, photoEditor: PhotoEditor, frames: List<StoryFrameItem>) {
-        val processor = createOneProcessor(storyIndex, photoEditor)
+    fun saveStoryFrames(storyIndex: Int, photoEditor: PhotoEditor) {
         CoroutineScope(Dispatchers.Default).launch {
             EventBus.getDefault().post(StorySaveProcessStart(storyIndex))
 
-            processor.attachProgressListener()
-            saveStoryFramesAndDispatchNewFileBroadcast(processor, storyIndex, frames)
-            processor.detachProgressListener()
+            // freeze the Story in the Repository
+            val storyFrames = StoryRepository.getImmutableCurrentStoryFrames()
+            StoryRepository.finishCurrentStory()
 
-            // remove the processor from the list once it's done processing this Story's frames
-            storySaveProcessors.remove(processor)
+            runProcessor(
+                createOneProcessor(storyIndex, photoEditor),
+                storyIndex,
+                storyFrames
+            )
 
-            stopSelf()
+            if (storySaveProcessors.size == 0) {
+                stopSelf()
+            }
         }
+    }
+
+    private suspend fun runProcessor(
+        processor: StorySaveProcessor,
+        storyIndex: Int,
+        storyFrames: List<StoryFrameItem>
+    ) {
+        processor.attachProgressListener()
+        saveStoryFramesAndDispatchNewFileBroadcast(processor, storyIndex, storyFrames)
+        processor.detachProgressListener()
+
+        // remove the processor from the list once it's done processing this Story's frames
+        storySaveProcessors.remove(processor)
     }
 
     private fun createOneProcessor(storyIndex: Int, photoEditor: PhotoEditor): StorySaveProcessor {
@@ -110,7 +127,6 @@ class FrameSaveService : Service() {
         noErrors: Boolean
     ) {
         storySaveProcessor.storySaveResult.storyIndex = storyIndex
-        StoryRepository.finishCurrentStory()
         if (noErrors) {
             storySaveProcessor.storySaveResult.success = true
         } else {

@@ -145,12 +145,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
             // keep these as they're changing when we call `storyViewModel.finishCurrentStory()`
             val index = storyViewModel.getCurrentStoryIndex()
-            val storyFrames = storyViewModel.getImmutableCurrentStoryFrames()
 
             // TODO obtain the real Story title as assigned by the user when the BOTTOM SHEET is ready, and pass it up
             storyViewModel.setCurrentStoryTitle(getString(R.string.story_saving_untitled))
 
-            frameSaveService.saveStoryFrames(index, photoEditor, storyFrames)
+            frameSaveService.saveStoryFrames(index, photoEditor)
             saveServiceBound = true
 
             // leave the Activity - now it's all the app's responsibility to deal with saving, uploading and
