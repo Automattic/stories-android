@@ -13,6 +13,7 @@ import com.automattic.photoeditor.views.ViewType.STICKER_ANIMATED
 import com.automattic.portkey.compose.story.StoryFrameItem
 import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource.FileBackgroundSource
 import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource.UriBackgroundSource
+import com.automattic.portkey.compose.story.StoryFrameItemType
 import com.automattic.portkey.compose.story.StoryFrameItemType.IMAGE
 import com.automattic.portkey.compose.story.StoryFrameItemType.VIDEO
 import com.automattic.portkey.util.cloneViewSpecs
@@ -23,6 +24,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import java.io.File
@@ -50,13 +53,40 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         context: Context,
         frames: List<StoryFrameItem>
     ): List<File> {
-        // first, launch all frame save processes async
-        return frames.mapIndexed { index, frame ->
+        // first, save all images async and wait
+        val listImages = saveLoopFrameAsyncAwaitForType(
+            context, frames, IMAGE, 10
+        )
+
+        yield()
+
+        // now, save all videos async and wait - this process is intense so only allow for 3 videos to be processed
+        // concurrently
+        val listVideos = saveLoopFrameAsyncAwaitForType(
+            context, frames, VIDEO, 3
+        )
+
+        val listTotal = listImages + listVideos
+        return listTotal
+    }
+
+    private suspend fun saveLoopFrameAsyncAwaitForType(
+        context: Context,
+        frames: List<StoryFrameItem>,
+        frameItemType: StoryFrameItemType,
+        concurrencyLimit: Int
+    ): List<File> {
+        // don't process more than 5 Story Pages concurrently
+        val concurrencyLimitSemaphore = Semaphore(concurrencyLimit)
+        val listFiles = frames.filter { it.frameItemType == frameItemType }.mapIndexed { index, frame ->
             async {
-                yield()
-                saveLoopFrame(context, frame, index)
+                concurrencyLimitSemaphore.withPermit {
+                    yield()
+                    saveLoopFrame(context, frame, index)
+                }
             }
         }.awaitAll().filterNotNull()
+        return listFiles
     }
 
     private suspend fun saveLoopFrame(
@@ -146,7 +176,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
                 if (saveVideoAsLoopFrameFile(frame, frameIndex, saveListener)) {
                     // don't return until we get a signal in the listener
                     while (!listenerDone) {
-                        delay(100)
+                        delay(500)
                     }
                 } else {
                     throw Exception("Save not called")
