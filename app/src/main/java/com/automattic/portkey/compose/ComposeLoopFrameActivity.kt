@@ -75,7 +75,6 @@ import com.automattic.portkey.compose.story.StoryRepository
 import com.automattic.portkey.compose.story.StoryViewModel
 import com.automattic.portkey.compose.story.StoryViewModelFactory
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
-import com.automattic.portkey.util.KEY_STORY_INDEX
 import com.automattic.portkey.util.KEY_STORY_SAVE_RESULT
 import com.automattic.portkey.util.STATE_KEY_CURRENT_STORY_INDEX
 import com.automattic.portkey.util.getDisplayPixelSize
