@@ -75,6 +75,7 @@ import com.automattic.portkey.compose.story.StoryRepository
 import com.automattic.portkey.compose.story.StoryViewModel
 import com.automattic.portkey.compose.story.StoryViewModelFactory
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
+import com.automattic.portkey.util.KEY_STORY_INDEX
 import com.automattic.portkey.util.KEY_STORY_SAVE_RESULT
 import com.automattic.portkey.util.STATE_KEY_CURRENT_STORY_INDEX
 import com.automattic.portkey.util.getDisplayPixelSize
@@ -322,6 +323,13 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                         Log.d("PORTKEY", "Being passed a SaveResult, render the Story")
                         storyViewModel.loadStory(storySaveResult.storyIndex)
                         onStoryFrameSelected(0, 0)
+                    } else {
+                        // TODO couldn't find the story frames? Show some Error Dialog - we can't recover here
+                    }
+                } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED) {
+                    if (StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.size > 0) {
+                        storyViewModel.loadStory(storyIndexToSelect)
+                        refreshStoryFrameSelection()
                     } else {
                         // TODO couldn't find the story frames? Show some Error Dialog - we can't recover here
                     }
