@@ -627,11 +627,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     private fun saveStoryPostHook(result: StorySaveResult) {
         doUnbindService()
 
-        // if error: don't finish the current story (keep it), just refresh the selection
         if (!result.success && lifecycle.currentState.isAtLeast(State.STARTED)) {
             // given saveStory for static images works with a ghost off screen buffer by removing /
             // adding views to it,
             // we need to refresh the selection so added views get properly re-added after frame iteration ends
+            storyViewModel.loadStory(result.storyIndex)
             refreshStoryFrameSelection()
         }
 
