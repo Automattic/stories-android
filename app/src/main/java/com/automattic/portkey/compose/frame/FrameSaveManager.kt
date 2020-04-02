@@ -79,6 +79,8 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         // don't process more than 5 Story Pages concurrently
         val concurrencyLimitSemaphore = Semaphore(concurrencyLimit)
         val listFiles = frames.filter { it.frameItemType == frameItemType }.mapIndexed { index, frame ->
+            saveProgressListener?.onFrameSaveStart(index)
+
             async {
                 concurrencyLimitSemaphore.withPermit {
                     yield()
@@ -106,7 +108,6 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
                     // saveVideoWithStaticBackground()
                 } else {
                     try {
-                        saveProgressListener?.onFrameSaveStart(frameIndex)
                         // create ghost PhotoEditorView to be used for saving off-screen
                         val ghostPhotoEditorView = createGhostPhotoEditor(context, photoEditor.composedCanvas)
                         frameFile = saveImageFrame(frame, ghostPhotoEditorView, frameIndex)
@@ -145,8 +146,6 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         frameIndex: FrameIndex
     ): File? {
         var file: File? = null
-
-        saveProgressListener?.onFrameSaveStart(frameIndex)
 
         withContext(Dispatchers.IO) {
             var listenerDone = false
