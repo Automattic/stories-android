@@ -69,8 +69,10 @@ object StoryRepository {
     }
 
     fun setCurrentStorySaveResultsOnFrames(storyIndex: Int, saveResult: StorySaveResult) {
-        for (index in 0..stories[storyIndex].frames.size - 1) {
-            stories[storyIndex].frames[index].saveResultReason = saveResult.frameSaveResult[index].resultReason
+        // iterate over the StorySaveResult, check their indexes, and set the corresponding frame result
+        for (index in 0..saveResult.frameSaveResult.size - 1) {
+            val frameIdxToSet = saveResult.frameSaveResult[index].frameIndex
+            stories[storyIndex].frames[frameIdxToSet].saveResultReason = saveResult.frameSaveResult[index].resultReason
         }
     }
 

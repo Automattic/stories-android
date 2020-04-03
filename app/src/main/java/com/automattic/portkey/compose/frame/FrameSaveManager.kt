@@ -78,13 +78,19 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
     ): List<File> {
         // don't process more than 5 Story Pages concurrently
         val concurrencyLimitSemaphore = Semaphore(concurrencyLimit)
-        val listFiles = frames.filter { it.frameItemType == frameItemType }.mapIndexed { index, frame ->
+        // we need to keep the frameIndex in sync with the whole Story frames list so, not filtering but mapping
+        // them all, and only letting the saveLoopFrame fun be called when the frame's frameItemType matches
+        val listFiles = frames.mapIndexed { index, frame ->
             saveProgressListener?.onFrameSaveStart(index)
 
             async {
                 concurrencyLimitSemaphore.withPermit {
-                    yield()
-                    saveLoopFrame(context, frame, index)
+                    // see above - we only want to save frames of frameItemType
+                    if (frame.frameItemType == frameItemType) {
+                        yield()
+                        saveLoopFrame(context, frame, index)
+                    }
+                    null
                 }
             }
         }.awaitAll().filterNotNull()
