@@ -81,8 +81,6 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         // we need to keep the frameIndex in sync with the whole Story frames list so, not filtering but mapping
         // them all, and only letting the saveLoopFrame fun be called when the frame's frameItemType matches
         val listFiles = frames.mapIndexed { index, frame ->
-            saveProgressListener?.onFrameSaveStart(index)
-
             async {
                 concurrencyLimitSemaphore.withPermit {
                     // see above - we only want to save frames of frameItemType
@@ -103,6 +101,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         frameIndex: FrameIndex
     ): File? {
         var frameFile: File? = null
+        saveProgressListener?.onFrameSaveStart(frameIndex)
         when (frame.frameItemType) {
             VIDEO -> {
                 frameFile = saveVideoFrame(frame, frameIndex)
