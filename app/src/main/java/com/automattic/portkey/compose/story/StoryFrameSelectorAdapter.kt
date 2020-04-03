@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.automattic.portkey.R
 import com.automattic.portkey.R.layout
@@ -82,6 +83,7 @@ class StoryFrameSelectorAdapter : RecyclerView.Adapter<StoryFrameSelectorAdapter
         val clickableView = v // entire view should be clickable
         val imageView: ImageView = v.frame_image
         val frameBorder: ImageView = v.frame_image_selected
+        val frameErrored: TextView? = v.frame_image_errored
         abstract fun onBind(uiState: StoryFrameListItemUiState)
 
         class StoryFrameHolderPlusIcon(v: View) : StoryFrameHolder(v) {
@@ -97,6 +99,7 @@ class StoryFrameSelectorAdapter : RecyclerView.Adapter<StoryFrameSelectorAdapter
                 onPlusIconClicked = requireNotNull(uiState.onItemTapped) { "OnItemTapped is required." }
                 // always draw border for the PLUS icon button
                 frameBorder.visibility = View.VISIBLE
+                frameErrored?.visibility = View.GONE
             }
         }
 
@@ -122,6 +125,14 @@ class StoryFrameSelectorAdapter : RecyclerView.Adapter<StoryFrameSelectorAdapter
                     frameBorder.visibility = View.VISIBLE
                 } else {
                     frameBorder.visibility = View.GONE
+                }
+
+                frameErrored?.let {
+                    if (uiState.errored) {
+                        it.visibility = View.VISIBLE
+                    } else {
+                        it.visibility = View.GONE
+                    }
                 }
             }
         }

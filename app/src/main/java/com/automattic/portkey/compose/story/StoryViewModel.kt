@@ -3,6 +3,7 @@ package com.automattic.portkey.compose.story
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveSuccess
 import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource.FileBackgroundSource
 import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource.UriBackgroundSource
 import com.automattic.portkey.compose.story.StoryViewModel.StoryFrameListItemUiState.StoryFrameListItemUiStateFrame
@@ -192,7 +193,7 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: In
                     (model.source as FileBackgroundSource).file.toString()
                 }
             val oneFrameUiState = StoryFrameListItemUiStateFrame(
-                selected = isSelected, filePath = filePath
+                selected = isSelected, filePath = filePath, errored = model.saveResultReason != SaveSuccess
             )
             oneFrameUiState.onItemTapped = {
                 setSelectedFrameByUser(index)
@@ -211,6 +212,7 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: In
 
         data class StoryFrameListItemUiStateFrame(
             var selected: Boolean = false,
+            var errored: Boolean = false,
             var filePath: String? = null
         ) : StoryFrameListItemUiState()
     }

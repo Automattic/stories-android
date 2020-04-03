@@ -26,6 +26,20 @@
             android:background="@drawable/bg_story_item_selected"
             android:scaleType="fitCenter"
             android:layout_centerInParent="true"/>
+
+        <!-- TODO:  change this view to match the designs accordingly  -->
+        <!-- errored exclamation sign  -->
+        <TextView
+            android:id="@+id/frame_image_errored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:gravity="center"
+            android:text="ERR"
+            android:textColor="@color/white"
+            android:background="@color/red"
+            android:layout_centerInParent="true"/>
+
     </RelativeLayout>
 
 </LinearLayout>

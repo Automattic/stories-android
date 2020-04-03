@@ -2,13 +2,16 @@ package com.automattic.portkey.compose.story
 
 import android.net.Uri
 import com.automattic.photoeditor.views.added.AddedViewList
+import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason
+import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveSuccess
 import com.automattic.portkey.compose.story.StoryFrameItemType.IMAGE
 import java.io.File
 
 data class StoryFrameItem(
     val source: BackgroundSource,
     val frameItemType: StoryFrameItemType = IMAGE,
-    var addedViews: AddedViewList = AddedViewList()
+    var addedViews: AddedViewList = AddedViewList(),
+    var saveResultReason: SaveResultReason = SaveSuccess
 ) {
     sealed class BackgroundSource {
         data class UriBackgroundSource(var contentUri: Uri? = null) : BackgroundSource()
