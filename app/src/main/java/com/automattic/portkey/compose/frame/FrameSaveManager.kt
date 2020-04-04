@@ -119,6 +119,14 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
                         saveProgressListener?.onFrameSaveCompleted(frameIndex)
                     } catch (ex: Exception) {
                         saveProgressListener?.onFrameSaveFailed(frameIndex, ex.message)
+                    } finally {
+                        // if anything happened, just make sure the added views were removed from the offscreen
+                        // photoEditor layout, otherwise it won't be possible to re-add them when we show the
+                        // error screen and the user taps on the errored frames (crash will happen)
+                        // Also, it's okay if this gets called more than once (for instance, when no exceptions
+                        // are thrown) given it internally does check whether the parent contains the view before
+                        // attempting to remove it
+                        releaseAddedViewsAfterSnapshot(frame)
                     }
                 }
             }
@@ -133,17 +141,23 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
     ): File {
         // prepare the ghostview with its background image and the AddedViews on top of it
         preparePhotoEditorViewForSnapshot(frame, ghostPhotoEditorView)
+
         val file = withContext(Dispatchers.IO) {
             return@withContext photoEditor.saveImageFromPhotoEditorViewAsLoopFrameFile(frameIndex, ghostPhotoEditorView)
         }
 
+        releaseAddedViewsAfterSnapshot(frame)
+
+        return file
+    }
+
+    private suspend fun releaseAddedViewsAfterSnapshot(frame: StoryFrameItem) {
         withContext(Dispatchers.Main) {
             // don't forget to remove these views from ghost offscreen view before exiting
             for (oneView in frame.addedViews) {
                 removeViewFromParent(oneView.view)
             }
         }
-        return file
     }
 
     private suspend fun saveVideoFrame(
