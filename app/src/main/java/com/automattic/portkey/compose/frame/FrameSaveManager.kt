@@ -106,6 +106,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         when (frame.frameItemType) {
             VIDEO -> {
                 frameFile = saveVideoFrame(frame, frameIndex)
+                releaseAddedViewsAfterSnapshot(frame)
             }
             IMAGE -> {
                 // check whether there are any GIF stickers - if there are, we need to produce a video instead
