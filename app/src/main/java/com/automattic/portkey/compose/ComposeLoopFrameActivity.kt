@@ -58,6 +58,7 @@ import com.automattic.portkey.R
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
 import com.automattic.portkey.compose.frame.FrameSaveService
+import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveSuccess
 import com.automattic.portkey.compose.frame.FrameSaveService.StorySaveResult
 import com.automattic.portkey.compose.photopicker.MediaBrowserType
 import com.automattic.portkey.compose.photopicker.PhotoPickerActivity
@@ -322,6 +323,21 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                         Log.d("PORTKEY", "Being passed a SaveResult, render the Story")
                         storyViewModel.loadStory(storySaveResult.storyIndex)
                         onStoryFrameSelected(0, 0)
+
+                        if (!storySaveResult.success) {
+                            val errorCount = storySaveResult.frameSaveResult.count { it.resultReason != SaveSuccess }
+
+                            // show dialog
+                            val stringSingularOrPlural = if (errorCount == 1)
+                                getString(R.string.dialog_story_saving_error_title_singular)
+                            else getString(R.string.dialog_story_saving_error_title_plural)
+
+                            val errorDialogTitle = String.format(stringSingularOrPlural, errorCount)
+
+                            FrameSaveErrorDialog.newInstance(errorDialogTitle,
+                                getString(R.string.dialog_story_saving_error_message))
+                                .show(supportFragmentManager, FRAGMENT_DIALOG)
+                        }
                     } else {
                         // TODO couldn't find the story frames? Show some Error Dialog - we can't recover here
                     }
