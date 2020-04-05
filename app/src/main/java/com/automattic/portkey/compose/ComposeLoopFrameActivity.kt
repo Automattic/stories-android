@@ -322,10 +322,12 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                         // see https://github.com/Automattic/portkey-android/issues/285 for details
                         Log.d("PORTKEY", "Being passed a SaveResult, render the Story")
                         storyViewModel.loadStory(storySaveResult.storyIndex)
-                        onStoryFrameSelected(0, 0)
-
                         if (!storySaveResult.success) {
                             val errorCount = storySaveResult.frameSaveResult.count { it.resultReason != SaveSuccess }
+                            val firstFound = storySaveResult.frameSaveResult.first { it.resultReason != SaveSuccess }
+
+                            // select the first errored frame
+                            onStoryFrameSelected(-1, firstFound.frameIndex)
 
                             // show dialog
                             val stringSingularOrPlural = if (errorCount == 1)
@@ -337,6 +339,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                             FrameSaveErrorDialog.newInstance(errorDialogTitle,
                                 getString(R.string.dialog_story_saving_error_message))
                                 .show(supportFragmentManager, FRAGMENT_DIALOG)
+                        } else {
+                            onStoryFrameSelected(-1, 0)
                         }
                     } else {
                         // TODO couldn't find the story frames? Show some Error Dialog - we can't recover here
