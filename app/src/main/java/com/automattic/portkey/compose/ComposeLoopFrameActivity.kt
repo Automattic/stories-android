@@ -57,7 +57,7 @@ import com.automattic.portkey.R
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
 import com.automattic.portkey.compose.frame.FrameSaveService
-import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveSuccess
+import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveError
 import com.automattic.portkey.compose.frame.FrameSaveService.StorySaveResult
 import com.automattic.portkey.compose.photopicker.MediaBrowserType
 import com.automattic.portkey.compose.photopicker.PhotoPickerActivity
@@ -323,18 +323,18 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                         storyViewModel.loadStory(storySaveResult.storyIndex)
 
                         if (!storySaveResult.success) {
-                            val errorCount = storySaveResult.frameSaveResult.count { it.resultReason != SaveSuccess }
-                            val firstFound = storySaveResult.frameSaveResult.first { it.resultReason != SaveSuccess }
+                            val errors = storySaveResult.frameSaveResult.filter { it.resultReason is SaveError }
+                            val minIndexToSelect = errors.minBy { it.frameIndex }
 
                             // select the first errored frame
-                            onStoryFrameSelected(-1, firstFound.frameIndex)
+                            onStoryFrameSelected(-1, minIndexToSelect!!.frameIndex)
 
                             // show dialog
-                            val stringSingularOrPlural = if (errorCount == 1)
+                            val stringSingularOrPlural = if (errors.size == 1)
                                 getString(R.string.dialog_story_saving_error_title_singular)
                             else getString(R.string.dialog_story_saving_error_title_plural)
 
-                            val errorDialogTitle = String.format(stringSingularOrPlural, errorCount)
+                            val errorDialogTitle = String.format(stringSingularOrPlural, errors.size)
 
                             FrameSaveErrorDialog.newInstance(errorDialogTitle,
                                 getString(R.string.dialog_story_saving_error_message))
