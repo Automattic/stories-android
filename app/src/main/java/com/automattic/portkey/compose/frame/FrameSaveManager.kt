@@ -86,9 +86,10 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
                     // see above - we only want to save frames of frameItemType
                     if (frame.frameItemType == frameItemType) {
                         yield()
-                        saveLoopFrame(context, frame, index)
+                        return@withPermit saveLoopFrame(context, frame, index)
+                    } else {
+                        return@withPermit null
                     }
-                    null
                 }
             }
         }.awaitAll().filterNotNull()
