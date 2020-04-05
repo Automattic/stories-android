@@ -36,7 +36,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.ViewCompat
-import androidx.lifecycle.Lifecycle.State
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.automattic.photoeditor.OnPhotoEditorListener
@@ -322,6 +321,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                         // see https://github.com/Automattic/portkey-android/issues/285 for details
                         Log.d("PORTKEY", "Being passed a SaveResult, render the Story")
                         storyViewModel.loadStory(storySaveResult.storyIndex)
+
                         if (!storySaveResult.success) {
                             val errorCount = storySaveResult.frameSaveResult.count { it.resultReason != SaveSuccess }
                             val firstFound = storySaveResult.frameSaveResult.first { it.resultReason != SaveSuccess }
@@ -653,14 +653,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
     private fun saveStoryPostHook(result: StorySaveResult) {
         doUnbindService()
-
-        if (!result.success && lifecycle.currentState.isAtLeast(State.STARTED)) {
-            // given saveStory for static images works with a ghost off screen buffer by removing /
-            // adding views to it,
-            // we need to refresh the selection so added views get properly re-added after frame iteration ends
-            storyViewModel.loadStory(result.storyIndex)
-            refreshStoryFrameSelection()
-        }
 
         // re-enable layout change animations
         photoEditorView.layoutTransition = transition
