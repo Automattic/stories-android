@@ -6,10 +6,8 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.automattic.portkey.R
 import com.automattic.portkey.R.layout
 import com.automattic.portkey.compose.story.StoryFrameSelectorAdapter.StoryFrameHolder.StoryFrameHolderItem
-import com.automattic.portkey.compose.story.StoryFrameSelectorAdapter.StoryFrameHolder.StoryFrameHolderPlusIcon
 import com.automattic.portkey.compose.story.StoryViewModel.StoryFrameListItemUiState
 import com.automattic.portkey.compose.story.StoryViewModel.StoryFrameListItemUiState.StoryFrameListItemUiStateFrame
 import com.bumptech.glide.Glide
@@ -25,12 +23,6 @@ class StoryFrameSelectorAdapter : RecyclerView.Adapter<StoryFrameSelectorAdapter
         viewType: Int
     ): StoryFrameHolder {
         return when (viewType) {
-            VIEW_TYPE_PLUS_ICON ->
-                StoryFrameHolderPlusIcon(
-                    LayoutInflater
-                        .from(parent.context)
-                        .inflate(R.layout.fragment_story_frame_item_plus, parent, false)
-                )
             VIEW_TYPE_IMAGE ->
                 StoryFrameHolderItem(
                     LayoutInflater
@@ -50,12 +42,7 @@ class StoryFrameSelectorAdapter : RecyclerView.Adapter<StoryFrameSelectorAdapter
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (position == 0) {
-            // plus icon
-            VIEW_TYPE_PLUS_ICON
-        } else {
-            VIEW_TYPE_IMAGE
-        }
+        return VIEW_TYPE_IMAGE
     }
 
     // useful for loading an existing story to edit
@@ -85,23 +72,6 @@ class StoryFrameSelectorAdapter : RecyclerView.Adapter<StoryFrameSelectorAdapter
         val frameBorder: ImageView = v.frame_image_selected
         val frameErrored: TextView? = v.frame_image_errored
         abstract fun onBind(uiState: StoryFrameListItemUiState)
-
-        class StoryFrameHolderPlusIcon(v: View) : StoryFrameHolder(v) {
-            private var onPlusIconClicked: (() -> Unit)? = null
-
-            init {
-                clickableView.setOnClickListener {
-                    onPlusIconClicked?.invoke()
-                }
-            }
-
-            override fun onBind(uiState: StoryFrameListItemUiState) {
-                onPlusIconClicked = requireNotNull(uiState.onItemTapped) { "OnItemTapped is required." }
-                // always draw border for the PLUS icon button
-                frameBorder.visibility = View.VISIBLE
-                frameErrored?.visibility = View.GONE
-            }
-        }
 
         class StoryFrameHolderItem(v: View) : StoryFrameHolder(v) {
             private var onFrameSelected: (() -> Unit)? = null
@@ -139,7 +109,6 @@ class StoryFrameSelectorAdapter : RecyclerView.Adapter<StoryFrameSelectorAdapter
     }
 
     companion object {
-        const val VIEW_TYPE_PLUS_ICON = 0
-        const val VIEW_TYPE_IMAGE = 1
+        const val VIEW_TYPE_IMAGE = 0
     }
 }

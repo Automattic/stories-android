@@ -13,7 +13,6 @@ import com.automattic.portkey.R.layout
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
-import com.automattic.portkey.compose.story.StoryFrameSelectorAdapter.StoryFrameHolder.StoryFrameHolderPlusIcon
 import com.automattic.portkey.compose.story.StoryViewModel.StoryFrameListUiState
 import com.automattic.portkey.util.getStoryIndexFromIntentOrBundle
 import kotlinx.android.synthetic.main.fragment_story_frame_selector.*
@@ -69,6 +68,9 @@ open class StoryFrameSelectorFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(layout.fragment_story_frame_selector, container, false)
         view.story_frames_view.adapter = StoryFrameSelectorAdapter()
+        view.plus_icon.setOnClickListener {
+            storyViewModel.addButtonClicked.call()
+        }
         setupItemTouchListener(view)
         storyViewModel.loadStory(storyViewModel.storyIndex)
         return view
@@ -125,10 +127,6 @@ open class StoryFrameSelectorFragment : Fragment() {
 
             override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: ViewHolder): Int {
                 var dragFlags = ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
-                if (viewHolder is StoryFrameHolderPlusIcon) {
-                    // don't allow dragging for the StoryFrameHolderPlusIcon holder
-                    dragFlags = 0
-                }
                 val swipeFlags = 0
                 return makeMovementFlags(dragFlags, swipeFlags)
             }
