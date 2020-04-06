@@ -73,6 +73,7 @@ open class StoryFrameSelectorFragment : Fragment() {
         }
         setupItemTouchListener(view)
         storyViewModel.loadStory(storyViewModel.storyIndex)
+        view.visibility = View.INVISIBLE
         return view
     }
 

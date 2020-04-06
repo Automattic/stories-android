@@ -711,8 +711,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     private fun switchCameraPreviewOn() {
-        backgroundSurfaceManager.switchCameraPreviewOn()
         hideStoryFrameSelector()
+        backgroundSurfaceManager.switchCameraPreviewOn()
     }
 
     private fun testBrush() {

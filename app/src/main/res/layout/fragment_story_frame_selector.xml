@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/story_frame_selector_control"
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="@dimen/bottom_strip_height"
-    android:visibility="visible"
+    android:paddingRight="@dimen/story_frame_item_padding"
     android:background="@color/black_transp_story_frame_selector">
 
     <androidx.recyclerview.widget.RecyclerView
