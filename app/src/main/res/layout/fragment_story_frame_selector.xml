@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="@dimen/bottom_strip_height"
     android:visibility="gone"
-    android:background="@color/black">
+    android:background="@color/black_transp_story_frame_selector">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/story_frames_view"
@@ -17,7 +17,6 @@
         android:orientation="horizontal"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         android:layout_centerVertical="true"
-        android:background="@color/black"
         />
 
 </FrameLayout>
