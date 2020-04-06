@@ -122,6 +122,7 @@
         android:layout_height="@dimen/save_button_total_height"
         android:layout_marginBottom="@dimen/next_button_bottom_margin"
         android:layout_marginRight="@dimen/next_button_right_margin"
+        app:text="@string/label_control_next"
         android:background="@drawable/next_button_background"
         android:elevation="@dimen/next_button_elevation"
         android:visibility="gone"

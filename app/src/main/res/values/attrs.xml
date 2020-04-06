@@ -20,4 +20,7 @@
         <attr name="aevTitle" format="string"/>
     </declare-styleable>
 
+    <declare-styleable name="NextButton">
+        <attr name="text" format="string"/>
+    </declare-styleable>
 </resources>
