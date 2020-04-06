@@ -127,6 +127,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     private var screenSizeX: Int = 0
     private var screenSizeY: Int = 0
     private var topControlsBaseTopMargin: Int = 0
+    private var nextButtonBaseTopMargin: Int = 0
     private var isEditingText: Boolean = false
 
     private lateinit var storyViewModel: StoryViewModel
@@ -170,9 +171,10 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         EventBus.getDefault().register(this)
 
         topControlsBaseTopMargin = getLayoutTopMarginBeforeInset(edit_mode_controls.layoutParams)
+        nextButtonBaseTopMargin = getLayoutTopMarginBeforeInset(next_button.layoutParams)
         ViewCompat.setOnApplyWindowInsetsListener(compose_loop_frame_layout) { view, insets ->
             // set insetTop as margin to all controls appearing at the top of the screen
-            addInsetTopMargin(edit_mode_controls.layoutParams, topControlsBaseTopMargin, insets.systemWindowInsetTop)
+            addInsetTopMargin(next_button.layoutParams, nextButtonBaseTopMargin, insets.systemWindowInsetTop)
             addInsetTopMargin(close_button.layoutParams, topControlsBaseTopMargin, insets.systemWindowInsetTop)
             addInsetTopMargin(control_flash_group.layoutParams, topControlsBaseTopMargin, insets.systemWindowInsetTop)
             insets
