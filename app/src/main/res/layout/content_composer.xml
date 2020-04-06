@@ -202,102 +202,43 @@
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/edit_mode_button_group_margin"
         android:orientation="horizontal"
-        android:visibility="invisible"
+        android:visibility="visible"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintBottom_toTopOf="@id/bottom_strip_view"
         android:animateLayoutChanges="true">
 
-        <LinearLayout
-            android:id="@+id/sound_button_group"
-            android:orientation="vertical"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingLeft="@dimen/edit_mode_button_group_margin"
-            android:paddingRight="@dimen/edit_mode_button_group_margin"
-            android:paddingTop="@dimen/edit_mode_button_group_margin"
-            android:layout_marginLeft="@dimen/top_button_group_margin"
-            >
-            <ImageView
-                android:id="@+id/sound_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:background="@drawable/ic_volume_up_black_24dp"
-                android:backgroundTint="@color/white"
-                android:contentDescription="@string/sound_button_alt"
-                android:scaleType="fitCenter"
-                />
+        <ImageButton
+            android:id="@+id/sound_button"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:src="@drawable/ic_volume_up_black_24dp"
+            android:tint="@color/white"
+            android:contentDescription="@string/sound_button_alt"
+            android:background="@drawable/edit_mode_controls_circle_selector"
+            android:layout_marginLeft="@dimen/edit_mode_button_group_margin_between"
+            />
 
-            <TextView
-                android:id="@+id/label_sound"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/label_control_sound_on"
-                android:textColor="@color/white"
-                android:textSize="@dimen/normal_button_font_size"/>
-        </LinearLayout>
+        <ImageButton
+            android:id="@+id/text_add_button"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:src="@drawable/ic_text"
+            android:tint="@color/white"
+            android:contentDescription="@string/text_button_alt"
+            android:background="@drawable/edit_mode_controls_circle_selector"
+            android:layout_marginLeft="@dimen/edit_mode_button_group_margin_between"
+        />
 
-        <LinearLayout
-            android:id="@+id/text_add_button_group"
-            android:orientation="vertical"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingLeft="@dimen/edit_mode_button_group_margin"
-            android:paddingRight="@dimen/edit_mode_button_group_margin"
-            android:paddingTop="@dimen/edit_mode_button_group_margin"
-            android:layout_marginLeft="@dimen/top_button_group_margin"
-            >
-            <ImageView
-                android:id="@+id/text_add_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:background="@drawable/ic_text_fields_black_24dp"
-                android:backgroundTint="@color/white"
-                android:contentDescription="@string/text_button_alt"
-                android:scaleType="fitCenter"
-                />
-
-            <TextView
-                android:id="@+id/label_text_add"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/label_control_text"
-                android:textColor="@color/white"
-                android:textSize="@dimen/normal_button_font_size"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/stickers_button_group"
-            android:orientation="vertical"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingLeft="@dimen/edit_mode_button_group_margin"
-            android:paddingTop="@dimen/edit_mode_button_group_margin"
-            android:layout_marginLeft="@dimen/edit_mode_button_group_margin"
-            >
-            <ImageView
-                android:id="@+id/stickers_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:background="@drawable/ic_stickers"
-                android:backgroundTint="@color/white"
-                android:contentDescription="@string/stickers_button_alt"
-                android:scaleType="fitCenter"
-                />
-
-            <TextView
-                android:id="@+id/label_stickers"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/label_control_stickers"
-                android:textColor="@color/white"
-                android:textSize="@dimen/normal_button_font_size"/>
-        </LinearLayout>
+        <ImageButton
+            android:id="@+id/stickers_add_button"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:src="@drawable/ic_stickers"
+            android:tint="@color/white"
+            android:contentDescription="@string/stickers_button_alt"
+            android:background="@drawable/edit_mode_controls_circle_selector"
+            android:layout_marginLeft="@dimen/edit_mode_button_group_margin_between"
+            />
 
         <ImageView
             android:id="@+id/more_button"
@@ -310,7 +251,7 @@
             android:scaleType="fitCenter"
             android:paddingLeft="@dimen/edit_mode_button_group_margin"
             android:paddingTop="@dimen/edit_mode_button_group_margin"
-            android:layout_marginLeft="@dimen/top_button_group_margin"
+            android:layout_marginLeft="@dimen/edit_mode_button_group_margin_between"
             />
 
     </LinearLayout>

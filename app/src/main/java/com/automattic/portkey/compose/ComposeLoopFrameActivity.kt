@@ -593,25 +593,23 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             }
         }
 
-        sound_button_group.setOnClickListener {
+        sound_button.setOnClickListener {
             if (videoPlayerMuted) {
                 backgroundSurfaceManager.videoPlayerUnmute()
                 videoPlayerMuted = false
-                sound_button.background = getDrawable(R.drawable.ic_volume_up_black_24dp)
-                label_sound.text = getString(R.string.label_control_sound_on)
+                sound_button.setImageResource(R.drawable.ic_volume_up_black_24dp)
             } else {
                 backgroundSurfaceManager.videoPlayerMute()
                 videoPlayerMuted = true
-                sound_button.background = getDrawable(R.drawable.ic_volume_mute_black_24dp)
-                label_sound.text = getString(R.string.label_control_sound_off)
+                sound_button.setImageResource(R.drawable.ic_volume_mute_black_24dp)
             }
         }
 
-        text_add_button_group.setOnClickListener {
+        text_add_button.setOnClickListener {
             addNewText()
         }
 
-        stickers_button_group.setOnClickListener {
+        stickers_add_button.setOnClickListener {
             emojiPickerFragment.show(supportFragmentManager, emojiPickerFragment.tag)
         }
 
@@ -1087,9 +1085,9 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         next_button.visibility = View.VISIBLE
 
         if (noSound) {
-            sound_button_group.visibility = View.INVISIBLE
+            sound_button.visibility = View.INVISIBLE
         } else {
-            sound_button_group.visibility = View.VISIBLE
+            sound_button.visibility = View.VISIBLE
         }
     }
 
@@ -1116,7 +1114,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // momentarily hide proper edit mode controls
         close_button.visibility = View.INVISIBLE
         edit_mode_controls.visibility = View.INVISIBLE
-        sound_button_group.visibility = View.INVISIBLE
+        sound_button.visibility = View.INVISIBLE
         hideStoryFrameSelector()
         if (hideNextButton) {
             next_button.visibility = View.INVISIBLE
@@ -1132,9 +1130,9 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // noSound parameter here should be true if video player is off
         val noSound = !backgroundSurfaceManager.videoPlayerVisible()
         if (noSound) {
-            sound_button_group.visibility = View.INVISIBLE
+            sound_button.visibility = View.INVISIBLE
         } else {
-            sound_button_group.visibility = View.VISIBLE
+            sound_button.visibility = View.VISIBLE
         }
         showStoryFrameSelector()
     }

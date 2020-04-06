@@ -16,8 +16,12 @@
     <color name="black">#000000</color>
     <color name="grey">#888888</color>
     <color name="black_transp">#99000000</color>
+    <color name="black_transp_light">#66000000</color>
+    <color name="black_transp_light_darker">#99000000</color>
     <color name="black_transp_delete">#4D000000</color>
-    <color name="black_transp_story_frame_selector">#66000000</color>
+    <color name="black_transp_story_frame_selector">@color/black_transp_light</color>
+    <color name="black_transp_edit_mode_controls">@color/black_transp_light</color>
+    <color name="black_transp_edit_mode_controls_pressed">@color/black_transp_light_darker</color>
     <color name="red">#FF0000</color>
 
     <color name="text_color_white">@color/white</color>
