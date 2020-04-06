@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- drawable/rectangle.xml -->
 <vector
-xmlns:android="http://schemas.android.com/apk/res/android"
-xmlns:aapt="http://schemas.android.com/aapt"
-android:width="28dp"
-android:height="38dp"
-android:viewportWidth="28"
-android:viewportHeight="38"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="36dp"
+    android:height="56dp"
+    android:viewportWidth="36"
+    android:viewportHeight="56"
     >
 
-<group>
+    <group>
 
-    <clip-path
-        android:pathData="M4 0H24C26.2091 0 28 1.79086 28 4V34C28 36.2091 26.2091 38 24 38H4C1.79086 38 0 36.2091 0 34V4C0 1.79086 1.79086 0 4 0Z"
-        />
+        <clip-path
+            android:pathData="M4 0H32C34.2091 0 36 1.79086 36 4V52C36 54.2091 34.2091 56 32 56H4C1.79086 56 0 54.2091 0 52V4C0 1.79086 1.79086 0 4 0Z"
+            />
 
-    <path
-        android:pathData="M4 0H24C26.2091 0 28 1.79086 28 4V34C28 36.2091 26.2091 38 24 38H4C1.79086 38 0 36.2091 0 34V4C0 1.79086 1.79086 0 4 0Z"
-        android:strokeWidth="4"
-        android:strokeColor="#FFFFFF"
-        />
+        <path
+            android:pathData="M4 0H32C34.2091 0 36 1.79086 36 4V52C36 54.2091 34.2091 56 32 56H4C1.79086 56 0 54.2091 0 52V4C0 1.79086 1.79086 0 4 0Z"
+            android:strokeWidth="4"
+            android:strokeColor="#FFFFFF"
+            />
 
-</group>
+    </group>
 
 </vector>
