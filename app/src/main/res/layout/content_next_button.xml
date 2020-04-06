@@ -14,7 +14,7 @@
         android:gravity="center"
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
-        android:text="@string/label_control_next"
+        android:text="@string/label_control_publish"
         android:textAllCaps="true"
         android:textColor="@color/text_color_blue"
         />

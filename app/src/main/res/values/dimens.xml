@@ -37,6 +37,7 @@
     <dimen name="save_button_text_width">72dp</dimen>
     <dimen name="save_button_total_width">100dp</dimen>
     <dimen name="save_button_total_height">40dp</dimen>
+    <dimen name="save_button_radius">4dp</dimen>
 
     <dimen name="next_button_top_margin">8dp</dimen>
     <dimen name="next_button_bottom_margin">24dp</dimen>
