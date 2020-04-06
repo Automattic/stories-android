@@ -170,7 +170,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         setContentView(R.layout.activity_composer)
         EventBus.getDefault().register(this)
 
-        topControlsBaseTopMargin = getLayoutTopMarginBeforeInset(edit_mode_controls.layoutParams)
+        topControlsBaseTopMargin = getLayoutTopMarginBeforeInset(close_button.layoutParams)
         nextButtonBaseTopMargin = getLayoutTopMarginBeforeInset(next_button.layoutParams)
         ViewCompat.setOnApplyWindowInsetsListener(compose_loop_frame_layout) { view, insets ->
             // set insetTop as margin to all controls appearing at the top of the screen
@@ -1105,6 +1105,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // hide proper edit mode controls
         close_button.visibility = View.INVISIBLE
         edit_mode_controls.visibility = View.INVISIBLE
+        sound_button.visibility = View.INVISIBLE
         next_button.visibility = View.INVISIBLE
         // show capturing mode controls
         showVideoUIControls()
