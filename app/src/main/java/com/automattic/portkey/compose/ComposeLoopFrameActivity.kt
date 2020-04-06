@@ -475,8 +475,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     private fun setDefaultSelectionAndUpdateBackgroundSurfaceUI() {
-        storyViewModel.setSelectedFrame(0)
-        updateBackgroundSurfaceUIWithStoryFrame(0)
+        storyViewModel.setSelectedFrame(storyViewModel.getCurrentStorySize() - 1)
+        updateBackgroundSurfaceUIWithStoryFrame(storyViewModel.getCurrentStorySize() - 1)
     }
 
     private fun addFramesToStoryFromMediaUriList(uriList: ArrayList<Uri>) {
@@ -812,7 +812,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                         addStoryFrameItemToCurrentStory(
                             StoryFrameItem(FileBackgroundSource(file = file), frameItemType = StoryFrameItemType.IMAGE)
                         )
-                        setSelectedFrame(0)
+                        setSelectedFrame(storyViewModel.getCurrentStorySize() - 1)
                     }
                     showStaticBackground()
                     currentOriginalCapturedFile = file
@@ -860,7 +860,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                         storyViewModel.apply {
                             addStoryFrameItemToCurrentStory(StoryFrameItem(FileBackgroundSource(file = it),
                                 frameItemType = VIDEO))
-                            setSelectedFrame(0)
+                            setSelectedFrame(storyViewModel.getCurrentStorySize() - 1)
                         }
                     }
                 }
