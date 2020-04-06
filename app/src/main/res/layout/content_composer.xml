@@ -335,6 +335,7 @@
         android:layout_marginRight="@dimen/top_button_group_margin"
         android:background="@drawable/next_button_background"
         android:elevation="@dimen/next_button_elevation"
+        android:visibility="invisible"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintRight_toRightOf="parent"/>
 
