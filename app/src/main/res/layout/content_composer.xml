@@ -223,8 +223,8 @@
 
         <ImageButton
             android:id="@+id/stickers_add_button"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
+            android:layout_width="@dimen/edit_mode_button_size"
+            android:layout_height="@dimen/edit_mode_button_size"
             android:src="@drawable/ic_stickers"
             android:tint="@color/white"
             android:contentDescription="@string/stickers_button_alt"
@@ -234,8 +234,8 @@
 
         <ImageButton
             android:id="@+id/text_add_button"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
+            android:layout_width="@dimen/edit_mode_button_size"
+            android:layout_height="@dimen/edit_mode_button_size"
             android:src="@drawable/ic_text"
             android:tint="@color/white"
             android:contentDescription="@string/text_button_alt"
