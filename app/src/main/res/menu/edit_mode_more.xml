@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <item android:id="@+id/delete_frame"
-        android:title="@string/menu_delete_frame"
+    <item android:id="@+id/menu_save_page"
+        android:title="@string/menu_save_page"
+        android:icon="@drawable/ic_save_alt_24px"
+        android:iconTint="@color/white"
+        app:showAsAction="never"/>
+    <item android:id="@+id/menu_delete_page"
+        android:title="@string/menu_delete_page"
+        android:icon="@drawable/ic_delete_black_24dp"
+        android:iconTint="@color/white"
         app:showAsAction="never"/>
 </menu>

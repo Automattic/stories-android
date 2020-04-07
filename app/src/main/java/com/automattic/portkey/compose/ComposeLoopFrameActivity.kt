@@ -29,6 +29,8 @@ import android.view.ViewGroup
 import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.view.menu.MenuBuilder
+import androidx.appcompat.view.menu.MenuPopupHelper
 import androidx.appcompat.widget.PopupMenu
 import androidx.constraintlayout.widget.Group
 import androidx.core.app.NotificationManagerCompat
@@ -678,19 +680,30 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         val inflater = popup.getMenuInflater()
         inflater.inflate(R.menu.edit_mode_more, popup.getMenu())
         popup.setOnMenuItemClickListener {
-            // show dialog
-            DiscardDialog.newInstance(getString(R.string.dialog_discard_frame_message), object : DiscardOk {
-                override fun discardOkClicked() {
-                    // get currentFrame value as it will change after calling onAboutToDeleteStoryFrame
-                    val currentFrameToDeleteIndex = storyViewModel.getSelectedFrameIndex()
-                    onAboutToDeleteStoryFrame(currentFrameToDeleteIndex)
-                    // now discard it from the viewModel
-                    storyViewModel.removeFrameAt(currentFrameToDeleteIndex)
+
+            when (it.itemId) {
+                R.id.menu_delete_page ->
+                    // show dialog
+                    DiscardDialog.newInstance(getString(R.string.dialog_discard_page_message), object : DiscardOk {
+                        override fun discardOkClicked() {
+                            // get currentFrame value as it will change after calling onAboutToDeleteStoryFrame
+                            val currentFrameToDeleteIndex = storyViewModel.getSelectedFrameIndex()
+                            onAboutToDeleteStoryFrame(currentFrameToDeleteIndex)
+                            // now discard it from the viewModel
+                            storyViewModel.removeFrameAt(currentFrameToDeleteIndex)
+                        }
+                    }).show(supportFragmentManager, FRAGMENT_DIALOG)
+
+                R.id.menu_save_page -> {
+                    // TODO only save this one, and stay here.
+                    showToast("not implemented yet")
                 }
-            }).show(supportFragmentManager, FRAGMENT_DIALOG)
+            }
             true
         }
-        popup.show()
+        val menuHelper = MenuPopupHelper(this, popup.getMenu() as MenuBuilder, view)
+        menuHelper.setForceShowIcon(true)
+        menuHelper.show()
     }
 
     private fun showMediaPicker() {

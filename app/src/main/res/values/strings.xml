@@ -36,10 +36,11 @@
     <string name="label_control_next">Next</string>
     <string name="label_saving">Saving...</string>
 
-    <string name="menu_delete_frame">Delete frame</string>
-    <string name="dialog_discard_frame_message">Are you sure you want to delete this frame from your Story?</string>
+    <string name="menu_delete_page">Delete page</string>
+    <string name="menu_save_page">Save page</string>
+    <string name="dialog_discard_page_message">Are you sure you want to delete this page from your Story?</string>
 
-    <string name="dialog_discard_message">Are you sure you want to discard your Loop?</string>
+    <string name="dialog_discard_message">Are you sure you want to discard your Story?</string>
 
     <!-- Intro -->
     <string name="get_started">Get Started</string>
