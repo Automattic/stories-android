@@ -109,10 +109,6 @@ open class StoryFrameSelectorFragment : Fragment() {
             ): Boolean {
                 val fromPos = viewHolder.adapterPosition
                 val toPos = target.adapterPosition
-                if (toPos == 0 || fromPos == 0) {
-                    // don't allow items to target position 0, and don't let the plus icon to be moved elsewhere
-                    return false
-                }
                 storyViewModel.swapItemsInPositions(fromPos - 1, toPos - 1)
                 return true
             }
