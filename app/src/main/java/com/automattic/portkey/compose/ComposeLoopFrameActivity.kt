@@ -37,6 +37,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.GestureDetectorCompat
+import androidx.core.view.MenuCompat
 import androidx.core.view.ViewCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -679,8 +680,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         val popup = PopupMenu(this, view)
         val inflater = popup.getMenuInflater()
         inflater.inflate(R.menu.edit_mode_more, popup.getMenu())
+        MenuCompat.setGroupDividerEnabled(popup.menu, true)
         popup.setOnMenuItemClickListener {
-
             when (it.itemId) {
                 R.id.menu_delete_page ->
                     // show dialog
