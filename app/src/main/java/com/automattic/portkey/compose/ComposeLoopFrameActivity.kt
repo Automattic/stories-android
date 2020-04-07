@@ -1082,6 +1082,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // show proper edit mode controls
         close_button.visibility = View.VISIBLE
         edit_mode_controls.visibility = View.VISIBLE
+        more_button.visibility = View.VISIBLE
         next_button.visibility = View.VISIBLE
 
         if (noSound) {
@@ -1105,6 +1106,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // hide proper edit mode controls
         close_button.visibility = View.INVISIBLE
         edit_mode_controls.visibility = View.INVISIBLE
+        more_button.visibility = View.INVISIBLE
         sound_button.visibility = View.INVISIBLE
         next_button.visibility = View.INVISIBLE
         // show capturing mode controls
@@ -1115,6 +1117,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // momentarily hide proper edit mode controls
         close_button.visibility = View.INVISIBLE
         edit_mode_controls.visibility = View.INVISIBLE
+        more_button.visibility = View.INVISIBLE
         sound_button.visibility = View.INVISIBLE
         hideStoryFrameSelector()
         if (hideNextButton) {
@@ -1126,6 +1129,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // show all edit mode controls
         close_button.visibility = View.VISIBLE
         edit_mode_controls.visibility = View.VISIBLE
+        more_button.visibility = View.VISIBLE
         next_button.visibility = View.VISIBLE
 
         // noSound parameter here should be true if video player is off
