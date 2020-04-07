@@ -230,8 +230,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             }
 
             override fun onStartViewChangeListener(viewType: ViewType) {
-                // in this case, also hide the SAVE button
-                editModeHideAllUIControls(true)
+                // in this case, also hide the SAVE button, but don't hide the bottom strip view.
+                editModeHideAllUIControls(true, false)
             }
 
             override fun onStopViewChangeListener(viewType: ViewType) {
@@ -1127,13 +1127,15 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         showVideoUIControls()
     }
 
-    private fun editModeHideAllUIControls(hideNextButton: Boolean) {
+    private fun editModeHideAllUIControls(hideNextButton: Boolean, hideFrameSelector: Boolean = true) {
         // momentarily hide proper edit mode controls
         close_button.visibility = View.INVISIBLE
         edit_mode_controls.visibility = View.INVISIBLE
         more_button.visibility = View.INVISIBLE
         sound_button.visibility = View.INVISIBLE
-        hideStoryFrameSelector()
+        if (hideFrameSelector) {
+            hideStoryFrameSelector()
+        }
         if (hideNextButton) {
             next_button.visibility = View.INVISIBLE
         }

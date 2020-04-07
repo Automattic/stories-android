@@ -24,8 +24,9 @@
         <!-- this is the delete view  -->
         <com.automattic.portkey.compose.DeleteButton
             android:id="@+id/delete_view"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/delete_button_margin_bottom"
             android:visibility="gone"
             android:layout_centerHorizontal="true"
             android:layout_alignParentBottom="true"/>
