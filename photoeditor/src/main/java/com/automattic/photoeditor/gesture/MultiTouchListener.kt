@@ -93,38 +93,28 @@ internal class MultiTouchListener(
                 if (pointerIndexMove != -1) {
                     val currX = event.getX(pointerIndexMove)
                     val currY = event.getY(pointerIndexMove)
-                    var processed = false
                     if (!mScaleGestureDetector.isInProgress) {
-                        if (workingAreaRect != null) {
-                            // verify movement is within the area
-                            if (workingAreaRect.contains(x, y)) {
+                        // if workingAreaRect is set, verify movement is within the area
+                        workingAreaRect?.let {
+                            if (it.contains(x, y)) {
                                 adjustTranslation(
                                     view,
                                     currX - mPrevX,
                                     currY - mPrevY
                                 )
-                                processed = true
-                            } else {
-                                // if not, discard the movement
                             }
-                        } else {
-                            adjustTranslation(
-                                view,
-                                currX - mPrevX,
-                                currY - mPrevY
-                            )
-                            processed = true
-                        }
+                        } ?: adjustTranslation(view,
+                            currX - mPrevX,
+                            currY - mPrevY
+                        )
                     }
 
-                    if (processed) {
-                        onMultiTouchListener?.let { touchListener ->
-                            deleteView?.let {
-                                val readyForDelete = isViewInBounds(it, x, y)
-                                // fade the view a bit to indicate it's going bye bye
-                                setAlphaOnView(view, readyForDelete)
-                                touchListener.onRemoveViewReadyListener(view, readyForDelete)
-                            }
+                    onMultiTouchListener?.let { touchListener ->
+                        deleteView?.let {
+                            val readyForDelete = isViewInBounds(it, x, y)
+                            // fade the view a bit to indicate it's going bye bye
+                            setAlphaOnView(view, readyForDelete)
+                            touchListener.onRemoveViewReadyListener(view, readyForDelete)
                         }
                     }
                 }
