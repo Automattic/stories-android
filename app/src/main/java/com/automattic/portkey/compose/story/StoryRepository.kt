@@ -10,21 +10,25 @@ object StoryRepository {
     const val DEFAULT_NONE_SELECTED = -1
 
     fun loadStory(storyIndex: Int): Story? {
-        if (storyIndex == DEFAULT_NONE_SELECTED) {
-            // if there's no specific Story to select, create and add a new empty Story, and return it
-            createNewStory()
-            return stories[currentStoryIndex]
-        } else if (currentStoryIndex == storyIndex) {
-            // if they ask to load the same Story that is already loaded, return the current Story
-            return stories[storyIndex]
-        } else if (stories.size > storyIndex) {
-            // otherwise update the currentStoryIndex and currentStoryFrames values
-            currentStoryIndex = storyIndex
-            currentStoryFrames.clear()
-            currentStoryFrames.addAll(stories[storyIndex].frames)
-            return stories[storyIndex]
-        } else {
-            return null
+        when {
+            storyIndex == DEFAULT_NONE_SELECTED -> {
+                // if there's no specific Story to select, create and add a new empty Story, and return it
+                createNewStory()
+                return stories[currentStoryIndex]
+            }
+            currentStoryIndex == storyIndex -> {
+                // if they ask to load the same Story that is already loaded, return the current Story
+                return stories[storyIndex]
+            }
+            stories.size > storyIndex -> {
+                // otherwise update the currentStoryIndex and currentStoryFrames values
+                currentStoryIndex = storyIndex
+                currentStoryFrames.clear()
+                currentStoryFrames.addAll(stories[storyIndex].frames)
+                return stories[storyIndex]
+            } else -> {
+                return null
+            }
         }
     }
 
