@@ -29,7 +29,7 @@ open class StoryFrameSelectorFragment : Fragment() {
     private var storyFrameTappedListener: OnStoryFrameSelectorTappedListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        var storyIndex: Int = getStoryIndexFromIntentOrBundle(savedInstanceState, activity?.intent)
+        val storyIndex: Int = getStoryIndexFromIntentOrBundle(savedInstanceState, activity?.intent)
         storyViewModel =
                 ViewModelProviders.of(requireActivity(), // important to use Activity's context, so we don't
                         // end up looking into the wrong ViewModelProviders bucket key
