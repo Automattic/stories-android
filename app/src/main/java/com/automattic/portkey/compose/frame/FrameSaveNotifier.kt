@@ -313,7 +313,7 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         notificationBuilder.addAction(
             0, context.getString(R.string.story_saving_failed_quick_action_manage),
             pendingIntent
-        ).color = context.getResources().getColor(R.color.colorAccent)
+        ).color = context.resources.getColor(R.color.colorAccent)
 
         doNotify(notificationId, notificationBuilder.build()) // , notificationType)
     }
