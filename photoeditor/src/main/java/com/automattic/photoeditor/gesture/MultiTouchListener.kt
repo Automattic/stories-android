@@ -179,7 +179,8 @@ internal class MultiTouchListener(
         val wouldBeY = deltaVector[1] + view.y
 
         workingAreaRect?.let {
-            return ((wouldBeY - (view.height/2)) > it.top) && ((wouldBeY + (view.height/2)) < it.bottom)
+            val distanceToCenter = view.height / 2
+            return ((wouldBeY - distanceToCenter) > it.top) && ((wouldBeY + distanceToCenter) < it.bottom)
         } ?: return true
     }
 
