@@ -32,7 +32,7 @@ object StoryRepository {
         return stories[index]
     }
 
-    fun createNewStory(): Int {
+    private fun createNewStory(): Int {
         currentStoryFrames.clear()
         val story = Story(ArrayList())
         stories.add(story)
