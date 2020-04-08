@@ -325,18 +325,13 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
     companion object {
         private const val BASE_MEDIA_ERROR_NOTIFICATION_ID = 72300
 
-        fun buildErrorMessageForMedia(context: Context, mediaItemsNotUploaded: Int): String {
-            var newErrorMessage = ""
-            if (mediaItemsNotUploaded == 1) {
-                newErrorMessage += context.getString(R.string.story_saving_failed_message_singular)
-            } else {
-                newErrorMessage += String.format(
-                    context.getString(R.string.story_saving_failed_message_plural),
-                    mediaItemsNotUploaded
-                )
-            }
-
-            return newErrorMessage
+        fun buildErrorMessageForMedia(context: Context, mediaItemsNotUploaded: Int) = if (mediaItemsNotUploaded == 1) {
+        context.getString(R.string.story_saving_failed_message_singular)
+        } else {
+            String.format(
+                context.getString(R.string.story_saving_failed_message_plural),
+                mediaItemsNotUploaded
+            )
         }
 
         fun buildSnackbarErrorMessage(
