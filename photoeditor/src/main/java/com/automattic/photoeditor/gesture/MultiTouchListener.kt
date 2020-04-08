@@ -21,6 +21,7 @@ import com.automattic.photoeditor.views.ViewType
 internal class MultiTouchListener(
     private val mainView: View?,
     private val deleteView: View?,
+    private val workingAreaRect: Rect?,
     private val parentView: RelativeLayout,
     private val photoEditImageView: ImageView,
     private val mIsTextPinchZoomable: Boolean,
@@ -92,18 +93,39 @@ internal class MultiTouchListener(
                 if (pointerIndexMove != -1) {
                     val currX = event.getX(pointerIndexMove)
                     val currY = event.getY(pointerIndexMove)
+                    var processed = false
                     if (!mScaleGestureDetector.isInProgress) {
-                        adjustTranslation(
-                            view,
-                            currX - mPrevX,
-                            currY - mPrevY
-                        )
+                        if (workingAreaRect != null) {
+                            // verify movement is within the area
+                            if (workingAreaRect.contains(x, y)) {
+                                adjustTranslation(
+                                    view,
+                                    currX - mPrevX,
+                                    currY - mPrevY
+                                )
+                                processed = true
+                            } else {
+                                // if not, discard the movement
+                            }
+                        } else {
+                            adjustTranslation(
+                                view,
+                                currX - mPrevX,
+                                currY - mPrevY
+                            )
+                            processed = true
+                        }
                     }
-                    if (onMultiTouchListener != null && deleteView != null) {
-                        val readyForDelete = isViewInBounds(deleteView, x, y)
-                        // fade the view a bit to indicate it's going bye bye
-                        setAlphaOnView(view, readyForDelete)
-                        onMultiTouchListener?.onRemoveViewReadyListener(view, readyForDelete)
+
+                    if (processed) {
+                        onMultiTouchListener?.let { touchListener ->
+                            deleteView?.let {
+                                val readyForDelete = isViewInBounds(it, x, y)
+                                // fade the view a bit to indicate it's going bye bye
+                                setAlphaOnView(view, readyForDelete)
+                                touchListener.onRemoveViewReadyListener(view, readyForDelete)
+                            }
+                        }
                     }
                 }
             }
