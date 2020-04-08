@@ -334,9 +334,10 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
             )
         }
 
-fun buildSnackbarErrorMessage(
+        fun buildSnackbarErrorMessage(
             context: Context,
             mediaItemsNotUploaded: Int,
             errorMessage: String
         ) = errorMessage + "\n" + buildErrorMessageForMedia(context, mediaItemsNotUploaded)
+    }
 }
