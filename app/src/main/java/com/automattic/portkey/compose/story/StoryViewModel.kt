@@ -44,14 +44,6 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: In
         updateUiState(createUiStateFromModelState(repository.getImmutableCurrentStoryFrames()))
     }
 
-    // when the user finishes a story, just add it to our repo for now and clear currentStory
-    fun finishCurrentStory(title: String) {
-        repository.finishCurrentStory(title)
-        updateUiState(createUiStateFromModelState(repository.getImmutableCurrentStoryFrames()))
-        currentSelectedFrameIndex = DEFAULT_SELECTION // default selected frame when loading a new Story
-        _onSelectedFrameIndex.value = Pair(DEFAULT_SELECTION, currentSelectedFrameIndex)
-    }
-
     fun discardCurrentStory() {
         repository.discardCurrentStory()
         currentSelectedFrameIndex = DEFAULT_SELECTION // default selected frame when loading a new Story
