@@ -2,6 +2,8 @@ package com.automattic.portkey.compose.story
 
 import java.util.Collections
 
+typealias StoryIndex = Int
+
 object StoryRepository {
     private val currentStoryFrames = ArrayList<StoryFrameItem>()
     var currentStoryIndex = 0
@@ -9,7 +11,7 @@ object StoryRepository {
     private val stories = ArrayList<Story>()
     const val DEFAULT_NONE_SELECTED = -1
 
-    fun loadStory(storyIndex: Int): Story? {
+    fun loadStory(storyIndex: StoryIndex): Story? {
         when {
             storyIndex == DEFAULT_NONE_SELECTED -> {
                 // if there's no specific Story to select, create and add a new empty Story, and return it

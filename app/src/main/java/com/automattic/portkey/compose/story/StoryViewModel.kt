@@ -9,7 +9,7 @@ import com.automattic.portkey.compose.story.StoryViewModel.StoryFrameListItemUiS
 import com.automattic.portkey.compose.story.StoryViewModel.StoryFrameListItemUiState.StoryFrameListItemUiStatePlusIcon
 import com.automattic.portkey.util.SingleLiveEvent
 
-class StoryViewModel(private val repository: StoryRepository, val storyIndex: Int) : ViewModel() {
+class StoryViewModel(private val repository: StoryRepository, val storyIndex: StoryIndex) : ViewModel() {
     private var currentSelectedFrameIndex: Int = DEFAULT_SELECTION
 
     private val _uiState: MutableLiveData<StoryFrameListUiState> = MutableLiveData()
@@ -31,7 +31,7 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: In
     private val _onUserSelectedFrame = SingleLiveEvent<Pair<Int, Int>>()
     val onUserSelectedFrame = _onUserSelectedFrame
 
-    fun loadStory(storyIndex: Int) {
+    fun loadStory(storyIndex: StoryIndex) {
         repository.loadStory(storyIndex)?.let {
             updateUiState(createUiStateFromModelState(repository.getImmutableCurrentStoryFrames()))
             // default selected frame when loading a new Story

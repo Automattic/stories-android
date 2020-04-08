@@ -17,6 +17,7 @@ import com.automattic.photoeditor.PhotoEditor
 import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveError
 import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveSuccess
 import com.automattic.portkey.compose.story.StoryFrameItem
+import com.automattic.portkey.compose.story.StoryIndex
 import com.automattic.portkey.compose.story.StoryRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,7 +28,7 @@ import java.io.Serializable
 
 class FrameSaveService : Service(), FrameSaveProgressListener {
     private val binder = FrameSaveServiceBinder()
-    private var storyIndex: Int = 0
+    private var storyIndex: StoryIndex = 0
     private lateinit var frameSaveNotifier: FrameSaveNotifier
     private lateinit var frameSaveManager: FrameSaveManager
     private val storySaveResult = StorySaveResult()
@@ -64,7 +65,7 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
         return START_NOT_STICKY
     }
 
-    fun saveStoryFrames(storyIndex: Int, photoEditor: PhotoEditor, frames: List<StoryFrameItem>) {
+    fun saveStoryFrames(storyIndex: StoryIndex, photoEditor: PhotoEditor, frames: List<StoryFrameItem>) {
         this.storyIndex = storyIndex
         this.frameSaveManager = FrameSaveManager(photoEditor)
         CoroutineScope(Dispatchers.Default).launch {
@@ -197,7 +198,7 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
 
     data class StorySaveResult(
         var success: Boolean = false,
-        var storyIndex: Int = 0,
+        var storyIndex: StoryIndex = 0,
         val frameSaveResult: MutableList<FrameSaveResult> = mutableListOf()
     ) : Serializable
     data class FrameSaveResult(val frameIndex: FrameIndex, val resultReason: SaveResultReason) : Serializable
@@ -211,7 +212,7 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
     }
 
     data class StorySaveProcessStart(
-        var storyIndex: Int
+        var storyIndex: StoryIndex
     ) : Serializable
 
     companion object {
