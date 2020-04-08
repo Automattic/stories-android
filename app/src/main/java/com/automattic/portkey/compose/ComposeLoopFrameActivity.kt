@@ -184,7 +184,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             xCoord,
             yCoord + topAreaHeight,
             xCoord + width,
-            yCoord + topAreaHeight + height - bottomAreaHeight)
+            yCoord + height - bottomAreaHeight)
         return workingAreaRect
     }
 

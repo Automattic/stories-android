@@ -96,7 +96,7 @@ internal class MultiTouchListener(
                     if (!mScaleGestureDetector.isInProgress) {
                         // if workingAreaRect is set, verify movement is within the area
                         workingAreaRect?.let {
-                            if (it.contains(x, y)) {
+                            if (isViewCenterInWorkingAreaBounds(view, currX - mPrevX, currY - mPrevY)) {
                                 adjustTranslation(
                                     view,
                                     currX - mPrevX,
@@ -172,6 +172,15 @@ internal class MultiTouchListener(
         view.getLocationOnScreen(location)
         outRect?.offset(location[0], location[1])
         return outRect?.contains(x, y) ?: false
+    }
+
+    private fun isViewCenterInWorkingAreaBounds(view: View, deltaX: Float, deltaY: Float): Boolean {
+        val deltaVector = getWouldBeTranslation(view, deltaX, deltaY)
+        val wouldBeY = deltaVector[1] + view.y
+
+        workingAreaRect?.let {
+            return ((wouldBeY - (view.height/2)) > it.top) && ((wouldBeY + (view.height/2)) < it.bottom)
+        } ?: return true
     }
 
     fun setOnMultiTouchListener(onMultiTouchListener: OnMultiTouchListener) {
@@ -286,10 +295,15 @@ internal class MultiTouchListener(
         }
 
         private fun adjustTranslation(view: View, deltaX: Float, deltaY: Float) {
-            val deltaVector = floatArrayOf(deltaX, deltaY)
-            view.matrix.mapVectors(deltaVector)
+            val deltaVector = getWouldBeTranslation(view, deltaX, deltaY)
             view.translationX = view.translationX + deltaVector[0]
             view.translationY = view.translationY + deltaVector[1]
+        }
+
+        private fun getWouldBeTranslation(view: View, deltaX: Float, deltaY: Float): FloatArray {
+            val deltaVector = floatArrayOf(deltaX, deltaY)
+            view.matrix.mapVectors(deltaVector)
+            return deltaVector
         }
 
         private fun computeRenderOffset(view: View, pivotX: Float, pivotY: Float) {
