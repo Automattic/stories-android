@@ -156,7 +156,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             // leave the Activity - now it's all the app's responsibility to deal with saving, uploading and
             // publishing. Users can't edit this Story now, unless an error happens and then we'll notify them
             // and let them open the Composer screen again.
-            forceBackPressed()
+            finish()
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
@@ -392,10 +392,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
-    }
-
-    private fun forceBackPressed() {
-        super.onBackPressed()
     }
 
     override fun onBackPressed() {
