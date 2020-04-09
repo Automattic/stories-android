@@ -2,6 +2,8 @@ package com.automattic.portkey.compose.story
 
 import java.util.Collections
 
+typealias StoryIndex = Int
+
 object StoryRepository {
     private val currentStoryFrames = ArrayList<StoryFrameItem>()
     var currentStoryIndex = 0
@@ -9,22 +11,26 @@ object StoryRepository {
     private val stories = ArrayList<Story>()
     const val DEFAULT_NONE_SELECTED = -1
 
-    fun loadStory(storyIndex: Int): Story? {
-        if (storyIndex == DEFAULT_NONE_SELECTED) {
-            // if there's no specific Story to select, create and add a new empty Story, and return it
-            createNewStory()
-            return stories[currentStoryIndex]
-        } else if (currentStoryIndex == storyIndex && isStoryIndexValid(storyIndex)) {
-            // if they ask to load the same Story that is already loaded, return the current Story
-            return stories[storyIndex]
-        } else if (stories.size > storyIndex && isStoryIndexValid(storyIndex)) {
-            // otherwise update the currentStoryIndex and currentStoryFrames values
-            currentStoryIndex = storyIndex
-            currentStoryFrames.clear()
-            currentStoryFrames.addAll(stories[storyIndex].frames)
-            return stories[storyIndex]
-        } else {
-            return null
+    fun loadStory(storyIndex: StoryIndex): Story? {
+        when {
+            storyIndex == DEFAULT_NONE_SELECTED -> {
+                // if there's no specific Story to select, create and add a new empty Story, and return it
+                createNewStory()
+                return stories[currentStoryIndex]
+            }
+            (currentStoryIndex == storyIndex && isStoryIndexValid(storyIndex)) -> {
+                // if they ask to load the same Story that is already loaded, return the current Story
+                return stories[storyIndex]
+            }
+            (stories.size > storyIndex && isStoryIndexValid(storyIndex)) -> {
+                // otherwise update the currentStoryIndex and currentStoryFrames values
+                currentStoryIndex = storyIndex
+                currentStoryFrames.clear()
+                currentStoryFrames.addAll(stories[storyIndex].frames)
+                return stories[storyIndex]
+            } else -> {
+                return null
+            }
         }
     }
 
@@ -36,7 +42,7 @@ object StoryRepository {
         return stories[index]
     }
 
-    fun createNewStory(): Int {
+    private fun createNewStory(): Int {
         currentStoryFrames.clear()
         val story = Story(ArrayList())
         stories.add(story)

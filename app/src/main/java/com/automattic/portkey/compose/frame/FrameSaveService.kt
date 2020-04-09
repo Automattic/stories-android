@@ -17,6 +17,7 @@ import com.automattic.photoeditor.PhotoEditor
 import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveError
 import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveSuccess
 import com.automattic.portkey.compose.story.StoryFrameItem
+import com.automattic.portkey.compose.story.StoryIndex
 import com.automattic.portkey.compose.story.StoryRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -134,7 +135,7 @@ class FrameSaveService : Service() {
             handleErrors(storySaveProcessor.storySaveResult)
         }
 
-        // errors have beem collected, post the SaveResult for the whole Story
+        // errors have been collected, post the SaveResult for the whole Story
         EventBus.getDefault().postSticky(storySaveProcessor.storySaveResult)
     }
 
@@ -186,7 +187,7 @@ class FrameSaveService : Service() {
 
     data class StorySaveResult(
         var success: Boolean = false,
-        var storyIndex: Int = 0,
+        var storyIndex: StoryIndex = 0,
         val frameSaveResult: MutableList<FrameSaveResult> = mutableListOf()
     ) : Serializable
     data class FrameSaveResult(val frameIndex: FrameIndex, val resultReason: SaveResultReason) : Serializable
@@ -200,7 +201,7 @@ class FrameSaveService : Service() {
     }
 
     data class StorySaveProcessStart(
-        var storyIndex: Int
+        var storyIndex: StoryIndex
     ) : Serializable
 
     class StorySaveProcessor(
