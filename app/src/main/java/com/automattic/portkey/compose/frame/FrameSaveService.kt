@@ -68,13 +68,21 @@ class FrameSaveService : Service() {
             val storyFrames = StoryRepository.getImmutableCurrentStoryFrames()
             StoryRepository.finishCurrentStory()
 
+            // now create a processor and run it.
+            // also hold a reference to it in the storySaveProcessors list in case the Service is destroyed, so
+            // we can cancel each coroutine.
+            val processor = createOneProcessor(storyIndex, photoEditor)
+            storySaveProcessors.add(processor)
             runProcessor(
-                createOneProcessor(storyIndex, photoEditor),
+                processor,
                 storyIndex,
                 storyFrames
             )
+            // remove the processor from the list once it's done processing this Story's frames
+            storySaveProcessors.remove(processor)
 
-          if (storySaveProcessors.isEmpty()) {
+            // also if more than one processor is running, let's not stop the Service just now.
+            if (storySaveProcessors.isEmpty()) {
                 stopSelf()
             }
         }
@@ -88,20 +96,15 @@ class FrameSaveService : Service() {
         processor.attachProgressListener()
         saveStoryFramesAndDispatchNewFileBroadcast(processor, storyIndex, storyFrames)
         processor.detachProgressListener()
-
-        // remove the processor from the list once it's done processing this Story's frames
-        storySaveProcessors.remove(processor)
     }
 
     private fun createOneProcessor(storyIndex: Int, photoEditor: PhotoEditor): StorySaveProcessor {
-        val oneProcessor = StorySaveProcessor(
+        return StorySaveProcessor(
             this,
             storyIndex,
             frameSaveNotifier,
             FrameSaveManager(photoEditor)
         )
-        storySaveProcessors.add(oneProcessor)
-        return oneProcessor
     }
 
     private suspend fun saveStoryFramesAndDispatchNewFileBroadcast(
