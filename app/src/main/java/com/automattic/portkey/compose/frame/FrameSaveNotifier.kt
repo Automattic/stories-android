@@ -12,6 +12,7 @@ import com.automattic.portkey.R
 import com.automattic.portkey.compose.ComposeLoopFrameActivity
 import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveSuccess
 import com.automattic.portkey.compose.frame.FrameSaveService.StorySaveResult
+import com.automattic.portkey.compose.story.StoryIndex
 import com.automattic.portkey.util.KEY_STORY_SAVE_RESULT
 import java.util.Random
 
@@ -141,7 +142,7 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
             Math.ceil((getCurrentOverallProgress() * 100).toDouble()).toInt(),
             false
         )
-        doNotify(notificationData.notificationId.toLong(), notificationBuilder.build())
+        doNotify(notificationData.notificationId, notificationBuilder.build())
     }
 
     @Synchronized private fun setProgressForMediaItem(id: String, progress: Float) {
@@ -171,12 +172,12 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
 
     // TODO: uncomment these lines when migrating code to WPAndroid
     @Synchronized private fun doNotify(
-        id: Long,
+        id: Int,
         notification: Notification
 //        notificationType: NotificationType?
     ) {
         try {
-            notificationManager.notify(id.toInt(), notification)
+            notificationManager.notify(id, notification)
             // TODO track notification when integrating in WPAndroid
             // note: commented out code left on purpose
 //            if (notificationType != null) {
@@ -232,7 +233,7 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         startOrUpdateForegroundNotification(title)
     }
 
-    // TODO change signature to receive a CPT (Post) as parameter instead of a plain String
+    // TODO WPANDROID: change signature to receive a CPT (Post) as parameter instead of a plain String
     @Synchronized private fun startOrUpdateForegroundNotification(title: String?) {
         updateNotificationBuilder(title)
         if (notificationData.notificationId == 0) {
@@ -243,10 +244,15 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
             )
         } else {
             // service was already started, let's just modify the notification
-            doNotify(notificationData.notificationId.toLong(), notificationBuilder.build())
+            doNotify(notificationData.notificationId, notificationBuilder.build())
         }
     }
 
+    // TODO WPANDROID: we'll need the SiteModel and we can base the notification error IDs on the site ID plus
+    // PostModel id, the same we do for failed to upload Posts in WPAndroid's UploadService
+    // For now we will use the StoryIndex that comes with the StorySaveResult, as we can rest assured
+    // the storyIndex will remain accurate for as long as the notification lives (i.e. we'll cancel it on
+    // open or when the Composer activity is loaded with the corresponding Story)
     fun updateNotificationErrorForStoryFramesSave(
         // mediaList: List<MediaModel>,
         // site: SiteModel,
@@ -261,7 +267,7 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         )
 
         // val notificationId = getNotificationIdForMedia(site)
-        val notificationId = getNotificationIdForError()
+        val notificationId = getNotificationIdForError(storySaveResult.storyIndex)
         // Tap notification intent (open the media browser)
         val notificationIntent = Intent(context, ComposeLoopFrameActivity::class.java)
         val bundle = Bundle()
@@ -278,8 +284,9 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
 
         val pendingIntent = PendingIntent.getActivity(
             context,
-            notificationId.toInt(),
-            notificationIntent, PendingIntent.FLAG_ONE_SHOT
+            notificationId,
+            notificationIntent,
+            PendingIntent.FLAG_ONE_SHOT
         )
 
         notificationBuilder.setSmallIcon(android.R.drawable.stat_notify_error)
@@ -318,8 +325,11 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         doNotify(notificationId, notificationBuilder.build()) // , notificationType)
     }
 
-    fun getNotificationIdForError(): Long {
-        return BASE_MEDIA_ERROR_NOTIFICATION_ID.toLong()
+    fun getNotificationIdForError(storyIdx: StoryIndex): Int {
+        // TODO WPANDROID we keep the base number because we'll use SiteId and PostModel id's to identify the error
+        // notification as well, and as such we are using a different base number to avoid collision of notification
+        // ids.
+        return BASE_MEDIA_ERROR_NOTIFICATION_ID + storyIdx
     }
 
     companion object {
