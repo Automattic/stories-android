@@ -28,7 +28,7 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         internal var notificationId: Int = 0
         internal var totalMediaItems: Int = 0
         internal var currentMediaItem: Int = 0
-        internal var currentStoriesToQtyUploadingMap= HashMap<StoryIndex, Int>() // keep amount of items being uploaded
+        internal var currentStoriesToQtyUploadingMap = HashMap<StoryIndex, Int>() // keep amount of items being uploaded
                                                                             // for multiple concurrent stories
         internal val mediaItemToProgressMap = HashMap<String, Float>()
     }
