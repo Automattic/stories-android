@@ -349,7 +349,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                         Log.d("PORTKEY", "Being passed a SaveResult, render the Story")
                         storyViewModel.loadStory(storySaveResult.storyIndex)
 
-                        if (!storySaveResult.success) {
+                        if (!storySaveResult.isSuccess()) {
                             val errors = storySaveResult.frameSaveResult.filter { it.resultReason is SaveError }
                             val minIndexToSelect = errors.minBy { it.frameIndex }
 
