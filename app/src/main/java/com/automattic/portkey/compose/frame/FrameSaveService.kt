@@ -113,7 +113,7 @@ class FrameSaveService : Service() {
         frames: List<StoryFrameItem>
     ) {
         val frameFileList =
-            storySaveProcessor.frameSaveManager.saveStory(
+            storySaveProcessor.saveStory(
                 this,
                 frames
             )
@@ -179,7 +179,7 @@ class FrameSaveService : Service() {
     override fun onDestroy() {
         Log.d("FrameSaveService", "onDestroy()")
         for (processor in storySaveProcessors) {
-            processor.frameSaveManager.onCancel()
+            processor.onCancel()
         }
         super.onDestroy()
     }
@@ -208,10 +208,10 @@ class FrameSaveService : Service() {
     ) : Serializable
 
     class StorySaveProcessor(
-        val context: Context,
-        val storyIndex: Int,
-        val frameSaveNotifier: FrameSaveNotifier,
-        val frameSaveManager: FrameSaveManager
+        private val context: Context,
+        private val storyIndex: Int,
+        private val frameSaveNotifier: FrameSaveNotifier,
+        private val frameSaveManager: FrameSaveManager
     ) : FrameSaveProgressListener {
         val storySaveResult = StorySaveResult()
 
@@ -256,6 +256,17 @@ class FrameSaveService : Service() {
 
         fun detachProgressListener() {
             frameSaveManager.saveProgressListener = null
+        }
+
+        suspend fun saveStory(
+            context: Context,
+            frames: List<StoryFrameItem>
+        ): List<File> {
+            return frameSaveManager.saveStory(context, frames)
+        }
+
+        fun onCancel() {
+            frameSaveManager.onCancel()
         }
     }
     class StorySaveProcessorList : ArrayList<StorySaveProcessor>()
