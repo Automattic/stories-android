@@ -29,7 +29,7 @@ import java.io.Serializable
 class FrameSaveService : Service() {
     private val binder = FrameSaveServiceBinder()
     private lateinit var frameSaveNotifier: FrameSaveNotifier
-    private val storySaveProcessors = StorySaveProcessorList()
+    private val storySaveProcessors = ArrayList<StorySaveProcessor>()
 
     override fun onCreate() {
         super.onCreate()
@@ -269,7 +269,6 @@ class FrameSaveService : Service() {
             frameSaveManager.onCancel()
         }
     }
-    class StorySaveProcessorList : ArrayList<StorySaveProcessor>()
 
     companion object {
         private const val REASON_CANCELLED = "cancelled"
