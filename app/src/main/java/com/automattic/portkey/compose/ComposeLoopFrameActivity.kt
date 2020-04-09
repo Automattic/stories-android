@@ -625,7 +625,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     private fun saveStoryPostHook(result: StorySaveResult) {
         doUnbindService()
 
-        if (!result.success && lifecycle.currentState.isAtLeast(State.STARTED)) {
+        if (!result.isSuccess() && lifecycle.currentState.isAtLeast(State.STARTED)) {
             // given saveStory for static images works with a ghost off screen buffer by removing /
             // adding views to it,
             // we need to refresh the selection so added views get properly re-added after frame iteration ends

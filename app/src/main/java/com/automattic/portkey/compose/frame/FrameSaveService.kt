@@ -131,10 +131,8 @@ class FrameSaveService : Service() {
         noErrors: Boolean
     ) {
         storySaveProcessor.storySaveResult.storyIndex = storyIndex
-        if (noErrors) {
-            storySaveProcessor.storySaveResult.success = true
-        } else {
-            // otherwise, let's handle these errors
+        if (!noErrors) {
+            // let's handle these errors
             handleErrors(storySaveProcessor.storySaveResult)
         }
 
@@ -189,10 +187,13 @@ class FrameSaveService : Service() {
     }
 
     data class StorySaveResult(
-        var success: Boolean = false,
         var storyIndex: StoryIndex = 0,
         val frameSaveResult: MutableList<FrameSaveResult> = mutableListOf()
-    ) : Serializable
+    ) : Serializable {
+        fun isSuccess(): Boolean {
+            return frameSaveResult.all { it.resultReason == SaveSuccess }
+        }
+    }
     data class FrameSaveResult(val frameIndex: FrameIndex, val resultReason: SaveResultReason) : Serializable
 
     sealed class SaveResultReason : Serializable {
