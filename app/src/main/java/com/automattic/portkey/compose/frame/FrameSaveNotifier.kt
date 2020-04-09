@@ -28,6 +28,8 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         internal var notificationId: Int = 0
         internal var totalMediaItems: Int = 0
         internal var currentMediaItem: Int = 0
+        internal var currentStoriesToQtyUploadingMap= HashMap<StoryIndex, Int>() // keep amount of items being uploaded
+                                                                            // for multiple concurrent stories
         internal val mediaItemToProgressMap = HashMap<String, Float>()
     }
 
@@ -66,8 +68,18 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         // set the Notification's title and prepare the Notifications message text,
         // i.e. "Saving story... 3 frames remaining"
         if (notificationData.totalMediaItems > 0) {
-            // only media items are being uploaded
-            // check if special case for ONE media item
+            updateNotificationTitle(title)
+            notificationBuilder.setContentText(buildNotificationSubtitleForFrameSaveProcess())
+        }
+    }
+
+    private fun updateNotificationTitle(title: String?) {
+        // if there are frames of more than 1 concurrent Story being saved, show plural title
+        if (notificationData.currentStoriesToQtyUploadingMap.size > 1) {
+            notificationBuilder.setContentTitle(buildNotificationTitleForFrameSaveProcess(
+                context.getString(R.string.story_saving_title_several))
+            )
+        } else {
             if (title != null) {
                 notificationBuilder.setContentTitle(buildNotificationTitleForFrameSaveProcess(title))
             } else {
@@ -75,7 +87,6 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
                     context.getString(R.string.story_saving_untitled))
                 )
             }
-            notificationBuilder.setContentText(buildNotificationSubtitleForFrameSaveProcess())
         }
     }
 
@@ -103,14 +114,20 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         }
     }
 
-    @Synchronized fun incrementUploadedMediaCountFromProgressNotification(id: String, success: Boolean = false) {
+    @Synchronized fun incrementUploadedMediaCountFromProgressNotification(
+        storyIndex: StoryIndex,
+        title: String?,
+        id: String,
+        success: Boolean = false
+    ) {
+        decrementCurrentUploadingItemQtyForStory(storyIndex)
         notificationData.currentMediaItem++
         if (success) {
             setProgressForMediaItem(id, 1f)
         }
         if (!removeNotificationAndStopForegroundServiceIfNoItemsInQueue()) {
             // update Notification now
-            updateForegroundNotification()
+            updateForegroundNotification(title)
         }
     }
 
@@ -217,7 +234,13 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         }
     }
 
-    @Synchronized fun addStoryPageInfoToForegroundNotification(idList: List<String>, title: String) {
+    @Synchronized fun addStoryPageInfoToForegroundNotification(
+        storyIndex: StoryIndex,
+        idList: List<String>,
+        title: String
+    ) {
+        // keep our story current uploads quantity map updated
+        incrementCurrentUploadingItemQtyForStory(storyIndex)
         notificationData.totalMediaItems += idList.size
         // setup progresses for each media item
         for (id in idList) {
@@ -226,11 +249,40 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         startOrUpdateForegroundNotification(title)
     }
 
-    @Synchronized fun addStoryPageInfoToForegroundNotification(id: String, title: String) {
+    @Synchronized fun addStoryPageInfoToForegroundNotification(storyIndex: StoryIndex, id: String, title: String) {
+        // keep our story current uploads quantity map updated
+        incrementCurrentUploadingItemQtyForStory(storyIndex)
         notificationData.totalMediaItems++
         // setup progress for media item
         setProgressForMediaItem(id, 0.0f)
         startOrUpdateForegroundNotification(title)
+    }
+
+    @Synchronized fun incrementCurrentUploadingItemQtyForStory(storyIndex: StoryIndex) {
+        val currentAmount = getCurrentUploadingItemQtyForStory(storyIndex)
+        notificationData.currentStoriesToQtyUploadingMap.put(storyIndex, currentAmount + 1)
+    }
+
+    @Synchronized fun decrementCurrentUploadingItemQtyForStory(storyIndex: StoryIndex) {
+        var currentAmount = getCurrentUploadingItemQtyForStory(storyIndex)
+        if (currentAmount > 0) {
+            currentAmount--
+        }
+        if (currentAmount == 0) {
+            // remove the entry altogether
+            notificationData.currentStoriesToQtyUploadingMap.remove(storyIndex)
+        } else {
+            // otherwise update the value
+            notificationData.currentStoriesToQtyUploadingMap.put(storyIndex, currentAmount)
+        }
+    }
+
+    @Synchronized fun getCurrentUploadingItemQtyForStory(storyIndex: StoryIndex): Int {
+        val currentUploadingQtyForStory = notificationData.currentStoriesToQtyUploadingMap.get(storyIndex)
+        if (currentUploadingQtyForStory != null) {
+            return currentUploadingQtyForStory
+        }
+        return 0
     }
 
     // TODO WPANDROID: change signature to receive a CPT (Post) as parameter instead of a plain String

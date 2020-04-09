@@ -215,38 +215,56 @@ class FrameSaveService : Service() {
         private val frameSaveManager: FrameSaveManager
     ) : FrameSaveProgressListener {
         val storySaveResult = StorySaveResult()
+        val title =
+            StoryRepository.getStoryAtIndex(storyIndex).title ?: context.getString(R.string.story_saving_untitled)
 
         // FrameSaveProgressListener overrides
         override fun onFrameSaveStart(frameIndex: FrameIndex) {
             Log.d("PORTKEY", "START save frame idx: " + frameIndex)
             frameSaveNotifier.addStoryPageInfoToForegroundNotification(
-                frameIndex.toString(),
-                StoryRepository.getStoryAtIndex(storyIndex).title ?: context.getString(R.string.story_saving_untitled)
+                storyIndex,
+                mediaIdFromStoryAndFrameIndex(storyIndex, frameIndex),
+                title
             )
         }
 
         override fun onFrameSaveProgress(frameIndex: FrameIndex, progress: Double) {
             Log.d("PORTKEY", "PROGRESS save frame idx: " + frameIndex + " %: " + progress)
-            frameSaveNotifier.updateNotificationProgressForMedia(frameIndex.toString(), progress.toFloat())
+            frameSaveNotifier.updateNotificationProgressForMedia(
+                mediaIdFromStoryAndFrameIndex(storyIndex, frameIndex),
+                progress.toFloat())
         }
 
         override fun onFrameSaveCompleted(frameIndex: FrameIndex) {
             Log.d("PORTKEY", "END save frame idx: " + frameIndex)
-            frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(frameIndex.toString(), true)
+            frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(
+                storyIndex,
+                title,
+                mediaIdFromStoryAndFrameIndex(storyIndex, frameIndex),
+                true
+            )
             // add success data to StorySaveResult
             storySaveResult.frameSaveResult.add(FrameSaveResult(frameIndex, SaveSuccess))
         }
 
         override fun onFrameSaveCanceled(frameIndex: FrameIndex) {
             // remove one from the count
-            frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(frameIndex.toString())
+            frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(
+                storyIndex,
+                title,
+                mediaIdFromStoryAndFrameIndex(storyIndex, frameIndex)
+            )
             // add error data to StorySaveResult
             storySaveResult.frameSaveResult.add(FrameSaveResult(frameIndex, SaveError(REASON_CANCELLED)))
         }
 
         override fun onFrameSaveFailed(frameIndex: FrameIndex, reason: String?) {
             // remove one from the count
-            frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(frameIndex.toString())
+            frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(
+                storyIndex,
+                title,
+                mediaIdFromStoryAndFrameIndex(storyIndex, frameIndex)
+            )
             // add error data to StorySaveResult
             storySaveResult.frameSaveResult.add(FrameSaveResult(frameIndex, SaveError(reason)))
         }
@@ -268,6 +286,10 @@ class FrameSaveService : Service() {
 
         fun onCancel() {
             frameSaveManager.onCancel()
+        }
+
+        private fun mediaIdFromStoryAndFrameIndex(storyIndex: Int, frameIndex: Int): String {
+            return storyIndex.toString() + "-" + frameIndex.toString()
         }
     }
 

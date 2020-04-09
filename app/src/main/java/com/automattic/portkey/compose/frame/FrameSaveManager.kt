@@ -54,12 +54,12 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         return frames.mapIndexed { index, frame ->
             async {
                 yield()
-                saveLoopFrame(context, frame, index)
+                saveStoryFrame(context, frame, index)
             }
         }.awaitAll().filterNotNull()
     }
 
-    private suspend fun saveLoopFrame(
+    private suspend fun saveStoryFrame(
         context: Context,
         frame: StoryFrameItem,
         frameIndex: FrameIndex
