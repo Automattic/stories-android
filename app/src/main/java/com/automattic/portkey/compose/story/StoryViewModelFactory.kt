@@ -3,7 +3,7 @@ package com.automattic.portkey.compose.story
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 
-class StoryViewModelFactory(private val repository: StoryRepository, private val storyIndex: Int) :
+class StoryViewModelFactory(private val repository: StoryRepository, private val storyIndex: StoryIndex) :
     ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(StoryViewModel::class.java)) {
