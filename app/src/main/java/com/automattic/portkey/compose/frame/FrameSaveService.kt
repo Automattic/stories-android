@@ -74,7 +74,7 @@ class FrameSaveService : Service() {
                 storyFrames
             )
 
-            if (storySaveProcessors.size == 0) {
+          if (storySaveProcessors.isEmpty()) {
                 stopSelf()
             }
         }
