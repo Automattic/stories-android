@@ -17,6 +17,7 @@ import com.automattic.photoeditor.PhotoEditor
 import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveError
 import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveSuccess
 import com.automattic.portkey.compose.story.StoryFrameItem
+import com.automattic.portkey.compose.story.StoryIndex
 import com.automattic.portkey.compose.story.StoryRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +29,7 @@ import java.io.Serializable
 class FrameSaveService : Service() {
     private val binder = FrameSaveServiceBinder()
     private lateinit var frameSaveNotifier: FrameSaveNotifier
-    private val storySaveProcessors = StorySaveProcessorList()
+    private val storySaveProcessors = ArrayList<StorySaveProcessor>()
 
     override fun onCreate() {
         super.onCreate()
@@ -67,13 +68,21 @@ class FrameSaveService : Service() {
             val storyFrames = StoryRepository.getImmutableCurrentStoryFrames()
             StoryRepository.finishCurrentStory()
 
+            // now create a processor and run it.
+            // also hold a reference to it in the storySaveProcessors list in case the Service is destroyed, so
+            // we can cancel each coroutine.
+            val processor = createOneProcessor(storyIndex, photoEditor)
+            storySaveProcessors.add(processor)
             runProcessor(
-                createOneProcessor(storyIndex, photoEditor),
+                processor,
                 storyIndex,
                 storyFrames
             )
+            // remove the processor from the list once it's done processing this Story's frames
+            storySaveProcessors.remove(processor)
 
-            if (storySaveProcessors.size == 0) {
+            // also if more than one processor is running, let's not stop the Service just now.
+            if (storySaveProcessors.isEmpty()) {
                 stopSelf()
             }
         }
@@ -87,20 +96,15 @@ class FrameSaveService : Service() {
         processor.attachProgressListener()
         saveStoryFramesAndDispatchNewFileBroadcast(processor, storyIndex, storyFrames)
         processor.detachProgressListener()
-
-        // remove the processor from the list once it's done processing this Story's frames
-        storySaveProcessors.remove(processor)
     }
 
     private fun createOneProcessor(storyIndex: Int, photoEditor: PhotoEditor): StorySaveProcessor {
-        val oneProcessor = StorySaveProcessor(
+        return StorySaveProcessor(
             this,
             storyIndex,
             frameSaveNotifier,
             FrameSaveManager(photoEditor)
         )
-        storySaveProcessors.add(oneProcessor)
-        return oneProcessor
     }
 
     private suspend fun saveStoryFramesAndDispatchNewFileBroadcast(
@@ -109,7 +113,7 @@ class FrameSaveService : Service() {
         frames: List<StoryFrameItem>
     ) {
         val frameFileList =
-            storySaveProcessor.frameSaveManager.saveStory(
+            storySaveProcessor.saveStory(
                 this,
                 frames
             )
@@ -127,14 +131,12 @@ class FrameSaveService : Service() {
         noErrors: Boolean
     ) {
         storySaveProcessor.storySaveResult.storyIndex = storyIndex
-        if (noErrors) {
-            storySaveProcessor.storySaveResult.success = true
-        } else {
-            // otherwise, let's handle these errors
+        if (!noErrors) {
+            // let's handle these errors
             handleErrors(storySaveProcessor.storySaveResult)
         }
 
-        // errors have beem collected, post the SaveResult for the whole Story
+        // errors have been collected, post the SaveResult for the whole Story
         EventBus.getDefault().postSticky(storySaveProcessor.storySaveResult)
     }
 
@@ -175,7 +177,7 @@ class FrameSaveService : Service() {
     override fun onDestroy() {
         Log.d("FrameSaveService", "onDestroy()")
         for (processor in storySaveProcessors) {
-            processor.frameSaveManager.onCancel()
+            processor.onCancel()
         }
         super.onDestroy()
     }
@@ -185,10 +187,13 @@ class FrameSaveService : Service() {
     }
 
     data class StorySaveResult(
-        var success: Boolean = false,
-        var storyIndex: Int = 0,
+        var storyIndex: StoryIndex = 0,
         val frameSaveResult: MutableList<FrameSaveResult> = mutableListOf()
-    ) : Serializable
+    ) : Serializable {
+        fun isSuccess(): Boolean {
+            return frameSaveResult.all { it.resultReason == SaveSuccess }
+        }
+    }
     data class FrameSaveResult(val frameIndex: FrameIndex, val resultReason: SaveResultReason) : Serializable
 
     sealed class SaveResultReason : Serializable {
@@ -200,14 +205,14 @@ class FrameSaveService : Service() {
     }
 
     data class StorySaveProcessStart(
-        var storyIndex: Int
+        var storyIndex: StoryIndex
     ) : Serializable
 
     class StorySaveProcessor(
-        val context: Context,
-        val storyIndex: Int,
-        val frameSaveNotifier: FrameSaveNotifier,
-        val frameSaveManager: FrameSaveManager
+        private val context: Context,
+        private val storyIndex: Int,
+        private val frameSaveNotifier: FrameSaveNotifier,
+        private val frameSaveManager: FrameSaveManager
     ) : FrameSaveProgressListener {
         val storySaveResult = StorySaveResult()
 
@@ -253,8 +258,18 @@ class FrameSaveService : Service() {
         fun detachProgressListener() {
             frameSaveManager.saveProgressListener = null
         }
+
+        suspend fun saveStory(
+            context: Context,
+            frames: List<StoryFrameItem>
+        ): List<File> {
+            return frameSaveManager.saveStory(context, frames)
+        }
+
+        fun onCancel() {
+            frameSaveManager.onCancel()
+        }
     }
-    class StorySaveProcessorList : ArrayList<StorySaveProcessor>()
 
     companion object {
         private const val REASON_CANCELLED = "cancelled"

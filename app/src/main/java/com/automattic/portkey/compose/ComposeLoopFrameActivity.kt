@@ -155,7 +155,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             // leave the Activity - now it's all the app's responsibility to deal with saving, uploading and
             // publishing. Users can't edit this Story now, unless an error happens and then we'll notify them
             // and let them open the Composer screen again.
-            forceBackPressed()
+            finish()
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
@@ -348,6 +348,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         } else {
             currentOriginalCapturedFile =
                 savedInstanceState.getSerializable(STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE) as File?
+            preHookRun = savedInstanceState.getBoolean(STATE_KEY_PREHOOK_RUN)
 
             photoEditorView.postDelayed({
                 when {
@@ -389,6 +390,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         backgroundSurfaceManager.saveStateToBundle(outState)
         outState.putSerializable(STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE, currentOriginalCapturedFile)
         outState.putInt(STATE_KEY_CURRENT_STORY_INDEX, storyIndexToSelect)
+        outState.putBoolean(STATE_KEY_PREHOOK_RUN, preHookRun)
         super.onSaveInstanceState(outState)
     }
 
@@ -398,10 +400,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
-    }
-
-    private fun forceBackPressed() {
-        super.onBackPressed()
     }
 
     override fun onBackPressed() {
@@ -634,7 +632,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     private fun saveStoryPostHook(result: StorySaveResult) {
         doUnbindService()
 
-        if (!result.success && lifecycle.currentState.isAtLeast(State.STARTED)) {
+        if (!result.isSuccess() && lifecycle.currentState.isAtLeast(State.STARTED)) {
             // given saveStory for static images works with a ghost off screen buffer by removing /
             // adding views to it,
             // we need to refresh the selection so added views get properly re-added after frame iteration ends
@@ -1375,6 +1373,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         private const val CAMERA_STILL_PICTURE_ANIM_MS = 300L
         private const val CAMERA_STILL_PICTURE_WAIT_FOR_NEXT_CAPTURE_MS = 1000L
         private const val STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE = "key_current_original_captured_file"
+        private const val STATE_KEY_PREHOOK_RUN = "key_prehook_run"
         private const val VIBRATION_INDICATION_LENGTH_MS = 100L
         private const val SWIPE_MIN_DISTANCE = 120
         private const val SWIPE_MIN_DISTANCE_FROM_BOTTOM = 80

@@ -66,7 +66,7 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onStorySaveResult(event: StorySaveResult) {
         EventBus.getDefault().removeStickyEvent(event)
-        if (event.success) {
+        if (event.isSuccess()) {
             // TODO will remove this snackbar when integrating to WPAndroid as at this successful saving point we''l
             // want to enqueue the Story post and media to be uploaded to the user's site.
             val text = String.format(
