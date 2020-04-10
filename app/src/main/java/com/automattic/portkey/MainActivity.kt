@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
         super.onDestroy()
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onStorySaveResult(event: StorySaveResult) {
         EventBus.getDefault().removeStickyEvent(event)
         if (event.success) {
