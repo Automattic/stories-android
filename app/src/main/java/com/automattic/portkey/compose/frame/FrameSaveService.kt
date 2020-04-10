@@ -69,7 +69,7 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
         this.storyIndex = storyIndex
         this.frameSaveManager = FrameSaveManager(photoEditor)
         CoroutineScope(Dispatchers.Default).launch {
-            EventBus.getDefault().post(StorySaveProcessStart(storyIndex))
+            EventBus.getDefault().postSticky(StorySaveProcessStart(storyIndex))
 
             attachProgressListener(frameSaveManager)
             saveStoryFramesAndDispatchNewFileBroadcast(frameSaveManager, frames)

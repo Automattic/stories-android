@@ -102,6 +102,7 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onStorySaveStart(event: StorySaveProcessStart) {
+        EventBus.getDefault().removeStickyEvent(event)
         // TODO replace this with calls to snackbarSequencer.enqueue() when integrating code in WPAndroid
         val text = String.format(
             getString(R.string.story_saving_snackbar_started),
