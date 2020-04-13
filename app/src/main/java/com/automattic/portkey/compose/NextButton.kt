@@ -47,4 +47,9 @@ class NextButton : FrameLayout {
         }
         addView(view)
     }
+
+    override fun setEnabled(enabled: Boolean) {
+        setAlpha(if (enabled) 1f else 0.6f)
+        super.setEnabled(enabled)
+    }
 }

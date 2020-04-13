@@ -64,6 +64,7 @@ import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
 import com.automattic.portkey.compose.frame.FrameSaveManager
 import com.automattic.portkey.compose.frame.FrameSaveService
 import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveError
+import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveSuccess
 import com.automattic.portkey.compose.frame.FrameSaveService.StorySaveResult
 import com.automattic.portkey.compose.photopicker.MediaBrowserType
 import com.automattic.portkey.compose.photopicker.PhotoPickerActivity
@@ -351,6 +352,9 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                         storyViewModel.loadStory(storySaveResult.storyIndex)
 
                         if (!storySaveResult.isSuccess()) {
+                            // disable the Publish button
+                            next_button.setEnabled(false)
+
                             val errors = storySaveResult.frameSaveResult.filter { it.resultReason is SaveError }
                             val minIndexToSelect = errors.minBy { it.frameIndex }
 
@@ -371,6 +375,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                                 getString(R.string.dialog_story_saving_error_message))
                                 .show(supportFragmentManager, FRAGMENT_DIALOG)
                         } else {
+                            next_button.setEnabled(true)
                             onStoryFrameSelected(-1, 0)
                         }
                     } else {
@@ -1191,6 +1196,17 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         showStoryFrameSelector()
     }
 
+    private fun disableEditControlsForErroredFrame() {
+        // momentarily hide proper edit mode controls
+        edit_mode_controls.visibility = View.INVISIBLE
+        next_button.setEnabled(false)
+    }
+
+    private fun enableEditControlsForNonErroredFrame() {
+        edit_mode_controls.visibility = View.VISIBLE
+        next_button.setEnabled(true)
+    }
+
     private fun updateFlashModeSelectionIcon() {
         when (flashModeSelection) {
             FlashIndicatorState.AUTO ->
@@ -1374,6 +1390,12 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             for (oneView in it) {
                 photoEditor.addViewToParent(oneView.view, oneView.viewType)
             }
+        }
+
+        if (newSelectedFrame.saveResultReason is SaveSuccess) {
+            enableEditControlsForNonErroredFrame()
+        } else {
+            disableEditControlsForErroredFrame()
         }
 
         // re-enable layout change animations
