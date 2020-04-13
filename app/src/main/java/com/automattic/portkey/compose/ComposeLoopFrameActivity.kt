@@ -57,6 +57,8 @@ import com.automattic.portkey.BuildConfig
 import com.automattic.portkey.R
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
+import com.automattic.portkey.compose.frame.FrameSaveManager
+import com.automattic.portkey.compose.frame.FrameSaveManager.Companion
 import com.automattic.portkey.compose.frame.FrameSaveService
 import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveError
 import com.automattic.portkey.compose.frame.FrameSaveService.StorySaveResult
@@ -327,7 +329,10 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                             val errors = storySaveResult.frameSaveResult.filter { it.resultReason is SaveError }
                             val minIndexToSelect = errors.minBy { it.frameIndex }
 
-                            // select the first errored frame
+                            // select the first errored frame - delete added views from Service first
+                            FrameSaveManager.releaseAddedViews(
+                                storyViewModel.getCurrentStoryFrameAt(minIndexToSelect!!.frameIndex)
+                            )
                             onStoryFrameSelected(-1, minIndexToSelect!!.frameIndex)
 
                             // show dialog
