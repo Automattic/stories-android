@@ -93,6 +93,7 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_composer.*
 import kotlinx.android.synthetic.main.content_composer.*
+import kotlinx.android.synthetic.main.fragment_story_frame_selector.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -1200,11 +1201,13 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // momentarily hide proper edit mode controls
         edit_mode_controls.visibility = View.INVISIBLE
         next_button.setEnabled(false)
+        (bottom_strip_view as StoryFrameSelectorFragment).hideAddFrameControl()
     }
 
     private fun enableEditControlsForNonErroredFrame() {
         edit_mode_controls.visibility = View.VISIBLE
         next_button.setEnabled(true)
+        (bottom_strip_view as StoryFrameSelectorFragment).showAddFrameControl()
     }
 
     private fun updateFlashModeSelectionIcon() {

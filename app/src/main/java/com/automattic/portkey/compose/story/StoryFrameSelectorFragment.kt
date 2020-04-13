@@ -168,4 +168,12 @@ open class StoryFrameSelectorFragment : Fragment() {
     fun hide() {
         view?.visibility = View.GONE
     }
+
+    fun hideAddFrameControl() {
+        view?.plus_icon?.visibility = View.INVISIBLE
+    }
+
+    fun showAddFrameControl() {
+        view?.plus_icon?.visibility = View.VISIBLE
+    }
 }
