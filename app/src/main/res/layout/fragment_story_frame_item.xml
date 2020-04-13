@@ -27,7 +27,6 @@
             android:scaleType="fitCenter"
             android:layout_centerInParent="true"/>
 
-        <!-- TODO:  change this view to match the designs accordingly  -->
         <!-- errored exclamation sign  -->
         <ImageView
             android:id="@+id/frame_image_errored"
@@ -37,17 +36,6 @@
             android:backgroundTint="@color/white"
             android:scaleType="fitCenter"
             android:layout_centerInParent="true"/>
-
-<!--        <TextView-->
-<!--            android:id="@+id/frame_image_errored"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:textAlignment="center"-->
-<!--            android:gravity="center"-->
-<!--            android:text="ERR"-->
-<!--            android:textColor="@color/white"-->
-<!--            android:background="@color/red"-->
-<!--            android:layout_centerInParent="true"/>-->
 
     </RelativeLayout>
 
