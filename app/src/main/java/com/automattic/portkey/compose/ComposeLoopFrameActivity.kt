@@ -58,7 +58,6 @@ import com.automattic.portkey.R
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
 import com.automattic.portkey.compose.frame.FrameSaveManager
-import com.automattic.portkey.compose.frame.FrameSaveManager.Companion
 import com.automattic.portkey.compose.frame.FrameSaveService
 import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveError
 import com.automattic.portkey.compose.frame.FrameSaveService.StorySaveResult
