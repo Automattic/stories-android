@@ -118,6 +118,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
                         // create ghost PhotoEditorView to be used for saving off-screen
                         val ghostPhotoEditorView = createGhostPhotoEditor(context, photoEditor.composedCanvas)
                         frameFile = saveImageFrame(frame, ghostPhotoEditorView, frameIndex)
+                        throw Exception("THIS IS  A TEST")
                         saveProgressListener?.onFrameSaveCompleted(frameIndex)
                     } catch (ex: Exception) {
                         saveProgressListener?.onFrameSaveFailed(frameIndex, ex.message)
@@ -156,9 +157,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
     private suspend fun releaseAddedViewsAfterSnapshot(frame: StoryFrameItem) {
         withContext(Dispatchers.Main) {
             // don't forget to remove these views from ghost offscreen view before exiting
-            for (oneView in frame.addedViews) {
-                removeViewFromParent(oneView.view)
-            }
+            releaseAddedViews(frame)
         }
     }
 
@@ -283,5 +282,14 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         fun onFrameSaveCompleted(frameIndex: FrameIndex)
         fun onFrameSaveCanceled(frameIndex: FrameIndex)
         fun onFrameSaveFailed(frameIndex: FrameIndex, reason: String?)
+    }
+
+    companion object {
+        fun releaseAddedViews(frame: StoryFrameItem) {
+            // don't forget to remove these views from ghost offscreen view before exiting
+            for (oneView in frame.addedViews) {
+                removeViewFromParent(oneView.view)
+            }
+        }
     }
 }
