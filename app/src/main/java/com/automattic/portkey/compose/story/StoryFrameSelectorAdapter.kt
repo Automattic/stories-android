@@ -70,7 +70,7 @@ class StoryFrameSelectorAdapter : RecyclerView.Adapter<StoryFrameSelectorAdapter
         val clickableView = v // entire view should be clickable
         val imageView: ImageView = v.frame_image
         val frameBorder: ImageView = v.frame_image_selected
-        val frameErrored: TextView? = v.frame_image_errored
+        val frameErrored: ImageView? = v.frame_image_errored
         abstract fun onBind(uiState: StoryFrameListItemUiState)
 
         class StoryFrameHolderItem(v: View) : StoryFrameHolder(v) {

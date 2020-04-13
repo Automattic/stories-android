@@ -29,16 +29,25 @@
 
         <!-- TODO:  change this view to match the designs accordingly  -->
         <!-- errored exclamation sign  -->
-        <TextView
+        <ImageView
             android:id="@+id/frame_image_errored"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAlignment="center"
-            android:gravity="center"
-            android:text="ERR"
-            android:textColor="@color/white"
-            android:background="@color/red"
+            android:background="@drawable/ic_gridicons_notice"
+            android:backgroundTint="@color/white"
+            android:scaleType="fitCenter"
             android:layout_centerInParent="true"/>
+
+<!--        <TextView-->
+<!--            android:id="@+id/frame_image_errored"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:textAlignment="center"-->
+<!--            android:gravity="center"-->
+<!--            android:text="ERR"-->
+<!--            android:textColor="@color/white"-->
+<!--            android:background="@color/red"-->
+<!--            android:layout_centerInParent="true"/>-->
 
     </RelativeLayout>
 
