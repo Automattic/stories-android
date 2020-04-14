@@ -615,15 +615,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             // add discard dialog
             if (storyViewModel.anyOfCurrentStoryFramesHasViews()) {
                 // show dialog
-//                DiscardDialog.newInstance(getString(R.string.dialog_discard_message), object : DiscardOk {
-//                    override fun discardOkClicked() {
-//                        photoEditor.clearAllViews()
-//                        storyViewModel.discardCurrentStory()
-//                        launchCameraPreview()
-//                        deleteCapturedMedia()
-//                    }
-//                }).show(supportFragmentManager, FRAGMENT_DIALOG)
-
                 FrameSaveErrorDialog.newInstance(
                     title = getString(R.string.dialog_discard_story_title),
                     message = getString(R.string.dialog_discard_story_message),
