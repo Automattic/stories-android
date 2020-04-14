@@ -20,11 +20,13 @@ class FrameSaveErrorDialog : DialogFragment() {
         okListener?.let {
             builder.setNegativeButton(android.R.string.cancel) { _, _ -> dismiss() }
             builder.setPositiveButton(
-                    arguments?.getString(ARG_OK_LABEL) ?: activity?.getString(android.R.string.ok))
-                { _, _ -> okListener?.OnOkClicked(this) }
+                    arguments?.getString(ARG_OK_LABEL) ?: activity?.getString(android.R.string.ok)) {
+                    _, _ -> okListener?.OnOkClicked(this)
+            }
         } ?: builder.setPositiveButton(
-            arguments?.getString(ARG_OK_LABEL) ?: activity?.getString(android.R.string.ok))
-                { _, _ -> dismiss() }
+            arguments?.getString(ARG_OK_LABEL) ?: activity?.getString(android.R.string.ok)) {
+                _, _ -> dismiss()
+        }
         return builder.create()
     }
 
