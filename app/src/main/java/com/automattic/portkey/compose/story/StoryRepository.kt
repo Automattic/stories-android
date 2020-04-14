@@ -67,6 +67,9 @@ object StoryRepository {
 
     fun discardCurrentStory() {
         currentStoryFrames.clear()
+        if (isStoryIndexValid(currentStoryIndex)) {
+            stories.removeAt(currentStoryIndex)
+        }
         currentStoryIndex = DEFAULT_NONE_SELECTED
     }
 

@@ -94,7 +94,6 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_composer.*
 import kotlinx.android.synthetic.main.content_composer.*
-import kotlinx.android.synthetic.main.fragment_story_frame_selector.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -624,6 +623,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                             dialog.dismiss()
                             photoEditor.clearAllViews()
                             storyViewModel.discardCurrentStory()
+                            storyViewModel.loadStory(StoryRepository.DEFAULT_NONE_SELECTED)
                             enableEditControlsForNonErroredFrame()
                             launchCameraPreview()
                             deleteCapturedMedia()
@@ -631,6 +631,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     }).show(supportFragmentManager, FRAGMENT_DIALOG)
             } else {
                 storyViewModel.discardCurrentStory()
+                storyViewModel.loadStory(StoryRepository.DEFAULT_NONE_SELECTED)
                 launchCameraPreview()
                 deleteCapturedMedia()
             }
@@ -744,6 +745,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                                     // discard the whole story
                                     photoEditor.clearAllViews()
                                     storyViewModel.discardCurrentStory()
+                                    storyViewModel.loadStory(StoryRepository.DEFAULT_NONE_SELECTED)
                                     enableEditControlsForNonErroredFrame()
                                     launchCameraPreview()
                                     deleteCapturedMedia()
