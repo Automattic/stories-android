@@ -60,13 +60,22 @@ class FrameSaveService : Service() {
         return START_NOT_STICKY
     }
 
-    fun saveStoryFrames(storyIndex: Int, photoEditor: PhotoEditor) {
+    fun saveStoryFrames(
+        storyIndex: Int,
+        photoEditor: PhotoEditor,
+        frameIndex: FrameIndex = StoryRepository.DEFAULT_NONE_SELECTED
+    ) {
         CoroutineScope(Dispatchers.Default).launch {
             EventBus.getDefault().post(StorySaveProcessStart(storyIndex))
 
-            // freeze the Story in the Repository
-            val storyFrames = StoryRepository.getImmutableCurrentStoryFrames()
-            StoryRepository.finishCurrentStory()
+            lateinit var storyFrames: List<StoryFrameItem>
+            if (frameIndex > StoryRepository.DEFAULT_NONE_SELECTED) {
+                storyFrames = listOf(StoryRepository.getStoryAtIndex(storyIndex).frames[frameIndex])
+            } else {
+                storyFrames = StoryRepository.getImmutableCurrentStoryFrames()
+                // when saving a full story, first freeze the Story in the Repository
+                StoryRepository.finishCurrentStory()
+            }
 
             // now create a processor and run it.
             // also hold a reference to it in the storySaveProcessors list in case the Service is destroyed, so

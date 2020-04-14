@@ -11,8 +11,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_centerInParent="true"
-        android:gravity="center"
->
+        android:gravity="center">
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="@dimen/save_button_total_height"
@@ -27,7 +26,7 @@
                 android:maxWidth="24dp"
                 android:layout_centerInParent="true"
                 android:indeterminateTintMode="src_atop"
-                android:indeterminateTint="@color/white"
+                android:indeterminateTint="@color/black"
                 android:indeterminate="true" />
 
             <ImageView
@@ -35,8 +34,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:src="@drawable/ic_save_alt_24px"
-                android:tint="@color/white"/>
+                android:src="@drawable/ic_refresh_24"
+                android:tint="@color/black"/>
         </RelativeLayout>
 
         <TextView
@@ -46,9 +45,9 @@
             android:layout_gravity="center_vertical"
             android:paddingStart="8dp"
             android:paddingEnd="8dp"
-            android:text="@string/label_control_save"
-            android:textAllCaps="false"
-            android:textColor="@color/text_color_white"
+            android:text="@string/label_control_retry"
+            android:textAllCaps="true"
+            android:textColor="@color/text_color_black"
             />
     </LinearLayout>
 </RelativeLayout>

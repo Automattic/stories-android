@@ -62,6 +62,7 @@ import com.automattic.portkey.BuildConfig
 import com.automattic.portkey.R
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
+import com.automattic.portkey.compose.frame.FrameIndex
 import com.automattic.portkey.compose.frame.FrameSaveManager
 import com.automattic.portkey.compose.frame.FrameSaveService
 import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveError
@@ -146,6 +147,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     private var saveServiceBound: Boolean = false
     private var preHookRun: Boolean = false
     private var storyIndexToSelect = -1
+    private var storyFrameIndexToRetry: FrameIndex = StoryRepository.DEFAULT_NONE_SELECTED
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
@@ -154,18 +156,21 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             frameSaveService = binder.getService()
 
             // keep these as they're changing when we call `storyViewModel.finishCurrentStory()`
-            val index = storyViewModel.getCurrentStoryIndex()
-
-            // TODO obtain the real Story title as assigned by the user when the BOTTOM SHEET is ready, and pass it up
-            storyViewModel.setCurrentStoryTitle(getString(R.string.story_saving_untitled))
-
-            frameSaveService.saveStoryFrames(index, photoEditor)
+            val storyIndex = storyViewModel.getCurrentStoryIndex()
+            if (storyFrameIndexToRetry == StoryRepository.DEFAULT_NONE_SELECTED) {
+                // TODO obtain the real Story title as assigned by the user when the BOTTOM SHEET is ready, and pass it up
+                storyViewModel.setCurrentStoryTitle(getString(R.string.story_saving_untitled))
+            }
+            frameSaveService.saveStoryFrames(storyIndex, photoEditor, storyFrameIndexToRetry)
             saveServiceBound = true
 
-            // leave the Activity - now it's all the app's responsibility to deal with saving, uploading and
-            // publishing. Users can't edit this Story now, unless an error happens and then we'll notify them
-            // and let them open the Composer screen again.
-            finish()
+            // only leave the Activity if we're saving the full Story. Stay here if the user is retrying.
+            if (storyFrameIndexToRetry == -1) {
+                // leave the Activity - now it's all the app's responsibility to deal with saving, uploading and
+                // publishing. Users can't edit this Story now, unless an error happens and then we'll notify them
+                // and let them open the Composer screen again.
+                finish()
+            }
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
@@ -395,6 +400,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         storyViewModel.uiState.observe(this, Observer {
             // if no frames in Story, launch the capture mode
             if (storyViewModel.getCurrentStorySize() == 0) {
+                next_button.setEnabled(true)
                 photoEditor.clearAllViews()
                 launchCameraPreview()
                 // finally, delete the captured media
@@ -693,9 +699,17 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             if (storyViewModel.getCurrentStorySize() > 0) {
                 // save all composed frames
                 if (PermissionUtils.checkAndRequestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    storyFrameIndexToRetry = StoryRepository.DEFAULT_NONE_SELECTED
                     saveStory()
                 }
             }
+        }
+
+        retry_button.setOnClickListener {
+            // trigger the Service again, for this frame only
+            storyFrameIndexToRetry = storyViewModel.getSelectedFrameIndex()
+            retry_button.setSaving(true)
+            saveStory()
         }
 
         more_button.setOnClickListener {
@@ -712,7 +726,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     private fun saveStoryPreHook() {
-        showLoading(getString(R.string.label_saving))
+        showLoading()
         // disable layout change animations, we need this to make added views immediately visible, otherwise
         // we may end up capturing a Bitmap of a backing drawable that still has not been updated
         // (i.e. no visible added Views)
@@ -735,6 +749,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // re-enable layout change animations
         photoEditorView.layoutTransition = transition
 
+        retry_button.setSaving(false)
         hideLoading()
         showToast("READY")
     }
@@ -1029,7 +1044,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     @SuppressLint("MissingPermission")
     private fun saveVideo(inputFile: Uri) {
         if (PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            showLoading(getString(R.string.label_saving))
+            showLoading()
             try {
                 val file = getLoopFrameFile(this, true)
                 file.createNewFile()
@@ -1085,7 +1100,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     @SuppressLint("MissingPermission")
     private fun saveVideoWithStaticBackground() {
         if (PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            showLoading(getString(R.string.label_saving))
+            showLoading()
             try {
                 val file = getLoopFrameFile(this, true, "tmp")
                 file.createNewFile()
@@ -1125,7 +1140,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }
     }
 
-    private fun showLoading(message: String) {
+    private fun showLoading(message: String? = null) {
         editModeHideAllUIControls(true)
         blockTouchOnPhotoEditor(message)
     }
@@ -1214,6 +1229,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         more_button.visibility = View.INVISIBLE
         sound_button.visibility = View.INVISIBLE
         next_button.visibility = View.INVISIBLE
+        retry_button.visibility = View.GONE
         // show capturing mode controls
         showVideoUIControls()
     }
@@ -1355,7 +1371,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             this, arrayOfPaths, arrayOfmimeTypes, null)
     }
 
-    private fun blockTouchOnPhotoEditor(message: String) {
+    private fun blockTouchOnPhotoEditor(message: String?) {
         translucent_view.visibility = View.VISIBLE
         operation_text.text = message
         translucent_view.setOnTouchListener { _, _ ->

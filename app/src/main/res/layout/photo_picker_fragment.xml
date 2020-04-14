@@ -118,8 +118,8 @@
 
     <com.automattic.portkey.compose.NextButton
         android:id="@+id/next_button"
-        android:layout_width="@dimen/save_button_total_width"
-        android:layout_height="@dimen/save_button_total_height"
+        android:layout_width="@dimen/next_button_total_width"
+        android:layout_height="@dimen/next_button_total_height"
         android:layout_marginBottom="@dimen/next_button_bottom_margin"
         android:layout_marginRight="@dimen/next_button_right_margin"
         app:text="@string/label_control_next"
