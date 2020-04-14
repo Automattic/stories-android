@@ -439,10 +439,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         val errors = storySaveResult.frameSaveResult.filter { it.resultReason is SaveError }
         val minIndexToSelect = errors.minBy { it.frameIndex }
 
-        // select the first errored frame - delete added views from Service first
-        FrameSaveManager.releaseAddedViews(
-            storyViewModel.getCurrentStoryFrameAt(minIndexToSelect!!.frameIndex)
-        )
+        // select the first errored frame
         onStoryFrameSelected(-1, minIndexToSelect!!.frameIndex)
 
         // show dialog
@@ -1441,6 +1438,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             showStaticBackground()
         }
 
+        // make sure to release the added views before re-selecting them
+        FrameSaveManager.releaseAddedViews(newSelectedFrame)
         // now call addViewToParent the addedViews remembered by this frame
         newSelectedFrame.addedViews.let {
             for (oneView in it) {
