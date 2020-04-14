@@ -343,7 +343,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
                     val storySaveResult = intent.getSerializableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
                     if (storySaveResult != null &&
-                        StoryRepository.getStoryAtIndex(storySaveResult.storyIndex).frames.size > 0) {
+                        storyViewModel.getStoryAtIndex(storySaveResult.storyIndex).frames.size > 0) {
                         // dismiss the error notification
                         // TODO use NativeNotificationUtils.dismissNotification() when migrating to WPAndroid
                         intent.action?.let {
@@ -361,7 +361,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                         // TODO couldn't find the story frames? Show some Error Dialog - we can't recover here
                     }
                 } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED) {
-                    if (StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.size > 0) {
+                    if (storyViewModel.getStoryAtIndex(storyIndexToSelect).frames.size > 0) {
                         refreshStoryFrameSelection()
                     } else {
                         // TODO couldn't find the story frames? Show some Error Dialog - we can't recover here
@@ -784,7 +784,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                                 }
                             }
                         }).show(supportFragmentManager, FRAGMENT_DIALOG)
-
 
                 R.id.menu_save_page -> {
                     // TODO only save this one, and stay here.

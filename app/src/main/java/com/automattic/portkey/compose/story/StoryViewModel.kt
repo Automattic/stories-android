@@ -96,6 +96,10 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
         return repository.currentStoryIndex
     }
 
+    fun getStoryAtIndex(index: Int): Story {
+        return repository.getStoryAtIndex(index)
+    }
+
     fun anyOfCurrentStoryFramesIsErrored(): Boolean {
         val frames = repository.getImmutableCurrentStoryFrames()
         for (frame in frames) {
