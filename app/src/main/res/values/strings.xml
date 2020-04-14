@@ -38,9 +38,14 @@
 
     <string name="menu_delete_page">Delete page</string>
     <string name="menu_save_page">Save page</string>
-    <string name="dialog_discard_page_message">Are you sure you want to delete this page from your Story?</string>
 
-    <string name="dialog_discard_message">Are you sure you want to discard your Story?</string>
+    <string name="dialog_discard_page_title">Delete story page?</string>
+    <string name="dialog_discard_page_message">This page will be removed from your story.</string>
+    <string name="dialog_discard_page_ok_button">Delete</string>
+
+    <string name="dialog_discard_story_title">Discard Story?</string>
+    <string name="dialog_discard_story_message">If you discard this story it will not be saved as a draft.</string>
+    <string name="dialog_discard_story_ok_button">Discard</string>
 
     <!-- Intro -->
     <string name="get_started">Get Started</string>

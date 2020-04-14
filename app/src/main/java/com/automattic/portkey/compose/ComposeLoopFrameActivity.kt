@@ -40,6 +40,7 @@ import androidx.core.content.FileProvider
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.MenuCompat
 import androidx.core.view.ViewCompat
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Lifecycle.State
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -372,9 +373,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
                             val errorDialogTitle = String.format(stringSingularOrPlural, errors.size)
 
-                            FrameSaveErrorDialog.newInstance(errorDialogTitle,
-                                getString(R.string.dialog_story_saving_error_message))
-                                .show(supportFragmentManager, FRAGMENT_DIALOG)
+                            FrameSaveErrorDialog.newInstance(
+                                errorDialogTitle,
+                                getString(R.string.dialog_story_saving_error_message),
+                                getString(android.R.string.ok)
+                            ).show(supportFragmentManager, FRAGMENT_DIALOG)
                         } else {
                             next_button.setEnabled(true)
                             onStoryFrameSelected(-1, 0)
@@ -612,14 +615,28 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             // add discard dialog
             if (storyViewModel.anyOfCurrentStoryFramesHasViews()) {
                 // show dialog
-                DiscardDialog.newInstance(getString(R.string.dialog_discard_message), object : DiscardOk {
-                    override fun discardOkClicked() {
-                        photoEditor.clearAllViews()
-                        storyViewModel.discardCurrentStory()
-                        launchCameraPreview()
-                        deleteCapturedMedia()
-                    }
-                }).show(supportFragmentManager, FRAGMENT_DIALOG)
+//                DiscardDialog.newInstance(getString(R.string.dialog_discard_message), object : DiscardOk {
+//                    override fun discardOkClicked() {
+//                        photoEditor.clearAllViews()
+//                        storyViewModel.discardCurrentStory()
+//                        launchCameraPreview()
+//                        deleteCapturedMedia()
+//                    }
+//                }).show(supportFragmentManager, FRAGMENT_DIALOG)
+
+                FrameSaveErrorDialog.newInstance(
+                    title = getString(R.string.dialog_discard_story_title),
+                    message = getString(R.string.dialog_discard_story_message),
+                    okButtonLabel = getString(R.string.dialog_discard_story_ok_button),
+                    listener = object : FrameSaveErrorDialogOk {
+                        override fun OnOkClicked(dialog: DialogFragment) {
+                            dialog.dismiss()
+                            photoEditor.clearAllViews()
+                            storyViewModel.discardCurrentStory()
+                            launchCameraPreview()
+                            deleteCapturedMedia()
+                        }
+                    }).show(supportFragmentManager, FRAGMENT_DIALOG)
             } else {
                 storyViewModel.discardCurrentStory()
                 launchCameraPreview()
@@ -724,15 +741,29 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             when (it.itemId) {
                 R.id.menu_delete_page ->
                     // show dialog
-                    DiscardDialog.newInstance(getString(R.string.dialog_discard_page_message), object : DiscardOk {
-                        override fun discardOkClicked() {
-                            // get currentFrame value as it will change after calling onAboutToDeleteStoryFrame
-                            val currentFrameToDeleteIndex = storyViewModel.getSelectedFrameIndex()
-                            onAboutToDeleteStoryFrame(currentFrameToDeleteIndex)
-                            // now discard it from the viewModel
-                            storyViewModel.removeFrameAt(currentFrameToDeleteIndex)
-                        }
-                    }).show(supportFragmentManager, FRAGMENT_DIALOG)
+                    FrameSaveErrorDialog.newInstance(
+                        title = getString(R.string.dialog_discard_page_title),
+                        message = getString(R.string.dialog_discard_page_message),
+                        okButtonLabel = getString(R.string.dialog_discard_page_ok_button),
+                        listener = object : FrameSaveErrorDialogOk {
+                            override fun OnOkClicked(dialog: DialogFragment) {
+                                dialog.dismiss()
+                                if (storyViewModel.getCurrentStorySize() == 1) {
+                                    // discard the whole story
+                                    photoEditor.clearAllViews()
+                                    storyViewModel.discardCurrentStory()
+                                    launchCameraPreview()
+                                    deleteCapturedMedia()
+                                } else {
+                                    // get currentFrame value as it will change after calling onAboutToDeleteStoryFrame
+                                    val currentFrameToDeleteIndex = storyViewModel.getSelectedFrameIndex()
+                                    onAboutToDeleteStoryFrame(currentFrameToDeleteIndex)
+                                    // now discard it from the viewModel
+                                    storyViewModel.removeFrameAt(currentFrameToDeleteIndex)
+                                }
+                            }
+                        }).show(supportFragmentManager, FRAGMENT_DIALOG)
+
 
                 R.id.menu_save_page -> {
                     // TODO only save this one, and stay here.
