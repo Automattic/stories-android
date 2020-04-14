@@ -624,6 +624,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                             dialog.dismiss()
                             photoEditor.clearAllViews()
                             storyViewModel.discardCurrentStory()
+                            enableEditControlsForNonErroredFrame()
                             launchCameraPreview()
                             deleteCapturedMedia()
                         }
@@ -743,6 +744,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                                     // discard the whole story
                                     photoEditor.clearAllViews()
                                     storyViewModel.discardCurrentStory()
+                                    enableEditControlsForNonErroredFrame()
                                     launchCameraPreview()
                                     deleteCapturedMedia()
                                 } else {
