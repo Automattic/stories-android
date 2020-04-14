@@ -109,7 +109,7 @@ open class StoryFrameSelectorFragment : Fragment() {
             ): Boolean {
                 val fromPos = viewHolder.adapterPosition
                 val toPos = target.adapterPosition
-                storyViewModel.swapItemsInPositions(fromPos - 1, toPos - 1)
+                storyViewModel.swapItemsInPositions(fromPos, toPos)
                 return true
             }
 
