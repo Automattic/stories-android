@@ -81,6 +81,7 @@ import com.automattic.portkey.compose.story.StoryFrameItemType.VIDEO
 import com.automattic.portkey.compose.story.StoryFrameSelectorFragment
 import com.automattic.portkey.compose.story.StoryRepository
 import com.automattic.portkey.compose.story.StoryViewModel
+import com.automattic.portkey.compose.story.StoryViewModel.StoryFrameListItemUiState.StoryFrameListItemUiStateFrame
 import com.automattic.portkey.compose.story.StoryViewModelFactory
 import com.automattic.portkey.compose.text.TextEditorDialogFragment
 import com.automattic.portkey.util.KEY_STORY_SAVE_RESULT
@@ -334,7 +335,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             // also, update the UI
             updateFlashModeSelectionIcon()
 
+            setupStoryViewModelObservers()
+
             photoEditorView.postDelayed({
+                storyViewModel.loadStory(storyIndexToSelect)
+
                 if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
                     val storySaveResult = intent.getSerializableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
                     if (storySaveResult != null &&
@@ -346,37 +351,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                             notificationManager.cancel(it.toInt())
                         }
 
-                        // if the StoryRepository contains a story, load it right away to continue editing
-                        // TODO check pages in this Story and mark them errored according to the StorySaveResult
-                        // see https://github.com/Automattic/portkey-android/issues/285 for details
-                        Log.d("PORTKEY", "Being passed a SaveResult, render the Story")
-                        storyViewModel.loadStory(storySaveResult.storyIndex)
-
                         if (!storySaveResult.isSuccess()) {
-                            // disable the Publish button
-                            next_button.setEnabled(false)
-
-                            val errors = storySaveResult.frameSaveResult.filter { it.resultReason is SaveError }
-                            val minIndexToSelect = errors.minBy { it.frameIndex }
-
-                            // select the first errored frame - delete added views from Service first
-                            FrameSaveManager.releaseAddedViews(
-                                storyViewModel.getCurrentStoryFrameAt(minIndexToSelect!!.frameIndex)
-                            )
-                            onStoryFrameSelected(-1, minIndexToSelect!!.frameIndex)
-
-                            // show dialog
-                            val stringSingularOrPlural = if (errors.size == 1)
-                                getString(R.string.dialog_story_saving_error_title_singular)
-                            else getString(R.string.dialog_story_saving_error_title_plural)
-
-                            val errorDialogTitle = String.format(stringSingularOrPlural, errors.size)
-
-                            FrameSaveErrorDialog.newInstance(
-                                errorDialogTitle,
-                                getString(R.string.dialog_story_saving_error_message),
-                                getString(android.R.string.ok)
-                            ).show(supportFragmentManager, FRAGMENT_DIALOG)
+                            prepareErrorScreen(storySaveResult)
                         } else {
                             next_button.setEnabled(true)
                             onStoryFrameSelected(-1, 0)
@@ -386,22 +362,12 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     }
                 } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED) {
                     if (StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.size > 0) {
-                        storyViewModel.loadStory(storyIndexToSelect)
                         refreshStoryFrameSelection()
                     } else {
                         // TODO couldn't find the story frames? Show some Error Dialog - we can't recover here
                     }
                 } else {
                     launchCameraPreview()
-                    storyViewModel.uiState.observe(this, Observer {
-                        // if no frames in Story, launch the capture mode
-                        if (storyViewModel.getCurrentStorySize() == 0) {
-                            photoEditor.clearAllViews()
-                            launchCameraPreview()
-                            // finally, delete the captured media
-                            deleteCapturedMedia()
-                        }
-                    })
                 }
             }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
         } else {
@@ -423,6 +389,74 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 }
             }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
         }
+    }
+
+    private fun setupStoryViewModelObservers() {
+        storyViewModel.uiState.observe(this, Observer {
+            // if no frames in Story, launch the capture mode
+            if (storyViewModel.getCurrentStorySize() == 0) {
+                photoEditor.clearAllViews()
+                launchCameraPreview()
+                // finally, delete the captured media
+                deleteCapturedMedia()
+            }
+        })
+
+        storyViewModel.onSelectedFrameIndex.observe(this, Observer<Pair<Int, Int>> { selectedFrameIndexChange ->
+            updateContentUiStateSelection(selectedFrameIndexChange.first, selectedFrameIndexChange.second)
+        })
+
+        storyViewModel.uiStateErroredItem.observe(this, Observer { uiStateFrame ->
+            updateContentUiStateFrame(uiStateFrame)
+        })
+    }
+
+    private fun updateContentUiStateSelection(oldSelection: Int, newSelection: Int) {
+        val selectedFrame = storyViewModel.getCurrentStoryFrameAt(newSelection)
+        showRetryButtonAndHideEditControlsForErroredFrame(selectedFrame.saveResultReason !is SaveSuccess)
+
+        // if all frames have now been successfully saved, show the PUBLISH buttton
+        next_button.setEnabled(!storyViewModel.anyOfCurrentStoryFramesIsErrored())
+    }
+
+    // this will invoked when a RETRY operation ends on the currently selected frame
+    private fun updateContentUiStateFrame(uiStateFrame: StoryFrameListItemUiStateFrame) {
+        showRetryButtonAndHideEditControlsForErroredFrame(uiStateFrame.errored)
+    }
+
+    private fun showRetryButtonAndHideEditControlsForErroredFrame(showRetry: Boolean) {
+        if (showRetry) {
+            disableEditControlsForErroredFrame()
+        } else {
+            enableEditControlsForNonErroredFrame()
+        }
+    }
+
+    private fun prepareErrorScreen(storySaveResult: StorySaveResult) {
+        // disable the Publish button
+        next_button.setEnabled(false)
+
+        val errors = storySaveResult.frameSaveResult.filter { it.resultReason is SaveError }
+        val minIndexToSelect = errors.minBy { it.frameIndex }
+
+        // select the first errored frame - delete added views from Service first
+        FrameSaveManager.releaseAddedViews(
+            storyViewModel.getCurrentStoryFrameAt(minIndexToSelect!!.frameIndex)
+        )
+        onStoryFrameSelected(-1, minIndexToSelect!!.frameIndex)
+
+        // show dialog
+        val stringSingularOrPlural = if (errors.size == 1)
+            getString(R.string.dialog_story_saving_error_title_singular)
+        else getString(R.string.dialog_story_saving_error_title_plural)
+
+        val errorDialogTitle = String.format(stringSingularOrPlural, errors.size)
+
+        FrameSaveErrorDialog.newInstance(
+            errorDialogTitle,
+            getString(R.string.dialog_story_saving_error_message),
+            getString(android.R.string.ok)
+        ).show(supportFragmentManager, FRAGMENT_DIALOG)
     }
 
     override fun onDestroy() {
@@ -624,16 +658,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                             photoEditor.clearAllViews()
                             storyViewModel.discardCurrentStory()
                             storyViewModel.loadStory(StoryRepository.DEFAULT_NONE_SELECTED)
-                            enableEditControlsForNonErroredFrame()
-                            launchCameraPreview()
-                            deleteCapturedMedia()
                         }
                     }).show(supportFragmentManager, FRAGMENT_DIALOG)
             } else {
                 storyViewModel.discardCurrentStory()
                 storyViewModel.loadStory(StoryRepository.DEFAULT_NONE_SELECTED)
-                launchCameraPreview()
-                deleteCapturedMedia()
             }
         }
 
@@ -746,9 +775,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                                     photoEditor.clearAllViews()
                                     storyViewModel.discardCurrentStory()
                                     storyViewModel.loadStory(StoryRepository.DEFAULT_NONE_SELECTED)
-                                    enableEditControlsForNonErroredFrame()
-                                    launchCameraPreview()
-                                    deleteCapturedMedia()
                                 } else {
                                     // get currentFrame value as it will change after calling onAboutToDeleteStoryFrame
                                     val currentFrameToDeleteIndex = storyViewModel.getSelectedFrameIndex()
@@ -1224,6 +1250,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     private fun disableEditControlsForErroredFrame() {
+        retry_button.visibility = View.VISIBLE
         // momentarily hide proper edit mode controls
         edit_mode_controls.visibility = View.INVISIBLE
         next_button.setEnabled(false)
@@ -1231,6 +1258,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     private fun enableEditControlsForNonErroredFrame() {
+        retry_button.visibility = View.GONE
         edit_mode_controls.visibility = View.VISIBLE
         next_button.setEnabled(true)
         (bottom_strip_view as StoryFrameSelectorFragment).showAddFrameControl()
@@ -1421,11 +1449,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             }
         }
 
-        if (newSelectedFrame.saveResultReason is SaveSuccess) {
-            enableEditControlsForNonErroredFrame()
-        } else {
-            disableEditControlsForErroredFrame()
-        }
+        showRetryButtonAndHideEditControlsForErroredFrame(newSelectedFrame.saveResultReason !is SaveSuccess)
 
         // re-enable layout change animations
         photoEditor.composedCanvas.layoutTransition = transition

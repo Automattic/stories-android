@@ -72,7 +72,6 @@ open class StoryFrameSelectorFragment : Fragment() {
             storyViewModel.addButtonClicked.call()
         }
         setupItemTouchListener(view)
-        storyViewModel.loadStory(storyViewModel.storyIndex)
         view.visibility = View.INVISIBLE
         return view
     }

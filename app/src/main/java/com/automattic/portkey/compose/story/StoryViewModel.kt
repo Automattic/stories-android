@@ -15,6 +15,9 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
     private val _uiState: MutableLiveData<StoryFrameListUiState> = MutableLiveData()
     val uiState: LiveData<StoryFrameListUiState> = _uiState
 
+    private val _uiStateErroredItem: MutableLiveData<StoryFrameListItemUiStateFrame> = MutableLiveData()
+    val uiStateErroredItem: LiveData<StoryFrameListItemUiStateFrame> = _uiStateErroredItem
+
     private val _onSelectedFrameIndex: SingleLiveEvent<Pair<Int, Int>> by lazy {
         SingleLiveEvent<Pair<Int, Int>>().also {
             it.value = Pair(DEFAULT_SELECTION, currentSelectedFrameIndex)
@@ -91,6 +94,16 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
 
     fun getCurrentStoryIndex(): Int {
         return repository.currentStoryIndex
+    }
+
+    fun anyOfCurrentStoryFramesIsErrored(): Boolean {
+        val frames = repository.getImmutableCurrentStoryFrames()
+        for (frame in frames) {
+            if (frame.saveResultReason !is SaveSuccess) {
+                return true
+            }
+        }
+        return false
     }
 
     fun anyOfCurrentStoryFramesHasViews(): Boolean {

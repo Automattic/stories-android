@@ -118,6 +118,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
                         // create ghost PhotoEditorView to be used for saving off-screen
                         val ghostPhotoEditorView = createGhostPhotoEditor(context, photoEditor.composedCanvas)
                         frameFile = saveImageFrame(frame, ghostPhotoEditorView, frameIndex)
+                        throw Exception("THIS IS A TEST")
                         saveProgressListener?.onFrameSaveCompleted(frameIndex)
                     } catch (ex: Exception) {
                         saveProgressListener?.onFrameSaveFailed(frameIndex, ex.message)

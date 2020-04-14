@@ -271,6 +271,20 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintRight_toLeftOf="@id/more_button"/>
 
+    <!-- this is the retry saving view  -->
+    <com.automattic.portkey.compose.SaveButton
+        android:id="@+id/retry_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/delete_button_margin_bottom"
+        android:visibility="gone"
+        android:layout_centerHorizontal="true"
+        app:layout_constraintBottom_toTopOf="@id/bottom_strip_view"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        />
+
+
     <ImageView
         android:id="@+id/more_button"
         android:visibility="invisible"
