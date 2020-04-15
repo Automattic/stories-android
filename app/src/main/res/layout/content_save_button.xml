@@ -36,6 +36,15 @@
                 android:layout_centerInParent="true"
                 android:src="@drawable/ic_refresh_24"
                 android:tint="@color/black"/>
+
+            <ImageView
+                android:id="@+id/save_button_saved_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:src="@drawable/ic_checkmark"
+                android:tint="@color/black"/>
+
         </RelativeLayout>
 
         <TextView

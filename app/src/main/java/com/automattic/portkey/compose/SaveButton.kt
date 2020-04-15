@@ -46,12 +46,28 @@ class SaveButton : FrameLayout {
             save_button_text.setText(R.string.label_control_saving)
             save_button_icon.visibility = View.INVISIBLE
             save_button_spinner.visibility = View.VISIBLE
+            save_button_saved_icon.visibility = View.INVISIBLE
             background = getDrawable(context, R.drawable.save_button_background_disabled)
         } else {
-            save_button_text.setText(R.string.label_control_save)
+            save_button_text.setText(R.string.label_control_retry)
             save_button_icon.visibility = View.VISIBLE
             save_button_spinner.visibility = View.INVISIBLE
+            save_button_saved_icon.visibility = View.INVISIBLE
             background = getDrawable(context, R.drawable.save_button_background_enabled)
+        }
+    }
+
+    fun showSavedAnimation(callback: Runnable?) {
+        if (savingState) {
+            savingState = false
+            save_button_text.setText(R.string.label_control_saved)
+            save_button_icon.visibility = View.INVISIBLE
+            save_button_spinner.visibility = View.INVISIBLE
+            save_button_saved_icon.visibility = View.VISIBLE
+            background = getDrawable(context, R.drawable.save_button_background_disabled)
+            postDelayed({
+                callback?.run()
+            }, 250)
         }
     }
 

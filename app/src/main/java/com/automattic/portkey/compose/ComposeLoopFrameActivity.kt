@@ -735,20 +735,19 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     private fun saveStoryPostHook(result: StorySaveResult) {
-        doUnbindService()
+        // doUnbindService()
 
-        if (!result.isSuccess() && lifecycle.currentState.isAtLeast(State.STARTED)) {
-            // given saveStory for static images works with a ghost off screen buffer by removing /
-            // adding views to it,
-            // we need to refresh the selection so added views get properly re-added after frame iteration ends
-            storyViewModel.loadStory(result.storyIndex)
-            refreshStoryFrameSelection()
-        }
+        // storyViewModel.loadStory(result.storyIndex)
+        retry_button.showSavedAnimation(object: Runnable {
+            override fun run() {
+                retry_button.visibility = View.GONE
+                // refreshStoryFrameSelection()
+            }
+        })
 
         // re-enable layout change animations
         photoEditorView.layoutTransition = transition
 
-        retry_button.setSaving(false)
         hideLoading()
         showToast("READY")
     }
@@ -1518,8 +1517,9 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onStorySaveResult(event: StorySaveResult) {
+        EventBus.getDefault().removeStickyEvent(event)
         // only run saveStoryPostHook if preHook has been run for this Activity's instance lifespan.
         if (preHookRun) {
             saveStoryPostHook(event)
