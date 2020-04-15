@@ -73,7 +73,7 @@ class FrameSaveService : Service() {
             // now create a processor and run it.
             // also hold a reference to it in the storySaveProcessors list in case the Service is destroyed, so
             // we can cancel each coroutine.
-            val processor = createOneProcessor(storyIndex, photoEditor)
+            val processor = createProcessor(storyIndex, photoEditor)
             storySaveProcessors.add(processor)
             runProcessor(
                 processor,
@@ -100,7 +100,7 @@ class FrameSaveService : Service() {
         processor.detachProgressListener()
     }
 
-    private fun createOneProcessor(storyIndex: Int, photoEditor: PhotoEditor): StorySaveProcessor {
+    private fun createProcessor(storyIndex: Int, photoEditor: PhotoEditor): StorySaveProcessor {
         return StorySaveProcessor(
             this,
             storyIndex,
@@ -192,7 +192,7 @@ class FrameSaveService : Service() {
     data class StorySaveResult(
         var storyIndex: StoryIndex = 0,
         val frameSaveResult: MutableList<FrameSaveResult> = mutableListOf()
-    ) : Parcelable  {
+    ) : Parcelable {
         fun isSuccess(): Boolean {
             return frameSaveResult.all { it.resultReason == SaveSuccess }
         }
