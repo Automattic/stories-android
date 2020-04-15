@@ -52,6 +52,10 @@ open class StoryFrameSelectorFragment : Fragment() {
             storyFrameTappedListener?.onStoryFrameAddTapped()
         })
 
+        storyViewModel.uiStateForItemAtIndexChanged.observe(this, Observer { uiStateFrameIndex ->
+            updateContentUiStateItem(uiStateFrameIndex)
+        })
+
         storyViewModel.uiState.observe(this, Observer { uiState ->
             uiState?.let {
                 updateContentUiState(uiState)
@@ -95,6 +99,11 @@ open class StoryFrameSelectorFragment : Fragment() {
     private fun updateContentUiStateMovedIndex(oldPosition: Int, newPosition: Int) {
         (story_frames_view.adapter as StoryFrameSelectorAdapter)
             .updateContentUiStateMovedIndex(oldPosition, newPosition)
+    }
+
+    private fun updateContentUiStateItem(position: Int) {
+        (story_frames_view.adapter as StoryFrameSelectorAdapter)
+            .updateContentUiStateItem(position)
     }
 
     private fun setupItemTouchListener(view: View) {

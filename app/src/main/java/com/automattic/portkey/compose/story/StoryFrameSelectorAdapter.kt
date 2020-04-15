@@ -61,6 +61,10 @@ class StoryFrameSelectorAdapter : RecyclerView.Adapter<StoryFrameSelectorAdapter
         }
     }
 
+    fun updateContentUiStateItem(position: Int) {
+        notifyItemChanged(position)
+    }
+
     fun updateContentUiStateMovedIndex(oldPosition: Int, newPosition: Int) {
         notifyItemMoved(oldPosition, newPosition)
     }

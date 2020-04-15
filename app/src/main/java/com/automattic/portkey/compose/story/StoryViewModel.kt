@@ -18,6 +18,9 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
     private val _uiStateErroredItem: MutableLiveData<StoryFrameListItemUiStateFrame> = MutableLiveData()
     val uiStateErroredItem: LiveData<StoryFrameListItemUiStateFrame> = _uiStateErroredItem
 
+    private val _uiStateForItemAtIndexChanged = SingleLiveEvent<Int>()
+    val uiStateForItemAtIndexChanged = _uiStateForItemAtIndexChanged
+
     private val _onSelectedFrameIndex: SingleLiveEvent<Pair<Int, Int>> by lazy {
         SingleLiveEvent<Pair<Int, Int>>().also {
             it.value = Pair(DEFAULT_SELECTION, currentSelectedFrameIndex)
@@ -63,6 +66,7 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
         val oldIndex = currentSelectedFrameIndex
         currentSelectedFrameIndex = index
         updateUiStateForSelection(oldIndex, index)
+        updateUiStateForSelection(oldIndex, index)
         return newlySelectedFrame
     }
 
@@ -70,6 +74,11 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
         val oldIndex = currentSelectedFrameIndex
         setSelectedFrame(index)
         _onUserSelectedFrame.value = Pair(oldIndex, index)
+    }
+
+    fun updateCurrentSelectedFrameOnRetryResult(errored: Boolean) {
+        // updateUiState(createUiStateFromModelState(repository.getImmutableCurrentStoryFrames()))
+        updateUiStateForError(currentSelectedFrameIndex, errored)
     }
 
     fun getSelectedFrameIndex(): Int {
@@ -178,6 +187,16 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
             }
             _onSelectedFrameIndex.value = Pair(oldSelectedIndex, newSelectedIndex)
         }
+    }
+
+    private fun updateUiStateForError(selectedIndex: Int, errored: Boolean) {
+        _uiState.value?.let { immutableStory ->
+            (immutableStory.items[selectedIndex] as? StoryFrameListItemUiStateFrame)?.let {
+                it.errored = errored
+                _uiStateErroredItem.value = it
+            }
+        }
+        _uiStateForItemAtIndexChanged.value = selectedIndex
     }
 
     private fun updateUiStateForItemSwap(oldIndex: Int, newIndex: Int) {

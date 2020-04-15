@@ -742,7 +742,10 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 // we need this force call given some timing issue when resetting the layout
                 // transition animation a few lines below
                 retry_button.invalidate()
-                refreshStoryFrameSelection()
+                // refreshStoryFrameSelection()
+                storyViewModel.updateCurrentSelectedFrameOnRetryResult(
+                    result.frameSaveResult[storyViewModel.getSelectedFrameIndex()].resultReason != SaveSuccess
+                )
             }
         })
 
