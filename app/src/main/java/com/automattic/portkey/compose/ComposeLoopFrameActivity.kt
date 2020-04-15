@@ -182,12 +182,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         val bottomAreaHeight = resources.getDimensionPixelSize(R.dimen.bottom_strip_height)
         val topAreaHeight = resources.getDimensionPixelSize(R.dimen.next_button_total_height)
 
-        val workingAreaRect = Rect(
+        return Rect(
             xCoord,
             yCoord + topAreaHeight,
             xCoord + width,
             yCoord + height - bottomAreaHeight)
-        return workingAreaRect
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
