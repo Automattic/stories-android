@@ -734,26 +734,28 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     private fun saveStoryPostHook(result: StorySaveResult) {
-         doUnbindService()
+        doUnbindService()
 
-        retry_button.showSavedAnimation(object : Runnable {
-            override fun run() {
-                retry_button.visibility = View.GONE
-                // we need this force call given some timing issue when resetting the layout
-                // transition animation a few lines below
-                retry_button.invalidate()
-                // refreshStoryFrameSelection()
-                storyViewModel.updateCurrentSelectedFrameOnRetryResult(
-                    result.frameSaveResult[storyViewModel.getSelectedFrameIndex()].resultReason != SaveSuccess
-                )
-            }
-        })
+        // do this if we are retrying to save the current frame
+        if (storyFrameIndexToRetry != StoryRepository.DEFAULT_NONE_SELECTED) {
+            retry_button.showSavedAnimation(object : Runnable {
+                override fun run() {
+                    retry_button.visibility = View.GONE
+                    // we need this force call given some timing issue when resetting the layout
+                    // transition animation a few lines below
+                    retry_button.invalidate()
+                    storyViewModel.updateCurrentSelectedFrameOnRetryResult(
+                        result.frameSaveResult[0].resultReason != SaveSuccess
+                    )
+                    refreshStoryFrameSelection()
+                }
+            })
+        }
 
         // re-enable layout change animations
         photoEditorView.layoutTransition = transition
 
         hideLoading()
-        showToast("READY")
     }
 
     private fun refreshStoryFrameSelection() {
