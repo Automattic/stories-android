@@ -100,7 +100,7 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onStorySaveStart(event: StorySaveProcessStart) {
         EventBus.getDefault().removeStickyEvent(event)
         // TODO replace this with calls to snackbarSequencer.enqueue() when integrating code in WPAndroid
