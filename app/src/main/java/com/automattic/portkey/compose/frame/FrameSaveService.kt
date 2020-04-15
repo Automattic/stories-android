@@ -9,6 +9,7 @@ import android.net.Uri
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
+import android.os.Parcelable
 import android.util.Log
 import android.webkit.MimeTypeMap
 import com.automattic.portkey.R
@@ -17,15 +18,19 @@ import com.automattic.photoeditor.PhotoEditor
 import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveError
 import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveSuccess
 import com.automattic.portkey.compose.story.StoryFrameItem
+import com.automattic.portkey.compose.story.StoryIndex
+import com.automattic.portkey.compose.story.StoryRepository
+import kotlinx.android.parcel.Parcelize
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 import org.greenrobot.eventbus.EventBus
+import java.io.Serializable
 
 class FrameSaveService : Service(), FrameSaveProgressListener {
     private val binder = FrameSaveServiceBinder()
-    private var storyIndex: Int = 0
+    private var storyIndex: StoryIndex = 0
     private lateinit var frameSaveNotifier: FrameSaveNotifier
     private lateinit var frameSaveManager: FrameSaveManager
     private val storySaveResult = StorySaveResult()
@@ -62,13 +67,16 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
         return START_NOT_STICKY
     }
 
-    fun saveStoryFrames(storyIndex: Int, photoEditor: PhotoEditor, frames: List<StoryFrameItem>) {
+    fun saveStoryFrames(storyIndex: StoryIndex, photoEditor: PhotoEditor, frames: List<StoryFrameItem>) {
         this.storyIndex = storyIndex
         this.frameSaveManager = FrameSaveManager(photoEditor)
         CoroutineScope(Dispatchers.Default).launch {
+            EventBus.getDefault().postSticky(StorySaveProcessStart(storyIndex))
+
             attachProgressListener(frameSaveManager)
             saveStoryFramesAndDispatchNewFileBroadcast(frameSaveManager, frames)
             detachProgressListener(frameSaveManager)
+
             stopSelf()
         }
     }
@@ -91,6 +99,7 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
 
     private fun prepareSaveResult(expectedSuccessCases: Int, actualSuccessCases: Int) {
         storySaveResult.storyIndex = this.storyIndex
+        StoryRepository.finishCurrentStory(getString(R.string.story_saving_untitled))
         // if we got the same amount of output files it means all went good
         if (actualSuccessCases == expectedSuccessCases) {
             storySaveResult.success = true
@@ -99,17 +108,12 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
             handleErrors(storySaveResult)
         }
 
-        // errors have beem collected, post the SaveResult for the whole Story
-        EventBus.getDefault().post(storySaveResult)
+        // errors have been collected, post the SaveResult for the whole Story
+        EventBus.getDefault().postSticky(storySaveResult)
     }
 
     private fun handleErrors(storyResult: StorySaveResult) {
-        val failSaveResults = storyResult.frameSaveResult.filterNot { it.resultReason == SaveSuccess }
-        // val count = fails.count()
-        frameSaveNotifier.updateNotificationErrorForStoryFramesSave(storyTitle, failSaveResults)
-//        fails.forEach {
-//            // TODO HERE do something
-//        }
+        frameSaveNotifier.updateNotificationErrorForStoryFramesSave(storyTitle, storyResult)
     }
 
     private fun sendNewMediaReadyBroadcast(mediaFileList: List<File>) {
@@ -194,20 +198,28 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
         fun getService(): FrameSaveService = this@FrameSaveService
     }
 
+    @Parcelize
     data class StorySaveResult(
         var success: Boolean = false,
-        var storyIndex: Int = 0,
+        var storyIndex: StoryIndex = 0,
         val frameSaveResult: MutableList<FrameSaveResult> = mutableListOf()
-    )
-    data class FrameSaveResult(val frameIndex: FrameIndex, val resultReason: SaveResultReason)
+    ) : Parcelable
+    @Parcelize
+    data class FrameSaveResult(val frameIndex: FrameIndex, val resultReason: SaveResultReason) : Parcelable
 
-    sealed class SaveResultReason {
+    sealed class SaveResultReason : Parcelable {
+        @Parcelize
         object SaveSuccess : SaveResultReason()
 
+        @Parcelize
         data class SaveError(
             var reason: String? = null
         ) : SaveResultReason()
     }
+
+    data class StorySaveProcessStart(
+        var storyIndex: StoryIndex
+    ) : Serializable
 
     companion object {
         private const val REASON_CANCELLED = "cancelled"

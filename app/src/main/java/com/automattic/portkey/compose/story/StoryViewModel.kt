@@ -9,7 +9,7 @@ import com.automattic.portkey.compose.story.StoryViewModel.StoryFrameListItemUiS
 import com.automattic.portkey.compose.story.StoryViewModel.StoryFrameListItemUiState.StoryFrameListItemUiStatePlusIcon
 import com.automattic.portkey.util.SingleLiveEvent
 
-class StoryViewModel(private val repository: StoryRepository, val storyIndex: Int) : ViewModel() {
+class StoryViewModel(private val repository: StoryRepository, val storyIndex: StoryIndex) : ViewModel() {
     private var currentSelectedFrameIndex: Int = DEFAULT_SELECTION
 
     private val _uiState: MutableLiveData<StoryFrameListUiState> = MutableLiveData()
@@ -31,11 +31,12 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: In
     private val _onUserSelectedFrame = SingleLiveEvent<Pair<Int, Int>>()
     val onUserSelectedFrame = _onUserSelectedFrame
 
-    fun loadStory(storyIndex: Int) {
-        repository.loadStory(storyIndex)
-        updateUiState(createUiStateFromModelState(repository.getImmutableCurrentStoryFrames()))
-        // default selected frame when loading a new Story
-        _onSelectedFrameIndex.value = Pair(DEFAULT_SELECTION, DEFAULT_SELECTION)
+    fun loadStory(storyIndex: StoryIndex) {
+        repository.loadStory(storyIndex)?.let {
+            updateUiState(createUiStateFromModelState(repository.getImmutableCurrentStoryFrames()))
+            // default selected frame when loading a new Story
+            _onSelectedFrameIndex.value = Pair(DEFAULT_SELECTION, DEFAULT_SELECTION)
+        }
     }
 
     fun addStoryFrameItemToCurrentStory(item: StoryFrameItem) {
@@ -43,19 +44,15 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: In
         updateUiState(createUiStateFromModelState(repository.getImmutableCurrentStoryFrames()))
     }
 
-    // when the user finishes a story, just add it to our repo for now and clear currentStory
-    fun finishCurrentStory() {
-        repository.finishCurrentStory()
-        updateUiState(createUiStateFromModelState(repository.getImmutableCurrentStoryFrames()))
-        currentSelectedFrameIndex = DEFAULT_SELECTION // default selected frame when loading a new Story
-        _onSelectedFrameIndex.value = Pair(DEFAULT_SELECTION, currentSelectedFrameIndex)
-    }
-
     fun discardCurrentStory() {
         repository.discardCurrentStory()
         currentSelectedFrameIndex = DEFAULT_SELECTION // default selected frame when loading a new Story
         _onSelectedFrameIndex.value = Pair(DEFAULT_SELECTION, currentSelectedFrameIndex)
         updateUiState(createUiStateFromModelState(repository.getImmutableCurrentStoryFrames()))
+    }
+
+    fun setCurrentStoryTitle(title: String) {
+        repository.setCurrentStoryTitle(title)
     }
 
     fun setSelectedFrame(index: Int): StoryFrameItem {
@@ -90,6 +87,10 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: In
 
     fun getImmutableCurrentStoryFrames(): List<StoryFrameItem> {
         return repository.getImmutableCurrentStoryFrames()
+    }
+
+    fun getCurrentStoryIndex(): Int {
+        return repository.currentStoryIndex
     }
 
     fun anyOfCurrentStoryFramesHasViews(): Boolean {

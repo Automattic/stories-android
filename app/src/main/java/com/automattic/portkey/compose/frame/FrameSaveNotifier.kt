@@ -9,7 +9,9 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.automattic.portkey.R
 import com.automattic.portkey.compose.ComposeLoopFrameActivity
-import com.automattic.portkey.compose.frame.FrameSaveService.FrameSaveResult
+import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveSuccess
+import com.automattic.portkey.compose.frame.FrameSaveService.StorySaveResult
+import com.automattic.portkey.util.KEY_STORY_SAVE_RESULT
 import java.util.Random
 
 class FrameSaveNotifier(private val context: Context, private val service: FrameSaveService) {
@@ -245,9 +247,10 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
     }
 
     fun updateNotificationErrorForStoryFramesSave(
-        // mediaList: List<MediaModel>,// site: SiteModel,
+        // mediaList: List<MediaModel>,
+        // site: SiteModel,
         storyTitle: String?,
-        frameSaveErrorList: List<FrameSaveResult>
+        storySaveResult: StorySaveResult
     ) {
         // AppLog.d(AppLog.T.MEDIA, "updateNotificationErrorForStoryFramesSave: $errorMessage")
 
@@ -260,6 +263,7 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         val notificationId = getNotificationIdForError()
         // Tap notification intent (open the media browser)
         val notificationIntent = Intent(context, ComposeLoopFrameActivity::class.java)
+        notificationIntent.putExtra(KEY_STORY_SAVE_RESULT, storySaveResult)
         notificationIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
         notificationIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         // TODO add SITE param later when integrating with WPAndroid
@@ -281,9 +285,11 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
             String.format(context.getString(R.string.story_saving_failed_title),
                 storyTitle ?: context.getString(R.string.story_saving_untitled))
 
-        val newErrorMessage = buildErrorMessageForMedia(frameSaveErrorList.size)
-        // TODO add snackbarMessage later when integrating with WPAndroid
-//        val snackbarMessage = buildSnackbarErrorMessage(newErrorMessage, errorMessage)
+        val newErrorMessage = buildErrorMessageForMedia(context,
+            storySaveResult.frameSaveResult
+                .filterNot { it.resultReason == SaveSuccess }
+                .size
+        )
 
         notificationBuilder.setContentTitle(notificationTitle)
         notificationBuilder.setContentText(newErrorMessage)
@@ -304,10 +310,8 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         notificationBuilder.addAction(
             0, context.getString(R.string.story_saving_failed_quick_action_manage),
             pendingIntent
-        ).color = context.getResources().getColor(R.color.colorAccent)
+        ).color = context.resources.getColor(R.color.colorAccent)
 
-        // TODO post eventBus event when adding Snackbars, when we integrate with WPAndroid
-//        EventBus.getDefault().postSticky(UploadService.UploadErrorEvent(mediaList, snackbarMessage))
         doNotify(notificationId, notificationBuilder.build()) // , notificationType)
     }
 
@@ -315,21 +319,22 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         return BASE_MEDIA_ERROR_NOTIFICATION_ID.toLong()
     }
 
-    private fun buildErrorMessageForMedia(mediaItemsNotUploaded: Int): String {
-        var newErrorMessage = ""
-        if (mediaItemsNotUploaded == 1) {
-            newErrorMessage += context.getString(R.string.story_saving_failed_message_singular)
+    companion object {
+        private const val BASE_MEDIA_ERROR_NOTIFICATION_ID = 72300
+
+        fun buildErrorMessageForMedia(context: Context, mediaItemsNotUploaded: Int) = if (mediaItemsNotUploaded == 1) {
+        context.getString(R.string.story_saving_failed_message_singular)
         } else {
-            newErrorMessage += String.format(
+            String.format(
                 context.getString(R.string.story_saving_failed_message_plural),
                 mediaItemsNotUploaded
             )
         }
 
-        return newErrorMessage
-    }
-
-    companion object {
-        private const val BASE_MEDIA_ERROR_NOTIFICATION_ID = 72300
+        fun buildSnackbarErrorMessage(
+            context: Context,
+            mediaItemsNotUploaded: Int,
+            errorMessage: String
+        ) = errorMessage + "\n" + buildErrorMessageForMedia(context, mediaItemsNotUploaded)
     }
 }

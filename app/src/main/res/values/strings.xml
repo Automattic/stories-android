@@ -87,6 +87,10 @@
     <string name="story_saving_title">Saving "%1$s"...</string>
     <string name="story_saving_subtitle_frames_remaining_singular">1 page remaining</string>
     <string name="story_saving_subtitle_frames_remaining_plural">%1$d pages remaining</string>
+    <string name="story_saving_snackbar_started">Uploading "%1$s"...</string>
+    <string name="story_saving_snackbar_finished_successfully">"%1$s" published</string>
+    <string name="story_saving_snackbar_finished_with_error">Unable to upload "%1$s"</string>
+
     <!-- Save Frame process error notification strings-->
     <string name="story_saving_failed_title">Unable to upload "%1$s"</string>
     <string name="story_saving_failed_message_singular">1 page requires action</string>

@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.automattic.portkey.compose.story.StoryFrameSelectorAdapter.StoryFrameHolder.StoryFrameHolderPlusIcon
 import com.automattic.portkey.compose.story.StoryViewModel.StoryFrameListUiState
+import com.automattic.portkey.util.getStoryIndexFromIntentOrBundle
 import kotlinx.android.synthetic.main.fragment_story_frame_selector.*
 import kotlinx.android.synthetic.main.fragment_story_frame_selector.view.*
 
@@ -28,11 +29,11 @@ open class StoryFrameSelectorFragment : Fragment() {
     private var storyFrameTappedListener: OnStoryFrameSelectorTappedListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // TODO storyIndex here is hardcoded to 0, will need to change once we have multiple stories stored.
+        val storyIndex: StoryIndex = getStoryIndexFromIntentOrBundle(savedInstanceState, activity?.intent)
         storyViewModel =
                 ViewModelProviders.of(requireActivity(), // important to use Activity's context, so we don't
                         // end up looking into the wrong ViewModelProviders bucket key
-                        StoryViewModelFactory(StoryRepository, 0))[StoryViewModel::class.java]
+                        StoryViewModelFactory(StoryRepository, storyIndex))[StoryViewModel::class.java]
 
         storyViewModel.onSelectedFrameIndex.observe(this, Observer<Pair<Int, Int>> { selectedFrameIndexChange ->
             updateContentUiStateSelection(selectedFrameIndexChange.first, selectedFrameIndexChange.second)
@@ -69,8 +70,7 @@ open class StoryFrameSelectorFragment : Fragment() {
         val view = inflater.inflate(layout.fragment_story_frame_selector, container, false)
         view.story_frames_view.adapter = StoryFrameSelectorAdapter()
         setupItemTouchListener(view)
-        // TODO storyIndex here is hardcoded to 0, will need to change once we have multiple stories stored.
-        storyViewModel.loadStory(0)
+        storyViewModel.loadStory(storyViewModel.storyIndex)
         return view
     }
 
