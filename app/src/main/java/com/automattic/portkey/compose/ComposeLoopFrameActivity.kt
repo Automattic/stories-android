@@ -9,6 +9,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.graphics.Rect
 import android.hardware.Camera
 import android.media.MediaScannerConnection
 import android.net.Uri
@@ -170,6 +171,24 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }
     }
 
+    private fun calculateWorkingArea(): Rect {
+        val location = IntArray(2)
+        photoEditorView.getLocationOnScreen(location)
+        val xCoord = location[0]
+        val yCoord = location[1]
+        val width = photoEditorView.measuredWidth
+        val height = photoEditorView.measuredHeight
+
+        val bottomAreaHeight = resources.getDimensionPixelSize(R.dimen.bottom_strip_height)
+        val topAreaHeight = resources.getDimensionPixelSize(R.dimen.next_button_total_height)
+
+        return Rect(
+            xCoord,
+            yCoord + topAreaHeight,
+            xCoord + width,
+            yCoord + height - bottomAreaHeight)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_composer)
@@ -188,6 +207,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         photoEditor = PhotoEditor.Builder(this, photoEditorView)
             .setPinchTextScalable(true) // set flag to make text scalable when pinch
             .setDeleteView(delete_view)
+            .setWorkAreaRect(calculateWorkingArea())
             .build() // build photo editor sdk
 
         photoEditor.setOnPhotoEditorListener(object : OnPhotoEditorListener {
@@ -413,6 +433,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // be trying to set app to immersive mode before it's ready and the flags do not stick
         photoEditorView.postDelayed({
                 hideStatusBar(window)
+                photoEditor.updateWorkAreaRect(calculateWorkingArea())
         }, IMMERSIVE_FLAG_TIMEOUT)
     }
 
