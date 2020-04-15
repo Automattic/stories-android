@@ -91,9 +91,7 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
             snackbar.setAction(R.string.story_saving_failed_quick_action_manage, { view ->
                 // here go to the ComposeActivity, passing the SaveResult
                 val intent = Intent(this@MainActivity, ComposeLoopFrameActivity::class.java)
-                val bundle = Bundle()
-                bundle.putSerializable(KEY_STORY_SAVE_RESULT, event)
-                intent.putExtras(bundle)
+                intent.putExtra(KEY_STORY_SAVE_RESULT, event)
                 startActivity(intent)
             })
             snackbar.show()
