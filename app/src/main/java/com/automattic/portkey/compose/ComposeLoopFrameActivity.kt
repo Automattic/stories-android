@@ -306,7 +306,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
             photoEditorView.postDelayed({
                 if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
-                    val storySaveResult = intent.getSerializableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
+                    val storySaveResult = intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
                     if (storySaveResult != null &&
                         StoryRepository.getStoryAtIndex(storySaveResult.storyIndex).frames.size > 0) {
                         // dismiss the error notification
