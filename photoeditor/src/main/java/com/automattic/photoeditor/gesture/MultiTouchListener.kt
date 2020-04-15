@@ -63,6 +63,12 @@ internal class MultiTouchListener(
     override fun onTouch(viewTouched: View, event: MotionEvent): Boolean {
         val view = mainView ?: viewTouched
 
+        mOnPhotoEditorListener?.let {
+            if (!mOnPhotoEditorListener.onShouldAllowMovement()) {
+                return true
+            }
+        }
+
         mScaleGestureDetector.onTouchEvent(view, event)
         mGestureListener.onTouchEvent(event)
 

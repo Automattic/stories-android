@@ -269,6 +269,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 }
             }
 
+            override fun onShouldAllowMovement(): Boolean {
+                // only allow movement if not in error fixing mode
+                return !storyViewModel.anyOfCurrentStoryFramesIsErrored()
+            }
+
             @Suppress("OverridingDeprecatedMember")
             override fun onRemoveViewListener(numberOfAddedViews: Int) {
                 // no op

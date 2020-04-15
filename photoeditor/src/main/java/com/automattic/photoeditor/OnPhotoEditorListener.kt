@@ -70,4 +70,6 @@ interface OnPhotoEditorListener {
     fun onStopViewChangeListener(viewType: ViewType)
 
     fun onRemoveViewReadyListener(removedView: View, ready: Boolean)
+
+    fun onShouldAllowMovement(): Boolean
 }
