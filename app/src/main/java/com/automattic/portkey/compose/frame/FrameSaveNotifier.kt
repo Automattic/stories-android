@@ -5,7 +5,6 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.os.Bundle
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.automattic.portkey.R
@@ -264,9 +263,7 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         val notificationId = getNotificationIdForError()
         // Tap notification intent (open the media browser)
         val notificationIntent = Intent(context, ComposeLoopFrameActivity::class.java)
-        val bundle = Bundle()
-        bundle.putSerializable(KEY_STORY_SAVE_RESULT, storySaveResult)
-        notificationIntent.putExtras(bundle)
+        notificationIntent.putExtra(KEY_STORY_SAVE_RESULT, storySaveResult)
         notificationIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
         notificationIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         // TODO add SITE param later when integrating with WPAndroid
