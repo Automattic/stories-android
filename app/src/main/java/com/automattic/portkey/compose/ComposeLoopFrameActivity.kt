@@ -190,12 +190,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         val bottomAreaHeight = resources.getDimensionPixelSize(R.dimen.bottom_strip_height)
         val topAreaHeight = resources.getDimensionPixelSize(R.dimen.next_button_total_height)
 
-        val workingAreaRect = Rect(
+        return Rect(
             xCoord,
             yCoord + topAreaHeight,
             xCoord + width,
             yCoord + height - bottomAreaHeight)
-        return workingAreaRect
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -346,7 +345,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 storyViewModel.loadStory(storyIndexToSelect)
 
                 if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
-                    val storySaveResult = intent.getSerializableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
+                    val storySaveResult = intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
                     if (storySaveResult != null &&
                         storyViewModel.getStoryAtIndex(storySaveResult.storyIndex).frames.size > 0) {
                         // dismiss the error notification
