@@ -51,5 +51,6 @@ class NextButton : FrameLayout {
     override fun setEnabled(enabled: Boolean) {
         setAlpha(if (enabled) 1f else 0.6f)
         super.setEnabled(enabled)
+        invalidate()
     }
 }
