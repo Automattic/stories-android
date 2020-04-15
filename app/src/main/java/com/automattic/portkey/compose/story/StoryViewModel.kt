@@ -79,7 +79,6 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
 
     fun updateCurrentSelectedFrameOnRetryResult(frameSaveResult: FrameSaveResult) {
         repository.updateCurrentStorySaveResultOnFrame(
-            getCurrentStoryIndex(),
             currentSelectedFrameIndex,
             frameSaveResult
         )

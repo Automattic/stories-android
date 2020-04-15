@@ -87,12 +87,8 @@ object StoryRepository {
         }
     }
 
-    fun updateCurrentStorySaveResultOnFrame(
-        storyIndex: StoryIndex,
-        frameIndex: FrameIndex,
-        frameSaveResult: FrameSaveResult
-    ) {
-        stories[storyIndex].frames[frameIndex].saveResultReason = frameSaveResult.resultReason
+    fun updateCurrentStorySaveResultOnFrame(frameIndex: FrameIndex, frameSaveResult: FrameSaveResult) {
+        currentStoryFrames[frameIndex].saveResultReason = frameSaveResult.resultReason
     }
 
     fun getCurrentStoryFrameAt(index: Int): StoryFrameItem {
