@@ -739,10 +739,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         if (storyFrameIndexToRetry != StoryRepository.DEFAULT_NONE_SELECTED) {
             retry_button.showSavedAnimation(object : Runnable {
                 override fun run() {
-                    retry_button.visibility = View.GONE
-                    // we need this force call given some timing issue when resetting the layout
-                    // transition animation a few lines below
-                    retry_button.invalidate()
+                    hideRetryButton()
                     storyViewModel.updateCurrentSelectedFrameOnRetryResult(
                         result.frameSaveResult[0]
                     )
@@ -752,6 +749,19 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }
 
         hideLoading()
+    }
+
+    private fun hideRetryButton() {
+        retry_button.visibility = View.GONE
+        // we need this force call given some timing issue when resetting the layout
+        retry_button.invalidate()
+    }
+
+    private fun showRetryButton() {
+        retry_button.setSaving(false)
+        retry_button.visibility = View.VISIBLE
+        // we need this force call given some timing issue when resetting the layout
+        retry_button.invalidate()
     }
 
     private fun refreshStoryFrameSelection() {
@@ -1279,12 +1289,12 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     private fun disableEditControlsForErroredFrame() {
-        retry_button.visibility = View.VISIBLE
+        showRetryButton()
         updateEditMode()
     }
 
     private fun enableEditControlsForNonErroredFrame() {
-        retry_button.visibility = View.GONE
+        hideRetryButton()
         updateEditMode()
     }
 
