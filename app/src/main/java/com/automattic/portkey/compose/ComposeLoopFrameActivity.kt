@@ -41,7 +41,6 @@ import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.MenuCompat
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.Lifecycle.State
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.automattic.photoeditor.OnPhotoEditorListener
@@ -738,7 +737,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // doUnbindService()
 
         // storyViewModel.loadStory(result.storyIndex)
-        retry_button.showSavedAnimation(object: Runnable {
+        retry_button.showSavedAnimation(object : Runnable {
             override fun run() {
                 retry_button.visibility = View.GONE
                 // refreshStoryFrameSelection()
