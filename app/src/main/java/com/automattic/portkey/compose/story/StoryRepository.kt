@@ -1,5 +1,7 @@
 package com.automattic.portkey.compose.story
 
+import com.automattic.portkey.compose.frame.FrameIndex
+import com.automattic.portkey.compose.frame.FrameSaveService.FrameSaveResult
 import com.automattic.portkey.compose.frame.FrameSaveService.StorySaveResult
 import java.util.Collections
 
@@ -77,12 +79,20 @@ object StoryRepository {
         stories[currentStoryIndex].title = title
     }
 
-    fun setCurrentStorySaveResultsOnFrames(storyIndex: Int, saveResult: StorySaveResult) {
+    fun setCurrentStorySaveResultsOnFrames(storyIndex: StoryIndex, saveResult: StorySaveResult) {
         // iterate over the StorySaveResult, check their indexes, and set the corresponding frame result
         for (index in 0..saveResult.frameSaveResult.size - 1) {
             val frameIdxToSet = saveResult.frameSaveResult[index].frameIndex
             stories[storyIndex].frames[frameIdxToSet].saveResultReason = saveResult.frameSaveResult[index].resultReason
         }
+    }
+
+    fun updateCurrentStorySaveResultOnFrame(
+        storyIndex: StoryIndex,
+        frameIndex: FrameIndex,
+        frameSaveResult: FrameSaveResult
+    ) {
+        stories[storyIndex].frames[frameIndex].saveResultReason = frameSaveResult.resultReason
     }
 
     fun getCurrentStoryFrameAt(index: Int): StoryFrameItem {

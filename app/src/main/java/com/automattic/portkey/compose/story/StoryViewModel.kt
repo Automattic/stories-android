@@ -3,6 +3,7 @@ package com.automattic.portkey.compose.story
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.automattic.portkey.compose.frame.FrameSaveService.FrameSaveResult
 import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveSuccess
 import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource.FileBackgroundSource
 import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource.UriBackgroundSource
@@ -76,9 +77,13 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
         _onUserSelectedFrame.value = Pair(oldIndex, index)
     }
 
-    fun updateCurrentSelectedFrameOnRetryResult(errored: Boolean) {
-        // updateUiState(createUiStateFromModelState(repository.getImmutableCurrentStoryFrames()))
-        updateUiStateForError(currentSelectedFrameIndex, errored)
+    fun updateCurrentSelectedFrameOnRetryResult(frameSaveResult: FrameSaveResult) {
+        repository.updateCurrentStorySaveResultOnFrame(
+            getCurrentStoryIndex(),
+            currentSelectedFrameIndex,
+            frameSaveResult
+        )
+        updateUiStateForError(currentSelectedFrameIndex, frameSaveResult.resultReason != SaveSuccess)
     }
 
     fun getSelectedFrameIndex(): Int {

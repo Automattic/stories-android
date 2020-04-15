@@ -418,9 +418,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     private fun updateContentUiStateSelection(oldSelection: Int, newSelection: Int) {
         val selectedFrame = storyViewModel.getCurrentStoryFrameAt(newSelection)
         showRetryButtonAndHideEditControlsForErroredFrame(selectedFrame.saveResultReason !is SaveSuccess)
-
-        // if all frames have now been successfully saved, show the PUBLISH buttton
-        next_button.setEnabled(!storyViewModel.anyOfCurrentStoryFramesIsErrored())
     }
 
     // this will invoked when a RETRY operation ends on the currently selected frame
@@ -735,6 +732,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
     private fun saveStoryPostHook(result: StorySaveResult) {
         doUnbindService()
+        // re-enable layout change animations
+        photoEditorView.layoutTransition = transition
 
         // do this if we are retrying to save the current frame
         if (storyFrameIndexToRetry != StoryRepository.DEFAULT_NONE_SELECTED) {
@@ -745,15 +744,12 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     // transition animation a few lines below
                     retry_button.invalidate()
                     storyViewModel.updateCurrentSelectedFrameOnRetryResult(
-                        result.frameSaveResult[0].resultReason != SaveSuccess
+                        result.frameSaveResult[0]
                     )
                     refreshStoryFrameSelection()
                 }
             })
         }
-
-        // re-enable layout change animations
-        photoEditorView.layoutTransition = transition
 
         hideLoading()
     }
@@ -1252,6 +1248,19 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }
     }
 
+    private fun updateEditMode() {
+        // updates the edit mode depending on there existing errored frames or not
+        if (!storyViewModel.anyOfCurrentStoryFramesIsErrored()) {
+            edit_mode_controls.visibility = View.VISIBLE
+            next_button.setEnabled(true)
+            (bottom_strip_view as StoryFrameSelectorFragment).showAddFrameControl()
+        } else {
+            edit_mode_controls.visibility = View.INVISIBLE
+            next_button.setEnabled(false)
+            (bottom_strip_view as StoryFrameSelectorFragment).hideAddFrameControl()
+        }
+    }
+
     private fun editModeRestoreAllUIControls() {
         // show all edit mode controls
         close_button.visibility = View.VISIBLE
@@ -1271,17 +1280,12 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
     private fun disableEditControlsForErroredFrame() {
         retry_button.visibility = View.VISIBLE
-        // momentarily hide proper edit mode controls
-        edit_mode_controls.visibility = View.INVISIBLE
-        next_button.setEnabled(false)
-        (bottom_strip_view as StoryFrameSelectorFragment).hideAddFrameControl()
+        updateEditMode()
     }
 
     private fun enableEditControlsForNonErroredFrame() {
         retry_button.visibility = View.GONE
-        edit_mode_controls.visibility = View.VISIBLE
-        next_button.setEnabled(true)
-        (bottom_strip_view as StoryFrameSelectorFragment).showAddFrameControl()
+        updateEditMode()
     }
 
     private fun updateFlashModeSelectionIcon() {
@@ -1472,10 +1476,10 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             }
         }
 
-        showRetryButtonAndHideEditControlsForErroredFrame(newSelectedFrame.saveResultReason !is SaveSuccess)
-
         // re-enable layout change animations
         photoEditor.composedCanvas.layoutTransition = transition
+
+        showRetryButtonAndHideEditControlsForErroredFrame(newSelectedFrame.saveResultReason !is SaveSuccess)
     }
 
     override fun onStoryFrameAddTapped() {
