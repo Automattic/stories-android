@@ -734,13 +734,15 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     private fun saveStoryPostHook(result: StorySaveResult) {
-        // doUnbindService()
+         doUnbindService()
 
-        // storyViewModel.loadStory(result.storyIndex)
         retry_button.showSavedAnimation(object : Runnable {
             override fun run() {
                 retry_button.visibility = View.GONE
-                // refreshStoryFrameSelection()
+                // we need this force call given some timing issue when resetting the layout
+                // transition animation a few lines below
+                retry_button.invalidate()
+                refreshStoryFrameSelection()
             }
         })
 
