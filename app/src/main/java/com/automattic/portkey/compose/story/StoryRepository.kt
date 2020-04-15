@@ -18,11 +18,11 @@ object StoryRepository {
                 createNewStory()
                 return stories[currentStoryIndex]
             }
-            currentStoryIndex == storyIndex -> {
+            (currentStoryIndex == storyIndex && isStoryIndexValid(storyIndex)) -> {
                 // if they ask to load the same Story that is already loaded, return the current Story
                 return stories[storyIndex]
             }
-            stories.size > storyIndex -> {
+            (stories.size > storyIndex && isStoryIndexValid(storyIndex)) -> {
                 // otherwise update the currentStoryIndex and currentStoryFrames values
                 currentStoryIndex = storyIndex
                 currentStoryFrames.clear()
@@ -32,6 +32,10 @@ object StoryRepository {
                 return null
             }
         }
+    }
+
+    private fun isStoryIndexValid(storyIndex: Int): Boolean {
+        return storyIndex > DEFAULT_NONE_SELECTED
     }
 
     fun getStoryAtIndex(index: Int): Story {
@@ -54,7 +58,8 @@ object StoryRepository {
     fun finishCurrentStory(title: String? = null) {
         val frameList = ArrayList<StoryFrameItem>()
         frameList.addAll(currentStoryFrames)
-        stories[currentStoryIndex] = Story(frameList, title)
+        // override with passed title if not null, otherwise keep it from already existing current Story
+        stories[currentStoryIndex] = Story(frameList, title ?: stories[currentStoryIndex].title)
         currentStoryFrames.clear()
         currentStoryIndex = DEFAULT_NONE_SELECTED
     }
@@ -73,7 +78,7 @@ object StoryRepository {
     }
 
     fun getImmutableCurrentStoryFrames(): List<StoryFrameItem> {
-        return Collections.unmodifiableList<StoryFrameItem>(currentStoryFrames)
+        return currentStoryFrames.toList()
     }
 
     fun getCurrentStorySize(): Int {

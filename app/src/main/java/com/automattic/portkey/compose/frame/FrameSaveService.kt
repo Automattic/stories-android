@@ -28,13 +28,10 @@ import java.io.File
 import org.greenrobot.eventbus.EventBus
 import java.io.Serializable
 
-class FrameSaveService : Service(), FrameSaveProgressListener {
+class FrameSaveService : Service() {
     private val binder = FrameSaveServiceBinder()
-    private var storyIndex: StoryIndex = 0
     private lateinit var frameSaveNotifier: FrameSaveNotifier
-    private lateinit var frameSaveManager: FrameSaveManager
-    private val storySaveResult = StorySaveResult()
-    private var storyTitle: String? = null
+    private val storySaveProcessors = ArrayList<StorySaveProcessor>()
 
     override fun onCreate() {
         super.onCreate()
@@ -60,33 +57,65 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
         if (intent == null) { // || !intent.hasExtra(KEY_MEDIA_LIST) && !intent.hasExtra(KEY_LOCAL_POST_ID)) {
             // AppLog.e(T.MAIN, "UploadService > Killed and restarted with an empty intent")
             stopSelf()
-        } else if (intent.hasExtra(KEY_STORY_TITLE)) {
-            storyTitle = intent.getStringExtra(KEY_STORY_TITLE)
         }
 
         return START_NOT_STICKY
     }
 
-    fun saveStoryFrames(storyIndex: StoryIndex, photoEditor: PhotoEditor, frames: List<StoryFrameItem>) {
-        this.storyIndex = storyIndex
-        this.frameSaveManager = FrameSaveManager(photoEditor)
+    fun saveStoryFrames(storyIndex: Int, photoEditor: PhotoEditor) {
         CoroutineScope(Dispatchers.Default).launch {
             EventBus.getDefault().postSticky(StorySaveProcessStart(storyIndex))
 
-            attachProgressListener(frameSaveManager)
-            saveStoryFramesAndDispatchNewFileBroadcast(frameSaveManager, frames)
-            detachProgressListener(frameSaveManager)
+            // freeze the Story in the Repository
+            val storyFrames = StoryRepository.getImmutableCurrentStoryFrames()
+            StoryRepository.finishCurrentStory()
 
-            stopSelf()
+            // now create a processor and run it.
+            // also hold a reference to it in the storySaveProcessors list in case the Service is destroyed, so
+            // we can cancel each coroutine.
+            val processor = createProcessor(storyIndex, photoEditor)
+            storySaveProcessors.add(processor)
+            runProcessor(
+                processor,
+                storyIndex,
+                storyFrames
+            )
+            // remove the processor from the list once it's done processing this Story's frames
+            storySaveProcessors.remove(processor)
+
+            // also if more than one processor is running, let's not stop the Service just now.
+            if (storySaveProcessors.isEmpty()) {
+                stopSelf()
+            }
         }
     }
 
+    private suspend fun runProcessor(
+        processor: StorySaveProcessor,
+        storyIndex: Int,
+        storyFrames: List<StoryFrameItem>
+    ) {
+        processor.attachProgressListener()
+        saveStoryFramesAndDispatchNewFileBroadcast(processor, storyIndex, storyFrames)
+        processor.detachProgressListener()
+    }
+
+    private fun createProcessor(storyIndex: Int, photoEditor: PhotoEditor): StorySaveProcessor {
+        return StorySaveProcessor(
+            this,
+            storyIndex,
+            frameSaveNotifier,
+            FrameSaveManager(photoEditor)
+        )
+    }
+
     private suspend fun saveStoryFramesAndDispatchNewFileBroadcast(
-        frameSaveManager: FrameSaveManager,
+        storySaveProcessor: StorySaveProcessor,
+        storyIndex: Int,
         frames: List<StoryFrameItem>
     ) {
         val frameFileList =
-            frameSaveManager.saveStory(
+            storySaveProcessor.saveStory(
                 this,
                 frames
             )
@@ -94,25 +123,27 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
         // once all frames have been saved, issue a broadcast so the system knows these frames are ready
         sendNewMediaReadyBroadcast(frameFileList)
 
-        prepareSaveResult(frames.size, frameFileList.size)
+        // if we got the same amount of output files it means all went good, otherwise there were errors
+        prepareStorySaveResult(storySaveProcessor, storyIndex, frames.size == frameFileList.size)
     }
 
-    private fun prepareSaveResult(expectedSuccessCases: Int, actualSuccessCases: Int) {
-        storySaveResult.storyIndex = this.storyIndex
-        StoryRepository.finishCurrentStory(getString(R.string.story_saving_untitled))
-        // if we got the same amount of output files it means all went good
-        if (actualSuccessCases == expectedSuccessCases) {
-            storySaveResult.success = true
-        } else {
-            // otherwise, let's handle these errors
-            handleErrors(storySaveResult)
+    private fun prepareStorySaveResult(
+        storySaveProcessor: StorySaveProcessor,
+        storyIndex: Int,
+        noErrors: Boolean
+    ) {
+        storySaveProcessor.storySaveResult.storyIndex = storyIndex
+        if (!noErrors) {
+            // let's handle these errors
+            handleErrors(storySaveProcessor.storySaveResult)
         }
 
         // errors have been collected, post the SaveResult for the whole Story
-        EventBus.getDefault().postSticky(storySaveResult)
+        EventBus.getDefault().postSticky(storySaveProcessor.storySaveResult)
     }
 
     private fun handleErrors(storyResult: StorySaveResult) {
+        val storyTitle = StoryRepository.getStoryAtIndex(storyResult.storyIndex).title
         frameSaveNotifier.updateNotificationErrorForStoryFramesSave(storyTitle, storyResult)
     }
 
@@ -147,51 +178,10 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
 
     override fun onDestroy() {
         Log.d("FrameSaveService", "onDestroy()")
-        frameSaveManager.onCancel()
+        for (processor in storySaveProcessors) {
+            processor.onCancel()
+        }
         super.onDestroy()
-    }
-
-    private fun attachProgressListener(frameSaveManager: FrameSaveManager) {
-        frameSaveManager.saveProgressListener = this
-    }
-
-    private fun detachProgressListener(frameSaveManager: FrameSaveManager) {
-        frameSaveManager.saveProgressListener = null
-    }
-
-    // FrameSaveProgressListener overrides
-    override fun onFrameSaveStart(frameIndex: FrameIndex) {
-        Log.d("PORTKEY", "START save frame idx: " + frameIndex)
-        frameSaveNotifier.addStoryPageInfoToForegroundNotification(
-            frameIndex.toString(),
-            getString(R.string.story_saving_untitled)
-        )
-    }
-
-    override fun onFrameSaveProgress(frameIndex: FrameIndex, progress: Double) {
-        Log.d("PORTKEY", "PROGRESS save frame idx: " + frameIndex + " %: " + progress)
-        frameSaveNotifier.updateNotificationProgressForMedia(frameIndex.toString(), progress.toFloat())
-    }
-
-    override fun onFrameSaveCompleted(frameIndex: FrameIndex) {
-        Log.d("PORTKEY", "END save frame idx: " + frameIndex)
-        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(frameIndex.toString(), true)
-        // add success data to StorySaveResult
-        storySaveResult.frameSaveResult.add(FrameSaveResult(frameIndex, SaveSuccess))
-    }
-
-    override fun onFrameSaveCanceled(frameIndex: FrameIndex) {
-        // remove one from the count
-        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(frameIndex.toString())
-        // add error data to StorySaveResult
-        storySaveResult.frameSaveResult.add(FrameSaveResult(frameIndex, SaveError(REASON_CANCELLED)))
-    }
-
-    override fun onFrameSaveFailed(frameIndex: FrameIndex, reason: String?) {
-        // remove one from the count
-        frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(frameIndex.toString())
-        // add error data to StorySaveResult
-        storySaveResult.frameSaveResult.add(FrameSaveResult(frameIndex, SaveError(reason)))
     }
 
     inner class FrameSaveServiceBinder : Binder() {
@@ -200,10 +190,13 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
 
     @Parcelize
     data class StorySaveResult(
-        var success: Boolean = false,
         var storyIndex: StoryIndex = 0,
         val frameSaveResult: MutableList<FrameSaveResult> = mutableListOf()
-    ) : Parcelable
+    ) : Parcelable {
+        fun isSuccess(): Boolean {
+            return frameSaveResult.all { it.resultReason == SaveSuccess }
+        }
+    }
     @Parcelize
     data class FrameSaveResult(val frameIndex: FrameIndex, val resultReason: SaveResultReason) : Parcelable
 
@@ -221,13 +214,96 @@ class FrameSaveService : Service(), FrameSaveProgressListener {
         var storyIndex: StoryIndex
     ) : Serializable
 
+    class StorySaveProcessor(
+        private val context: Context,
+        private val storyIndex: Int,
+        private val frameSaveNotifier: FrameSaveNotifier,
+        private val frameSaveManager: FrameSaveManager
+    ) : FrameSaveProgressListener {
+        val storySaveResult = StorySaveResult()
+        val title =
+            StoryRepository.getStoryAtIndex(storyIndex).title ?: context.getString(R.string.story_saving_untitled)
+
+        // FrameSaveProgressListener overrides
+        override fun onFrameSaveStart(frameIndex: FrameIndex) {
+            Log.d("PORTKEY", "START save frame idx: " + frameIndex)
+            frameSaveNotifier.addStoryPageInfoToForegroundNotification(
+                storyIndex,
+                mediaIdFromStoryAndFrameIndex(storyIndex, frameIndex),
+                title
+            )
+        }
+
+        override fun onFrameSaveProgress(frameIndex: FrameIndex, progress: Double) {
+            Log.d("PORTKEY", "PROGRESS save frame idx: " + frameIndex + " %: " + progress)
+            frameSaveNotifier.updateNotificationProgressForMedia(
+                mediaIdFromStoryAndFrameIndex(storyIndex, frameIndex),
+                progress.toFloat())
+        }
+
+        override fun onFrameSaveCompleted(frameIndex: FrameIndex) {
+            Log.d("PORTKEY", "END save frame idx: " + frameIndex)
+            frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(
+                storyIndex,
+                title,
+                mediaIdFromStoryAndFrameIndex(storyIndex, frameIndex),
+                true
+            )
+            // add success data to StorySaveResult
+            storySaveResult.frameSaveResult.add(FrameSaveResult(frameIndex, SaveSuccess))
+        }
+
+        override fun onFrameSaveCanceled(frameIndex: FrameIndex) {
+            // remove one from the count
+            frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(
+                storyIndex,
+                title,
+                mediaIdFromStoryAndFrameIndex(storyIndex, frameIndex)
+            )
+            // add error data to StorySaveResult
+            storySaveResult.frameSaveResult.add(FrameSaveResult(frameIndex, SaveError(REASON_CANCELLED)))
+        }
+
+        override fun onFrameSaveFailed(frameIndex: FrameIndex, reason: String?) {
+            // remove one from the count
+            frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(
+                storyIndex,
+                title,
+                mediaIdFromStoryAndFrameIndex(storyIndex, frameIndex)
+            )
+            // add error data to StorySaveResult
+            storySaveResult.frameSaveResult.add(FrameSaveResult(frameIndex, SaveError(reason)))
+        }
+
+        fun attachProgressListener() {
+            frameSaveManager.saveProgressListener = this
+        }
+
+        fun detachProgressListener() {
+            frameSaveManager.saveProgressListener = null
+        }
+
+        suspend fun saveStory(
+            context: Context,
+            frames: List<StoryFrameItem>
+        ): List<File> {
+            return frameSaveManager.saveStory(context, frames)
+        }
+
+        fun onCancel() {
+            frameSaveManager.onCancel()
+        }
+
+        private fun mediaIdFromStoryAndFrameIndex(storyIndex: Int, frameIndex: Int): String {
+            return storyIndex.toString() + "-" + frameIndex.toString()
+        }
+    }
+
     companion object {
         private const val REASON_CANCELLED = "cancelled"
-        private const val KEY_STORY_TITLE = "key_story_title"
-        fun startServiceAndGetSaveStoryIntent(context: Context, storyTitle: String? = null): Intent {
+        fun startServiceAndGetSaveStoryIntent(context: Context): Intent {
             Log.d("FrameSaveService", "startServiceAndGetSaveStoryIntent()")
             val intent = Intent(context, FrameSaveService::class.java)
-            intent.putExtra(KEY_STORY_TITLE, storyTitle)
             context.startService(intent)
             return intent
         }

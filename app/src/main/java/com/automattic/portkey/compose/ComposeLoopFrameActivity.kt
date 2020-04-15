@@ -134,7 +134,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
     private lateinit var frameSaveService: FrameSaveService
     private var saveServiceBound: Boolean = false
-    private var storyTitle: String? = null
+    private var preHookRun: Boolean = false
     private var storyIndexToSelect = -1
 
     private val connection = object : ServiceConnection {
@@ -145,12 +145,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
             // keep these as they're changing when we call `storyViewModel.finishCurrentStory()`
             val index = storyViewModel.getCurrentStoryIndex()
-            val storyFrames = storyViewModel.getImmutableCurrentStoryFrames()
 
             // TODO obtain the real Story title as assigned by the user when the BOTTOM SHEET is ready, and pass it up
             storyViewModel.setCurrentStoryTitle(getString(R.string.story_saving_untitled))
 
-            frameSaveService.saveStoryFrames(index, photoEditor, storyFrames)
+            frameSaveService.saveStoryFrames(index, photoEditor)
             saveServiceBound = true
 
             // leave the Activity - now it's all the app's responsibility to deal with saving, uploading and
@@ -305,43 +304,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             // also, update the UI
             updateFlashModeSelectionIcon()
 
-            photoEditorView.postDelayed({
-                if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
-                    val storySaveResult = intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
-                    if (storySaveResult != null &&
-                        StoryRepository.getStoryAtIndex(storySaveResult.storyIndex).frames.size > 0) {
-                        // dismiss the error notification
-                        // TODO use NativeNotificationUtils.dismissNotification() when migrating to WPAndroid
-                        intent.action?.let {
-                            val notificationManager = NotificationManagerCompat.from(this)
-                            notificationManager.cancel(it.toInt())
-                        }
-
-                        // if the StoryRepository contains a story, load it right away to continue editing
-                        // TODO check pages in this Story and mark them errored according to the StorySaveResult
-                        // see https://github.com/Automattic/portkey-android/issues/285 for details
-                        Log.d("PORTKEY", "Being passed a SaveResult, render the Story")
-                        storyViewModel.loadStory(storySaveResult.storyIndex)
-                        onStoryFrameSelected(0, 0)
-                    } else {
-                        // TODO couldn't find the story frames? Show some Error Dialog - we can't recover here
-                    }
-                } else {
-                    launchCameraPreview()
-                    storyViewModel.uiState.observe(this, Observer {
-                        // if no frames in Story, launch the capture mode
-                        if (storyViewModel.getCurrentStorySize() == 0) {
-                            photoEditor.clearAllViews()
-                            launchCameraPreview()
-                            // finally, delete the captured media
-                            deleteCapturedMedia()
-                        }
-                    })
-                }
-            }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
+            onLoadFromIntent(intent)
         } else {
             currentOriginalCapturedFile =
                 savedInstanceState.getSerializable(STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE) as File?
+            preHookRun = savedInstanceState.getBoolean(STATE_KEY_PREHOOK_RUN)
 
             photoEditorView.postDelayed({
                 when {
@@ -357,6 +324,48 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 }
             }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        onLoadFromIntent(intent)
+    }
+
+    private fun onLoadFromIntent(intent: Intent) {
+        photoEditorView.postDelayed({
+            if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
+                val storySaveResult = intent.getSerializableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
+                if (storySaveResult != null &&
+                    StoryRepository.getStoryAtIndex(storySaveResult.storyIndex).frames.isNotEmpty()) {
+                    // dismiss the error notification
+                    // TODO use NativeNotificationUtils.dismissNotification() when migrating to WPAndroid
+                    intent.action?.let {
+                        val notificationManager = NotificationManagerCompat.from(this)
+                        notificationManager.cancel(it.toInt())
+                    }
+
+                    // if the StoryRepository contains a story, load it right away to continue editing
+                    // TODO check pages in this Story and mark them errored according to the StorySaveResult
+                    // see https://github.com/Automattic/portkey-android/issues/285 for details
+                    Log.d("PORTKEY", "Being passed a SaveResult, render the Story")
+                    storyViewModel.loadStory(storySaveResult.storyIndex)
+                    onStoryFrameSelected(0, 0)
+                } else {
+                    // TODO couldn't find the story frames? Show some Error Dialog - we can't recover here
+                }
+            } else {
+                launchCameraPreview()
+                storyViewModel.uiState.observe(this, Observer {
+                    // if no frames in Story, launch the capture mode
+                    if (storyViewModel.getCurrentStorySize() == 0) {
+                        photoEditor.clearAllViews()
+                        launchCameraPreview()
+                        // finally, delete the captured media
+                        deleteCapturedMedia()
+                    }
+                })
+            }
+        }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
     }
 
     override fun onDestroy() {
@@ -383,6 +392,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         backgroundSurfaceManager.saveStateToBundle(outState)
         outState.putSerializable(STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE, currentOriginalCapturedFile)
         outState.putInt(STATE_KEY_CURRENT_STORY_INDEX, storyIndexToSelect)
+        outState.putBoolean(STATE_KEY_PREHOOK_RUN, preHookRun)
         super.onSaveInstanceState(outState)
     }
 
@@ -618,16 +628,17 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // (i.e. no visible added Views)
         transition = photoEditorView.getLayoutTransition()
         photoEditorView.layoutTransition = null
+        preHookRun = true
     }
 
     private fun saveStoryPostHook(result: StorySaveResult) {
         doUnbindService()
 
-        // if error: don't finish the current story (keep it), just refresh the selection
-        if (!result.success && lifecycle.currentState.isAtLeast(State.STARTED)) {
+        if (!result.isSuccess() && lifecycle.currentState.isAtLeast(State.STARTED)) {
             // given saveStory for static images works with a ghost off screen buffer by removing /
             // adding views to it,
             // we need to refresh the selection so added views get properly re-added after frame iteration ends
+            storyViewModel.loadStory(result.storyIndex)
             refreshStoryFrameSelection()
         }
 
@@ -1350,8 +1361,10 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onStorySaveResult(event: StorySaveResult) {
-        // TODO do something to treat the errors here
-        saveStoryPostHook(event)
+        // only run saveStoryPostHook if preHook has been run for this Activity's instance lifespan.
+        if (preHookRun) {
+            saveStoryPostHook(event)
+        }
     }
 
     companion object {
@@ -1362,6 +1375,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         private const val CAMERA_STILL_PICTURE_ANIM_MS = 300L
         private const val CAMERA_STILL_PICTURE_WAIT_FOR_NEXT_CAPTURE_MS = 1000L
         private const val STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE = "key_current_original_captured_file"
+        private const val STATE_KEY_PREHOOK_RUN = "key_prehook_run"
         private const val VIBRATION_INDICATION_LENGTH_MS = 100L
         private const val SWIPE_MIN_DISTANCE = 120
         private const val SWIPE_MIN_DISTANCE_FROM_BOTTOM = 80
