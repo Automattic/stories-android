@@ -374,11 +374,11 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         doNotify(notificationId, notificationBuilder.build()) // , notificationType)
     }
 
-    fun getNotificationIdForError(storyIdx: StoryIndex): Int {
+    fun getNotificationIdForError(storyIndex: StoryIndex): Int {
         // TODO WPANDROID we keep the base number because we'll use SiteId and PostModel id's to identify the error
         // notification as well, and as such we are using a different base number to avoid collision of notification
         // ids.
-        return BASE_MEDIA_ERROR_NOTIFICATION_ID + storyIdx
+        return BASE_MEDIA_ERROR_NOTIFICATION_ID + storyIndex
     }
 
     companion object {
