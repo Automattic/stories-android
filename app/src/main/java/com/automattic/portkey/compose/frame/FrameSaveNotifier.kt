@@ -58,12 +58,12 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         }
     }
 
-    private fun updateForegroundNotification(title: String? = null) {
+    private fun updateForegroundNotification(title: String) {
         updateNotificationBuilder(title)
         updateNotificationProgress()
     }
 
-    private fun updateNotificationBuilder(title: String?) {
+    private fun updateNotificationBuilder(title: String) {
         // set the Notification's title and prepare the Notifications message text,
         // i.e. "Saving story... 3 frames remaining"
         if (notificationData.totalMediaItems > 0) {
@@ -72,20 +72,14 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         }
     }
 
-    private fun updateNotificationTitle(title: String?) {
+    private fun updateNotificationTitle(title: String) {
         // if there are frames of more than 1 concurrent Story being saved, show plural title
         if (notificationData.currentStoriesToQtyUploadingMap.size > 1) {
             notificationBuilder.setContentTitle(buildNotificationTitleForFrameSaveProcess(
                 context.getString(R.string.story_saving_title_several))
             )
         } else {
-            if (title != null) {
-                notificationBuilder.setContentTitle(buildNotificationTitleForFrameSaveProcess(title))
-            } else {
-                notificationBuilder.setContentTitle(buildNotificationTitleForFrameSaveProcess(
-                    context.getString(R.string.story_saving_untitled))
-                )
-            }
+            notificationBuilder.setContentTitle(buildNotificationTitleForFrameSaveProcess(title))
         }
     }
 
@@ -115,7 +109,7 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
 
     @Synchronized fun incrementUploadedMediaCountFromProgressNotification(
         storyIndex: StoryIndex,
-        title: String?,
+        title: String,
         id: String,
         success: Boolean = false
     ) {
@@ -217,22 +211,6 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         notificationData.totalMediaItems = totalMediaItems
     }
 
-    @Synchronized fun removeMediaInfoFromForegroundNotification(idList: List<String>) {
-        if (notificationData.totalMediaItems >= idList.size) {
-            notificationData.totalMediaItems -= idList.size
-            // update Notification now
-            updateForegroundNotification(null)
-        }
-    }
-
-    @Synchronized fun removeOneMediaItemInfoFromForegroundNotification() {
-        if (notificationData.totalMediaItems >= 1) {
-            notificationData.totalMediaItems--
-            // update Notification now
-            updateForegroundNotification(null)
-        }
-    }
-
     @Synchronized fun addStoryPageInfoToForegroundNotification(
         storyIndex: StoryIndex,
         idList: List<String>,
@@ -285,7 +263,7 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
     }
 
     // TODO WPANDROID: change signature to receive a CPT (Post) as parameter instead of a plain String
-    @Synchronized private fun startOrUpdateForegroundNotification(title: String?) {
+    @Synchronized private fun startOrUpdateForegroundNotification(title: String) {
         updateNotificationBuilder(title)
         if (notificationData.notificationId == 0) {
             notificationData.notificationId = Random().nextInt()
