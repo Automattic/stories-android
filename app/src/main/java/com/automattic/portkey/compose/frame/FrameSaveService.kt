@@ -9,6 +9,7 @@ import android.net.Uri
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
+import android.os.Parcelable
 import android.util.Log
 import android.webkit.MimeTypeMap
 import com.automattic.portkey.R
@@ -19,6 +20,7 @@ import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.Sa
 import com.automattic.portkey.compose.story.StoryFrameItem
 import com.automattic.portkey.compose.story.StoryIndex
 import com.automattic.portkey.compose.story.StoryRepository
+import kotlinx.android.parcel.Parcelize
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -62,7 +64,7 @@ class FrameSaveService : Service() {
 
     fun saveStoryFrames(storyIndex: Int, photoEditor: PhotoEditor) {
         CoroutineScope(Dispatchers.Default).launch {
-            EventBus.getDefault().post(StorySaveProcessStart(storyIndex))
+            EventBus.getDefault().postSticky(StorySaveProcessStart(storyIndex))
 
             // freeze the Story in the Repository
             val storyFrames = StoryRepository.getImmutableCurrentStoryFrames()
@@ -186,19 +188,23 @@ class FrameSaveService : Service() {
         fun getService(): FrameSaveService = this@FrameSaveService
     }
 
+    @Parcelize
     data class StorySaveResult(
         var storyIndex: StoryIndex = 0,
         val frameSaveResult: MutableList<FrameSaveResult> = mutableListOf()
-    ) : Serializable {
+    ) : Parcelable  {
         fun isSuccess(): Boolean {
             return frameSaveResult.all { it.resultReason == SaveSuccess }
         }
     }
-    data class FrameSaveResult(val frameIndex: FrameIndex, val resultReason: SaveResultReason) : Serializable
+    @Parcelize
+    data class FrameSaveResult(val frameIndex: FrameIndex, val resultReason: SaveResultReason) : Parcelable
 
-    sealed class SaveResultReason : Serializable {
+    sealed class SaveResultReason : Parcelable {
+        @Parcelize
         object SaveSuccess : SaveResultReason()
 
+        @Parcelize
         data class SaveError(
             var reason: String? = null
         ) : SaveResultReason()

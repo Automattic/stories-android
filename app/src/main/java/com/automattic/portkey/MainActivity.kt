@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
         super.onDestroy()
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onStorySaveResult(event: StorySaveResult) {
         EventBus.getDefault().removeStickyEvent(event)
         if (event.isSuccess()) {
@@ -91,17 +91,16 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
             snackbar.setAction(R.string.story_saving_failed_quick_action_manage, { view ->
                 // here go to the ComposeActivity, passing the SaveResult
                 val intent = Intent(this@MainActivity, ComposeLoopFrameActivity::class.java)
-                val bundle = Bundle()
-                bundle.putSerializable(KEY_STORY_SAVE_RESULT, event)
-                intent.putExtras(bundle)
+                intent.putExtra(KEY_STORY_SAVE_RESULT, event)
                 startActivity(intent)
             })
             snackbar.show()
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onStorySaveStart(event: StorySaveProcessStart) {
+        EventBus.getDefault().removeStickyEvent(event)
         // TODO replace this with calls to snackbarSequencer.enqueue() when integrating code in WPAndroid
         val text = String.format(
             getString(R.string.story_saving_snackbar_started),
