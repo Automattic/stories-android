@@ -192,7 +192,7 @@ class FrameSaveService : Service() {
     data class StorySaveResult(
         var storyIndex: StoryIndex = 0,
         val frameSaveResult: MutableList<FrameSaveResult> = mutableListOf()
-    ) : Parcelable  {
+    ) : Parcelable {
         fun isSuccess(): Boolean {
             return frameSaveResult.all { it.resultReason == SaveSuccess }
         }
