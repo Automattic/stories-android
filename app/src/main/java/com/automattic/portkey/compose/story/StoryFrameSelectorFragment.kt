@@ -23,7 +23,7 @@ interface OnStoryFrameSelectorTappedListener {
     fun onStoryFrameAddTapped()
 }
 
-open class StoryFrameSelectorFragment : Fragment() {
+class StoryFrameSelectorFragment : Fragment() {
     lateinit var storyViewModel: StoryViewModel
     private var storyFrameTappedListener: OnStoryFrameSelectorTappedListener? = null
 
