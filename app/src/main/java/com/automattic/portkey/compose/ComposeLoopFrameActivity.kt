@@ -744,7 +744,9 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         if (storyFrameIndexToRetry != StoryRepository.DEFAULT_NONE_SELECTED) {
             retry_button.showSavedAnimation(object : Runnable {
                 override fun run() {
-                    hideRetryButton()
+                    if (result.isSuccess()) {
+                        hideRetryButton()
+                    }
                     storyViewModel.updateCurrentSelectedFrameOnRetryResult(
                         result.frameSaveResult[0]
                     )
