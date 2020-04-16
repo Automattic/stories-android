@@ -777,6 +777,12 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // first, remember the currently added views
         val currentStoryFrameItem = storyViewModel.getCurrentStoryFrameAt(index)
 
+        // purge multitouch listeners
+        val addedViews = photoEditor.getViewsAdded()
+        for (addedView in addedViews) {
+            addedView.view.setOnTouchListener(null)
+        }
+
         // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
         currentStoryFrameItem.addedViews = AddedViewList(photoEditor.getViewsAdded())
     }
@@ -1487,7 +1493,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // now call addViewToParent the addedViews remembered by this frame
         newSelectedFrame.addedViews.let {
             for (oneView in it) {
-                photoEditor.addViewToParent(oneView.view, oneView.viewType)
+                photoEditor.addViewToParentWithTouchListener(oneView.view, oneView.viewType)
             }
         }
 
