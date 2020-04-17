@@ -123,12 +123,12 @@ fun Snackbar.config(context: Context) {
 
 enum class ScreenTouchBlockMode {
     BLOCK_TOUCH_MODE_NONE,
-    BLOCK_TOUCH_MODE_FULL_SCREEN,   // used when saving - user is not allowed to touch anything
+    BLOCK_TOUCH_MODE_FULL_SCREEN, // used when saving - user is not allowed to touch anything
     BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION, // used when in error resolution mode: user needs to take
                                     // action, so we allow them to use the StoryFrameSelector and menu, but no edits on
                                     // the Photo Editor canvas are allowed at this stage
-    BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY // used when errors have been sorted out by the user - no edits allowed, but they
-                                    // should be good to upload the Story now
+    BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY // used when errors have been sorted out by the user - no edits allowed,
+                                        // but they should be good to upload the Story now
 }
 
 class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTappedListener {
