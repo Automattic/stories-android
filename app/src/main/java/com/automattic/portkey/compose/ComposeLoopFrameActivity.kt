@@ -10,6 +10,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.graphics.Rect
+import android.graphics.drawable.ColorDrawable
 import android.hardware.Camera
 import android.media.MediaScannerConnection
 import android.net.Uri
@@ -59,6 +60,10 @@ import com.automattic.photoeditor.views.ViewType.TEXT
 import com.automattic.photoeditor.views.added.AddedViewList
 import com.automattic.portkey.BuildConfig
 import com.automattic.portkey.R
+import com.automattic.portkey.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_FULL_SCREEN
+import com.automattic.portkey.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_NONE
+import com.automattic.portkey.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION
+import com.automattic.portkey.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
 import com.automattic.portkey.compose.frame.FrameIndex
@@ -114,6 +119,16 @@ fun Snackbar.config(context: Context) {
     params.setMargins(12, 12, 12, 12)
     this.view.layoutParams = params
     ViewCompat.setElevation(this.view, 6f)
+}
+
+enum class ScreenTouchBlockMode {
+    BLOCK_TOUCH_MODE_NONE,
+    BLOCK_TOUCH_MODE_FULL_SCREEN,   // used when saving - user is not allowed to touch anything
+    BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION, // used when in error resolution mode: user needs to take
+                                    // action, so we allow them to use the StoryFrameSelector and menu, but no edits on
+                                    // the Photo Editor canvas are allowed at this stage
+    BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY // used when errors have been sorted out by the user - no edits allowed, but they
+                                    // should be good to upload the Story now
 }
 
 class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTappedListener {
@@ -271,7 +286,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
             override fun onShouldAllowMovement(): Boolean {
                 // only allow movement if not in error fixing mode
-                return !storyViewModel.anyOfCurrentStoryFramesIsErrored()
+                // return !storyViewModel.anyOfCurrentStoryFramesIsErrored()
+                return true
             }
 
             @Suppress("OverridingDeprecatedMember")
@@ -692,15 +708,23 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         next_button.setOnClickListener {
             addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
 
-            // TODO show bottom sheet
-            // then save everything if they hit PUBLISH
-            showToast("bottom sheet not implemented yet")
+            // if we were in an error-handling situation but now all pages are OK, we don't need to save them again
+            if (anyOfOriginalIntentResultsIsError() && !storyViewModel.anyOfCurrentStoryFramesIsErrored()) {
+                // everything is already saved by now
+                // TODO kick the UploadService here! when in WPAndroid
+                showToast("Awesome! Upload starting...")
+            } else {
+                // TODO show bottom sheet
+                // then save everything if they hit PUBLISH
+                showToast("bottom sheet not implemented yet")
 
-            if (storyViewModel.getCurrentStorySize() > 0) {
-                // save all composed frames
-                if (PermissionUtils.checkAndRequestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                    storyFrameIndexToRetry = StoryRepository.DEFAULT_NONE_SELECTED
-                    saveStory()
+                // fresh intent, go fully save the Story
+                if (storyViewModel.getCurrentStorySize() > 0) {
+                    // save all composed frames
+                    if (PermissionUtils.checkAndRequestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                        storyFrameIndexToRetry = StoryRepository.DEFAULT_NONE_SELECTED
+                        saveStory()
+                    }
                 }
             }
         }
@@ -715,6 +739,22 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         more_button.setOnClickListener {
             showMoreOptionsPopup(it)
         }
+    }
+
+    private fun anyOfOriginalIntentResultsIsError(): Boolean {
+        if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
+            val storySaveResult =
+                intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
+            storySaveResult?.let {
+                // where there any errors when we opened the Activity to handle those errors?
+                for (result in it.frameSaveResult) {
+                    if (result.resultReason != SaveSuccess) {
+                        return true
+                    }
+                }
+            }
+        }
+        return false
     }
 
     private fun saveStory() {
@@ -1168,14 +1208,14 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }
     }
 
-    private fun showLoading(message: String? = null) {
+    private fun showLoading() {
         editModeHideAllUIControls(true)
-        blockTouchOnPhotoEditor(message)
+        blockTouchOnPhotoEditor(BLOCK_TOUCH_MODE_FULL_SCREEN)
     }
 
     private fun hideLoading() {
         editModeRestoreAllUIControls()
-        releaseTouchOnPhotoEditor()
+        releaseTouchOnPhotoEditor(BLOCK_TOUCH_MODE_FULL_SCREEN)
     }
 
     private fun showSnackbar(message: String, actionLabel: String? = null, listener: OnClickListener? = null) {
@@ -1277,17 +1317,30 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     private fun updateEditMode() {
-        // updates the edit mode depending on there existing errored frames or not
-        if (!storyViewModel.anyOfCurrentStoryFramesIsErrored()) {
-            translucent_error_view.visibility = View.GONE
-            edit_mode_controls.visibility = View.VISIBLE
-            next_button.setEnabled(true)
-            (bottom_strip_view as StoryFrameSelectorFragment).showAddFrameControl()
-        } else {
-            translucent_error_view.visibility = View.VISIBLE
-            edit_mode_controls.visibility = View.INVISIBLE
-            next_button.setEnabled(false)
-            (bottom_strip_view as StoryFrameSelectorFragment).hideAddFrameControl()
+        val originallyErrored = anyOfOriginalIntentResultsIsError()
+        val currentlyErrored = storyViewModel.anyOfCurrentStoryFramesIsErrored()
+
+        when {
+            // if we were in an error-handling situation but now all pages are OK we're ready to go
+            // don't allow editing or adding new frames but do allow publishing the Story
+            originallyErrored && !currentlyErrored -> {
+                blockTouchOnPhotoEditor(BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY)
+                edit_mode_controls.visibility = View.INVISIBLE
+                next_button.setEnabled(true)
+                (bottom_strip_view as StoryFrameSelectorFragment).hideAddFrameControl()
+            }
+            currentlyErrored -> {
+                blockTouchOnPhotoEditor(BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION)
+                edit_mode_controls.visibility = View.INVISIBLE
+                next_button.setEnabled(false)
+                (bottom_strip_view as StoryFrameSelectorFragment).hideAddFrameControl()
+            }
+            else -> { // no errors here! this is the normal creation situation: release touch block, enable editing
+                releaseTouchOnPhotoEditor(BLOCK_TOUCH_MODE_NONE)
+                edit_mode_controls.visibility = View.VISIBLE
+                next_button.setEnabled(true)
+                (bottom_strip_view as StoryFrameSelectorFragment).showAddFrameControl()
+            }
         }
     }
 
@@ -1409,19 +1462,57 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             this, arrayOfPaths, arrayOfmimeTypes, null)
     }
 
-    private fun blockTouchOnPhotoEditor(message: String?) {
-        translucent_view.visibility = View.VISIBLE
-        operation_text.text = message
-        translucent_view.setOnTouchListener { _, _ ->
-            // no op
-            true
+    private fun blockTouchOnPhotoEditor(touchBlockMode: ScreenTouchBlockMode, message: String? = null) {
+        when (touchBlockMode) {
+            BLOCK_TOUCH_MODE_FULL_SCREEN -> {
+                translucent_view.visibility = View.VISIBLE
+                translucent_error_view.visibility = View.INVISIBLE
+                operation_text.text = message
+                translucent_view.setOnTouchListener { _, _ ->
+                    // no op
+                    true
+                }
+            }
+            BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION -> {
+                translucent_view.visibility = View.GONE
+                translucent_error_view.visibility = View.VISIBLE
+                translucent_error_view.background = ColorDrawable(
+                    ContextCompat.getColor(this, R.color.black_transp_error_scrim)
+                )
+                translucent_error_view.setOnTouchListener { _, _ ->
+                    // no op
+                    true
+                }
+            }
+            // do block touch but don't show scrim (make it transparent)
+            BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY -> {
+                translucent_view.visibility = View.GONE
+                translucent_error_view.visibility = View.VISIBLE
+                translucent_error_view.background = ColorDrawable(
+                    ContextCompat.getColor(this, android.R.color.transparent)
+                )
+                translucent_error_view.setOnTouchListener { _, _ ->
+                    // no op
+                    true
+                }
+            }
         }
     }
 
-    private fun releaseTouchOnPhotoEditor() {
-        translucent_view.visibility = View.GONE
-        operation_text.text = null
-        translucent_view.setOnTouchListener(null)
+    private fun releaseTouchOnPhotoEditor(touchBlockMode: ScreenTouchBlockMode) {
+        when (touchBlockMode) {
+            BLOCK_TOUCH_MODE_FULL_SCREEN -> {
+                translucent_view.visibility = View.GONE
+                operation_text.text = null
+                translucent_view.setOnTouchListener(null)
+            }
+            BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION,
+            BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY,
+            BLOCK_TOUCH_MODE_NONE -> {
+                translucent_error_view.visibility = View.GONE
+                translucent_error_view.setOnTouchListener(null)
+            }
+        }
     }
 
     private fun calculateScreenSize() {
