@@ -44,6 +44,7 @@
 
     <string name="dialog_discard_page_title">Delete story page?</string>
     <string name="dialog_discard_page_message">This page will be removed from your story.</string>
+    <string name="dialog_discard_errored_page_message">This page has not been saved yet. If you delete this page, you will lose any edits you have made.</string>
     <string name="dialog_discard_page_ok_button">Delete</string>
 
     <string name="dialog_discard_story_title">Discard Story?</string>

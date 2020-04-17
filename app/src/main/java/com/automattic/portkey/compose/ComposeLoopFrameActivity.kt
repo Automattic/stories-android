@@ -797,11 +797,15 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         MenuCompat.setGroupDividerEnabled(popup.menu, true)
         popup.setOnMenuItemClickListener {
             when (it.itemId) {
-                R.id.menu_delete_page ->
+                R.id.menu_delete_page -> {
+                    var messageToUse = getString(R.string.dialog_discard_page_message)
+                    if (storyViewModel.getSelectedFrame().saveResultReason != SaveSuccess) {
+                        messageToUse = getString(R.string.dialog_discard_errored_page_message)
+                    }
                     // show dialog
                     FrameSaveErrorDialog.newInstance(
                         title = getString(R.string.dialog_discard_page_title),
-                        message = getString(R.string.dialog_discard_page_message),
+                        message = messageToUse,
                         okButtonLabel = getString(R.string.dialog_discard_page_ok_button),
                         listener = object : FrameSaveErrorDialogOk {
                             override fun OnOkClicked(dialog: DialogFragment) {
@@ -820,7 +824,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                                 }
                             }
                         }).show(supportFragmentManager, FRAGMENT_DIALOG)
-
+                }
                 R.id.menu_save_page -> {
                     // TODO only save this one, and stay here.
                     showToast("not implemented yet")
