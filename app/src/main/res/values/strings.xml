@@ -96,6 +96,7 @@
     <!-- Save Frame process strings-->
     <string name="story_saving_untitled">Untitled</string>
     <string name="story_saving_title">Saving "%1$s"...</string>
+    <string name="story_saving_title_several">several stories</string>
     <string name="story_saving_subtitle_frames_remaining_singular">1 page remaining</string>
     <string name="story_saving_subtitle_frames_remaining_plural">%1$d pages remaining</string>
     <string name="story_saving_snackbar_started">Uploading "%1$s"...</string>

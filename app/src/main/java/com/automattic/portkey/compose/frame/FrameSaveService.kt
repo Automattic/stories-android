@@ -241,26 +241,33 @@ class FrameSaveService : Service() {
         private val frameSaveManager: FrameSaveManager
     ) : FrameSaveProgressListener {
         val storySaveResult = StorySaveResult()
+        val title =
+            StoryRepository.getStoryAtIndex(storyIndex).title ?: context.getString(R.string.story_saving_untitled)
 
         // FrameSaveProgressListener overrides
         override fun onFrameSaveStart(frameIndex: FrameIndex) {
             Log.d("PORTKEY", "START save frame idx: " + applyFrameIndexOverride(frameIndex))
             frameSaveNotifier.addStoryPageInfoToForegroundNotification(
-                applyFrameIndexOverride(frameIndex).toString(),
-                StoryRepository.getStoryAtIndex(storyIndex).title ?: context.getString(R.string.story_saving_untitled)
+                storyIndex,
+                mediaIdFromStoryAndFrameIndex(storyIndex, applyFrameIndexOverride(frameIndex)),
+                title
             )
         }
 
         override fun onFrameSaveProgress(frameIndex: FrameIndex, progress: Double) {
             Log.d("PORTKEY", "PROGRESS save frame idx: " + applyFrameIndexOverride(frameIndex) + " %: " + progress)
             frameSaveNotifier.updateNotificationProgressForMedia(
-                applyFrameIndexOverride(frameIndex).toString(), progress.toFloat())
+                mediaIdFromStoryAndFrameIndex(storyIndex, applyFrameIndexOverride(frameIndex)), progress.toFloat())
         }
 
         override fun onFrameSaveCompleted(frameIndex: FrameIndex) {
             Log.d("PORTKEY", "END save frame idx: " + applyFrameIndexOverride(frameIndex))
             frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(
-                applyFrameIndexOverride(frameIndex).toString(), true)
+                storyIndex,
+                title,
+                mediaIdFromStoryAndFrameIndex(storyIndex, applyFrameIndexOverride(frameIndex)),
+                true
+            )
             // add success data to StorySaveResult
             storySaveResult.frameSaveResult.add(FrameSaveResult(applyFrameIndexOverride(frameIndex), SaveSuccess))
         }
@@ -269,7 +276,10 @@ class FrameSaveService : Service() {
             Log.d("PORTKEY", "CANCELED save frame idx: " + applyFrameIndexOverride(frameIndex))
             // remove one from the count
             frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(
-                applyFrameIndexOverride(frameIndex).toString())
+                storyIndex,
+                title,
+                mediaIdFromStoryAndFrameIndex(storyIndex, applyFrameIndexOverride(frameIndex))
+            )
             // add error data to StorySaveResult
             storySaveResult.frameSaveResult.add(
                 FrameSaveResult(applyFrameIndexOverride(frameIndex), SaveError(REASON_CANCELLED)))
@@ -279,7 +289,10 @@ class FrameSaveService : Service() {
             Log.d("PORTKEY", "FAILED save frame idx: " + applyFrameIndexOverride(frameIndex))
             // remove one from the count
             frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(
-                applyFrameIndexOverride(frameIndex).toString())
+                storyIndex,
+                title,
+                mediaIdFromStoryAndFrameIndex(storyIndex, applyFrameIndexOverride(frameIndex))
+            )
             // add error data to StorySaveResult
             storySaveResult.frameSaveResult.add(FrameSaveResult(applyFrameIndexOverride(frameIndex), SaveError(reason)))
         }
@@ -310,6 +323,10 @@ class FrameSaveService : Service() {
 
         fun onCancel() {
             frameSaveManager.onCancel()
+        }
+
+        private fun mediaIdFromStoryAndFrameIndex(storyIndex: Int, frameIndex: Int): String {
+            return storyIndex.toString() + "-" + frameIndex.toString()
         }
     }
 

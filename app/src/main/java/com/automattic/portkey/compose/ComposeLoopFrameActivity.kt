@@ -355,39 +355,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
             setupStoryViewModelObservers()
 
-            photoEditorView.postDelayed({
-                storyViewModel.loadStory(storyIndexToSelect)
-
-                if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
-                    val storySaveResult = intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
-                    if (storySaveResult != null &&
-                        storyViewModel.getStoryAtIndex(storySaveResult.storyIndex).frames.size > 0) {
-                        // dismiss the error notification
-                        // TODO use NativeNotificationUtils.dismissNotification() when migrating to WPAndroid
-                        intent.action?.let {
-                            val notificationManager = NotificationManagerCompat.from(this)
-                            notificationManager.cancel(it.toInt())
-                        }
-
-                        if (!storySaveResult.isSuccess()) {
-                            prepareErrorScreen(storySaveResult)
-                        } else {
-                            next_button.setEnabled(true)
-                            onStoryFrameSelected(-1, 0)
-                        }
-                    } else {
-                        // TODO couldn't find the story frames? Show some Error Dialog - we can't recover here
-                    }
-                } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED) {
-                    if (storyViewModel.getStoryAtIndex(storyIndexToSelect).frames.size > 0) {
-                        refreshStoryFrameSelection()
-                    } else {
-                        // TODO couldn't find the story frames? Show some Error Dialog - we can't recover here
-                    }
-                } else {
-                    launchCameraPreview()
-                }
-            }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
+            onLoadFromIntent(intent)
         } else {
             currentOriginalCapturedFile =
                 savedInstanceState.getSerializable(STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE) as File?
@@ -408,7 +376,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
         }
     }
-
     private fun setupStoryViewModelObservers() {
         storyViewModel.uiState.observe(this, Observer {
             // if no frames in Story, launch the capture mode
@@ -473,6 +440,55 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             getString(R.string.dialog_story_saving_error_message),
             getString(android.R.string.ok)
         ).show(supportFragmentManager, FRAGMENT_DIALOG)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        onLoadFromIntent(intent)
+    }
+
+    private fun onLoadFromIntent(intent: Intent) {
+        photoEditorView.postDelayed({
+            storyViewModel.loadStory(storyIndexToSelect)
+            if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
+                val storySaveResult = intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
+                if (storySaveResult != null &&
+                    StoryRepository.getStoryAtIndex(storySaveResult.storyIndex).frames.size > 0) {
+                    // dismiss the error notification
+                    // TODO use NativeNotificationUtils.dismissNotification() when migrating to WPAndroid
+                    intent.action?.let {
+                        val notificationManager = NotificationManagerCompat.from(this)
+                        notificationManager.cancel(it.toInt())
+                    }
+
+                    if (!storySaveResult.isSuccess()) {
+                        prepareErrorScreen(storySaveResult)
+                    } else {
+                        onStoryFrameSelected(-1, 0)
+                    }
+                } else {
+                    // TODO couldn't find the story frames? Show some Error Dialog - we can't recover here
+                }
+            } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED) {
+                if (StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.size > 0) {
+                    storyViewModel.loadStory(storyIndexToSelect)
+                    refreshStoryFrameSelection()
+                } else {
+                    // TODO couldn't find the story frames? Show some Error Dialog - we can't recover here
+                }
+            } else {
+                launchCameraPreview()
+                storyViewModel.uiState.observe(this, Observer {
+                    // if no frames in Story, launch the capture mode
+                    if (storyViewModel.getCurrentStorySize() == 0) {
+                        photoEditor.clearAllViews()
+                        launchCameraPreview()
+                        // finally, delete the captured media
+                        deleteCapturedMedia()
+                    }
+                })
+            }
+        }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
     }
 
     override fun onDestroy() {
