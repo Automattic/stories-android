@@ -84,14 +84,14 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
             async {
                 concurrencyLimitSemaphore.withPermit {
                     yield()
-                    saveLoopFrame(context, frame, index)
+                    saveStoryFrame(context, frame, index)
                 }
             }
         }.awaitAll().filterNotNull()
         return listFiles
     }
 
-    private suspend fun saveLoopFrame(
+    private suspend fun saveStoryFrame(
         context: Context,
         frame: StoryFrameItem,
         frameIndex: FrameIndex
