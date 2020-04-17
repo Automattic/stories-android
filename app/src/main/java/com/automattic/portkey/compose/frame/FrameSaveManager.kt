@@ -86,7 +86,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
                     // see above - we only want to save frames of frameItemType
                     if (frame.frameItemType == frameItemType) {
                         yield()
-                        return@withPermit saveLoopFrame(context, frame, index)
+                        return@withPermit saveStoryFrame(context, frame, index)
                     } else {
                         return@withPermit null
                     }
@@ -96,7 +96,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         return listFiles
     }
 
-    private suspend fun saveLoopFrame(
+    private suspend fun saveStoryFrame(
         context: Context,
         frame: StoryFrameItem,
         frameIndex: FrameIndex
@@ -117,6 +117,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
                     try {
                         // create ghost PhotoEditorView to be used for saving off-screen
                         val ghostPhotoEditorView = createGhostPhotoEditor(context, photoEditor.composedCanvas)
+                        throw Exception("THIS IS A TEST")
                         frameFile = saveImageFrame(frame, ghostPhotoEditorView, frameIndex)
                         saveProgressListener?.onFrameSaveCompleted(frameIndex)
                     } catch (ex: Exception) {
