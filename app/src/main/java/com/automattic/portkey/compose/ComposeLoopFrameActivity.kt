@@ -710,6 +710,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 // everything is already saved by now
                 // TODO kick the UploadService here! when in WPAndroid
                 showToast("Awesome! Upload starting...")
+                finish()
             } else {
                 // TODO show bottom sheet
                 // then save everything if they hit PUBLISH
