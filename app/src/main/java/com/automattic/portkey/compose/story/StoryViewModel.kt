@@ -67,7 +67,6 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
         val oldIndex = currentSelectedFrameIndex
         currentSelectedFrameIndex = index
         updateUiStateForSelection(oldIndex, index)
-        updateUiStateForSelection(oldIndex, index)
         return newlySelectedFrame
     }
 
