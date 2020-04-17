@@ -306,70 +306,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             // also, update the UI
             updateFlashModeSelectionIcon()
 
-            photoEditorView.postDelayed({
-                if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
-                    val storySaveResult = intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
-                    if (storySaveResult != null &&
-                        StoryRepository.getStoryAtIndex(storySaveResult.storyIndex).frames.size > 0) {
-                        // dismiss the error notification
-                        // TODO use NativeNotificationUtils.dismissNotification() when migrating to WPAndroid
-                        intent.action?.let {
-                            val notificationManager = NotificationManagerCompat.from(this)
-                            notificationManager.cancel(it.toInt())
-                        }
-
-                        // if the StoryRepository contains a story, load it right away to continue editing
-                        // TODO check pages in this Story and mark them errored according to the StorySaveResult
-                        // see https://github.com/Automattic/portkey-android/issues/285 for details
-                        Log.d("PORTKEY", "Being passed a SaveResult, render the Story")
-                        storyViewModel.loadStory(storySaveResult.storyIndex)
-
-                        if (!storySaveResult.isSuccess()) {
-                            val errors = storySaveResult.frameSaveResult.filter { it.resultReason is SaveError }
-                            val minIndexToSelect = errors.minBy { it.frameIndex }
-
-                            // select the first errored frame - delete added views from Service first
-                            FrameSaveManager.releaseAddedViews(
-                                storyViewModel.getCurrentStoryFrameAt(minIndexToSelect!!.frameIndex)
-                            )
-                            onStoryFrameSelected(-1, minIndexToSelect!!.frameIndex)
-
-                            // show dialog
-                            val stringSingularOrPlural = if (errors.size == 1)
-                                getString(R.string.dialog_story_saving_error_title_singular)
-                            else getString(R.string.dialog_story_saving_error_title_plural)
-
-                            val errorDialogTitle = String.format(stringSingularOrPlural, errors.size)
-
-                            FrameSaveErrorDialog.newInstance(errorDialogTitle,
-                                getString(R.string.dialog_story_saving_error_message))
-                                .show(supportFragmentManager, FRAGMENT_DIALOG)
-                        } else {
-                            onStoryFrameSelected(-1, 0)
-                        }
-                    } else {
-                        // TODO couldn't find the story frames? Show some Error Dialog - we can't recover here
-                    }
-                } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED) {
-                    if (StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.size > 0) {
-                        storyViewModel.loadStory(storyIndexToSelect)
-                        refreshStoryFrameSelection()
-                    } else {
-                        // TODO couldn't find the story frames? Show some Error Dialog - we can't recover here
-                    }
-                } else {
-                    launchCameraPreview()
-                    storyViewModel.uiState.observe(this, Observer {
-                        // if no frames in Story, launch the capture mode
-                        if (storyViewModel.getCurrentStorySize() == 0) {
-                            photoEditor.clearAllViews()
-                            launchCameraPreview()
-                            // finally, delete the captured media
-                            deleteCapturedMedia()
-                        }
-                    })
-                }
-            }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
+            onLoadFromIntent(intent)
         } else {
             currentOriginalCapturedFile =
                 savedInstanceState.getSerializable(STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE) as File?
@@ -389,6 +326,78 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 }
             }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        onLoadFromIntent(intent)
+    }
+
+    private fun onLoadFromIntent(intent: Intent) {
+        photoEditorView.postDelayed({
+            if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
+                val storySaveResult = intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
+                if (storySaveResult != null &&
+                    StoryRepository.getStoryAtIndex(storySaveResult.storyIndex).frames.size > 0) {
+                    // dismiss the error notification
+                    // TODO use NativeNotificationUtils.dismissNotification() when migrating to WPAndroid
+                    intent.action?.let {
+                        val notificationManager = NotificationManagerCompat.from(this)
+                        notificationManager.cancel(it.toInt())
+                    }
+
+                    // if the StoryRepository contains a story, load it right away to continue editing
+                    // TODO check pages in this Story and mark them errored according to the StorySaveResult
+                    // see https://github.com/Automattic/portkey-android/issues/285 for details
+                    Log.d("PORTKEY", "Being passed a SaveResult, render the Story")
+                    storyViewModel.loadStory(storySaveResult.storyIndex)
+
+                    if (!storySaveResult.isSuccess()) {
+                        val errors = storySaveResult.frameSaveResult.filter { it.resultReason is SaveError }
+                        val minIndexToSelect = errors.minBy { it.frameIndex }
+
+                        // select the first errored frame - delete added views from Service first
+                        FrameSaveManager.releaseAddedViews(
+                            storyViewModel.getCurrentStoryFrameAt(minIndexToSelect!!.frameIndex)
+                        )
+                        onStoryFrameSelected(-1, minIndexToSelect!!.frameIndex)
+
+                        // show dialog
+                        val stringSingularOrPlural = if (errors.size == 1)
+                            getString(R.string.dialog_story_saving_error_title_singular)
+                        else getString(R.string.dialog_story_saving_error_title_plural)
+
+                        val errorDialogTitle = String.format(stringSingularOrPlural, errors.size)
+
+                        FrameSaveErrorDialog.newInstance(errorDialogTitle,
+                            getString(R.string.dialog_story_saving_error_message))
+                            .show(supportFragmentManager, FRAGMENT_DIALOG)
+                    } else {
+                        onStoryFrameSelected(-1, 0)
+                    }
+                } else {
+                    // TODO couldn't find the story frames? Show some Error Dialog - we can't recover here
+                }
+            } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED) {
+                if (StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.size > 0) {
+                    storyViewModel.loadStory(storyIndexToSelect)
+                    refreshStoryFrameSelection()
+                } else {
+                    // TODO couldn't find the story frames? Show some Error Dialog - we can't recover here
+                }
+            } else {
+                launchCameraPreview()
+                storyViewModel.uiState.observe(this, Observer {
+                    // if no frames in Story, launch the capture mode
+                    if (storyViewModel.getCurrentStorySize() == 0) {
+                        photoEditor.clearAllViews()
+                        launchCameraPreview()
+                        // finally, delete the captured media
+                        deleteCapturedMedia()
+                    }
+                })
+            }
+        }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
     }
 
     override fun onDestroy() {
