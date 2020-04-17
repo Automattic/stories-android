@@ -750,6 +750,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     storyViewModel.updateCurrentSelectedFrameOnRetryResult(
                         result.frameSaveResult[0]
                     )
+                    // need to do this so AddedViews get properly placed on the PhotoEditor
+                    refreshStoryFrameSelection()
                 }
             })
         }
@@ -1273,10 +1275,12 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     private fun updateEditMode() {
         // updates the edit mode depending on there existing errored frames or not
         if (!storyViewModel.anyOfCurrentStoryFramesIsErrored()) {
+            translucent_error_view.visibility = View.GONE
             edit_mode_controls.visibility = View.VISIBLE
             next_button.setEnabled(true)
             (bottom_strip_view as StoryFrameSelectorFragment).showAddFrameControl()
         } else {
+            translucent_error_view.visibility = View.VISIBLE
             edit_mode_controls.visibility = View.INVISIBLE
             next_button.setEnabled(false)
             (bottom_strip_view as StoryFrameSelectorFragment).hideAddFrameControl()
