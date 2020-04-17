@@ -750,7 +750,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     storyViewModel.updateCurrentSelectedFrameOnRetryResult(
                         result.frameSaveResult[0]
                     )
-                    refreshStoryFrameSelection()
                 }
             })
         }
@@ -1287,7 +1286,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     private fun editModeRestoreAllUIControls() {
         // show all edit mode controls
         close_button.visibility = View.VISIBLE
-        edit_mode_controls.visibility = View.VISIBLE
+        updateEditMode()
         more_button.visibility = View.VISIBLE
         next_button.visibility = View.VISIBLE
 
