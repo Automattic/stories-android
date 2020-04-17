@@ -449,8 +449,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     private fun prepareErrorScreen(storySaveResult: StorySaveResult) {
-        // disable the Publish button
-        next_button.setEnabled(false)
+        // disable the Publish button - need to pass a postDelayed given it somehow doesn't play well right on start
+        // being shown
+        next_button.postDelayed({
+            next_button.setEnabled(false)
+        }, 500)
 
         val errors = storySaveResult.frameSaveResult.filter { it.resultReason is SaveError }
         val minIndexToSelect = errors.minBy { it.frameIndex }
