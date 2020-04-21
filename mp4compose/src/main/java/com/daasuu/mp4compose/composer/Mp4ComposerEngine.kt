@@ -281,10 +281,6 @@ internal class Mp4ComposerEngine {
                 )
                 val progress = (videoProgress + audioProgress) / 2.0
                 if (progressCallback != null) {
-//                    if (TEST_FLAG == 0 && progress > 0.8f) {
-//                        TEST_FLAG++
-//                        throw Exception("THIS IS A TEST")
-//                    }
                     progressCallback!!.onProgress(progress)
                 }
             }
@@ -370,7 +366,6 @@ internal class Mp4ComposerEngine {
         private val PROGRESS_UNKNOWN = -1.0
         private val SLEEP_TO_WAIT_TRACK_TRANSCODERS: Long = 10
         private val PROGRESS_INTERVAL_STEPS: Long = 10
-        private var TEST_FLAG = 0
 
         private val BIT_RATE = 2000000
         private val FRAME_RATE = 20
