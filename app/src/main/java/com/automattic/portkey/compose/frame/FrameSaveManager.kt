@@ -54,7 +54,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         frames: List<StoryFrameItem>
     ): List<File> {
         // first, save all images async and wait
-        val listImages = saveLoopFrameAsyncAwaitForType(
+        val savedImages = saveLoopFrameAsyncAwaitForType(
             context, frames, IMAGE, IMAGE_CONCURRENCY_LIMIT
         )
 
@@ -62,11 +62,11 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
 
         // now, save all videos async and wait - this process is intense so only allow for 3 videos to be processed
         // concurrently
-        val listVideos = saveLoopFrameAsyncAwaitForType(
+        val savedVideos = saveLoopFrameAsyncAwaitForType(
             context, frames, VIDEO, VIDEO_CONCURRENCY_LIMIT
         )
 
-        return listImages + listVideos
+        return savedImages + savedVideos
     }
 
     private suspend fun saveLoopFrameAsyncAwaitForType(
