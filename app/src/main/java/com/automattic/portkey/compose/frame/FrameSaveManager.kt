@@ -54,23 +54,22 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         frames: List<StoryFrameItem>
     ): List<File> {
         // first, save all images async and wait
-        val listImages = saveLoopFrameAsyncAwaitForType(
-            context, frames, IMAGE, 10
+        val savedImages = saveLoopFramesAsyncAwait(
+            context, frames, IMAGE, IMAGE_CONCURRENCY_LIMIT
         )
 
         yield()
 
         // now, save all videos async and wait - this process is intense so only allow for 3 videos to be processed
         // concurrently
-        val listVideos = saveLoopFrameAsyncAwaitForType(
-            context, frames, VIDEO, 3
+        val savedVideos = saveLoopFramesAsyncAwait(
+            context, frames, VIDEO, VIDEO_CONCURRENCY_LIMIT
         )
 
-        val listTotal = listImages + listVideos
-        return listTotal
+        return savedImages + savedVideos
     }
 
-    private suspend fun saveLoopFrameAsyncAwaitForType(
+    private suspend fun saveLoopFramesAsyncAwait(
         context: Context,
         frames: List<StoryFrameItem>,
         frameItemType: StoryFrameItemType,
@@ -195,7 +194,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
                 if (saveVideoAsLoopFrameFile(frame, frameIndex, saveListener)) {
                     // don't return until we get a signal in the listener
                     while (!listenerDone) {
-                        delay(500)
+                        delay(VIDEO_PROCESSING_READY_WAIT_TIME_MILLIS)
                     }
                 } else {
                     throw Exception("Save not called")
@@ -285,6 +284,10 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
     }
 
     companion object {
+        private const val VIDEO_CONCURRENCY_LIMIT = 3
+        private const val IMAGE_CONCURRENCY_LIMIT = 10
+        private const val VIDEO_PROCESSING_READY_WAIT_TIME_MILLIS: Long = 500
+
         fun releaseAddedViews(frame: StoryFrameItem) {
             // don't forget to remove these views from ghost offscreen view before exiting
             for (oneView in frame.addedViews) {
