@@ -109,9 +109,14 @@
     <string name="story_saving_failed_message_plural">%1$d pages require action</string>
     <string name="story_saving_failed_quick_action_manage">Manage</string>
 
+    <!-- Save Frame process error dialog strings-->
     <string name="dialog_story_saving_error_title_singular">Unable to save 1 page</string>
     <string name="dialog_story_saving_error_title_plural">Unable to save %1$d pages</string>
     <string name="dialog_story_saving_error_message">Retry saving or delete the pages, then try publishing your story again.</string>
+    <!-- Insufficient device storage dialog strings-->
+    <string name="dialog_insufficient_device_storage_error_title">Insufficient device storage</string>
+    <string name="dialog_insufficient_device_storage_error_message">We need to save the story on your device before it can be published. Review your storage settings and remove files to free up space.</string>
+    <string name="dialog_insufficient_device_storage_error_ok_button">View Storage</string>
 
     <!-- WordPress Android strings - matching in case of future integration -->
     <!-- Android O notification channels, these show in the Android app settings -->

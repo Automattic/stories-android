@@ -26,6 +26,12 @@ class FileUtils {
                 mediaDir else appContext.filesDir
         }
 
+        fun isAvailableSpaceLow(context: Context): Boolean {
+            // if available space is at or below 10%, consider it low
+            val appContext = context.applicationContext
+            return (appContext.cacheDir.usableSpace * 100 / appContext.cacheDir.totalSpace <= 10)
+        }
+
         /* internal / disposable files used in capturing */
         fun getInternalDirectory(context: Context): File {
             return context.getDir("tmp", 0)

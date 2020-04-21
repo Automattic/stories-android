@@ -20,6 +20,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.provider.Settings
 import android.text.TextUtils
 import android.util.Log
 import android.view.GestureDetector
@@ -53,6 +54,7 @@ import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFinished
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment.FlashSupportChangeListener
 import com.automattic.photoeditor.state.BackgroundSurfaceManager
+import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.util.FileUtils.Companion.getLoopFrameFile
 import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.ViewType
@@ -445,6 +447,32 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         ).show(supportFragmentManager, FRAGMENT_DIALOG)
     }
 
+    private fun checkForLowSpaceAndShowDialog() {
+        if (FileUtils.isAvailableSpaceLow(this)) {
+            val intent = Intent(Settings.ACTION_INTERNAL_STORAGE_SETTINGS)
+            if (intent.resolveActivity(packageManager) != null) {
+                FrameSaveErrorDialog.newInstance(
+                    title = getString(R.string.dialog_insufficient_device_storage_error_title),
+                    message = getString(R.string.dialog_insufficient_device_storage_error_message),
+                    okButtonLabel = getString(R.string.dialog_insufficient_device_storage_error_ok_button),
+                    listener = object : FrameSaveErrorDialogOk {
+                        override fun OnOkClicked(dialog: DialogFragment) {
+                            dialog.dismiss()
+                            val intent = Intent(Settings.ACTION_INTERNAL_STORAGE_SETTINGS)
+                            if (intent.resolveActivity(packageManager) != null) {
+                                startActivity(intent)
+                            }
+                        }
+                    }).show(supportFragmentManager, FRAGMENT_DIALOG)
+            } else {
+                FrameSaveErrorDialog.newInstance(
+                    title = getString(R.string.dialog_insufficient_device_storage_error_title),
+                    message = getString(R.string.dialog_insufficient_device_storage_error_message)
+                ).show(supportFragmentManager, FRAGMENT_DIALOG)
+            }
+        }
+    }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         onLoadFromIntent(intent)
@@ -488,6 +516,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                         launchCameraPreview()
                         // finally, delete the captured media
                         deleteCapturedMedia()
+                        checkForLowSpaceAndShowDialog()
                     }
                 })
             }
@@ -803,6 +832,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 override fun run() {
                     if (result.isSuccess()) {
                         hideRetryButton()
+                    } else {
+                        checkForLowSpaceAndShowDialog()
                     }
                     storyViewModel.updateCurrentSelectedFrameOnRetryResult(
                         result.frameSaveResult[0]
