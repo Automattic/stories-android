@@ -66,8 +66,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
             context, frames, VIDEO, 3
         )
 
-        val listTotal = listImages + listVideos
-        return listTotal
+return listImages + listVideos
     }
 
     private suspend fun saveLoopFrameAsyncAwaitForType(
