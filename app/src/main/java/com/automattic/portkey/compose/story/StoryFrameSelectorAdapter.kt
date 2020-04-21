@@ -79,14 +79,14 @@ class StoryFrameSelectorAdapter : RecyclerView.Adapter<StoryFrameSelectorAdapter
         notifyItemMoved(oldPosition, newPosition)
     }
 
-    sealed class StoryFrameHolder(v: View) : RecyclerView.ViewHolder(v) {
-        val clickableView = v // entire view should be clickable
-        val imageView: ImageView = v.frame_image
-        val frameBorder: ImageView = v.frame_image_selected
-        val frameErrored: TextView? = v.frame_image_errored
+    sealed class StoryFrameHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val clickableView = view // entire view should be clickable
+        val imageView: ImageView = view.frame_image
+        val frameBorder: ImageView = view.frame_image_selected
+        val frameErrored: TextView? = view.frame_image_errored
         abstract fun onBind(uiState: StoryFrameListItemUiState)
 
-        class StoryFrameHolderPlusIcon(v: View) : StoryFrameHolder(v) {
+        class StoryFrameHolderPlusIcon(view: View) : StoryFrameHolder(view) {
             private var onPlusIconClicked: (() -> Unit)? = null
 
             init {
