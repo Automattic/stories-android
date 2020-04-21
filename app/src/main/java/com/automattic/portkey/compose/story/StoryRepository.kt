@@ -9,6 +9,7 @@ typealias StoryIndex = Int
 
 object StoryRepository {
     const val DEFAULT_NONE_SELECTED = -1
+    const val DEFAULT_FRAME_NONE_SELECTED = -1
     private val currentStoryFrames = ArrayList<StoryFrameItem>()
     var currentStoryIndex = DEFAULT_NONE_SELECTED
         private set

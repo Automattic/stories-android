@@ -426,7 +426,10 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         val minIndexToSelect = errors.minBy { it.frameIndex }
 
         // select the first errored frame
-        onStoryFrameSelected(-1, minIndexToSelect!!.frameIndex)
+        onStoryFrameSelected(
+            oldIndex = StoryRepository.DEFAULT_FRAME_NONE_SELECTED,
+            newIndex = minIndexToSelect!!.frameIndex
+        )
 
         // show dialog
         val stringSingularOrPlural = if (errors.size == 1)
@@ -464,7 +467,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     if (!storySaveResult.isSuccess()) {
                         prepareErrorScreen(storySaveResult)
                     } else {
-                        onStoryFrameSelected(-1, 0)
+                        onStoryFrameSelected(oldIndex = StoryRepository.DEFAULT_FRAME_NONE_SELECTED, newIndex = 0)
                     }
                 } else {
                     // TODO couldn't find the story frames? Show some Error Dialog - we can't recover here
