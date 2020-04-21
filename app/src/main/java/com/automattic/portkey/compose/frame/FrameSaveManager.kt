@@ -174,7 +174,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
                 if (saveVideoAsLoopFrameFile(frame, frameIndex, saveListener)) {
                     // don't return until we get a signal in the listener
                     while (!listenerDone) {
-                        delay(500)
+                        delay(VIDEO_PROCESSING_READY_WAIT_TIME_MILLIS)
                     }
                 } else {
                     throw Exception("Save not called")
@@ -266,5 +266,6 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
     companion object {
         private const val VIDEO_CONCURRENCY_LIMIT = 3
         private const val IMAGE_CONCURRENCY_LIMIT = 10
+        private const val VIDEO_PROCESSING_READY_WAIT_TIME_MILLIS: Long = 500
     }
 }
