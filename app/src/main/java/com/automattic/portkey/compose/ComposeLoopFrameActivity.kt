@@ -484,7 +484,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
                 val storySaveResult = intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
                 if (storySaveResult != null &&
-                    StoryRepository.getStoryAtIndex(storySaveResult.storyIndex).frames.size > 0) {
+                    StoryRepository.getStoryAtIndex(storySaveResult.storyIndex).frames.isNotEmpty()) {
                     // dismiss the error notification
                     // TODO use NativeNotificationUtils.dismissNotification() when migrating to WPAndroid
                     intent.action?.let {

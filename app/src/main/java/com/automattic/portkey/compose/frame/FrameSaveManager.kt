@@ -53,6 +53,10 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         context: Context,
         frames: List<StoryFrameItem>
     ): List<File> {
+        // calling the listener here so the progrers notification initializes itself properly and
+        // shows really how many Story frame pages we're going to save
+        preDispatchStartProgressListenerCalls(frames.size)
+
         // first, save all images async and wait
         val savedImages = saveLoopFramesAsyncAwait(
             context, frames, IMAGE, IMAGE_CONCURRENCY_LIMIT
@@ -67,6 +71,12 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         )
 
         return savedImages + savedVideos
+    }
+
+    private fun preDispatchStartProgressListenerCalls(framesAmount: Int) {
+        for (frameIndex in 0..framesAmount) {
+            saveProgressListener?.onFrameSaveStart(frameIndex)
+        }
     }
 
     private suspend fun saveLoopFramesAsyncAwait(
@@ -101,7 +111,6 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         frameIndex: FrameIndex
     ): File? {
         var frameFile: File? = null
-        saveProgressListener?.onFrameSaveStart(frameIndex)
         when (frame.frameItemType) {
             VIDEO -> {
                 frameFile = saveVideoFrame(frame, frameIndex)
@@ -116,7 +125,6 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
                     try {
                         // create ghost PhotoEditorView to be used for saving off-screen
                         val ghostPhotoEditorView = createGhostPhotoEditor(context, photoEditor.composedCanvas)
-                        throw Exception("THIS IS A TEST")
                         frameFile = saveImageFrame(frame, ghostPhotoEditorView, frameIndex)
                         throw Exception("THIS IS A TEST")
                         saveProgressListener?.onFrameSaveCompleted(frameIndex)
