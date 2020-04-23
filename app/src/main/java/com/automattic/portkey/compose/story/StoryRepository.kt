@@ -5,11 +5,11 @@ import java.util.Collections
 typealias StoryIndex = Int
 
 object StoryRepository {
+    const val DEFAULT_NONE_SELECTED = -1
     private val currentStoryFrames = ArrayList<StoryFrameItem>()
-    var currentStoryIndex = 0
+    var currentStoryIndex = DEFAULT_NONE_SELECTED
         private set
     private val stories = ArrayList<Story>()
-    const val DEFAULT_NONE_SELECTED = -1
 
     fun loadStory(storyIndex: StoryIndex): Story? {
         when {

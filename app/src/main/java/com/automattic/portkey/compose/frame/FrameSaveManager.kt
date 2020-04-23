@@ -13,6 +13,7 @@ import com.automattic.photoeditor.views.ViewType.STICKER_ANIMATED
 import com.automattic.portkey.compose.story.StoryFrameItem
 import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource.FileBackgroundSource
 import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource.UriBackgroundSource
+import com.automattic.portkey.compose.story.StoryFrameItemType
 import com.automattic.portkey.compose.story.StoryFrameItemType.IMAGE
 import com.automattic.portkey.compose.story.StoryFrameItemType.VIDEO
 import com.automattic.portkey.util.cloneViewSpecs
@@ -23,6 +24,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import java.io.File
@@ -50,13 +53,41 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         context: Context,
         frames: List<StoryFrameItem>
     ): List<File> {
-        // first, launch all frame save processes async
-        return frames.mapIndexed { index, frame ->
+        // first, save all images async and wait
+        val savedImages = saveLoopFrameAsyncAwaitForType(
+            context, frames, IMAGE, IMAGE_CONCURRENCY_LIMIT
+        )
+
+        yield()
+
+        // now, save all videos async and wait - this process is intense so only allow for 3 videos to be processed
+        // concurrently
+        val savedVideos = saveLoopFrameAsyncAwaitForType(
+            context, frames, VIDEO, VIDEO_CONCURRENCY_LIMIT
+        )
+
+        return savedImages + savedVideos
+    }
+
+    private suspend fun saveLoopFrameAsyncAwaitForType(
+        context: Context,
+        frames: List<StoryFrameItem>,
+        frameItemType: StoryFrameItemType,
+        concurrencyLimit: Int
+    ): List<File> {
+        // don't process more than 5 Story Pages concurrently
+        val concurrencyLimitSemaphore = Semaphore(concurrencyLimit)
+        val listFiles = frames.filter { it.frameItemType == frameItemType }.mapIndexed { index, frame ->
+            saveProgressListener?.onFrameSaveStart(index)
+
             async {
-                yield()
-                saveStoryFrame(context, frame, index)
+                concurrencyLimitSemaphore.withPermit {
+                    yield()
+                    saveStoryFrame(context, frame, index)
+                }
             }
         }.awaitAll().filterNotNull()
+        return listFiles
     }
 
     private suspend fun saveStoryFrame(
@@ -76,7 +107,6 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
                     // saveVideoWithStaticBackground()
                 } else {
                     try {
-                        saveProgressListener?.onFrameSaveStart(frameIndex)
                         // create ghost PhotoEditorView to be used for saving off-screen
                         val ghostPhotoEditorView = createGhostPhotoEditor(context, photoEditor.composedCanvas)
                         frameFile = saveImageFrame(frame, ghostPhotoEditorView, frameIndex)
@@ -116,8 +146,6 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
     ): File? {
         var file: File? = null
 
-        saveProgressListener?.onFrameSaveStart(frameIndex)
-
         withContext(Dispatchers.IO) {
             var listenerDone = false
             val saveListener = object : OnSaveWithCancelAndProgressListener {
@@ -146,7 +174,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
                 if (saveVideoAsLoopFrameFile(frame, frameIndex, saveListener)) {
                     // don't return until we get a signal in the listener
                     while (!listenerDone) {
-                        delay(100)
+                        delay(VIDEO_PROCESSING_READY_WAIT_TIME_MILLIS)
                     }
                 } else {
                     throw Exception("Save not called")
@@ -233,5 +261,11 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         fun onFrameSaveCompleted(frameIndex: FrameIndex)
         fun onFrameSaveCanceled(frameIndex: FrameIndex)
         fun onFrameSaveFailed(frameIndex: FrameIndex, reason: String?)
+    }
+
+    companion object {
+        private const val VIDEO_CONCURRENCY_LIMIT = 3
+        private const val IMAGE_CONCURRENCY_LIMIT = 10
+        private const val VIDEO_PROCESSING_READY_WAIT_TIME_MILLIS: Long = 500
     }
 }
