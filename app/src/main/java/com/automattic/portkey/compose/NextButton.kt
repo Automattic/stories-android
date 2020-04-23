@@ -36,7 +36,7 @@ class NextButton : FrameLayout {
             0, 0
         )
 
-        var customText: String? = null
+        var customText: String?
         try {
             customText = styledAttrs.getString(com.automattic.portkey.R.styleable.NextButton_text)
         } finally {
