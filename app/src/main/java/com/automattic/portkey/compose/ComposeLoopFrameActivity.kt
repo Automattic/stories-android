@@ -511,8 +511,9 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     private fun setDefaultSelectionAndUpdateBackgroundSurfaceUI() {
-        storyViewModel.setSelectedFrame(storyViewModel.getCurrentStorySize() - 1)
-        updateBackgroundSurfaceUIWithStoryFrame(storyViewModel.getCurrentStorySize() - 1)
+        val defaultSelectedFrameIndex = storyViewModel.getCurrentStorySize() - 1
+        storyViewModel.setSelectedFrame(defaultSelectedFrameIndex)
+        updateBackgroundSurfaceUIWithStoryFrame(defaultSelectedFrameIndex)
     }
 
     private fun addFramesToStoryFromMediaUriList(uriList: ArrayList<Uri>) {
