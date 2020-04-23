@@ -220,7 +220,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
         topControlsBaseTopMargin = getLayoutTopMarginBeforeInset(close_button.layoutParams)
         nextButtonBaseTopMargin = getLayoutTopMarginBeforeInset(next_button.layoutParams)
-        ViewCompat.setOnApplyWindowInsetsListener(compose_loop_frame_layout) { view, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(compose_loop_frame_layout) { _, insets ->
             // set insetTop as margin to all controls appearing at the top of the screen
             addInsetTopMargin(next_button.layoutParams, nextButtonBaseTopMargin, insets.systemWindowInsetTop)
             addInsetTopMargin(close_button.layoutParams, topControlsBaseTopMargin, insets.systemWindowInsetTop)
@@ -277,7 +277,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
             override fun onStartViewChangeListener(viewType: ViewType) {
                 // in this case, also hide the SAVE button, but don't hide the bottom strip view.
-                editModeHideAllUIControls(true, false)
+                editModeHideAllUIControls(hideNextButton = true, hideFrameSelector = false)
             }
 
             override fun onStopViewChangeListener(viewType: ViewType) {
@@ -501,7 +501,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     // TODO couldn't find the story frames? Show some Error Dialog - we can't recover here
                 }
             } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED) {
-                if (StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.size > 0) {
+                if (StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.isNotEmpty()) {
                     storyViewModel.loadStory(storyIndexToSelect)
                     refreshStoryFrameSelection()
                 } else {
@@ -609,8 +609,9 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     private fun setDefaultSelectionAndUpdateBackgroundSurfaceUI() {
-        storyViewModel.setSelectedFrame(storyViewModel.getCurrentStorySize() - 1)
-        updateBackgroundSurfaceUIWithStoryFrame(storyViewModel.getCurrentStorySize() - 1)
+        val defaultSelectedFrameIndex = storyViewModel.getLastFrameIndexInCurrentStory()
+        storyViewModel.setSelectedFrame(defaultSelectedFrameIndex)
+        updateBackgroundSurfaceUIWithStoryFrame(defaultSelectedFrameIndex)
     }
 
     private fun addFramesToStoryFromMediaUriList(uriList: ArrayList<Uri>) {
@@ -1044,7 +1045,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                         addStoryFrameItemToCurrentStory(
                             StoryFrameItem(FileBackgroundSource(file = file), frameItemType = StoryFrameItemType.IMAGE)
                         )
-                        setSelectedFrame(storyViewModel.getCurrentStorySize() - 1)
+                        setSelectedFrame(storyViewModel.getLastFrameIndexInCurrentStory())
                     }
                     showStaticBackground()
                     currentOriginalCapturedFile = file
@@ -1092,7 +1093,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                         storyViewModel.apply {
                             addStoryFrameItemToCurrentStory(StoryFrameItem(FileBackgroundSource(file = it),
                                 frameItemType = VIDEO))
-                            setSelectedFrame(storyViewModel.getCurrentStorySize() - 1)
+                            setSelectedFrame(storyViewModel.getLastFrameIndexInCurrentStory())
                         }
                     }
                 }
@@ -1581,7 +1582,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         } else {
             // if there are no items to the left and there are items to the right, then choose
             // an item to the right
-            if (nextIdxToSelect < storyViewModel.getCurrentStorySize() - 1) {
+            if (nextIdxToSelect < storyViewModel.getLastFrameIndexInCurrentStory()) {
                 nextIdxToSelect++
             }
         }

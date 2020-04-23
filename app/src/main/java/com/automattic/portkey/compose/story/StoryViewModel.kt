@@ -100,6 +100,10 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
         return repository.getCurrentStorySize()
     }
 
+    fun getLastFrameIndexInCurrentStory(): Int {
+        return getCurrentStorySize() - 1
+    }
+
     fun getImmutableCurrentStoryFrames(): List<StoryFrameItem> {
         return repository.getImmutableCurrentStoryFrames()
     }
