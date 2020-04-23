@@ -511,7 +511,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     private fun setDefaultSelectionAndUpdateBackgroundSurfaceUI() {
-        val defaultSelectedFrameIndex = storyViewModel.getCurrentStorySize() - 1
+        val defaultSelectedFrameIndex = storyViewModel.getLastFrameIndexInCurrentStory()
         storyViewModel.setSelectedFrame(defaultSelectedFrameIndex)
         updateBackgroundSurfaceUIWithStoryFrame(defaultSelectedFrameIndex)
     }
@@ -868,7 +868,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                         addStoryFrameItemToCurrentStory(
                             StoryFrameItem(FileBackgroundSource(file = file), frameItemType = StoryFrameItemType.IMAGE)
                         )
-                        setSelectedFrame(storyViewModel.getCurrentStorySize() - 1)
+                        setSelectedFrame(storyViewModel.getLastFrameIndexInCurrentStory())
                     }
                     showStaticBackground()
                     currentOriginalCapturedFile = file
@@ -916,7 +916,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                         storyViewModel.apply {
                             addStoryFrameItemToCurrentStory(StoryFrameItem(FileBackgroundSource(file = it),
                                 frameItemType = VIDEO))
-                            setSelectedFrame(storyViewModel.getCurrentStorySize() - 1)
+                            setSelectedFrame(storyViewModel.getLastFrameIndexInCurrentStory())
                         }
                     }
                 }
@@ -1324,7 +1324,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         } else {
             // if there are no items to the left and there are items to the right, then choose
             // an item to the right
-            if (nextIdxToSelect < storyViewModel.getCurrentStorySize() - 1) {
+            if (nextIdxToSelect < storyViewModel.getLastFrameIndexInCurrentStory()) {
                 nextIdxToSelect++
             }
         }
