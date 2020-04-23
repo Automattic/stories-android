@@ -404,7 +404,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     // TODO couldn't find the story frames? Show some Error Dialog - we can't recover here
                 }
             } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED) {
-                if (StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.size > 0) {
+                if (StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.isNotEmpty()) {
                     storyViewModel.loadStory(storyIndexToSelect)
                     refreshStoryFrameSelection()
                 } else {
