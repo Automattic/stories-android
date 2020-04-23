@@ -253,7 +253,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
             override fun onStartViewChangeListener(viewType: ViewType) {
                 // in this case, also hide the SAVE button, but don't hide the bottom strip view.
-                editModeHideAllUIControls(true, false)
+                editModeHideAllUIControls(hideNextButton = true, hideFrameSelector = false)
             }
 
             override fun onStopViewChangeListener(viewType: ViewType) {
