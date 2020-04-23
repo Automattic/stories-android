@@ -196,7 +196,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
         topControlsBaseTopMargin = getLayoutTopMarginBeforeInset(close_button.layoutParams)
         nextButtonBaseTopMargin = getLayoutTopMarginBeforeInset(next_button.layoutParams)
-        ViewCompat.setOnApplyWindowInsetsListener(compose_loop_frame_layout) { view, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(compose_loop_frame_layout) { _, insets ->
             // set insetTop as margin to all controls appearing at the top of the screen
             addInsetTopMargin(next_button.layoutParams, nextButtonBaseTopMargin, insets.systemWindowInsetTop)
             addInsetTopMargin(close_button.layoutParams, topControlsBaseTopMargin, insets.systemWindowInsetTop)
