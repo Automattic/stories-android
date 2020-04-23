@@ -1,5 +1,6 @@
 package com.automattic.portkey.compose.story
 
+import com.automattic.portkey.compose.frame.FrameSaveService.StorySaveResult
 import java.util.Collections
 
 typealias StoryIndex = Int
@@ -71,6 +72,14 @@ object StoryRepository {
 
     fun setCurrentStoryTitle(title: String) {
         stories[currentStoryIndex].title = title
+    }
+
+    fun setCurrentStorySaveResultsOnFrames(storyIndex: Int, saveResult: StorySaveResult) {
+        // iterate over the StorySaveResult, check their indexes, and set the corresponding frame result
+        for (index in 0..saveResult.frameSaveResult.size - 1) {
+            val frameIdxToSet = saveResult.frameSaveResult[index].frameIndex
+            stories[storyIndex].frames[frameIdxToSet].saveResultReason = saveResult.frameSaveResult[index].resultReason
+        }
     }
 
     fun getCurrentStoryFrameAt(index: Int): StoryFrameItem {

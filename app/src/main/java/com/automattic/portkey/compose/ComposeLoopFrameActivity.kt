@@ -57,7 +57,9 @@ import com.automattic.portkey.BuildConfig
 import com.automattic.portkey.R
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment
 import com.automattic.portkey.compose.emoji.EmojiPickerFragment.EmojiListener
+import com.automattic.portkey.compose.frame.FrameSaveManager
 import com.automattic.portkey.compose.frame.FrameSaveService
+import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveError
 import com.automattic.portkey.compose.frame.FrameSaveService.StorySaveResult
 import com.automattic.portkey.compose.photopicker.MediaBrowserType
 import com.automattic.portkey.compose.photopicker.PhotoPickerActivity
@@ -334,7 +336,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     private fun onLoadFromIntent(intent: Intent) {
         photoEditorView.postDelayed({
             if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
-                val storySaveResult = intent.getSerializableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
+                val storySaveResult = intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
                 if (storySaveResult != null &&
                     StoryRepository.getStoryAtIndex(storySaveResult.storyIndex).frames.isNotEmpty()) {
                     // dismiss the error notification
@@ -349,7 +351,37 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     // see https://github.com/Automattic/portkey-android/issues/285 for details
                     Log.d("PORTKEY", "Being passed a SaveResult, render the Story")
                     storyViewModel.loadStory(storySaveResult.storyIndex)
-                    onStoryFrameSelected(0, 0)
+
+                    if (!storySaveResult.isSuccess()) {
+                        val errors = storySaveResult.frameSaveResult.filter { it.resultReason is SaveError }
+                        val minIndexToSelect = errors.minBy { it.frameIndex }
+
+                        // select the first errored frame - delete added views from Service first
+                        FrameSaveManager.releaseAddedViews(
+                            storyViewModel.getCurrentStoryFrameAt(minIndexToSelect!!.frameIndex)
+                        )
+                        onStoryFrameSelected(-1, minIndexToSelect!!.frameIndex)
+
+                        // show dialog
+                        val stringSingularOrPlural = if (errors.size == 1)
+                            getString(R.string.dialog_story_saving_error_title_singular)
+                        else getString(R.string.dialog_story_saving_error_title_plural)
+
+                        val errorDialogTitle = String.format(stringSingularOrPlural, errors.size)
+
+                        FrameSaveErrorDialog.newInstance(errorDialogTitle,
+                            getString(R.string.dialog_story_saving_error_message))
+                            .show(supportFragmentManager, FRAGMENT_DIALOG)
+                    } else {
+                        onStoryFrameSelected(-1, 0)
+                    }
+                } else {
+                    // TODO couldn't find the story frames? Show some Error Dialog - we can't recover here
+                }
+            } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED) {
+                if (StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.size > 0) {
+                    storyViewModel.loadStory(storyIndexToSelect)
+                    refreshStoryFrameSelection()
                 } else {
                     // TODO couldn't find the story frames? Show some Error Dialog - we can't recover here
                 }

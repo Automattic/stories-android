@@ -138,6 +138,9 @@ class FrameSaveService : Service() {
             handleErrors(storySaveProcessor.storySaveResult)
         }
 
+        // update the Repository with latest save statuses
+        StoryRepository.setCurrentStorySaveResultsOnFrames(storyIndex, storySaveProcessor.storySaveResult)
+
         // errors have been collected, post the SaveResult for the whole Story
         EventBus.getDefault().postSticky(storySaveProcessor.storySaveResult)
     }

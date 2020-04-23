@@ -53,8 +53,12 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         context: Context,
         frames: List<StoryFrameItem>
     ): List<File> {
+        // calling the listener here so the progrers notification initializes itself properly and
+        // shows really how many Story frame pages we're going to save
+        preDispatchStartProgressListenerCalls(frames.size)
+
         // first, save all images async and wait
-        val savedImages = saveLoopFrameAsyncAwaitForType(
+        val savedImages = saveLoopFramesAsyncAwait(
             context, frames, IMAGE, IMAGE_CONCURRENCY_LIMIT
         )
 
@@ -62,14 +66,20 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
 
         // now, save all videos async and wait - this process is intense so only allow for 3 videos to be processed
         // concurrently
-        val savedVideos = saveLoopFrameAsyncAwaitForType(
+        val savedVideos = saveLoopFramesAsyncAwait(
             context, frames, VIDEO, VIDEO_CONCURRENCY_LIMIT
         )
 
         return savedImages + savedVideos
     }
 
-    private suspend fun saveLoopFrameAsyncAwaitForType(
+    private fun preDispatchStartProgressListenerCalls(framesAmount: Int) {
+        for (frameIndex in 0..framesAmount) {
+            saveProgressListener?.onFrameSaveStart(frameIndex)
+        }
+    }
+
+    private suspend fun saveLoopFramesAsyncAwait(
         context: Context,
         frames: List<StoryFrameItem>,
         frameItemType: StoryFrameItemType,
@@ -77,13 +87,18 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
     ): List<File> {
         // don't process more than 5 Story Pages concurrently
         val concurrencyLimitSemaphore = Semaphore(concurrencyLimit)
-        val listFiles = frames.filter { it.frameItemType == frameItemType }.mapIndexed { index, frame ->
-            saveProgressListener?.onFrameSaveStart(index)
-
+        // we need to keep the frameIndex in sync with the whole Story frames list so, not filtering but mapping
+        // them all, and only letting the saveLoopFrame fun be called when the frame's frameItemType matches
+        val listFiles = frames.mapIndexed { index, frame ->
             async {
                 concurrencyLimitSemaphore.withPermit {
-                    yield()
-                    saveStoryFrame(context, frame, index)
+                    // see above - we only want to save frames of frameItemType
+                    if (frame.frameItemType == frameItemType) {
+                        yield()
+                        return@withPermit saveStoryFrame(context, frame, index)
+                    } else {
+                        return@withPermit null
+                    }
                 }
             }
         }.awaitAll().filterNotNull()
@@ -99,6 +114,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         when (frame.frameItemType) {
             VIDEO -> {
                 frameFile = saveVideoFrame(frame, frameIndex)
+                releaseAddedViewsAfterSnapshot(frame)
             }
             IMAGE -> {
                 // check whether there are any GIF stickers - if there are, we need to produce a video instead
@@ -113,6 +129,14 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
                         saveProgressListener?.onFrameSaveCompleted(frameIndex)
                     } catch (ex: Exception) {
                         saveProgressListener?.onFrameSaveFailed(frameIndex, ex.message)
+                    } finally {
+                        // if anything happened, just make sure the added views were removed from the offscreen
+                        // photoEditor layout, otherwise it won't be possible to re-add them when we show the
+                        // error screen and the user taps on the errored frames (crash will happen)
+                        // Also, it's okay if this gets called more than once (for instance, when no exceptions
+                        // are thrown) given it internally does check whether the parent contains the view before
+                        // attempting to remove it
+                        releaseAddedViewsAfterSnapshot(frame)
                     }
                 }
             }
@@ -127,17 +151,21 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
     ): File {
         // prepare the ghostview with its background image and the AddedViews on top of it
         preparePhotoEditorViewForSnapshot(frame, ghostPhotoEditorView)
+
         val file = withContext(Dispatchers.IO) {
             return@withContext photoEditor.saveImageFromPhotoEditorViewAsLoopFrameFile(frameIndex, ghostPhotoEditorView)
         }
 
+        releaseAddedViewsAfterSnapshot(frame)
+
+        return file
+    }
+
+    private suspend fun releaseAddedViewsAfterSnapshot(frame: StoryFrameItem) {
         withContext(Dispatchers.Main) {
             // don't forget to remove these views from ghost offscreen view before exiting
-            for (oneView in frame.addedViews) {
-                removeViewFromParent(oneView.view)
-            }
+            releaseAddedViews(frame)
         }
-        return file
     }
 
     private suspend fun saveVideoFrame(
@@ -267,5 +295,12 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         private const val VIDEO_CONCURRENCY_LIMIT = 3
         private const val IMAGE_CONCURRENCY_LIMIT = 10
         private const val VIDEO_PROCESSING_READY_WAIT_TIME_MILLIS: Long = 500
+
+        fun releaseAddedViews(frame: StoryFrameItem) {
+            // don't forget to remove these views from ghost offscreen view before exiting
+            for (oneView in frame.addedViews) {
+                removeViewFromParent(oneView.view)
+            }
+        }
     }
 }
