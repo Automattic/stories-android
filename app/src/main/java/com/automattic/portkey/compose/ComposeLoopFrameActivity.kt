@@ -845,6 +845,15 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             })
         }
 
+        if (anyOfOriginalIntentResultsIsError() && !storyViewModel.anyOfCurrentStoryFramesIsErrored()) {
+            // all solved? cancel any outstanding error notifications
+            // TODO use NativeNotificationUtils.dismissNotification() when migrating to WPAndroid
+            intent.action?.let {
+                val notificationManager = NotificationManagerCompat.from(this)
+                notificationManager.cancel(it.toInt())
+            }
+        }
+
         hideLoading()
     }
 
