@@ -20,6 +20,7 @@ import java.io.IOException
 import android.media.MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar
 import android.media.MediaFormat.MIMETYPE_VIDEO_AVC
 import android.net.Uri
+import com.daasuu.mp4compose.composer.VideoComposer.OutputFormatAdjustCallback
 
 // Refer: https://github.com/ypresto/android-transcoder/blob/master/lib/src/main/java/net/ypresto/androidtranscoder/engine/MediaTranscoderEngine.java
 
@@ -33,6 +34,7 @@ internal class Mp4ComposerEngine {
     private var mediaExtractor: MediaExtractor? = null
     private var mediaMuxer: MediaMuxer? = null
     private var progressCallback: ProgressCallback? = null
+    private var outputFormatAdjustCallback: OutputFormatAdjustCallback? = null
     private var durationUs: Long = 0
     private var mediaMetadataRetriever: MediaMetadataRetriever? = null
 
@@ -46,6 +48,10 @@ internal class Mp4ComposerEngine {
 
     fun setProgressCallback(progressCallback: ProgressCallback) {
         this.progressCallback = progressCallback
+    }
+
+    fun setAdjustOutputFormatCallback(outputAdjustCallback: OutputFormatAdjustCallback) {
+        this.outputFormatAdjustCallback = outputAdjustCallback
     }
 
     @Throws(IOException::class)
@@ -160,8 +166,14 @@ internal class Mp4ComposerEngine {
                 }
 
                 // setup video composer
-                videoComposer =
-                    VideoComposer(mediaExtractor!!, videoTrackIndex, videoOutputFormat, muxRender, timeScale)
+                videoComposer = VideoComposer(
+                                    mediaExtractor!!,
+                                    videoTrackIndex,
+                                    videoOutputFormat,
+                                    muxRender,
+                                    timeScale,
+                                    outputFormatAdjustCallback
+                                )
                 videoComposer!!.setUp(
                     filter,
                     rotation,
@@ -205,7 +217,13 @@ internal class Mp4ComposerEngine {
                 videoOutputFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, COLOR_FormatYUV420SemiPlanar)
 
                 // setup video composer for static background image
-                videoComposer = VideoComposer(bkgBitmap!!, videoOutputFormat, muxRender, timeScale)
+                videoComposer = VideoComposer(
+                    bkgBitmap!!,
+                    videoOutputFormat,
+                    muxRender,
+                    timeScale,
+                    outputFormatAdjustCallback
+                )
                 videoComposer!!.setUp(
                     filter,
                     rotation,

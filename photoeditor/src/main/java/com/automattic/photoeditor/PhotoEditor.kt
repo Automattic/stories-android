@@ -6,6 +6,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Typeface
+import android.media.MediaCodecList
+import android.media.MediaFormat
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.text.TextUtils
@@ -733,6 +735,13 @@ class PhotoEditor private constructor(builder: Builder) :
                     Log.e(TAG, "onFailed()", exception)
                     onSaveListener.onFailure(exception)
                 }
+
+                override fun onAdjustOutputSize(
+                    outputFormat: MediaFormat,
+                    availableCodecList: MediaCodecList
+                ) {
+                    findSuitableOutputResolutionAndFixOutputFormat(outputFormat, availableCodecList)
+                }
             })
             .start()
     }
@@ -829,6 +838,13 @@ class PhotoEditor private constructor(builder: Builder) :
                     Log.e(TAG, "onFailed()", exception)
                     onSaveListener.onFailure(exception)
                 }
+
+                override fun onAdjustOutputSize(
+                    outputFormat: MediaFormat,
+                    availableCodecList: MediaCodecList
+                ) {
+                    findSuitableOutputResolutionAndFixOutputFormat(outputFormat, availableCodecList)
+                }
             })
             .start()
     }
@@ -901,6 +917,45 @@ class PhotoEditor private constructor(builder: Builder) :
 
     fun getViewsAdded(): AddedViewList {
         return addedViews
+    }
+
+    private fun findSuitableOutputResolutionAndFixOutputFormat(
+        mediaOutputFormat: MediaFormat,
+        codecList: MediaCodecList
+    ) {
+        for (codecInfo in codecList.codecInfos) {
+            val supportedTypes = codecInfo.getSupportedTypes()
+            if (mediaOutputFormat.getString(MediaFormat.KEY_MIME) in supportedTypes) {
+                val videoCapabilities = codecInfo.getCapabilitiesForType(
+                    mediaOutputFormat.getString(MediaFormat.KEY_MIME)
+                ).getVideoCapabilities()
+                if (videoCapabilities.isSizeSupported(
+                        mediaOutputFormat.getInteger(MediaFormat.KEY_WIDTH), mediaOutputFormat.getInteger(
+                            MediaFormat.KEY_HEIGHT
+                        ))) {
+                    // if size is supported, just leave.
+                    // but if not, let's determine best video resolution for video encoding,
+                    // take a conservative approach and follow guideline here:
+                    // https://developer.android.com/guide/topics/media/media-formats#video-encoding
+                    break
+                } else {
+                    // progressive downgrade: let's try HD and then SD (high quality), then SD (low quality)
+                    if (videoCapabilities.isSizeSupported(720, 1280)) {
+                        // HD 720p (N/A on all devices)
+                        mediaOutputFormat.setInteger(MediaFormat.KEY_WIDTH, 720)
+                        mediaOutputFormat.setInteger(MediaFormat.KEY_HEIGHT, 1280)
+                    } else if (videoCapabilities.isSizeSupported(360, 480)) {
+                        // SD (High quality)
+                        mediaOutputFormat.setInteger(MediaFormat.KEY_WIDTH, 360)
+                        mediaOutputFormat.setInteger(MediaFormat.KEY_HEIGHT, 480)
+                    } else {
+                        // 	SD (Low quality)
+                        mediaOutputFormat.setInteger(MediaFormat.KEY_WIDTH, 144)
+                        mediaOutputFormat.setInteger(MediaFormat.KEY_HEIGHT, 176)
+                    }
+                }
+            }
+        }
     }
 
     /**

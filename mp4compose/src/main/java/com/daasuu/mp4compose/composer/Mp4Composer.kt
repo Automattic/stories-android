@@ -2,6 +2,8 @@ package com.daasuu.mp4compose.composer
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.media.MediaCodecList
+import android.media.MediaFormat
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.util.Log
@@ -11,6 +13,7 @@ import com.daasuu.mp4compose.FillMode
 import com.daasuu.mp4compose.FillModeCustomItem
 import com.daasuu.mp4compose.Rotation
 import com.daasuu.mp4compose.composer.Mp4ComposerEngine.ProgressCallback
+import com.daasuu.mp4compose.composer.VideoComposer.OutputFormatAdjustCallback
 import com.daasuu.mp4compose.filter.GlFilter
 
 import java.util.concurrent.ExecutorService
@@ -132,6 +135,17 @@ class Mp4Composer {
                 object : ProgressCallback {
                     override fun onProgress(progress: Double) {
                         listener?.onProgress(progress)
+                    }
+                }
+            )
+
+            engine.setAdjustOutputFormatCallback(
+                object : OutputFormatAdjustCallback {
+                    override fun onAdjustOutputSize(
+                        outputFormat: MediaFormat,
+                        availableCodecList: MediaCodecList
+                    ) {
+                        listener?.onAdjustOutputSize(outputFormat, availableCodecList)
                     }
                 }
             )
@@ -259,7 +273,7 @@ class Mp4Composer {
 
     interface Listener {
         /**
-         * Called to notify progress.
+         * Called to notify progress and adjust output size if first option not supported.
          *
          * @param progress Progress in [0.0, 1.0] range, or negative value if progress is unknown.
          */
@@ -276,6 +290,8 @@ class Mp4Composer {
         fun onCanceled()
 
         fun onFailed(exception: Exception)
+
+        fun onAdjustOutputSize(outputFormat: MediaFormat, availableCodecList: MediaCodecList)
     }
 
     private fun initializeUriDataSource(engine: Mp4ComposerEngine) {

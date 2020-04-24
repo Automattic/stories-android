@@ -2,6 +2,7 @@ package com.daasuu.mp4compose.composer
 
 import android.graphics.Bitmap
 import android.media.MediaCodec
+import android.media.MediaCodecList
 import android.media.MediaExtractor
 import android.media.MediaFormat
 import android.os.Build
@@ -44,23 +45,32 @@ internal class VideoComposer {
     private var addedFrameCount = 0
     private var bkgBitmapBytesNV12: ByteArray? = null
     private var lastBufferIdx = 0
+    private var outputFormatAdjustCallback: OutputFormatAdjustCallback? = null
 
     constructor(
         mediaExtractor: MediaExtractor,
         trackIndex: Int,
         outputFormat: MediaFormat,
         muxRender: MuxRender,
-        timeScale: Int
+        timeScale: Int,
+        outputFormatAdjustCallback: OutputFormatAdjustCallback? = null
     ) {
         this.mediaExtractor = mediaExtractor
         this.trackIndex = trackIndex
         this.outputFormat = outputFormat
         this.muxRender = muxRender
         this.timeScale = timeScale
+        this.outputFormatAdjustCallback = outputFormatAdjustCallback
     }
 
     // alternate constructor that doesn't have a MediaExtractor, since we won't be converting from video to another
-    constructor(bkgBitmap: Bitmap, outputFormat: MediaFormat, muxRender: MuxRender, timeScale: Int) {
+    constructor(
+        bkgBitmap: Bitmap,
+        outputFormat: MediaFormat,
+        muxRender: MuxRender,
+        timeScale: Int,
+        outputFormatAdjustCallback: OutputFormatAdjustCallback? = null
+    ) {
         this.outputFormat = outputFormat
         this.muxRender = muxRender
         this.timeScale = timeScale
@@ -85,7 +95,8 @@ internal class VideoComposer {
     ) {
         // patch according to documentation on LOLLIPOP we need to set the KEY_FRAME_RATE to null
         // https://developer.android.com/reference/android/media/MediaCodec.html#creation
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP && outputFormat.containsKey(MediaFormat.KEY_FRAME_RATE)) {
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP &&
+            outputFormat.containsKey(MediaFormat.KEY_FRAME_RATE)) {
             /* Note: On Build.VERSION_CODES.LOLLIPOP, the format to MediaCodecList.findDecoder/EncoderForFormat must not
                 contain a MediaFormat#KEY_FRAME_RATE. Use format.setString(MediaFormat.KEY_FRAME_RATE, null) to clear any
                 existing frame rate setting in the format
@@ -94,7 +105,14 @@ internal class VideoComposer {
         }
 
         try {
-            encoder = MediaCodec.createEncoderByType(outputFormat.getString(MediaFormat.KEY_MIME)!!)
+            val codecList = MediaCodecList(MediaCodecList.ALL_CODECS)
+            val encoderFound = codecList.findEncoderForFormat(outputFormat)
+            if (encoderFound == null) {
+                // if we haven't found the right codec for format, let's explore the device capabilities a bit
+                // https://developer.android.com/reference/android/media/MediaCodec.html#createEncoderByType(java.lang.String)
+                encoder = MediaCodec.createEncoderByType(outputFormat.getString(MediaFormat.KEY_MIME)!!)
+                outputFormatAdjustCallback?.onAdjustOutputSize(outputFormat, codecList)
+            }
         } catch (e: IOException) {
             throw IllegalStateException(e)
         }
@@ -330,6 +348,14 @@ internal class VideoComposer {
             encoder!!.releaseOutputBuffer(result, false)
         }
         return DRAIN_STATE_CONSUMED
+    }
+
+    internal interface OutputFormatAdjustCallback {
+        /**
+         * Called to use a different output size
+         *
+         */
+        fun onAdjustOutputSize(outputFormat: MediaFormat, availableCodecList: MediaCodecList)
     }
 
     companion object {
