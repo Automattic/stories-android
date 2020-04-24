@@ -15,9 +15,11 @@ import android.webkit.MimeTypeMap
 import com.automattic.portkey.R
 import com.automattic.portkey.compose.frame.FrameSaveManager.FrameSaveProgressListener
 import com.automattic.photoeditor.PhotoEditor
+import com.automattic.photoeditor.util.FileUtils.Companion.CAPTURE_FILE_NAME_PREFIX
 import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveError
 import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveSuccess
 import com.automattic.portkey.compose.story.StoryFrameItem
+import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource.FileBackgroundSource
 import com.automattic.portkey.compose.story.StoryIndex
 import com.automattic.portkey.compose.story.StoryRepository
 import kotlinx.android.parcel.Parcelize
@@ -93,6 +95,8 @@ class FrameSaveService : Service() {
             )
             // remove the processor from the list once it's done processing this Story's frames
             storySaveProcessors.remove(processor)
+
+            cleanUpTemporalStoryFrameFiles(storyFrames)
 
             // also if more than one processor is running, let's not stop the Service just now.
             if (storySaveProcessors.isEmpty()) {
@@ -337,6 +341,16 @@ class FrameSaveService : Service() {
             val intent = Intent(context, FrameSaveService::class.java)
             context.startService(intent)
             return intent
+        }
+
+        fun cleanUpTemporalStoryFrameFiles(frames: List<StoryFrameItem>) {
+            for (frame in frames) {
+                (frame.source as? FileBackgroundSource)?.file?.let {
+                    if (it.name.startsWith(CAPTURE_FILE_NAME_PREFIX)) {
+                        it.delete()
+                    }
+                }
+            }
         }
     }
 }
