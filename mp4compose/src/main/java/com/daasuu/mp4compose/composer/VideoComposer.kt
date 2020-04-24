@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.media.MediaCodec
 import android.media.MediaExtractor
 import android.media.MediaFormat
+import android.os.Build
 import android.util.Size
 
 import com.daasuu.mp4compose.FillMode
@@ -82,6 +83,16 @@ internal class VideoComposer {
         flipVertical: Boolean,
         flipHorizontal: Boolean
     ) {
+        // patch according to documentation on LOLLIPOP we need to set the KEY_FRAME_RATE to null
+        // https://developer.android.com/reference/android/media/MediaCodec.html#creation
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP && outputFormat.containsKey(MediaFormat.KEY_FRAME_RATE)) {
+            /* Note: On Build.VERSION_CODES.LOLLIPOP, the format to MediaCodecList.findDecoder/EncoderForFormat must not
+                contain a MediaFormat#KEY_FRAME_RATE. Use format.setString(MediaFormat.KEY_FRAME_RATE, null) to clear any
+                existing frame rate setting in the format
+             */
+            outputFormat.setString(MediaFormat.KEY_FRAME_RATE, null)
+        }
+
         try {
             encoder = MediaCodec.createEncoderByType(outputFormat.getString(MediaFormat.KEY_MIME)!!)
         } catch (e: IOException) {
