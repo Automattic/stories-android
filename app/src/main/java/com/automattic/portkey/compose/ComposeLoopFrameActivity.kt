@@ -390,7 +390,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             }
         })
 
-        storyViewModel.onSelectedFrameIndex.observe(this, Observer<Pair<Int, Int>> { selectedFrameIndexChange ->
+        storyViewModel.onSelectedFrameIndex.observe(this, Observer { selectedFrameIndexChange ->
+
             updateContentUiStateSelection(selectedFrameIndexChange.first, selectedFrameIndexChange.second)
         })
 
