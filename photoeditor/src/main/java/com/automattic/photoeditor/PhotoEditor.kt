@@ -384,32 +384,43 @@ class PhotoEditor private constructor(builder: Builder) :
 
     fun addViewToParentWithTouchListener(rootView: View, viewType: ViewType, sourceUri: Uri? = null) {
         val multiTouchListenerInstance = getNewMultitouchListener() // newMultiTouchListener
-        if (viewType == EMOJI) {
-            multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
-                override fun onClick() {
-                    // TODO implement emoji linking
-                }
+        when {
+            viewType == EMOJI -> {
+                multiTouchListenerInstance.setOnGestureControl(object :
+                    MultiTouchListener.OnGestureControl {
+                    override fun onClick() {
+                        // TODO implement emoji linking
+                    }
 
-                override fun onLongClick() {
-                    // no op
-                }
-            })
-            rootView.touchableArea.setOnTouchListener(multiTouchListenerInstance)
-        } else if (viewType == TEXT) {
-            val textInputTv = rootView.tvPhotoEditorText
-            multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
-                override fun onClick() {
-                    val textInput = textInputTv.text.toString()
-                    val currentTextColor = textInputTv.currentTextColor
-                    mOnPhotoEditorListener?.onEditTextChangeListener(rootView, textInput, currentTextColor, false)
-                }
+                    override fun onLongClick() {
+                        // no op
+                    }
+                })
+                rootView.touchableArea.setOnTouchListener(multiTouchListenerInstance)
+            }
 
-                override fun onLongClick() {
-                    // TODO implement the DELETE action (hide every other view, allow this view to be dragged to the trash
-                    // bin)
-                }
-            })
-            rootView.setOnTouchListener(multiTouchListenerInstance)
+            viewType == TEXT -> {
+                val textInputTv = rootView.tvPhotoEditorText
+                multiTouchListenerInstance.setOnGestureControl(object :
+                    MultiTouchListener.OnGestureControl {
+                    override fun onClick() {
+                        val textInput = textInputTv.text.toString()
+                        val currentTextColor = textInputTv.currentTextColor
+                        mOnPhotoEditorListener?.onEditTextChangeListener(
+                            rootView,
+                            textInput,
+                            currentTextColor,
+                            false
+                        )
+                    }
+
+                    override fun onLongClick() {
+                        // TODO implement the DELETE action (hide every other view, allow this view to be dragged to the trash
+                        // bin)
+                    }
+                })
+                rootView.setOnTouchListener(multiTouchListenerInstance)
+            }
         }
         addViewToParent(rootView, viewType, sourceUri)
     }
