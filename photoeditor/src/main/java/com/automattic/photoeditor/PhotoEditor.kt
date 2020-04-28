@@ -8,7 +8,6 @@ import android.graphics.Canvas
 import android.graphics.Typeface
 import android.media.MediaCodec
 import android.media.MediaCodecInfo.CodecProfileLevel
-import android.media.MediaCodecList
 import android.media.MediaFormat
 import android.media.MediaMetadataRetriever
 import android.net.Uri
@@ -717,7 +716,7 @@ class PhotoEditor private constructor(builder: Builder) :
 
             // .size(originalCanvasWidth, originalCanvasHeight)
             .size(1088, 1920)
-            //.size(720, 1280)
+            // .size(720, 1280)
             .fillMode(FillMode.PRESERVE_ASPECT_FIT)
             .filter(GlFilterGroup(filterCollection))
             .listener(object : Mp4Composer.Listener {

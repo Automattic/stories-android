@@ -18,8 +18,6 @@ import java.io.IOException
 import java.nio.ByteBuffer
 import android.media.MediaCodecInfo
 
-
-
 // Refer: https://android.googlesource.com/platform/cts/+/lollipop-release/tests/tests/media/src/android/media/cts/ExtractDecodeEditEncodeMuxTest.java
 // Refer: https://github.com/ypresto/android-transcoder/blob/master/lib/src/main/java/net/ypresto/androidtranscoder/engine/VideoTrackTranscoder.java
 internal class VideoComposer {
