@@ -387,9 +387,11 @@ class PhotoEditor private constructor(builder: Builder) :
         if (viewType == EMOJI) {
             multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
                 override fun onClick() {
+                    // TODO implement emoji linking
                 }
 
                 override fun onLongClick() {
+                    // no op
                 }
             })
             rootView.touchableArea.setOnTouchListener(multiTouchListenerInstance)
