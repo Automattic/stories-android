@@ -831,18 +831,16 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // do this if we are retrying to save the current frame
         if (storyFrameIndexToRetry != StoryRepository.DEFAULT_NONE_SELECTED) {
             retry_button.showSavedAnimation(Runnable {
-                override fun run() {
-                    if (result.isSuccess()) {
-                        hideRetryButton()
-                    } else {
-                        checkForLowSpaceAndShowDialog()
-                    }
-                    storyViewModel.updateCurrentSelectedFrameOnRetryResult(
-                        result.frameSaveResult[0]
-                    )
-                    // need to do this so AddedViews get properly placed on the PhotoEditor
-                    refreshStoryFrameSelection()
+                if (result.isSuccess()) {
+                    hideRetryButton()
+                } else {
+                    checkForLowSpaceAndShowDialog()
                 }
+                storyViewModel.updateCurrentSelectedFrameOnRetryResult(
+                    result.frameSaveResult[0]
+                )
+                // need to do this so AddedViews get properly placed on the PhotoEditor
+                refreshStoryFrameSelection()
             })
         }
 
