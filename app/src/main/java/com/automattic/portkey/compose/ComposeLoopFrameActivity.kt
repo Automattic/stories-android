@@ -422,7 +422,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // disable the Publish button - need to pass a postDelayed given it somehow doesn't play well right on start
         // being shown
         next_button.postDelayed({
-            next_button.setEnabled(false)
+            next_button.isEnabled = false
         }, 500)
 
         val errors = storySaveResult.frameSaveResult.filter { it.resultReason is SaveError }
@@ -1376,19 +1376,19 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             originallyErrored && !currentlyErrored -> {
                 blockTouchOnPhotoEditor(BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY)
                 edit_mode_controls.visibility = View.INVISIBLE
-                next_button.setEnabled(true)
+                next_button.isEnabled = true
                 (bottom_strip_view as StoryFrameSelectorFragment).hideAddFrameControl()
             }
             currentlyErrored -> {
                 blockTouchOnPhotoEditor(BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION)
                 edit_mode_controls.visibility = View.INVISIBLE
-                next_button.setEnabled(false)
+                next_button.isEnabled = false
                 (bottom_strip_view as StoryFrameSelectorFragment).hideAddFrameControl()
             }
             else -> { // no errors here! this is the normal creation situation: release touch block, enable editing
                 releaseTouchOnPhotoEditor(BLOCK_TOUCH_MODE_NONE)
                 edit_mode_controls.visibility = View.VISIBLE
-                next_button.setEnabled(true)
+                next_button.isEnabled = true
                 (bottom_strip_view as StoryFrameSelectorFragment).showAddFrameControl()
             }
         }
