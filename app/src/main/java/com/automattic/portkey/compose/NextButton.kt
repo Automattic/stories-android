@@ -19,15 +19,6 @@ class NextButton : FrameLayout {
         init(attrs)
     }
 
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int, defStyleRes: Int) : super(
-        context,
-        attrs,
-        defStyleAttr,
-        defStyleRes
-    ) {
-        init(attrs)
-    }
-
     private fun init(attrs: AttributeSet? = null) {
         val view = View.inflate(context, com.automattic.portkey.R.layout.content_next_button, null)
         val styledAttrs = context.theme.obtainStyledAttributes(
@@ -36,7 +27,7 @@ class NextButton : FrameLayout {
             0, 0
         )
 
-        var customText: String?
+        val customText: String?
         try {
             customText = styledAttrs.getString(com.automattic.portkey.R.styleable.NextButton_text)
         } finally {
