@@ -2,7 +2,7 @@ package com.daasuu.mp4compose.composer
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.media.MediaCodecList
+import android.media.MediaCodec
 import android.media.MediaFormat
 import android.media.MediaMetadataRetriever
 import android.net.Uri
@@ -143,9 +143,9 @@ class Mp4Composer {
                 object : OutputFormatAdjustCallback {
                     override fun onAdjustOutputSize(
                         outputFormat: MediaFormat,
-                        availableCodecList: MediaCodecList
+                        codec: MediaCodec
                     ) {
-                        listener?.onAdjustOutputSize(outputFormat, availableCodecList)
+                        listener?.onAdjustOutputSize(outputFormat, codec)
                     }
                 }
             )
@@ -291,7 +291,7 @@ class Mp4Composer {
 
         fun onFailed(exception: Exception)
 
-        fun onAdjustOutputSize(outputFormat: MediaFormat, availableCodecList: MediaCodecList)
+        fun onAdjustOutputSize(outputFormat: MediaFormat, encoder: MediaCodec)
     }
 
     private fun initializeUriDataSource(engine: Mp4ComposerEngine) {

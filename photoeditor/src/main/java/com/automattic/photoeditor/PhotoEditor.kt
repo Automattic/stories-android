@@ -6,6 +6,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Typeface
+import android.media.MediaCodec
+import android.media.MediaCodecInfo.CodecProfileLevel
 import android.media.MediaCodecList
 import android.media.MediaFormat
 import android.media.MediaMetadataRetriever
@@ -712,7 +714,10 @@ class PhotoEditor private constructor(builder: Builder) :
             // IMPORTANT: as we aim at a WYSIWYG UX, we need to produce a video of size equal to that of the phone
             // screen, given the user may be seeing a letterbox landscape video and placing emoji / text around
             // the black parts of the screen.
-            .size(originalCanvasWidth, originalCanvasHeight)
+
+            // .size(originalCanvasWidth, originalCanvasHeight)
+            .size(1088, 1920)
+            //.size(720, 1280)
             .fillMode(FillMode.PRESERVE_ASPECT_FIT)
             .filter(GlFilterGroup(filterCollection))
             .listener(object : Mp4Composer.Listener {
@@ -738,9 +743,9 @@ class PhotoEditor private constructor(builder: Builder) :
 
                 override fun onAdjustOutputSize(
                     outputFormat: MediaFormat,
-                    availableCodecList: MediaCodecList
+                    encoder: MediaCodec
                 ) {
-                    findSuitableOutputResolutionAndFixOutputFormat(outputFormat, availableCodecList)
+                    findSuitableOutputResolutionAndFixOutputFormat(outputFormat, encoder)
                 }
             })
             .start()
@@ -841,9 +846,9 @@ class PhotoEditor private constructor(builder: Builder) :
 
                 override fun onAdjustOutputSize(
                     outputFormat: MediaFormat,
-                    availableCodecList: MediaCodecList
+                    codec: MediaCodec
                 ) {
-                    findSuitableOutputResolutionAndFixOutputFormat(outputFormat, availableCodecList)
+                    findSuitableOutputResolutionAndFixOutputFormat(outputFormat, codec)
                 }
             })
             .start()
@@ -921,38 +926,146 @@ class PhotoEditor private constructor(builder: Builder) :
 
     private fun findSuitableOutputResolutionAndFixOutputFormat(
         mediaOutputFormat: MediaFormat,
-        codecList: MediaCodecList
+        encoder: MediaCodec
     ) {
-        for (codecInfo in codecList.codecInfos) {
-            val supportedTypes = codecInfo.getSupportedTypes()
-            if (mediaOutputFormat.getString(MediaFormat.KEY_MIME) in supportedTypes) {
-                val videoCapabilities = codecInfo.getCapabilitiesForType(
-                    mediaOutputFormat.getString(MediaFormat.KEY_MIME)
-                ).getVideoCapabilities()
-                if (videoCapabilities.isSizeSupported(
-                        mediaOutputFormat.getInteger(MediaFormat.KEY_WIDTH), mediaOutputFormat.getInteger(
-                            MediaFormat.KEY_HEIGHT
-                        ))) {
-                    // if size is supported, just leave.
-                    // but if not, let's determine best video resolution for video encoding,
-                    // take a conservative approach and follow guideline here:
-                    // https://developer.android.com/guide/topics/media/media-formats#video-encoding
-                    break
+        val supportedTypes = encoder.codecInfo.getSupportedTypes()
+        if (mediaOutputFormat.getString(MediaFormat.KEY_MIME) in supportedTypes) {
+            val cap = encoder.codecInfo.getCapabilitiesForType(
+                mediaOutputFormat.getString(MediaFormat.KEY_MIME)
+            )
+
+            var highestLevel: Int = 0
+            for (lvl in cap.profileLevels) {
+                if (lvl.level > highestLevel) {
+                    highestLevel = lvl.level
+                }
+            }
+
+            // Don't support anything meaningful for level 1 or 2.
+            if (highestLevel <= CodecProfileLevel.AVCLevel2) {
+                return
+            }
+
+            // Put bitRate here for future use.
+            val maxW: Int
+            val maxH: Int
+            val bitRate: Int
+            // Max encoding speed.
+            var maxMacroblocksPerSecond = 0
+            when (highestLevel) {
+                CodecProfileLevel.AVCLevel21 -> {
+                    maxW = 352
+                    maxH = 576
+                    bitRate = 4000000
+                    maxMacroblocksPerSecond = 19800
+                }
+                CodecProfileLevel.AVCLevel22 -> {
+                    maxW = 720
+                    maxH = 480
+                    bitRate = 4000000
+                    maxMacroblocksPerSecond = 20250
+                }
+                CodecProfileLevel.AVCLevel3 -> {
+                    maxW = 720
+                    maxH = 480
+                    bitRate = 10000000
+                    maxMacroblocksPerSecond = 40500
+                }
+                CodecProfileLevel.AVCLevel31 -> {
+                    maxW = 1280
+                    maxH = 720
+                    bitRate = 14000000
+                    maxMacroblocksPerSecond = 108000
+                }
+                CodecProfileLevel.AVCLevel32 -> {
+                    maxW = 1280
+                    maxH = 720
+                    bitRate = 20000000
+                    maxMacroblocksPerSecond = 216000
+                }
+                CodecProfileLevel.AVCLevel4 -> {
+                    maxW = 1920
+                    maxH = 1088 // It should be 1088 in terms of AVC capability.
+                    bitRate = 20000000
+                    maxMacroblocksPerSecond = 245760
+                }
+                CodecProfileLevel.AVCLevel41 -> {
+                    maxW = 1920
+                    maxH = 1088 // It should be 1088 in terms of AVC capability.
+                    bitRate = 50000000
+                    maxMacroblocksPerSecond = 245760
+                }
+                CodecProfileLevel.AVCLevel42 -> {
+                    maxW = 2048
+                    maxH = 1088 // It should be 1088 in terms of AVC capability.
+                    bitRate = 50000000
+                    maxMacroblocksPerSecond = 522240
+                }
+                CodecProfileLevel.AVCLevel5 -> {
+                    maxW = 3672
+                    maxH = 1536
+                    bitRate = 135000000
+                    maxMacroblocksPerSecond = 589824
+                }
+                CodecProfileLevel.AVCLevel51 -> {
+                    maxW = 4096
+                    maxH = 2304
+                    bitRate = 240000000
+                    maxMacroblocksPerSecond = 983040
+                }
+                else -> {
+                    maxW = 4096
+                    maxH = 2304
+                    bitRate = 240000000
+                    maxMacroblocksPerSecond = 983040
+                }
+            }
+
+            // Check size limit
+            val requestedWidth = mediaOutputFormat.getInteger(MediaFormat.KEY_WIDTH)
+            val requestedHeight = mediaOutputFormat.getInteger(MediaFormat.KEY_HEIGHT)
+            if (requestedWidth > maxH || requestedHeight > maxW) {
+                // the requested size exceeds the maximum supported by the codec so, let's downgrade to the
+                // selected profile
+                mediaOutputFormat.setInteger(MediaFormat.KEY_WIDTH, maxH)
+                mediaOutputFormat.setInteger(MediaFormat.KEY_HEIGHT, maxW)
+                return
+            }
+        }
+    }
+
+    private fun findSuitableOutputResolutionAndFixOutputFormatOLD(
+        mediaOutputFormat: MediaFormat,
+        encoder: MediaCodec
+    ) {
+        val supportedTypes = encoder.codecInfo.getSupportedTypes()
+        if (mediaOutputFormat.getString(MediaFormat.KEY_MIME) in supportedTypes) {
+            val videoCapabilities = encoder.codecInfo.getCapabilitiesForType(
+                mediaOutputFormat.getString(MediaFormat.KEY_MIME)
+            ).getVideoCapabilities()
+            if (videoCapabilities.isSizeSupported(
+                    mediaOutputFormat.getInteger(MediaFormat.KEY_WIDTH), mediaOutputFormat.getInteger(
+                        MediaFormat.KEY_HEIGHT
+                    ))) {
+                // if size is supported, just leave.
+                // but if not, let's determine best video resolution for video encoding,
+                // take a conservative approach and follow guideline here:
+                // https://developer.android.com/guide/topics/media/media-formats#video-encoding
+                // TODO this doesn'' work well still
+            } else {
+                // progressive downgrade: let's try HD and then SD (high quality), then SD (low quality)
+                if (videoCapabilities.isSizeSupported(720, 1280)) {
+                    // HD 720p (N/A on all devices)
+                    mediaOutputFormat.setInteger(MediaFormat.KEY_WIDTH, 720)
+                    mediaOutputFormat.setInteger(MediaFormat.KEY_HEIGHT, 1280)
+                } else if (videoCapabilities.isSizeSupported(360, 480)) {
+                    // SD (High quality)
+                    mediaOutputFormat.setInteger(MediaFormat.KEY_WIDTH, 360)
+                    mediaOutputFormat.setInteger(MediaFormat.KEY_HEIGHT, 480)
                 } else {
-                    // progressive downgrade: let's try HD and then SD (high quality), then SD (low quality)
-                    if (videoCapabilities.isSizeSupported(720, 1280)) {
-                        // HD 720p (N/A on all devices)
-                        mediaOutputFormat.setInteger(MediaFormat.KEY_WIDTH, 720)
-                        mediaOutputFormat.setInteger(MediaFormat.KEY_HEIGHT, 1280)
-                    } else if (videoCapabilities.isSizeSupported(360, 480)) {
-                        // SD (High quality)
-                        mediaOutputFormat.setInteger(MediaFormat.KEY_WIDTH, 360)
-                        mediaOutputFormat.setInteger(MediaFormat.KEY_HEIGHT, 480)
-                    } else {
-                        // 	SD (Low quality)
-                        mediaOutputFormat.setInteger(MediaFormat.KEY_WIDTH, 144)
-                        mediaOutputFormat.setInteger(MediaFormat.KEY_HEIGHT, 176)
-                    }
+                    // 	SD (Low quality)
+                    mediaOutputFormat.setInteger(MediaFormat.KEY_WIDTH, 144)
+                    mediaOutputFormat.setInteger(MediaFormat.KEY_HEIGHT, 176)
                 }
             }
         }

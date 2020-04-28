@@ -16,6 +16,9 @@ import com.daasuu.mp4compose.utils.BitmapEncodingUtils
 
 import java.io.IOException
 import java.nio.ByteBuffer
+import android.media.MediaCodecInfo
+
+
 
 // Refer: https://android.googlesource.com/platform/cts/+/lollipop-release/tests/tests/media/src/android/media/cts/ExtractDecodeEditEncodeMuxTest.java
 // Refer: https://github.com/ypresto/android-transcoder/blob/master/lib/src/main/java/net/ypresto/androidtranscoder/engine/VideoTrackTranscoder.java
@@ -109,9 +112,19 @@ internal class VideoComposer {
             val encoderFound = codecList.findEncoderForFormat(outputFormat)
             if (encoderFound == null) {
                 // if we haven't found the right codec for format, let's explore the device capabilities a bit
-                // https://developer.android.com/reference/android/media/MediaCodec.html#createEncoderByType(java.lang.String)
-                encoder = MediaCodec.createEncoderByType(outputFormat.getString(MediaFormat.KEY_MIME)!!)
-                outputFormatAdjustCallback?.onAdjustOutputSize(outputFormat, codecList)
+//                // https://developer.android.com/reference/android/media/MediaCodec.html#createEncoderByType(java.lang.String)
+//                encoder = MediaCodec.createEncoderByType(outputFormat.getString(MediaFormat.KEY_MIME)!!)
+//                encoder?.let {
+//                    outputFormatAdjustCallback?.onAdjustOutputSize(outputFormat, it)
+//                }
+                selectCodec(outputFormat.getString(MediaFormat.KEY_MIME)!!)?.let {
+                    encoder = MediaCodec.createByCodecName(it.name)
+                    encoder?.let {
+                        outputFormatAdjustCallback?.onAdjustOutputSize(outputFormat, it)
+                    }
+                }
+            } else {
+                encoder = MediaCodec.createByCodecName(encoderFound)
             }
         } catch (e: IOException) {
             throw IllegalStateException(e)
@@ -355,7 +368,7 @@ internal class VideoComposer {
          * Called to use a different output size
          *
          */
-        fun onAdjustOutputSize(outputFormat: MediaFormat, availableCodecList: MediaCodecList)
+        fun onAdjustOutputSize(outputFormat: MediaFormat, encoder: MediaCodec)
     }
 
     companion object {
@@ -365,6 +378,23 @@ internal class VideoComposer {
         private val DRAIN_STATE_CONSUMED = 2
         // private Bitmap bkgBitmap;
         private val ONE_SEC: Long = 1000000
+
+        private fun selectCodec(mimeType: String): MediaCodecInfo? {
+            val codecList = MediaCodecList(MediaCodecList.ALL_CODECS)
+            for (codecInfo in codecList.codecInfos) {
+                if (!codecInfo.isEncoder) {
+                    continue
+                }
+
+                val types = codecInfo.supportedTypes
+                for (j in types.indices) {
+                    if (types[j].equals(mimeType, ignoreCase = true)) {
+                        return codecInfo
+                    }
+                }
+            }
+            return null
+        }
 
         private fun getPresentationTimeUsec(frameIndex: Int): Long {
             return frameIndex.toLong() * ONE_SEC / 20
