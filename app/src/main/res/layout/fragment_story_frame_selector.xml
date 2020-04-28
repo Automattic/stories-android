@@ -1,23 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
+    android:id="@+id/story_frame_selector_control"
+    android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="@dimen/bottom_strip_height"
-    android:visibility="gone"
-    android:background="@color/black">
+    android:paddingRight="@dimen/story_frame_item_padding"
+    android:background="@color/black_transp_story_frame_selector">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/story_frames_view"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
+        android:layout_weight="1"
         android:paddingLeft="@dimen/story_frame_item_padding"
         android:paddingRight="@dimen/story_frame_item_padding"
         android:orientation="horizontal"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        android:layout_centerVertical="true"
-        android:background="@color/black"
         />
 
-</FrameLayout>
+    <include layout="@layout/fragment_story_frame_item_plus"
+        android:id="@+id/plus_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        />
+
+</LinearLayout>

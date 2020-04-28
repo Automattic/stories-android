@@ -52,7 +52,7 @@ object StoryRepository {
     }
 
     fun addStoryFrameItemToCurrentStory(item: StoryFrameItem) {
-        currentStoryFrames.add(0, item)
+        currentStoryFrames.add(item)
     }
 
     // when the user finishes a story, just add it to our repo for now and clear currentStory

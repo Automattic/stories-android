@@ -30,6 +30,7 @@
     <dimen name="delete_button_background_height">54dp</dimen>
     <dimen name="delete_button_height">46dp</dimen>
     <dimen name="delete_button_width">82dp</dimen>
+    <dimen name="delete_button_margin_bottom">96dp</dimen>
 
     <dimen name="save_button_bottom_margin">16dp</dimen>
     <dimen name="save_button_right_margin">16dp</dimen>
@@ -37,13 +38,22 @@
     <dimen name="save_button_text_width">72dp</dimen>
     <dimen name="save_button_total_width">100dp</dimen>
     <dimen name="save_button_total_height">40dp</dimen>
+    <dimen name="save_button_radius">4dp</dimen>
+    <dimen name="save_button_padding">8dp</dimen>
+    <dimen name="save_button_spinner_size">24dp</dimen>
 
+    <dimen name="next_button_top_margin">8dp</dimen>
     <dimen name="next_button_bottom_margin">24dp</dimen>
     <dimen name="next_button_right_margin">16dp</dimen>
     <dimen name="next_button_text_width">72dp</dimen>
     <dimen name="next_button_total_width">100dp</dimen>
     <dimen name="next_button_total_height">40dp</dimen>
     <dimen name="next_button_elevation">6dp</dimen>
+
+    <dimen name="edit_mode_button_group_margin">16dp</dimen>
+    <dimen name="edit_mode_button_group_margin_between">10dp</dimen>
+    <dimen name="edit_mode_button_size">44dp</dimen>
+
 
     <dimen name="editor_initial_text_size">40sp</dimen>
     <dimen name="emoji_picker_initial_text_size">35sp</dimen>
@@ -104,9 +114,9 @@
     <dimen name="margin_extra_extra_large">48dp</dimen>
 
     <!--  bottom strip view-->
-    <dimen name="bottom_strip_height">64dp</dimen>
-    <dimen name="story_frame_item_width">28dp</dimen>
-    <dimen name="story_frame_item_height">38dp</dimen>
+    <dimen name="bottom_strip_height">80dp</dimen>
+    <dimen name="story_frame_item_width">36dp</dimen>
+    <dimen name="story_frame_item_height">56dp</dimen>
     <dimen name="story_frame_item_padding">5dp</dimen>
 
 </resources>

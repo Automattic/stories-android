@@ -24,8 +24,9 @@
         <!-- this is the delete view  -->
         <com.automattic.portkey.compose.DeleteButton
             android:id="@+id/delete_view"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/delete_button_margin_bottom"
             android:visibility="gone"
             android:layout_centerHorizontal="true"
             android:layout_alignParentBottom="true"/>
@@ -196,122 +197,52 @@
 
 
     <!--edit mode controls-->
+    <ImageButton
+        android:id="@+id/sound_button"
+        android:layout_width="@dimen/edit_mode_button_size"
+        android:layout_height="@dimen/edit_mode_button_size"
+        android:src="@drawable/ic_volume_up_black_24dp"
+        android:tint="@color/white"
+        android:visibility="invisible"
+        android:contentDescription="@string/sound_button_alt"
+        android:background="@drawable/edit_mode_controls_circle_selector"
+        android:layout_margin="@dimen/edit_mode_button_group_margin"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bottom_strip_view"
+        />
+
     <LinearLayout
         android:id="@+id/edit_mode_controls"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/top_button_group_margin"
+        android:layout_margin="@dimen/edit_mode_button_group_margin"
         android:orientation="horizontal"
         android:visibility="invisible"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bottom_strip_view"
         android:animateLayoutChanges="true">
 
-        <LinearLayout
-            android:id="@+id/sound_button_group"
-            android:orientation="vertical"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingLeft="@dimen/top_button_group_margin"
-            android:paddingRight="@dimen/top_button_group_margin"
-            android:paddingBottom="@dimen/top_button_group_margin"
-            android:layout_marginLeft="@dimen/top_button_group_margin"
-            >
-            <ImageView
-                android:id="@+id/sound_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:background="@drawable/ic_volume_up_black_24dp"
-                android:backgroundTint="@color/white"
-                android:contentDescription="@string/sound_button_alt"
-                android:scaleType="fitCenter"
-                />
-
-            <TextView
-                android:id="@+id/label_sound"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/label_control_sound_on"
-                android:textColor="@color/white"
-                android:textSize="@dimen/normal_button_font_size"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/text_add_button_group"
-            android:orientation="vertical"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingLeft="@dimen/top_button_group_margin"
-            android:paddingRight="@dimen/top_button_group_margin"
-            android:paddingBottom="@dimen/top_button_group_margin"
-            android:layout_marginLeft="@dimen/top_button_group_margin"
-            >
-            <ImageView
-                android:id="@+id/text_add_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:background="@drawable/ic_text_fields_black_24dp"
-                android:backgroundTint="@color/white"
-                android:contentDescription="@string/text_button_alt"
-                android:scaleType="fitCenter"
-                />
-
-            <TextView
-                android:id="@+id/label_text_add"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/label_control_text"
-                android:textColor="@color/white"
-                android:textSize="@dimen/normal_button_font_size"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/stickers_button_group"
-            android:orientation="vertical"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingLeft="@dimen/top_button_group_margin"
-            android:paddingBottom="@dimen/top_button_group_margin"
-            android:layout_marginLeft="@dimen/top_button_group_margin"
-            >
-            <ImageView
-                android:id="@+id/stickers_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:background="@drawable/ic_stickers"
-                android:backgroundTint="@color/white"
-                android:contentDescription="@string/stickers_button_alt"
-                android:scaleType="fitCenter"
-                />
-
-            <TextView
-                android:id="@+id/label_stickers"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/label_control_stickers"
-                android:textColor="@color/white"
-                android:textSize="@dimen/normal_button_font_size"/>
-        </LinearLayout>
-
-        <ImageView
-            android:id="@+id/more_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:background="@drawable/ic_more_vert_black_24dp"
-            android:backgroundTint="@color/white"
+        <ImageButton
+            android:id="@+id/stickers_add_button"
+            android:layout_width="@dimen/edit_mode_button_size"
+            android:layout_height="@dimen/edit_mode_button_size"
+            android:src="@drawable/ic_stickers"
+            android:tint="@color/white"
             android:contentDescription="@string/stickers_button_alt"
-            android:scaleType="fitCenter"
-            android:paddingLeft="@dimen/top_button_group_margin"
-            android:paddingBottom="@dimen/top_button_group_margin"
-            android:layout_marginLeft="@dimen/top_button_group_margin"
+            android:background="@drawable/edit_mode_controls_circle_selector"
+            android:layout_marginLeft="@dimen/edit_mode_button_group_margin_between"
             />
+
+        <ImageButton
+            android:id="@+id/text_add_button"
+            android:layout_width="@dimen/edit_mode_button_size"
+            android:layout_height="@dimen/edit_mode_button_size"
+            android:src="@drawable/ic_text"
+            android:tint="@color/white"
+            android:contentDescription="@string/text_button_alt"
+            android:background="@drawable/edit_mode_controls_circle_selector"
+            android:layout_marginLeft="@dimen/edit_mode_button_group_margin_between"
+        />
 
     </LinearLayout>
 
@@ -331,13 +262,31 @@
         android:id="@+id/next_button"
         android:layout_width="@dimen/next_button_total_width"
         android:layout_height="@dimen/next_button_total_height"
-        android:layout_marginBottom="@dimen/next_button_bottom_margin"
-        android:layout_marginEnd="@dimen/next_button_right_margin"
+        android:layout_marginTop="@dimen/next_button_top_margin"
+        android:layout_marginEnd="@dimen/top_button_group_margin"
         android:background="@drawable/next_button_background"
         android:elevation="@dimen/next_button_elevation"
-        app:layout_constraintBottom_toTopOf="@id/bottom_strip_view"
-        app:layout_constraintRight_toRightOf="parent"/>
+        android:visibility="invisible"
+        app:text="@string/label_control_publish"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/more_button"/>
 
+    <ImageView
+        android:id="@+id/more_button"
+        android:visibility="invisible"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:background="@drawable/ic_more_vert_black_24dp"
+        android:backgroundTint="@color/white"
+        android:contentDescription="@string/more_button_alt"
+        android:scaleType="fitCenter"
+        android:paddingTop="@dimen/edit_mode_button_group_margin"
+        android:layout_marginEnd="@dimen/top_button_group_margin"
+        android:layout_marginTop="@dimen/next_button_top_margin"
+        app:layout_constraintTop_toTopOf="@id/next_button"
+        app:layout_constraintRight_toRightOf="parent"
+        />
 
     <fragment android:name="com.automattic.portkey.compose.story.StoryFrameSelectorFragment"
         android:id="@+id/bottom_strip_view"

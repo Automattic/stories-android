@@ -7,7 +7,6 @@ import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.Sa
 import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource.FileBackgroundSource
 import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource.UriBackgroundSource
 import com.automattic.portkey.compose.story.StoryViewModel.StoryFrameListItemUiState.StoryFrameListItemUiStateFrame
-import com.automattic.portkey.compose.story.StoryViewModel.StoryFrameListItemUiState.StoryFrameListItemUiStatePlusIcon
 import com.automattic.portkey.util.SingleLiveEvent
 
 class StoryViewModel(private val repository: StoryRepository, val storyIndex: StoryIndex) : ViewModel() {
@@ -86,6 +85,10 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
         return repository.getCurrentStorySize()
     }
 
+    fun getLastFrameIndexInCurrentStory(): Int {
+        return getCurrentStorySize() - 1
+    }
+
     fun getImmutableCurrentStoryFrames(): List<StoryFrameItem> {
         return repository.getImmutableCurrentStoryFrames()
     }
@@ -153,29 +156,24 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
 
     private fun updateUiStateForSelection(oldSelectedIndex: Int, newSelectedIndex: Int) {
         _uiState.value?.let { immutableStory ->
-            (immutableStory.items[oldSelectedIndex + 1] as? StoryFrameListItemUiStateFrame)?.let {
+            (immutableStory.items[oldSelectedIndex] as? StoryFrameListItemUiStateFrame)?.let {
                 it.selected = false
             }
 
-            (immutableStory.items[newSelectedIndex + 1] as? StoryFrameListItemUiStateFrame)?.let {
+            (immutableStory.items[newSelectedIndex] as? StoryFrameListItemUiStateFrame)?.let {
                 it.selected = true
             }
-            _onSelectedFrameIndex.value = Pair(oldSelectedIndex + 1, newSelectedIndex + 1)
+            _onSelectedFrameIndex.value = Pair(oldSelectedIndex, newSelectedIndex)
         }
     }
 
     private fun updateUiStateForItemSwap(oldIndex: Int, newIndex: Int) {
-        _onFrameIndexMoved.value = Pair(oldIndex + 1, newIndex + 1)
+        _onFrameIndexMoved.value = Pair(oldIndex, newIndex)
     }
 
     private fun createUiStateFromModelState(storyItems: List<StoryFrameItem>): StoryFrameListUiState {
         val uiStateItems = ArrayList<StoryFrameListItemUiState>()
         val newUiState = StoryFrameListUiState(uiStateItems)
-        // add the plus icon to the UiState array
-        uiStateItems.add(StoryFrameListItemUiStatePlusIcon)
-        StoryFrameListItemUiStatePlusIcon.onItemTapped = {
-            _addButtonClicked.call()
-        }
         storyItems.forEachIndexed { index, model ->
             val isSelected = (getSelectedFrameIndex() == index)
             val filePath =
@@ -199,8 +197,6 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
 
     sealed class StoryFrameListItemUiState() {
         var onItemTapped: (() -> Unit)? = null
-
-        object StoryFrameListItemUiStatePlusIcon : StoryFrameListItemUiState()
 
         data class StoryFrameListItemUiStateFrame(
             var selected: Boolean = false,

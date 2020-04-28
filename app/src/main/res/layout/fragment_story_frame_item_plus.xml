@@ -23,7 +23,7 @@
             android:id="@+id/frame_image_selected"
             android:layout_width="@dimen/story_frame_item_width"
             android:layout_height="@dimen/story_frame_item_height"
-            android:background="@drawable/bg_story_item_selected"
+            android:background="@drawable/bg_story_item_plus_icon"
             android:scaleType="fitCenter"
             android:layout_centerInParent="true"/>
     </RelativeLayout>

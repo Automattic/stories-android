@@ -53,7 +53,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         context: Context,
         frames: List<StoryFrameItem>
     ): List<File> {
-        // calling the listener here so the progrers notification initializes itself properly and
+        // calling the listener here so the progress notification initializes itself properly and
         // shows really how many Story frame pages we're going to save
         preDispatchStartProgressListenerCalls(frames.size)
 

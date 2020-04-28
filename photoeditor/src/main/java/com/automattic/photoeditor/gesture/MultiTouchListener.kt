@@ -21,6 +21,7 @@ import com.automattic.photoeditor.views.ViewType
 internal class MultiTouchListener(
     private val mainView: View?,
     private val deleteView: View?,
+    private val workingAreaRect: Rect?,
     private val parentView: RelativeLayout,
     private val photoEditImageView: ImageView,
     private val mIsTextPinchZoomable: Boolean,
@@ -93,17 +94,28 @@ internal class MultiTouchListener(
                     val currX = event.getX(pointerIndexMove)
                     val currY = event.getY(pointerIndexMove)
                     if (!mScaleGestureDetector.isInProgress) {
-                        adjustTranslation(
-                            view,
+                        // if workingAreaRect is set, verify movement is within the area
+                        workingAreaRect?.let {
+                            if (isViewCenterInWorkingAreaBounds(view, currX - mPrevX, currY - mPrevY)) {
+                                adjustTranslation(
+                                    view,
+                                    currX - mPrevX,
+                                    currY - mPrevY
+                                )
+                            }
+                        } ?: adjustTranslation(view,
                             currX - mPrevX,
                             currY - mPrevY
                         )
                     }
-                    if (onMultiTouchListener != null && deleteView != null) {
-                        val readyForDelete = isViewInBounds(deleteView, x, y)
-                        // fade the view a bit to indicate it's going bye bye
-                        setAlphaOnView(view, readyForDelete)
-                        onMultiTouchListener?.onRemoveViewReadyListener(view, readyForDelete)
+
+                    onMultiTouchListener?.let { touchListener ->
+                        deleteView?.let {
+                            val readyForDelete = isViewInBounds(it, x, y)
+                            // fade the view a bit to indicate it's going bye bye
+                            setAlphaOnView(view, readyForDelete)
+                            touchListener.onRemoveViewReadyListener(view, readyForDelete)
+                        }
                     }
                 }
             }
@@ -160,6 +172,16 @@ internal class MultiTouchListener(
         view.getLocationOnScreen(location)
         outRect?.offset(location[0], location[1])
         return outRect?.contains(x, y) ?: false
+    }
+
+    private fun isViewCenterInWorkingAreaBounds(view: View, deltaX: Float, deltaY: Float): Boolean {
+        val deltaVector = getWouldBeTranslation(view, deltaX, deltaY)
+        val wouldBeY = deltaVector[1] + view.y
+
+        workingAreaRect?.let {
+            val distanceToCenter = view.height / 2
+            return ((wouldBeY - distanceToCenter) > it.top) && ((wouldBeY + distanceToCenter) < it.bottom)
+        } ?: return true
     }
 
     fun setOnMultiTouchListener(onMultiTouchListener: OnMultiTouchListener) {
@@ -274,10 +296,15 @@ internal class MultiTouchListener(
         }
 
         private fun adjustTranslation(view: View, deltaX: Float, deltaY: Float) {
-            val deltaVector = floatArrayOf(deltaX, deltaY)
-            view.matrix.mapVectors(deltaVector)
+            val deltaVector = getWouldBeTranslation(view, deltaX, deltaY)
             view.translationX = view.translationX + deltaVector[0]
             view.translationY = view.translationY + deltaVector[1]
+        }
+
+        private fun getWouldBeTranslation(view: View, deltaX: Float, deltaY: Float): FloatArray {
+            val deltaVector = floatArrayOf(deltaX, deltaY)
+            view.matrix.mapVectors(deltaVector)
+            return deltaVector
         }
 
         private fun computeRenderOffset(view: View, pivotX: Float, pivotY: Float) {

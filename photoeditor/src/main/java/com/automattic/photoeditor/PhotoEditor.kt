@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Rect
 import android.graphics.Typeface
 import android.media.MediaMetadataRetriever
 import android.net.Uri
@@ -70,6 +71,7 @@ class PhotoEditor private constructor(builder: Builder) :
     private val parentView: PhotoEditorView
     private val imageView: ImageView
     private val deleteView: View?
+    private var workAreaRect: Rect?
     private val brushDrawingView: BrushDrawingView
     private val addedViews: AddedViewList
     private val redoViews: AddedViewList
@@ -135,6 +137,7 @@ class PhotoEditor private constructor(builder: Builder) :
         this.parentView = builder.parentView
         this.imageView = builder.imageView
         this.deleteView = builder.deleteView
+        this.workAreaRect = builder.workAreaRect
         this.brushDrawingView = builder.brushDrawingView
         this.isTextPinchZoomable = builder.isTextPinchZoomable
         this.mDefaultTextTypeface = builder.textTypeface
@@ -145,10 +148,15 @@ class PhotoEditor private constructor(builder: Builder) :
         redoViews = AddedViewList()
     }
 
+    fun updateWorkAreaRect(workAreaBounds: Rect) {
+        this.workAreaRect = workAreaBounds
+    }
+
     private fun getNewMultitouchListener(mainView: View? = null): MultiTouchListener {
             return MultiTouchListener(
                 mainView,
                 deleteView,
+                workAreaRect,
                 parentView,
                 imageView,
                 isTextPinchZoomable,
@@ -927,6 +935,7 @@ class PhotoEditor private constructor(builder: Builder) :
         (val context: Context, val parentView: PhotoEditorView) {
         val imageView: ImageView = parentView.source
         var deleteView: View? = null
+        var workAreaRect: Rect? = null
         val brushDrawingView: BrushDrawingView = parentView.brush
         var textTypeface: Typeface? = null
         var emojiTypeface: Typeface? = null
@@ -935,6 +944,11 @@ class PhotoEditor private constructor(builder: Builder) :
 
         fun setDeleteView(deleteView: View): Builder {
             this.deleteView = deleteView
+            return this
+        }
+
+        fun setWorkAreaRect(workAreaBounds: Rect): Builder {
+            this.workAreaRect = workAreaBounds
             return this
         }
 

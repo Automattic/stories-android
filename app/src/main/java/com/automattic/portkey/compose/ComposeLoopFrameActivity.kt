@@ -9,6 +9,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.graphics.Rect
 import android.hardware.Camera
 import android.media.MediaScannerConnection
 import android.net.Uri
@@ -29,12 +30,15 @@ import android.view.ViewGroup
 import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.view.menu.MenuBuilder
+import androidx.appcompat.view.menu.MenuPopupHelper
 import androidx.appcompat.widget.PopupMenu
 import androidx.constraintlayout.widget.Group
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.GestureDetectorCompat
+import androidx.core.view.MenuCompat
 import androidx.core.view.ViewCompat
 import androidx.lifecycle.Lifecycle.State
 import androidx.lifecycle.Observer
@@ -129,6 +133,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     private var screenSizeX: Int = 0
     private var screenSizeY: Int = 0
     private var topControlsBaseTopMargin: Int = 0
+    private var nextButtonBaseTopMargin: Int = 0
     private var isEditingText: Boolean = false
 
     private lateinit var storyViewModel: StoryViewModel
@@ -166,15 +171,34 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }
     }
 
+    private fun calculateWorkingArea(): Rect {
+        val location = IntArray(2)
+        photoEditorView.getLocationOnScreen(location)
+        val xCoord = location[0]
+        val yCoord = location[1]
+        val width = photoEditorView.measuredWidth
+        val height = photoEditorView.measuredHeight
+
+        val bottomAreaHeight = resources.getDimensionPixelSize(R.dimen.bottom_strip_height)
+        val topAreaHeight = resources.getDimensionPixelSize(R.dimen.next_button_total_height)
+
+        return Rect(
+            xCoord,
+            yCoord + topAreaHeight,
+            xCoord + width,
+            yCoord + height - bottomAreaHeight)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_composer)
         EventBus.getDefault().register(this)
 
-        topControlsBaseTopMargin = getLayoutTopMarginBeforeInset(edit_mode_controls.layoutParams)
-        ViewCompat.setOnApplyWindowInsetsListener(compose_loop_frame_layout) { view, insets ->
+        topControlsBaseTopMargin = getLayoutTopMarginBeforeInset(close_button.layoutParams)
+        nextButtonBaseTopMargin = getLayoutTopMarginBeforeInset(next_button.layoutParams)
+        ViewCompat.setOnApplyWindowInsetsListener(compose_loop_frame_layout) { _, insets ->
             // set insetTop as margin to all controls appearing at the top of the screen
-            addInsetTopMargin(edit_mode_controls.layoutParams, topControlsBaseTopMargin, insets.systemWindowInsetTop)
+            addInsetTopMargin(next_button.layoutParams, nextButtonBaseTopMargin, insets.systemWindowInsetTop)
             addInsetTopMargin(close_button.layoutParams, topControlsBaseTopMargin, insets.systemWindowInsetTop)
             addInsetTopMargin(control_flash_group.layoutParams, topControlsBaseTopMargin, insets.systemWindowInsetTop)
             insets
@@ -183,6 +207,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         photoEditor = PhotoEditor.Builder(this, photoEditorView)
             .setPinchTextScalable(true) // set flag to make text scalable when pinch
             .setDeleteView(delete_view)
+            .setWorkAreaRect(calculateWorkingArea())
             .build() // build photo editor sdk
 
         photoEditor.setOnPhotoEditorListener(object : OnPhotoEditorListener {
@@ -227,8 +252,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             }
 
             override fun onStartViewChangeListener(viewType: ViewType) {
-                // in this case, also hide the SAVE button
-                editModeHideAllUIControls(true)
+                // in this case, also hide the SAVE button, but don't hide the bottom strip view.
+                editModeHideAllUIControls(hideNextButton = true, hideFrameSelector = false)
             }
 
             override fun onStopViewChangeListener(viewType: ViewType) {
@@ -379,7 +404,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     // TODO couldn't find the story frames? Show some Error Dialog - we can't recover here
                 }
             } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED) {
-                if (StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.size > 0) {
+                if (StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.isNotEmpty()) {
                     storyViewModel.loadStory(storyIndexToSelect)
                     refreshStoryFrameSelection()
                 } else {
@@ -417,6 +442,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // be trying to set app to immersive mode before it's ready and the flags do not stick
         photoEditorView.postDelayed({
                 hideStatusBar(window)
+                photoEditor.updateWorkAreaRect(calculateWorkingArea())
         }, IMMERSIVE_FLAG_TIMEOUT)
     }
 
@@ -485,8 +511,9 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     private fun setDefaultSelectionAndUpdateBackgroundSurfaceUI() {
-        storyViewModel.setSelectedFrame(0)
-        updateBackgroundSurfaceUIWithStoryFrame(0)
+        val defaultSelectedFrameIndex = storyViewModel.getLastFrameIndexInCurrentStory()
+        storyViewModel.setSelectedFrame(defaultSelectedFrameIndex)
+        updateBackgroundSurfaceUIWithStoryFrame(defaultSelectedFrameIndex)
     }
 
     private fun addFramesToStoryFromMediaUriList(uriList: ArrayList<Uri>) {
@@ -603,25 +630,23 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             }
         }
 
-        sound_button_group.setOnClickListener {
+        sound_button.setOnClickListener {
             if (videoPlayerMuted) {
                 backgroundSurfaceManager.videoPlayerUnmute()
                 videoPlayerMuted = false
-                sound_button.background = getDrawable(R.drawable.ic_volume_up_black_24dp)
-                label_sound.text = getString(R.string.label_control_sound_on)
+                sound_button.setImageResource(R.drawable.ic_volume_up_black_24dp)
             } else {
                 backgroundSurfaceManager.videoPlayerMute()
                 videoPlayerMuted = true
-                sound_button.background = getDrawable(R.drawable.ic_volume_mute_black_24dp)
-                label_sound.text = getString(R.string.label_control_sound_off)
+                sound_button.setImageResource(R.drawable.ic_volume_mute_black_24dp)
             }
         }
 
-        text_add_button_group.setOnClickListener {
+        text_add_button.setOnClickListener {
             addNewText()
         }
 
-        stickers_button_group.setOnClickListener {
+        stickers_add_button.setOnClickListener {
             emojiPickerFragment.show(supportFragmentManager, emojiPickerFragment.tag)
         }
 
@@ -697,20 +722,31 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         val popup = PopupMenu(this, view)
         val inflater = popup.getMenuInflater()
         inflater.inflate(R.menu.edit_mode_more, popup.getMenu())
+        MenuCompat.setGroupDividerEnabled(popup.menu, true)
         popup.setOnMenuItemClickListener {
-            // show dialog
-            DiscardDialog.newInstance(getString(R.string.dialog_discard_frame_message), object : DiscardOk {
-                override fun discardOkClicked() {
-                    // get currentFrame value as it will change after calling onAboutToDeleteStoryFrame
-                    val currentFrameToDeleteIndex = storyViewModel.getSelectedFrameIndex()
-                    onAboutToDeleteStoryFrame(currentFrameToDeleteIndex)
-                    // now discard it from the viewModel
-                    storyViewModel.removeFrameAt(currentFrameToDeleteIndex)
+            when (it.itemId) {
+                R.id.menu_delete_page ->
+                    // show dialog
+                    DiscardDialog.newInstance(getString(R.string.dialog_discard_page_message), object : DiscardOk {
+                        override fun discardOkClicked() {
+                            // get currentFrame value as it will change after calling onAboutToDeleteStoryFrame
+                            val currentFrameToDeleteIndex = storyViewModel.getSelectedFrameIndex()
+                            onAboutToDeleteStoryFrame(currentFrameToDeleteIndex)
+                            // now discard it from the viewModel
+                            storyViewModel.removeFrameAt(currentFrameToDeleteIndex)
+                        }
+                    }).show(supportFragmentManager, FRAGMENT_DIALOG)
+
+                R.id.menu_save_page -> {
+                    // TODO only save this one, and stay here.
+                    showToast("not implemented yet")
                 }
-            }).show(supportFragmentManager, FRAGMENT_DIALOG)
+            }
             true
         }
-        popup.show()
+        val menuHelper = MenuPopupHelper(this, popup.getMenu() as MenuBuilder, view)
+        menuHelper.setForceShowIcon(true)
+        menuHelper.show()
     }
 
     private fun showMediaPicker() {
@@ -731,8 +767,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     private fun switchCameraPreviewOn() {
-        backgroundSurfaceManager.switchCameraPreviewOn()
         hideStoryFrameSelector()
+        backgroundSurfaceManager.switchCameraPreviewOn()
     }
 
     private fun testBrush() {
@@ -832,7 +868,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                         addStoryFrameItemToCurrentStory(
                             StoryFrameItem(FileBackgroundSource(file = file), frameItemType = StoryFrameItemType.IMAGE)
                         )
-                        setSelectedFrame(0)
+                        setSelectedFrame(storyViewModel.getLastFrameIndexInCurrentStory())
                     }
                     showStaticBackground()
                     currentOriginalCapturedFile = file
@@ -880,7 +916,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                         storyViewModel.apply {
                             addStoryFrameItemToCurrentStory(StoryFrameItem(FileBackgroundSource(file = it),
                                 frameItemType = VIDEO))
-                            setSelectedFrame(0)
+                            setSelectedFrame(storyViewModel.getLastFrameIndexInCurrentStory())
                         }
                     }
                 }
@@ -1102,12 +1138,13 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // show proper edit mode controls
         close_button.visibility = View.VISIBLE
         edit_mode_controls.visibility = View.VISIBLE
+        more_button.visibility = View.VISIBLE
         next_button.visibility = View.VISIBLE
 
         if (noSound) {
-            sound_button_group.visibility = View.INVISIBLE
+            sound_button.visibility = View.INVISIBLE
         } else {
-            sound_button_group.visibility = View.VISIBLE
+            sound_button.visibility = View.VISIBLE
         }
     }
 
@@ -1125,17 +1162,22 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // hide proper edit mode controls
         close_button.visibility = View.INVISIBLE
         edit_mode_controls.visibility = View.INVISIBLE
+        more_button.visibility = View.INVISIBLE
+        sound_button.visibility = View.INVISIBLE
         next_button.visibility = View.INVISIBLE
         // show capturing mode controls
         showVideoUIControls()
     }
 
-    private fun editModeHideAllUIControls(hideNextButton: Boolean) {
+    private fun editModeHideAllUIControls(hideNextButton: Boolean, hideFrameSelector: Boolean = true) {
         // momentarily hide proper edit mode controls
         close_button.visibility = View.INVISIBLE
         edit_mode_controls.visibility = View.INVISIBLE
-        sound_button_group.visibility = View.INVISIBLE
-        hideStoryFrameSelector()
+        more_button.visibility = View.INVISIBLE
+        sound_button.visibility = View.INVISIBLE
+        if (hideFrameSelector) {
+            hideStoryFrameSelector()
+        }
         if (hideNextButton) {
             next_button.visibility = View.INVISIBLE
         }
@@ -1145,14 +1187,15 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // show all edit mode controls
         close_button.visibility = View.VISIBLE
         edit_mode_controls.visibility = View.VISIBLE
+        more_button.visibility = View.VISIBLE
         next_button.visibility = View.VISIBLE
 
         // noSound parameter here should be true if video player is off
         val noSound = !backgroundSurfaceManager.videoPlayerVisible()
         if (noSound) {
-            sound_button_group.visibility = View.INVISIBLE
+            sound_button.visibility = View.INVISIBLE
         } else {
-            sound_button_group.visibility = View.VISIBLE
+            sound_button.visibility = View.VISIBLE
         }
         showStoryFrameSelector()
     }
@@ -1281,7 +1324,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         } else {
             // if there are no items to the left and there are items to the right, then choose
             // an item to the right
-            if (nextIdxToSelect < storyViewModel.getCurrentStorySize() - 1) {
+            if (nextIdxToSelect < storyViewModel.getLastFrameIndexInCurrentStory()) {
                 nextIdxToSelect++
             }
         }
