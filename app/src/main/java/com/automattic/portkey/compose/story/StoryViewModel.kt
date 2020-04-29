@@ -17,11 +17,11 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
     private val _uiState: MutableLiveData<StoryFrameListUiState> = MutableLiveData()
     val uiState: LiveData<StoryFrameListUiState> = _uiState
 
-    private val _uiStateErroredItem: MutableLiveData<StoryFrameListItemUiStateFrame> = MutableLiveData()
-    val uiStateErroredItem: LiveData<StoryFrameListItemUiStateFrame> = _uiStateErroredItem
+    private val _ErroredItemUiState: MutableLiveData<StoryFrameListItemUiStateFrame> = MutableLiveData()
+    val erroredItemUiState: LiveData<StoryFrameListItemUiStateFrame> = _ErroredItemUiState
 
-    private val _uiStateForItemAtIndexChanged = SingleLiveEvent<Int>()
-    val uiStateForItemAtIndexChanged = _uiStateForItemAtIndexChanged
+    private val _itemAtIndexChangedUiState = SingleLiveEvent<Int>()
+    val itemAtIndexChangedUiState = _itemAtIndexChangedUiState
 
     private val _onSelectedFrameIndex: SingleLiveEvent<Pair<Int, Int>> by lazy {
         SingleLiveEvent<Pair<Int, Int>>().also {
@@ -205,10 +205,10 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
         _uiState.value?.let { immutableStory ->
             (immutableStory.items[selectedIndex] as? StoryFrameListItemUiStateFrame)?.let {
                 it.errored = errored
-                _uiStateErroredItem.value = it
+                _ErroredItemUiState.value = it
             }
         }
-        _uiStateForItemAtIndexChanged.value = selectedIndex
+        _itemAtIndexChangedUiState.value = selectedIndex
     }
 
     private fun updateUiStateForItemSwap(oldIndex: Int, newIndex: Int) {

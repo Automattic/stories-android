@@ -47,9 +47,11 @@ class DeleteButton : FrameLayout {
         readyForDeleteState = isReadyForDelete
         if (readyForDeleteState) {
             deleteButton.background = getDrawable(context, R.drawable.bg_oval_white_delete_control)
+            // make the icon black
             deleteButton.setColorFilter(Color.argb(255, 0, 0, 0))
         } else {
             deleteButton.background = getDrawable(context, R.drawable.edit_mode_controls_circle_selector)
+            // make the icon white
             deleteButton.setColorFilter(Color.argb(255, 255, 255, 255))
         }
     }
