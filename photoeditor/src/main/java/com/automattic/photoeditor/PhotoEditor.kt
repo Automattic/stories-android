@@ -383,7 +383,7 @@ class PhotoEditor private constructor(builder: Builder) :
     }
 
     fun addViewToParentWithTouchListener(rootView: View, viewType: ViewType, sourceUri: Uri? = null) {
-        val multiTouchListenerInstance = getNewMultitouchListener() // newMultiTouchListener
+        val multiTouchListenerInstance = getNewMultitouchListener(rootView) // newMultiTouchListener
         when {
             viewType == EMOJI -> {
                 multiTouchListenerInstance.setOnGestureControl(object :
