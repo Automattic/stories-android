@@ -382,7 +382,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         storyViewModel.uiState.observe(this, Observer {
             // if no frames in Story, launch the capture mode
             if (storyViewModel.getCurrentStorySize() == 0) {
-                next_button.setEnabled(true)
+                next_button.isEnabled = true
                 photoEditor.clearAllViews()
                 launchCameraPreview()
                 // finally, delete the captured media
@@ -390,11 +390,12 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             }
         })
 
-        storyViewModel.onSelectedFrameIndex.observe(this, Observer<Pair<Int, Int>> { selectedFrameIndexChange ->
+        storyViewModel.onSelectedFrameIndex.observe(this, Observer { selectedFrameIndexChange ->
+
             updateContentUiStateSelection(selectedFrameIndexChange.first, selectedFrameIndexChange.second)
         })
 
-        storyViewModel.uiStateErroredItem.observe(this, Observer { uiStateFrame ->
+        storyViewModel.erroredItemUiState.observe(this, Observer { uiStateFrame ->
             updateContentUiStateFrame(uiStateFrame)
         })
     }
@@ -421,7 +422,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // disable the Publish button - need to pass a postDelayed given it somehow doesn't play well right on start
         // being shown
         next_button.postDelayed({
-            next_button.setEnabled(false)
+            next_button.isEnabled = false
         }, 500)
 
         val errors = storySaveResult.frameSaveResult.filter { it.resultReason is SaveError }
@@ -829,19 +830,17 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
         // do this if we are retrying to save the current frame
         if (storyFrameIndexToRetry != StoryRepository.DEFAULT_NONE_SELECTED) {
-            retry_button.showSavedAnimation(object : Runnable {
-                override fun run() {
-                    if (result.isSuccess()) {
-                        hideRetryButton()
-                    } else {
-                        checkForLowSpaceAndShowDialog()
-                    }
-                    storyViewModel.updateCurrentSelectedFrameOnRetryResult(
-                        result.frameSaveResult[0]
-                    )
-                    // need to do this so AddedViews get properly placed on the PhotoEditor
-                    refreshStoryFrameSelection()
+            retry_button.showSavedAnimation(Runnable {
+                if (result.isSuccess()) {
+                    hideRetryButton()
+                } else {
+                    checkForLowSpaceAndShowDialog()
                 }
+                storyViewModel.updateCurrentSelectedFrameOnRetryResult(
+                    result.frameSaveResult[0]
+                )
+                // need to do this so AddedViews get properly placed on the PhotoEditor
+                refreshStoryFrameSelection()
             })
         }
 
@@ -1384,19 +1383,19 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             originallyErrored && !currentlyErrored -> {
                 blockTouchOnPhotoEditor(BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY)
                 edit_mode_controls.visibility = View.INVISIBLE
-                next_button.setEnabled(true)
+                next_button.isEnabled = true
                 (bottom_strip_view as StoryFrameSelectorFragment).hideAddFrameControl()
             }
             currentlyErrored -> {
                 blockTouchOnPhotoEditor(BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION)
                 edit_mode_controls.visibility = View.INVISIBLE
-                next_button.setEnabled(false)
+                next_button.isEnabled = false
                 (bottom_strip_view as StoryFrameSelectorFragment).hideAddFrameControl()
             }
             else -> { // no errors here! this is the normal creation situation: release touch block, enable editing
                 releaseTouchOnPhotoEditor(BLOCK_TOUCH_MODE_NONE)
                 edit_mode_controls.visibility = View.VISIBLE
-                next_button.setEnabled(true)
+                next_button.isEnabled = true
                 (bottom_strip_view as StoryFrameSelectorFragment).showAddFrameControl()
             }
         }
