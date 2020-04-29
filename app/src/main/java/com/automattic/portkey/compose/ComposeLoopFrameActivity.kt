@@ -395,7 +395,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             updateContentUiStateSelection(selectedFrameIndexChange.first, selectedFrameIndexChange.second)
         })
 
-        storyViewModel.uiStateErroredItem.observe(this, Observer { uiStateFrame ->
+        storyViewModel.erroredItemUiState.observe(this, Observer { uiStateFrame ->
             updateContentUiStateFrame(uiStateFrame)
         })
     }
