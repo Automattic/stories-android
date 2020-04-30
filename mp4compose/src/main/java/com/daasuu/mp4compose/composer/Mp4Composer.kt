@@ -61,7 +61,7 @@ class Mp4Composer {
         return this
     }
 
-    fun filter(filter: GlFilter): Mp4Composer {
+    fun filter(filter: GlFilter?): Mp4Composer {
         this.filter = filter
         return this
     }
