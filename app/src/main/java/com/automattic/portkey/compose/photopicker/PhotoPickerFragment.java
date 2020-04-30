@@ -27,7 +27,6 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.automattic.portkey.R;
-import com.automattic.portkey.compose.NextButton;
 import com.automattic.portkey.compose.photopicker.PhotoPickerAdapter.PhotoPickerAdapterListener;
 import com.automattic.portkey.compose.photopicker.utils.AniUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -76,7 +75,6 @@ public class PhotoPickerFragment extends Fragment {
     private ArrayList<Integer> mSelectedPositions;
     private TextView mChooseItemsDescription;
     private FloatingActionButton mTakePicture;
-    private NextButton mNextButton;
 
 //    public static PhotoPickerFragment newInstance(@NonNull PhotoPickerListener listener,
 //                                                  @NonNull MediaBrowserType browserType,
@@ -131,14 +129,6 @@ public class PhotoPickerFragment extends Fragment {
         mTakePicture.setOnClickListener(new OnClickListener() {
             @Override public void onClick(View view) {
                 doIconClicked(PhotoPickerIcon.WP_STORIES_CAPTURE);
-            }
-        });
-
-        mNextButton = view.findViewById(R.id.next_button);
-        mNextButton.setOnClickListener(new OnClickListener() {
-            @Override public void onClick(View view) {
-                ArrayList<Uri> uriList = getAdapter().getSelectedURIs();
-                mListener.onPhotoPickerMediaChosen(uriList);
             }
         });
 
@@ -381,14 +371,12 @@ public class PhotoPickerFragment extends Fragment {
             if (count == 0) {
                 finishActionMode();
                 mTakePicture.show();
-                mNextButton.setVisibility(View.GONE);
             } else {
                 if (mActionMode == null) {
                     ((AppCompatActivity) getActivity()).startSupportActionMode(new ActionModeCallback());
                 }
                 updateActionModeTitle(mAdapter.isSelectedSingleItemVideo());
                 mTakePicture.hide();
-                mNextButton.setVisibility(View.VISIBLE);
             }
         }
 
@@ -525,7 +513,6 @@ public class PhotoPickerFragment extends Fragment {
             mActionMode = null;
             showBottomBar();
             getAdapter().clearSelection();
-            mNextButton.setVisibility(View.GONE);
             mTakePicture.show();
         }
     }
