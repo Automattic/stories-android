@@ -111,7 +111,7 @@ internal class MultiTouchListener(
 
                     onMultiTouchListener?.let { touchListener ->
                         deleteView?.let {
-                            val readyForDelete = isViewInBounds(it, x, y)
+                            val readyForDelete = isAnyCornerOfViewAOverlappingViewB(it, view)
                             // fade the view a bit to indicate it's going bye bye
                             setAlphaOnView(view, readyForDelete)
                             touchListener.onRemoveViewReadyListener(view, readyForDelete)
@@ -123,7 +123,7 @@ internal class MultiTouchListener(
                 INVALID_POINTER_ID
             MotionEvent.ACTION_UP -> {
                 mActivePointerId = INVALID_POINTER_ID
-                if (deleteView != null && isViewInBounds(deleteView, x, y)) {
+                if (deleteView != null && isAnyCornerOfViewAOverlappingViewB(deleteView, view)) {
                     onMultiTouchListener?.onRemoveViewListener(view)
                 }
 //                else if (!isViewInBounds(photoEditImageView, x, y)) {
@@ -172,6 +172,36 @@ internal class MultiTouchListener(
         view.getLocationOnScreen(location)
         outRect?.offset(location[0], location[1])
         return outRect?.contains(x, y) ?: false
+    }
+
+    private fun isAnyCornerOfViewAOverlappingViewB(viewA: View, viewB: View, percentage: Float = 0.08f): Boolean {
+        val firstPosition = IntArray(2)
+        val secondPosition = IntArray(2)
+
+        viewA.getLocationOnScreen(firstPosition)
+        viewB.getLocationOnScreen(secondPosition)
+
+        // Rect constructor parameters: left, top, right, bottom
+        val rectViewA = Rect(
+            firstPosition[0],
+            firstPosition[1],
+            firstPosition[0] + viewA.measuredWidth,
+            firstPosition[1] + viewA.measuredHeight
+        )
+        // adjust the second view to make it slightly smaller
+        // (the area near its borders do not have meaningful information) - otherwise it feels like they "overlap"
+        // but visually they don't look like so
+        val adjustedWidth = (viewB.measuredWidth * (1 - percentage)).toInt()
+        val adjustedHeight = (viewB.measuredHeight * (1 - percentage)).toInt()
+        val adjustedXPos = (secondPosition[0] * (1 + percentage)).toInt()
+        val adjustedYPos = (secondPosition[1] * (1 + percentage)).toInt()
+        val rectViewB = Rect(
+            adjustedXPos,
+            adjustedYPos,
+            secondPosition[0] + adjustedWidth,
+            secondPosition[1] + adjustedHeight
+        )
+        return rectViewA.intersect(rectViewB)
     }
 
     private fun isViewCenterInWorkingAreaBounds(view: View, deltaX: Float, deltaY: Float): Boolean {
