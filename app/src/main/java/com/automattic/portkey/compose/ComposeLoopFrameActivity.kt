@@ -1025,9 +1025,9 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         backgroundSurfaceManager.switchVideoPlayerOnFromUri(videoUri)
     }
 
-    private fun showStaticBackground(showTextAndStickers: Boolean = true) {
+    private fun showStaticBackground() {
         showStoryFrameSelector()
-        showEditModeUIControls(true, showTextAndStickers)
+        showEditModeUIControls(true)
         backgroundSurfaceManager.switchStaticImageBackgroundModeOn()
     }
 
@@ -1315,18 +1315,14 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         container_gallery_upload.visibility = View.VISIBLE
     }
 
-    private fun showEditModeUIControls(noSound: Boolean, showTextAndStickers: Boolean = true) {
+    private fun showEditModeUIControls(noSound: Boolean) {
         // hide capturing mode controls
         hideVideoUIControls()
         camera_capture_button.visibility = View.INVISIBLE
 
         // show proper edit mode controls
         close_button.visibility = View.VISIBLE
-        if (showTextAndStickers) {
-            edit_mode_controls.visibility = View.VISIBLE
-        } else {
-            edit_mode_controls.visibility = View.INVISIBLE
-        }
+        edit_mode_controls.visibility = View.VISIBLE
         more_button.visibility = View.VISIBLE
         next_button.visibility = View.VISIBLE
 
@@ -1641,8 +1637,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 .load(model)
                 .transform(CenterCrop())
                 .into(photoEditorView.source)
-            // we'll decide whether to show text/stickers later if this is an errored frame
-            showStaticBackground(showTextAndStickers = false)
+            showStaticBackground()
         }
 
         // make sure to release the added views before re-selecting them
