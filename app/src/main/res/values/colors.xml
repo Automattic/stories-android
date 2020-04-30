@@ -11,6 +11,7 @@
     <color name="colorPrimary_loop">#008577</color>
     <color name="colorPrimaryDark_loop">#00574B</color>
     <color name="colorAccent_loop">#D81B60</color>
+    <color name="pink_50">#c9356e</color>
 
     <color name="white">#FFFFFF</color>
     <color name="white_transp">#66FFFFFF</color>
