@@ -17,6 +17,7 @@
     <color name="white_transp">#66FFFFFF</color>
     <color name="black">#000000</color>
     <color name="grey">#888888</color>
+    <color name="gray_10">#C3C4C7</color>
     <color name="black_transp">#99000000</color>
     <color name="black_transp_light">#66000000</color>
     <color name="black_transp_light_darker">#99000000</color>
