@@ -14,7 +14,7 @@ fun removeViewFromParent(view: View) {
     }
 }
 
-fun cloneViewSpecs(context: Context, originalView: View, targetView: View) {
+fun cloneViewSpecs(originalView: View, targetView: View) {
     val originalWidth = originalView.getWidth()
     val originalHeight = originalView.getHeight()
 
