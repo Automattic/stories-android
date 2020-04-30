@@ -113,8 +113,16 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         var frameFile: File? = null
         when (frame.frameItemType) {
             VIDEO -> {
-                frameFile = saveVideoFrame(frame, frameIndex)
-                releaseAddedViewsAfterSnapshot(frame)
+                // - if we have addedViews then we need to process the vido with mp4composer
+                // - if the source video is a Uri, let's process it through mp4composer anyway to obtain
+                // a local file we can upload
+                if (frame.addedViews.isNotEmpty() || frame.source is UriBackgroundSource) {
+                    frameFile = saveVideoFrame(frame, frameIndex)
+                    releaseAddedViewsAfterSnapshot(frame)
+                } else {
+                    // don't process the video but return the original file if no added views in this Story frame
+                    frameFile = (frame.source as FileBackgroundSource).file
+                }
             }
             IMAGE -> {
                 // check whether there are any GIF stickers - if there are, we need to produce a video instead
