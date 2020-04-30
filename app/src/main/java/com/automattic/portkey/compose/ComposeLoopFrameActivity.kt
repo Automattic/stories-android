@@ -1659,7 +1659,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
         // now clear addedViews so we don't leak View.Context
         photoEditor.clearAllViews()
-        launchCameraPreview()
+        showMediaPicker()
     }
 
     private inner class FlingGestureListener : GestureDetector.SimpleOnGestureListener() {
