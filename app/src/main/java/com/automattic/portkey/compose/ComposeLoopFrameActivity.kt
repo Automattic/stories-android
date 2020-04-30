@@ -595,7 +595,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     val uriList = data.getParcelableArrayListExtra<Uri>(PhotoPickerActivity.EXTRA_MEDIA_URI_LIST)
                     addFramesToStoryFromMediaUriList(uriList)
                     setDefaultSelectionAndUpdateBackgroundSurfaceUI()
-                } else {
+                } else if (data.hasExtra(PhotoPickerActivity.EXTRA_MEDIA_URI)) {
                     val mediaUri = data.getStringExtra(PhotoPickerActivity.EXTRA_MEDIA_URI)
                     if (mediaUri == null) {
                         Log.e("Composer", "Can't resolve picked media")
@@ -604,6 +604,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     }
                     addFrameToStoryFromMediaUri(Uri.parse(mediaUri))
                     setDefaultSelectionAndUpdateBackgroundSurfaceUI()
+                } else if (data.hasExtra(PhotoPickerActivity.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED)) {
+                    launchCameraPreview()
                 }
             }
         }

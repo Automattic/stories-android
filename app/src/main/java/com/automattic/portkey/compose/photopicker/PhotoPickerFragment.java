@@ -47,6 +47,7 @@ public class PhotoPickerFragment extends Fragment {
         ANDROID_CHOOSE_VIDEO,
         ANDROID_CAPTURE_PHOTO,
         ANDROID_CAPTURE_VIDEO,
+        WP_STORIES_CAPTURE,
         WP_MEDIA,
         STOCK_MEDIA,
         GIPHY
@@ -129,7 +130,7 @@ public class PhotoPickerFragment extends Fragment {
         mTakePicture = view.findViewById(R.id.take_picture);
         mTakePicture.setOnClickListener(new OnClickListener() {
             @Override public void onClick(View view) {
-                doIconClicked(PhotoPickerIcon.ANDROID_CAPTURE_PHOTO);
+                doIconClicked(PhotoPickerIcon.WP_STORIES_CAPTURE);
             }
         });
 
@@ -249,7 +250,9 @@ public class PhotoPickerFragment extends Fragment {
     public void doIconClicked(@NonNull PhotoPickerIcon icon) {
         mLastTappedIcon = icon;
 
-        if (icon == PhotoPickerIcon.ANDROID_CAPTURE_PHOTO || icon == PhotoPickerIcon.ANDROID_CAPTURE_VIDEO) {
+        if (icon == PhotoPickerIcon.ANDROID_CAPTURE_PHOTO
+            || icon == PhotoPickerIcon.ANDROID_CAPTURE_VIDEO
+            || icon == PhotoPickerIcon.WP_STORIES_CAPTURE) {
             if (ContextCompat.checkSelfPermission(
                     getActivity(), permission.CAMERA) != PackageManager.PERMISSION_GRANTED || !hasStoragePermission()) {
 //                requestCameraPermission();
