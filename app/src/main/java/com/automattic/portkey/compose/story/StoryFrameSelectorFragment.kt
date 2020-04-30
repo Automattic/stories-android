@@ -13,6 +13,7 @@ import com.automattic.portkey.R.layout
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
+import androidx.recyclerview.widget.SimpleItemAnimator
 import com.automattic.portkey.compose.story.StoryViewModel.StoryFrameListUiState
 import com.automattic.portkey.util.getStoryIndexFromIntentOrBundle
 import kotlinx.android.synthetic.main.fragment_story_frame_selector.*
@@ -72,6 +73,9 @@ class StoryFrameSelectorFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(layout.fragment_story_frame_selector, container, false)
         view.story_frames_view.adapter = StoryFrameSelectorAdapter()
+        // disable animations on selected border visibility changes so users can see the selection
+        // change on the selector immediately
+        (view.story_frames_view.getItemAnimator() as SimpleItemAnimator).setSupportsChangeAnimations(false)
         view.plus_icon.setOnClickListener {
             storyViewModel.addButtonClicked.call()
         }
