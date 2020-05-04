@@ -239,7 +239,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 }
 
                 isEditingText = true
-                editModeHideAllUIControls(false)
+                editModeHideAllUIControls(true)
                 if (isJustAdded) {
                     // hide new text views
                     rootView.visibility = View.GONE
