@@ -1308,7 +1308,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
         // show proper edit mode controls
         close_button.visibility = View.VISIBLE
-        edit_mode_controls.visibility = View.VISIBLE
+        updateEditMode()
         more_button.visibility = View.VISIBLE
         next_button.visibility = View.VISIBLE
 
