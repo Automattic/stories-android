@@ -5,7 +5,8 @@
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="@dimen/bottom_strip_height"
-    android:paddingRight="@dimen/story_frame_item_padding"
+    android:paddingRight="@dimen/story_frame_selector_padding"
+    android:paddingLeft="@dimen/story_frame_selector_padding"
     android:background="@color/black_transp_story_frame_selector">
 
     <androidx.recyclerview.widget.RecyclerView
@@ -14,8 +15,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:layout_weight="1"
-        android:paddingLeft="@dimen/story_frame_item_padding"
-        android:paddingRight="@dimen/story_frame_item_padding"
         android:orientation="horizontal"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         />
