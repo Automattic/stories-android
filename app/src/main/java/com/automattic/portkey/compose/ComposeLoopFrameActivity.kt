@@ -745,7 +745,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             } else {
                 backgroundSurfaceManager.videoPlayerMute()
                 videoPlayerMuted = true
-                sound_button.setImageResource(R.drawable.ic_volume_mute_black_24dp)
+                sound_button.setImageResource(R.drawable.ic_volume_off_black_24dp)
             }
         }
 
