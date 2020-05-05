@@ -1317,12 +1317,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         updateEditMode()
         more_button.visibility = View.VISIBLE
         next_button.visibility = View.VISIBLE
-
-        if (noSound) {
-            sound_button.visibility = View.INVISIBLE
-        } else {
-            sound_button.visibility = View.VISIBLE
-        }
     }
 
     private fun hideStoryFrameSelector() {
@@ -1370,6 +1364,9 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 backgroundSurfaceManager.videoPlayerMute()
                 sound_button.setImageResource(R.drawable.ic_volume_off_black_24dp)
             }
+        } else {
+            // images don't have audio
+            sound_button.visibility = View.INVISIBLE
         }
     }
 
@@ -1383,18 +1380,22 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             originallyErrored && !currentlyErrored -> {
                 blockTouchOnPhotoEditor(BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY)
                 edit_mode_controls.visibility = View.INVISIBLE
+                sound_button.visibility = View.INVISIBLE
                 next_button.isEnabled = true
                 (bottom_strip_view as StoryFrameSelectorFragment).hideAddFrameControl()
             }
             currentlyErrored -> {
                 blockTouchOnPhotoEditor(BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION)
                 edit_mode_controls.visibility = View.INVISIBLE
+                sound_button.visibility = View.INVISIBLE
                 next_button.isEnabled = false
                 (bottom_strip_view as StoryFrameSelectorFragment).hideAddFrameControl()
             }
             else -> { // no errors here! this is the normal creation situation: release touch block, enable editing
                 releaseTouchOnPhotoEditor(BLOCK_TOUCH_MODE_NONE)
                 edit_mode_controls.visibility = View.VISIBLE
+                sound_button.visibility = View.VISIBLE
+                updateSoundControl()
                 next_button.isEnabled = true
                 (bottom_strip_view as StoryFrameSelectorFragment).showAddFrameControl()
             }
@@ -1408,13 +1409,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         more_button.visibility = View.VISIBLE
         next_button.visibility = View.VISIBLE
 
-        // noSound parameter here should be true if video player is off
-        val noSound = !backgroundSurfaceManager.videoPlayerVisible()
-        if (noSound) {
-            sound_button.visibility = View.INVISIBLE
-        } else {
-            sound_button.visibility = View.VISIBLE
-        }
         showStoryFrameSelector()
     }
 
