@@ -38,6 +38,7 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
     // holds the File handle to the current video file to be played
     var currentFile: File? = null
     var currentExternalUri: Uri? = null
+    var isMuted = false
 
     /**
      * [TextureView.SurfaceTextureListener] handles several lifecycle events on a
@@ -153,6 +154,7 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
     //                setOnPreparedListener(this)
     //                setOnVideoSizeChangedListener(this)
                     setAudioStreamType(AudioManager.STREAM_MUSIC)
+                    setVolume(if (isMuted) 0f else 1f, if (isMuted) 0f else 1f)
                     start()
                 }
             }
@@ -195,10 +197,12 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
 
     override fun mute() {
         mediaPlayer?.setVolume(0f, 0f)
+        isMuted = true
     }
 
     override fun unmute() {
         mediaPlayer?.setVolume(1f, 1f)
+        isMuted = false
     }
 
     private fun calculateVideoSizeAndOrientation(videoUri: Uri) {
