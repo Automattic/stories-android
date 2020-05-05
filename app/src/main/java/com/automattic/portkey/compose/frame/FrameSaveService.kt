@@ -62,18 +62,29 @@ class FrameSaveService : Service() {
         return START_NOT_STICKY
     }
 
-    fun saveStoryFrames(storyIndex: Int, photoEditor: PhotoEditor) {
+    fun saveStoryFrames(
+        storyIndex: Int,
+        photoEditor: PhotoEditor,
+        frameIndex: FrameIndex = StoryRepository.DEFAULT_NONE_SELECTED
+    ) {
         CoroutineScope(Dispatchers.Default).launch {
             EventBus.getDefault().postSticky(StorySaveProcessStart(storyIndex))
 
-            // freeze the Story in the Repository
-            val storyFrames = StoryRepository.getImmutableCurrentStoryFrames()
-            StoryRepository.finishCurrentStory()
+            lateinit var storyFrames: List<StoryFrameItem>
+            if (frameIndex > StoryRepository.DEFAULT_NONE_SELECTED) {
+                // in case frameIndex is passed, then save only one frame as indicated by frameIndex
+                // easier to make a list and keep iterators
+                storyFrames = listOf(StoryRepository.getStoryAtIndex(storyIndex).frames[frameIndex])
+            } else {
+                storyFrames = StoryRepository.getImmutableCurrentStoryFrames()
+                // when saving a full story, first freeze the Story in the Repository
+                StoryRepository.finishCurrentStory()
+            }
 
             // now create a processor and run it.
             // also hold a reference to it in the storySaveProcessors list in case the Service is destroyed, so
             // we can cancel each coroutine.
-            val processor = createProcessor(storyIndex, photoEditor)
+            val processor = createProcessor(storyIndex, frameIndex, photoEditor)
             storySaveProcessors.add(processor)
             runProcessor(
                 processor,
@@ -100,10 +111,15 @@ class FrameSaveService : Service() {
         processor.detachProgressListener()
     }
 
-    private fun createProcessor(storyIndex: Int, photoEditor: PhotoEditor): StorySaveProcessor {
+    private fun createProcessor(
+        storyIndex: StoryIndex,
+        frameIndex: FrameIndex,
+        photoEditor: PhotoEditor
+    ): StorySaveProcessor {
         return StorySaveProcessor(
             this,
             storyIndex,
+            frameIndex,
             frameSaveNotifier,
             FrameSaveManager(photoEditor)
         )
@@ -219,7 +235,8 @@ class FrameSaveService : Service() {
 
     class StorySaveProcessor(
         private val context: Context,
-        private val storyIndex: Int,
+        private val storyIndex: StoryIndex,
+        private val frameIndexOverride: FrameIndex = StoryRepository.DEFAULT_NONE_SELECTED,
         private val frameSaveNotifier: FrameSaveNotifier,
         private val frameSaveManager: FrameSaveManager
     ) : FrameSaveProgressListener {
@@ -229,53 +246,55 @@ class FrameSaveService : Service() {
 
         // FrameSaveProgressListener overrides
         override fun onFrameSaveStart(frameIndex: FrameIndex) {
-            Log.d("PORTKEY", "START save frame idx: " + frameIndex)
+            Log.d("PORTKEY", "START save frame idx: " + applyFrameIndexOverride(frameIndex))
             frameSaveNotifier.addStoryPageInfoToForegroundNotification(
                 storyIndex,
-                mediaIdFromStoryAndFrameIndex(storyIndex, frameIndex),
+                mediaIdFromStoryAndFrameIndex(storyIndex, applyFrameIndexOverride(frameIndex)),
                 title
             )
         }
 
         override fun onFrameSaveProgress(frameIndex: FrameIndex, progress: Double) {
-            Log.d("PORTKEY", "PROGRESS save frame idx: " + frameIndex + " %: " + progress)
+            Log.d("PORTKEY", "PROGRESS save frame idx: " + applyFrameIndexOverride(frameIndex) + " %: " + progress)
             frameSaveNotifier.updateNotificationProgressForMedia(
-                mediaIdFromStoryAndFrameIndex(storyIndex, frameIndex),
-                progress.toFloat())
+                mediaIdFromStoryAndFrameIndex(storyIndex, applyFrameIndexOverride(frameIndex)), progress.toFloat())
         }
 
         override fun onFrameSaveCompleted(frameIndex: FrameIndex) {
-            Log.d("PORTKEY", "END save frame idx: " + frameIndex)
+            Log.d("PORTKEY", "END save frame idx: " + applyFrameIndexOverride(frameIndex))
             frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(
                 storyIndex,
                 title,
-                mediaIdFromStoryAndFrameIndex(storyIndex, frameIndex),
+                mediaIdFromStoryAndFrameIndex(storyIndex, applyFrameIndexOverride(frameIndex)),
                 true
             )
             // add success data to StorySaveResult
-            storySaveResult.frameSaveResult.add(FrameSaveResult(frameIndex, SaveSuccess))
+            storySaveResult.frameSaveResult.add(FrameSaveResult(applyFrameIndexOverride(frameIndex), SaveSuccess))
         }
 
         override fun onFrameSaveCanceled(frameIndex: FrameIndex) {
+            Log.d("PORTKEY", "CANCELED save frame idx: " + applyFrameIndexOverride(frameIndex))
             // remove one from the count
             frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(
                 storyIndex,
                 title,
-                mediaIdFromStoryAndFrameIndex(storyIndex, frameIndex)
+                mediaIdFromStoryAndFrameIndex(storyIndex, applyFrameIndexOverride(frameIndex))
             )
             // add error data to StorySaveResult
-            storySaveResult.frameSaveResult.add(FrameSaveResult(frameIndex, SaveError(REASON_CANCELLED)))
+            storySaveResult.frameSaveResult.add(
+                FrameSaveResult(applyFrameIndexOverride(frameIndex), SaveError(REASON_CANCELLED)))
         }
 
         override fun onFrameSaveFailed(frameIndex: FrameIndex, reason: String?) {
+            Log.d("PORTKEY", "FAILED save frame idx: " + applyFrameIndexOverride(frameIndex))
             // remove one from the count
             frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(
                 storyIndex,
                 title,
-                mediaIdFromStoryAndFrameIndex(storyIndex, frameIndex)
+                mediaIdFromStoryAndFrameIndex(storyIndex, applyFrameIndexOverride(frameIndex))
             )
             // add error data to StorySaveResult
-            storySaveResult.frameSaveResult.add(FrameSaveResult(frameIndex, SaveError(reason)))
+            storySaveResult.frameSaveResult.add(FrameSaveResult(applyFrameIndexOverride(frameIndex), SaveError(reason)))
         }
 
         fun attachProgressListener() {
@@ -284,6 +303,15 @@ class FrameSaveService : Service() {
 
         fun detachProgressListener() {
             frameSaveManager.saveProgressListener = null
+        }
+
+        // frameIndex on listeners can be overriden if we're saving just one frame. This comes in handy
+        // for save retries, where a list of one item is passed to the saveProcessor
+        private fun applyFrameIndexOverride(frameIndex: Int): Int {
+            if (frameIndexOverride > StoryRepository.DEFAULT_NONE_SELECTED) {
+                return frameIndexOverride
+            }
+            return frameIndex
         }
 
         suspend fun saveStory(

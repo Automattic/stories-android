@@ -3,6 +3,7 @@ package com.automattic.portkey.compose.story
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.automattic.portkey.compose.frame.FrameSaveService.FrameSaveResult
 import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveSuccess
 import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource.FileBackgroundSource
 import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource.UriBackgroundSource
@@ -14,6 +15,12 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
 
     private val _uiState: MutableLiveData<StoryFrameListUiState> = MutableLiveData()
     val uiState: LiveData<StoryFrameListUiState> = _uiState
+
+    private val _ErroredItemUiState: MutableLiveData<StoryFrameListItemUiStateFrame> = MutableLiveData()
+    val erroredItemUiState: LiveData<StoryFrameListItemUiStateFrame> = _ErroredItemUiState
+
+    private val _itemAtIndexChangedUiState = SingleLiveEvent<Int>()
+    val itemAtIndexChangedUiState = _itemAtIndexChangedUiState
 
     private val _onSelectedFrameIndex: SingleLiveEvent<Pair<Int, Int>> by lazy {
         SingleLiveEvent<Pair<Int, Int>>().also {
@@ -69,6 +76,14 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
         _onUserSelectedFrame.value = Pair(oldIndex, index)
     }
 
+    fun updateCurrentSelectedFrameOnRetryResult(frameSaveResult: FrameSaveResult) {
+        repository.updateCurrentStorySaveResultOnFrame(
+            currentSelectedFrameIndex,
+            frameSaveResult
+        )
+        updateUiStateForError(currentSelectedFrameIndex, frameSaveResult.resultReason != SaveSuccess)
+    }
+
     fun getSelectedFrameIndex(): Int {
         return currentSelectedFrameIndex
     }
@@ -95,6 +110,20 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
 
     fun getCurrentStoryIndex(): Int {
         return repository.currentStoryIndex
+    }
+
+    fun getStoryAtIndex(index: Int): Story {
+        return repository.getStoryAtIndex(index)
+    }
+
+    fun anyOfCurrentStoryFramesIsErrored(): Boolean {
+        val frames = repository.getImmutableCurrentStoryFrames()
+        for (frame in frames) {
+            if (frame.saveResultReason !is SaveSuccess) {
+                return true
+            }
+        }
+        return false
     }
 
     fun anyOfCurrentStoryFramesHasViews(): Boolean {
@@ -165,6 +194,16 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
             }
             _onSelectedFrameIndex.value = Pair(oldSelectedIndex, newSelectedIndex)
         }
+    }
+
+    private fun updateUiStateForError(selectedIndex: Int, errored: Boolean) {
+        _uiState.value?.let { immutableStory ->
+            (immutableStory.items[selectedIndex] as? StoryFrameListItemUiStateFrame)?.let {
+                it.errored = errored
+                _ErroredItemUiState.value = it
+            }
+        }
+        _itemAtIndexChangedUiState.value = selectedIndex
     }
 
     private fun updateUiStateForItemSwap(oldIndex: Int, newIndex: Int) {

@@ -4,7 +4,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.automattic.portkey.R.layout
 import com.automattic.portkey.compose.story.StoryFrameSelectorAdapter.StoryFrameHolder.StoryFrameHolderItem
@@ -62,6 +61,10 @@ class StoryFrameSelectorAdapter : RecyclerView.Adapter<StoryFrameSelectorAdapter
         }
     }
 
+    fun updateContentUiStateItem(position: Int) {
+        notifyItemChanged(position)
+    }
+
     fun updateContentUiStateMovedIndex(oldPosition: Int, newPosition: Int) {
         notifyItemMoved(oldPosition, newPosition)
     }
@@ -70,7 +73,7 @@ class StoryFrameSelectorAdapter : RecyclerView.Adapter<StoryFrameSelectorAdapter
         val clickableView = view // entire view should be clickable
         val imageView: ImageView = view.frame_image
         val frameBorder: ImageView = view.frame_image_selected
-        val frameErrored: TextView? = view.frame_image_errored
+        val frameErrored: ImageView? = view.frame_image_errored
         abstract fun onBind(uiState: StoryFrameListItemUiState)
 
         class StoryFrameHolderItem(v: View) : StoryFrameHolder(v) {

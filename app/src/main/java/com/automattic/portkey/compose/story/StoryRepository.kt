@@ -1,5 +1,7 @@
 package com.automattic.portkey.compose.story
 
+import com.automattic.portkey.compose.frame.FrameIndex
+import com.automattic.portkey.compose.frame.FrameSaveService.FrameSaveResult
 import com.automattic.portkey.compose.frame.FrameSaveService.StorySaveResult
 import java.util.Collections
 
@@ -7,6 +9,7 @@ typealias StoryIndex = Int
 
 object StoryRepository {
     const val DEFAULT_NONE_SELECTED = -1
+    const val DEFAULT_FRAME_NONE_SELECTED = -1
     private val currentStoryFrames = ArrayList<StoryFrameItem>()
     var currentStoryIndex = DEFAULT_NONE_SELECTED
         private set
@@ -67,6 +70,9 @@ object StoryRepository {
 
     fun discardCurrentStory() {
         currentStoryFrames.clear()
+        if (isStoryIndexValid(currentStoryIndex)) {
+            stories.removeAt(currentStoryIndex)
+        }
         currentStoryIndex = DEFAULT_NONE_SELECTED
     }
 
@@ -74,12 +80,16 @@ object StoryRepository {
         stories[currentStoryIndex].title = title
     }
 
-    fun setCurrentStorySaveResultsOnFrames(storyIndex: Int, saveResult: StorySaveResult) {
+    fun setCurrentStorySaveResultsOnFrames(storyIndex: StoryIndex, saveResult: StorySaveResult) {
         // iterate over the StorySaveResult, check their indexes, and set the corresponding frame result
         for (index in 0..saveResult.frameSaveResult.size - 1) {
             val frameIdxToSet = saveResult.frameSaveResult[index].frameIndex
             stories[storyIndex].frames[frameIdxToSet].saveResultReason = saveResult.frameSaveResult[index].resultReason
         }
+    }
+
+    fun updateCurrentStorySaveResultOnFrame(frameIndex: FrameIndex, frameSaveResult: FrameSaveResult) {
+        currentStoryFrames[frameIndex].saveResultReason = frameSaveResult.resultReason
     }
 
     fun getCurrentStoryFrameAt(index: Int): StoryFrameItem {

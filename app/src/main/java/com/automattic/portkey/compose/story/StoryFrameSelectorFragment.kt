@@ -23,7 +23,7 @@ interface OnStoryFrameSelectorTappedListener {
     fun onStoryFrameAddTapped()
 }
 
-open class StoryFrameSelectorFragment : Fragment() {
+class StoryFrameSelectorFragment : Fragment() {
     lateinit var storyViewModel: StoryViewModel
     private var storyFrameTappedListener: OnStoryFrameSelectorTappedListener? = null
 
@@ -52,6 +52,10 @@ open class StoryFrameSelectorFragment : Fragment() {
             storyFrameTappedListener?.onStoryFrameAddTapped()
         })
 
+        storyViewModel.itemAtIndexChangedUiState.observe(this, Observer { uiStateFrameIndex ->
+            updateContentUiStateItem(uiStateFrameIndex)
+        })
+
         storyViewModel.uiState.observe(this, Observer { uiState ->
             uiState?.let {
                 updateContentUiState(uiState)
@@ -72,7 +76,6 @@ open class StoryFrameSelectorFragment : Fragment() {
             storyViewModel.addButtonClicked.call()
         }
         setupItemTouchListener(view)
-        storyViewModel.loadStory(storyViewModel.storyIndex)
         view.visibility = View.INVISIBLE
         return view
     }
@@ -96,6 +99,11 @@ open class StoryFrameSelectorFragment : Fragment() {
     private fun updateContentUiStateMovedIndex(oldPosition: Int, newPosition: Int) {
         (story_frames_view.adapter as StoryFrameSelectorAdapter)
             .updateContentUiStateMovedIndex(oldPosition, newPosition)
+    }
+
+    private fun updateContentUiStateItem(position: Int) {
+        (story_frames_view.adapter as StoryFrameSelectorAdapter)
+            .updateContentUiStateItem(position)
     }
 
     private fun setupItemTouchListener(view: View) {
@@ -167,5 +175,13 @@ open class StoryFrameSelectorFragment : Fragment() {
 
     fun hide() {
         view?.visibility = View.GONE
+    }
+
+    fun hideAddFrameControl() {
+        view?.plus_icon?.visibility = View.INVISIBLE
+    }
+
+    fun showAddFrameControl() {
+        view?.plus_icon?.visibility = View.VISIBLE
     }
 }

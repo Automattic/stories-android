@@ -27,6 +27,9 @@
     <string name="label_control_sound_off">Sound off</string>
     <string name="label_control_save">Save</string>
     <string name="label_control_saving">Saving</string>
+    <string name="label_control_saved">Saved</string>
+    <string name="label_control_retry">Retry</string>
+    <string name="label_control_retrying">retrying</string>
     <string name="label_snackbar_loop_frame_saved">Saved to photos</string>
     <string name="label_snackbar_share">SHARE</string>
     <string name="label_share_to">Share to</string>
@@ -38,9 +41,15 @@
 
     <string name="menu_delete_page">Delete page</string>
     <string name="menu_save_page">Save page</string>
-    <string name="dialog_discard_page_message">Are you sure you want to delete this page from your Story?</string>
 
-    <string name="dialog_discard_message">Are you sure you want to discard your Story?</string>
+    <string name="dialog_discard_page_title">Delete story page?</string>
+    <string name="dialog_discard_page_message">This page will be removed from your story.</string>
+    <string name="dialog_discard_errored_page_message">This page has not been saved yet. If you delete this page, you will lose any edits you have made.</string>
+    <string name="dialog_discard_page_ok_button">Delete</string>
+
+    <string name="dialog_discard_story_title">Discard Story?</string>
+    <string name="dialog_discard_story_message">If you discard this story it will not be saved as a draft.</string>
+    <string name="dialog_discard_story_ok_button">Discard</string>
 
     <!-- Intro -->
     <string name="get_started">Get Started</string>
@@ -100,9 +109,14 @@
     <string name="story_saving_failed_message_plural">%1$d pages require action</string>
     <string name="story_saving_failed_quick_action_manage">Manage</string>
 
+    <!-- Save Frame process error dialog strings-->
     <string name="dialog_story_saving_error_title_singular">Unable to save 1 page</string>
     <string name="dialog_story_saving_error_title_plural">Unable to save %1$d pages</string>
     <string name="dialog_story_saving_error_message">Retry saving or delete the pages, then try publishing your story again.</string>
+    <!-- Insufficient device storage dialog strings-->
+    <string name="dialog_insufficient_device_storage_error_title">Insufficient device storage</string>
+    <string name="dialog_insufficient_device_storage_error_message">We need to save the story on your device before it can be published. Review your storage settings and remove files to free up space.</string>
+    <string name="dialog_insufficient_device_storage_error_ok_button">View Storage</string>
 
     <!-- WordPress Android strings - matching in case of future integration -->
     <!-- Android O notification channels, these show in the Android app settings -->
