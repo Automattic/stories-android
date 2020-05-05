@@ -726,14 +726,13 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     listener = object : FrameSaveErrorDialogOk {
                         override fun OnOkClicked(dialog: DialogFragment) {
                             dialog.dismiss()
-                            photoEditor.clearAllViews()
-                            storyViewModel.discardCurrentStory()
-                            storyViewModel.loadStory(StoryRepository.DEFAULT_NONE_SELECTED)
+                            // discard the whole story
+                            safelyDiscardCurrentStoryAndCleanUpIntent()
                         }
                     }).show(supportFragmentManager, FRAGMENT_DIALOG)
             } else {
-                storyViewModel.discardCurrentStory()
-                storyViewModel.loadStory(StoryRepository.DEFAULT_NONE_SELECTED)
+                // discard the whole story
+                safelyDiscardCurrentStoryAndCleanUpIntent()
             }
         }
 
@@ -805,9 +804,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                             dialog.dismiss()
                             if (storyViewModel.getCurrentStorySize() == 1) {
                                 // discard the whole story
-                                photoEditor.clearAllViews()
-                                storyViewModel.discardCurrentStory()
-                                storyViewModel.loadStory(StoryRepository.DEFAULT_NONE_SELECTED)
+                                safelyDiscardCurrentStoryAndCleanUpIntent()
                             } else {
                                 // get currentFrame value as it will change after calling onAboutToDeleteStoryFrame
                                 val currentFrameToDeleteIndex = storyViewModel.getSelectedFrameIndex()
@@ -836,6 +833,19 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             }
         }
         return false
+    }
+
+    private fun safelyDiscardCurrentStoryAndCleanUpIntent() {
+        photoEditor.clearAllViews()
+        storyViewModel.discardCurrentStory()
+        cleanupOriginalIntentSaveResult()
+        storyViewModel.loadStory(StoryRepository.DEFAULT_NONE_SELECTED)
+    }
+
+    private fun cleanupOriginalIntentSaveResult() {
+        if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
+            intent.removeExtra(KEY_STORY_SAVE_RESULT)
+        }
     }
 
     private fun saveStory() {
