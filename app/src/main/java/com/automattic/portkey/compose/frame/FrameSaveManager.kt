@@ -68,7 +68,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         // now, save all videos async and wait - this process is intense so only allow for 3 videos to be processed
         // concurrently
         val savedVideos = saveLoopFramesAsyncAwait(
-            context, frames, VIDEO, VIDEO_CONCURRENCY_LIMIT
+            context, frames, VIDEO(), VIDEO_CONCURRENCY_LIMIT
         )
 
         return savedImages + savedVideos
@@ -94,7 +94,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
             async {
                 concurrencyLimitSemaphore.withPermit {
                     // see above - we only want to save frames of frameItemType
-                    if (frame.frameItemType == frameItemType) {
+                    if (frame.frameItemType.isSameType(frameItemType)) {
                         yield()
                         return@withPermit saveStoryFrame(context, frame, index)
                     } else {
@@ -113,7 +113,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
     ): File? {
         var frameFile: File? = null
         when (frame.frameItemType) {
-            VIDEO -> {
+            is VIDEO -> {
                 // - if we have addedViews then we need to process the vido with mp4composer
                 // - if the source video is a Uri, let's process it through mp4composer anyway to obtain
                 // a local file we can upload
@@ -125,7 +125,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
                     frameFile = (frame.source as FileBackgroundSource).file
                 }
             }
-            IMAGE -> {
+            is IMAGE -> {
                 // check whether there are any GIF stickers - if there are, we need to produce a video instead
                 if (frame.addedViews.containsAnyAddedViewsOfType(STICKER_ANIMATED)) {
                     // TODO make saveVideoWithStaticBackground return File
@@ -237,12 +237,13 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         // as these are all processed in the background
         uri?.let {
             photoEditor.saveVideoAsLoopFrameFile(
-                frameIndex,
-                it,
-                photoEditor.composedCanvas.width,
-                photoEditor.composedCanvas.height,
-                frame.addedViews,
-                onSaveListener
+                sequenceId = frameIndex,
+                videoInputPath = it,
+                muteAudio = (frame.frameItemType as? VIDEO)?.muteAudio ?: false,
+                canvasWidth = photoEditor.composedCanvas.width,
+                canvasHeight = photoEditor.composedCanvas.height,
+                customAddedViews = frame.addedViews,
+                onSaveListener = onSaveListener
             )
             callMade = true
         }

@@ -3,6 +3,7 @@ package com.automattic.portkey.compose.story
 import com.automattic.portkey.compose.frame.FrameIndex
 import com.automattic.portkey.compose.frame.FrameSaveService.FrameSaveResult
 import com.automattic.portkey.compose.frame.FrameSaveService.StorySaveResult
+import com.automattic.portkey.compose.story.StoryFrameItemType.VIDEO
 import java.util.Collections
 
 typealias StoryIndex = Int
@@ -90,6 +91,10 @@ object StoryRepository {
 
     fun updateCurrentStorySaveResultOnFrame(frameIndex: FrameIndex, frameSaveResult: FrameSaveResult) {
         currentStoryFrames[frameIndex].saveResultReason = frameSaveResult.resultReason
+    }
+
+    fun updateCurrentSelectedFrameOnAudioMuted(frameIndex: FrameIndex, muteAudio: Boolean) {
+        (currentStoryFrames[frameIndex].frameItemType as? VIDEO)?.muteAudio = muteAudio
     }
 
     fun getCurrentStoryFrameAt(index: Int): StoryFrameItem {

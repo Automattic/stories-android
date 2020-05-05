@@ -142,7 +142,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
     private var cameraSelection = CameraSelection.BACK
     private var flashModeSelection = FlashIndicatorState.OFF
-    private var videoPlayerMuted = false
 
     private lateinit var emojiPickerFragment: EmojiPickerFragment
     private lateinit var swipeDetector: GestureDetectorCompat
@@ -376,6 +375,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
         }
     }
+
     private fun setupStoryViewModelObservers() {
         storyViewModel.uiState.observe(this, Observer {
             // if no frames in Story, launch the capture mode
@@ -389,13 +389,22 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         })
 
         storyViewModel.onSelectedFrameIndex.observe(this, Observer { selectedFrameIndexChange ->
-
             updateContentUiStateSelection(selectedFrameIndexChange.first, selectedFrameIndexChange.second)
         })
 
         storyViewModel.erroredItemUiState.observe(this, Observer { uiStateFrame ->
             updateContentUiStateFrame(uiStateFrame)
         })
+
+        storyViewModel.itemAtIndexChangedMuteAudioUiState.observe(this, Observer { uiStateFrameIndex ->
+            updateUiStateForAudioMuted(uiStateFrameIndex)
+        })
+    }
+
+    private fun updateUiStateForAudioMuted(frameIndex: Int) {
+        if (frameIndex == storyViewModel.getSelectedFrameIndex()) {
+            updateSoundControl()
+        }
     }
 
     private fun updateContentUiStateSelection(oldSelection: Int, newSelection: Int) {
@@ -570,11 +579,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         } else if (storyViewModel.getCurrentStorySize() > 0) {
             // get currently selected frame and check whether this is a video or an image
             when (storyViewModel.getSelectedFrame().frameItemType) {
-                VIDEO -> runOnUiThread {
+                is VIDEO -> runOnUiThread {
                     // now start playing the video that was selected in the frame selector
                     showPlayVideo()
                 }
-                IMAGE -> runOnUiThread {
+                is IMAGE -> runOnUiThread {
                     // switch to static background
                     showStaticBackground()
                 }
@@ -630,7 +639,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         storyViewModel
             .addStoryFrameItemToCurrentStory(StoryFrameItem(
                 UriBackgroundSource(contentUri = Uri.parse(mediaUri.toString())),
-                frameItemType = if (isVideo(mediaUri.toString())) VIDEO else IMAGE
+                frameItemType = if (isVideo(mediaUri.toString())) VIDEO() else IMAGE
             ))
     }
 
@@ -738,15 +747,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }
 
         sound_button.setOnClickListener {
-            if (videoPlayerMuted) {
-                backgroundSurfaceManager.videoPlayerUnmute()
-                videoPlayerMuted = false
-                sound_button.setImageResource(R.drawable.ic_volume_up_black_24dp)
-            } else {
-                backgroundSurfaceManager.videoPlayerMute()
-                videoPlayerMuted = true
-                sound_button.setImageResource(R.drawable.ic_volume_off_black_24dp)
-            }
+            // flip the flag on audio muted on the VM, the change will get propagated to the UI
+            storyViewModel.flipCurrentSelectedFrameOnAudioMuted()
         }
 
         text_add_button.setOnClickListener {
@@ -1086,7 +1088,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     runOnUiThread {
                         storyViewModel.apply {
                             addStoryFrameItemToCurrentStory(StoryFrameItem(FileBackgroundSource(file = it),
-                                frameItemType = VIDEO))
+                                frameItemType = VIDEO()))
                             setSelectedFrame(storyViewModel.getLastFrameIndexInCurrentStory())
                         }
                     }
@@ -1163,6 +1165,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 photoEditor.saveVideoAsFile(
                     inputFile,
                     file.absolutePath,
+                    storyViewModel.isSelectedFrameAudioMuted(),
                     object : PhotoEditor.OnSaveWithCancelAndProgressListener {
                         override fun onProgress(progress: Double) {
                             // TODO implement progress
@@ -1352,6 +1355,18 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }
         if (hideNextButton) {
             next_button.visibility = View.INVISIBLE
+        }
+    }
+
+    private fun updateSoundControl() {
+        if (storyViewModel.getSelectedFrame().frameItemType is VIDEO) {
+            if (!storyViewModel.isSelectedFrameAudioMuted()) {
+                backgroundSurfaceManager.videoPlayerUnmute()
+                sound_button.setImageResource(R.drawable.ic_volume_up_black_24dp)
+            } else {
+                backgroundSurfaceManager.videoPlayerMute()
+                sound_button.setImageResource(R.drawable.ic_volume_off_black_24dp)
+            }
         }
     }
 
@@ -1609,7 +1624,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // 2. video/file source
         // 3. image/uri source
         // 4. image/file source
-        if (newSelectedFrame.frameItemType == VIDEO) {
+        if (newSelectedFrame.frameItemType is VIDEO) {
             source.apply {
                 if (this is FileBackgroundSource) {
                     showPlayVideo(file)
@@ -1617,6 +1632,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     showPlayVideo(it)
                 }
             }
+            updateSoundControl()
         } else {
             val model = (source as? FileBackgroundSource)?.file ?: (source as UriBackgroundSource).contentUri
             Glide.with(this@ComposeLoopFrameActivity)

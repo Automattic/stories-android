@@ -7,6 +7,7 @@ import com.automattic.portkey.compose.frame.FrameSaveService.FrameSaveResult
 import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveSuccess
 import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource.FileBackgroundSource
 import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource.UriBackgroundSource
+import com.automattic.portkey.compose.story.StoryFrameItemType.VIDEO
 import com.automattic.portkey.compose.story.StoryViewModel.StoryFrameListItemUiState.StoryFrameListItemUiStateFrame
 import com.automattic.portkey.util.SingleLiveEvent
 
@@ -21,6 +22,9 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
 
     private val _itemAtIndexChangedUiState = SingleLiveEvent<Int>()
     val itemAtIndexChangedUiState = _itemAtIndexChangedUiState
+
+    private val _itemAtIndexChangedMuteAudioUiState = SingleLiveEvent<Int>()
+    val itemAtIndexChangedMuteAudioUiState = _itemAtIndexChangedMuteAudioUiState
 
     private val _onSelectedFrameIndex: SingleLiveEvent<Pair<Int, Int>> by lazy {
         SingleLiveEvent<Pair<Int, Int>>().also {
@@ -82,6 +86,24 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
             frameSaveResult
         )
         updateUiStateForError(currentSelectedFrameIndex, frameSaveResult.resultReason != SaveSuccess)
+    }
+
+    fun updateCurrentSelectedFrameOnAudioMuted(muteAudio: Boolean) {
+        repository.updateCurrentSelectedFrameOnAudioMuted(
+            currentSelectedFrameIndex,
+            muteAudio
+        )
+        updateUiStateForAudioMuted(currentSelectedFrameIndex, muteAudio)
+    }
+
+    fun flipCurrentSelectedFrameOnAudioMuted() {
+        if (getSelectedFrame().frameItemType is VIDEO) {
+            updateCurrentSelectedFrameOnAudioMuted(!isSelectedFrameAudioMuted())
+        }
+    }
+
+    fun isSelectedFrameAudioMuted(): Boolean {
+        return (getSelectedFrame().frameItemType as? VIDEO)?.muteAudio ?: false
     }
 
     fun getSelectedFrameIndex(): Int {
@@ -206,6 +228,15 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
         _itemAtIndexChangedUiState.value = selectedIndex
     }
 
+    private fun updateUiStateForAudioMuted(selectedIndex: Int, muteAudio: Boolean) {
+        _uiState.value?.let { immutableStory ->
+            (immutableStory.items[selectedIndex] as? StoryFrameListItemUiStateFrame)?.let {
+                it.muteAudio = muteAudio
+            }
+        }
+        _itemAtIndexChangedMuteAudioUiState.value = selectedIndex
+    }
+
     private fun updateUiStateForItemSwap(oldIndex: Int, newIndex: Int) {
         _onFrameIndexMoved.value = Pair(oldIndex, newIndex)
     }
@@ -240,7 +271,8 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
         data class StoryFrameListItemUiStateFrame(
             var selected: Boolean = false,
             var errored: Boolean = false,
-            var filePath: String? = null
+            var filePath: String? = null,
+            var muteAudio: Boolean = false
         ) : StoryFrameListItemUiState()
     }
 
