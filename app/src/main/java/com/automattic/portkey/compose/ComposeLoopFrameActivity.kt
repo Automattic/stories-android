@@ -408,8 +408,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     private fun updateContentUiStateSelection(oldSelection: Int, newSelection: Int) {
-        val selectedFrame = storyViewModel.getCurrentStoryFrameAt(newSelection)
-        showRetryButtonAndHideEditControlsForErroredFrame(selectedFrame.saveResultReason !is SaveSuccess)
+        if (storyViewModel.getCurrentStorySize() > newSelection) {
+            val selectedFrame = storyViewModel.getCurrentStoryFrameAt(newSelection)
+            updateSoundControl()
+            showRetryButtonAndHideEditControlsForErroredFrame(selectedFrame.saveResultReason !is SaveSuccess)
+        }
     }
 
     // this will invoked when a RETRY operation ends on the currently selected frame

@@ -26,12 +26,12 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
     private val _itemAtIndexChangedMuteAudioUiState = SingleLiveEvent<Int>()
     val itemAtIndexChangedMuteAudioUiState = _itemAtIndexChangedMuteAudioUiState
 
-    private val _onSelectedFrameIndex: SingleLiveEvent<Pair<Int, Int>> by lazy {
-        SingleLiveEvent<Pair<Int, Int>>().also {
+    private val _onSelectedFrameIndex: MutableLiveData<Pair<Int, Int>> by lazy {
+        MutableLiveData<Pair<Int, Int>>().also {
             it.value = Pair(DEFAULT_SELECTION, currentSelectedFrameIndex)
         }
     }
-    val onSelectedFrameIndex: SingleLiveEvent<Pair<Int, Int>> = _onSelectedFrameIndex
+    val onSelectedFrameIndex: MutableLiveData<Pair<Int, Int>> = _onSelectedFrameIndex
 
     private val _onFrameIndexMoved = SingleLiveEvent<Pair<Int, Int>>()
     val onFrameIndexMoved: SingleLiveEvent<Pair<Int, Int>> = _onFrameIndexMoved
