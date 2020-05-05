@@ -15,7 +15,7 @@ android {
         if (project.hasProperty("versionName")) {
             versionName project.property("versionName")
         } else {
-            versionName "1.0.0.12-camerax"
+            versionName "1.0.0.13-camerax"
         }
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
