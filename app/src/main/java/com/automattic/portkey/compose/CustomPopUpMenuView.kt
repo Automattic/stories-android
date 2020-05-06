@@ -9,10 +9,10 @@ import com.automattic.portkey.R
 import kotlinx.android.synthetic.main.view_compose_popup_menu.view.*
 
 class CustomPopUpMenuView @JvmOverloads constructor(
-        context: Context,
-        attrs: AttributeSet? = null,
-        defStyleAttr: Int = 0
-    ) : FrameLayout(context, attrs, defStyleAttr) {
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : FrameLayout(context, attrs, defStyleAttr) {
     private var deleteButtonClickListener: OnClickListener? = null
 
     init {
