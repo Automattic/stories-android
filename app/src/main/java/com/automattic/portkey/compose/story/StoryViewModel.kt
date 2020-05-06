@@ -53,7 +53,7 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
     }
 
     fun discardCurrentStory() {
-        FrameSaveService.cleanUpTemporalStoryFrameFiles(getImmutableCurrentStoryFrames())
+        FrameSaveService.cleanUpTempStoryFrameFiles(getImmutableCurrentStoryFrames())
         repository.discardCurrentStory()
         currentSelectedFrameIndex = DEFAULT_SELECTION // default selected frame when loading a new Story
         _onSelectedFrameIndex.value = Pair(DEFAULT_SELECTION, currentSelectedFrameIndex)
@@ -140,7 +140,7 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
 
     fun removeFrameAt(pos: Int) {
         // delete any temporal files
-        FrameSaveService.cleanUpTemporalStoryFrameFiles(getImmutableCurrentStoryFrames().subList(pos, pos + 1))
+        FrameSaveService.cleanUpTempStoryFrameFiles(getImmutableCurrentStoryFrames().subList(pos, pos + 1))
 
         // remove from the repo
         repository.removeFrameAt(pos)

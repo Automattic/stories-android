@@ -10,7 +10,7 @@ import java.io.FileOutputStream
 
 class FileUtils {
     companion object {
-        const val CAPTURE_FILE_NAME_PREFIX = "tmp_wp_story"
+        const val TEMP_FILE_NAME_PREFIX = "tmp_wp_story"
         const val OUTPUT_FILE_NAME_PREFIX = "wp_story"
 
         fun getLoopFrameFile(context: Context, video: Boolean, seqId: String = ""): File {
@@ -40,9 +40,9 @@ class FileUtils {
             return context.getDir("tmp", 0)
         }
 
-        fun getCaptureFile(context: Context, video: Boolean): File {
+        fun getTempCaptureFile(context: Context, video: Boolean): File {
             return File(getInternalDirectory(context),
-                CAPTURE_FILE_NAME_PREFIX +
+                TEMP_FILE_NAME_PREFIX +
                         System.currentTimeMillis() + if (video) ".mp4" else ".jpg"
             )
         }

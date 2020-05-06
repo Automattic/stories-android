@@ -15,7 +15,7 @@ import android.webkit.MimeTypeMap
 import com.automattic.portkey.R
 import com.automattic.portkey.compose.frame.FrameSaveManager.FrameSaveProgressListener
 import com.automattic.photoeditor.PhotoEditor
-import com.automattic.photoeditor.util.FileUtils.Companion.CAPTURE_FILE_NAME_PREFIX
+import com.automattic.photoeditor.util.FileUtils.Companion.TEMP_FILE_NAME_PREFIX
 import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveError
 import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveSuccess
 import com.automattic.portkey.compose.story.StoryFrameItem
@@ -96,7 +96,7 @@ class FrameSaveService : Service() {
             // remove the processor from the list once it's done processing this Story's frames
             storySaveProcessors.remove(processor)
 
-            cleanUpTemporalStoryFrameFiles(storyFrames)
+            cleanUpTempStoryFrameFiles(storyFrames)
 
             // also if more than one processor is running, let's not stop the Service just now.
             if (storySaveProcessors.isEmpty()) {
@@ -343,10 +343,10 @@ class FrameSaveService : Service() {
             return intent
         }
 
-        fun cleanUpTemporalStoryFrameFiles(frames: List<StoryFrameItem>) {
+        fun cleanUpTempStoryFrameFiles(frames: List<StoryFrameItem>) {
             for (frame in frames) {
                 (frame.source as? FileBackgroundSource)?.file?.let {
-                    if (it.name.startsWith(CAPTURE_FILE_NAME_PREFIX)) {
+                    if (it.name.startsWith(TEMP_FILE_NAME_PREFIX)) {
                         it.delete()
                     }
                 }

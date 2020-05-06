@@ -716,7 +716,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
             /**
              * create video output file
              */
-            currentFile = FileUtils.getCaptureFile(activity, true)
+            currentFile = FileUtils.getTempCaptureFile(activity, true)
             currentFile?.createNewFile()
 
             /**
@@ -836,7 +836,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
     override fun takePicture(onImageCapturedListener: ImageCaptureListener) {
         // Create output file to hold the image
         activity?.let {
-            currentFile = FileUtils.getCaptureFile(it, false)
+            currentFile = FileUtils.getTempCaptureFile(it, false)
         }
         currentFile?.createNewFile()
 
