@@ -1,4 +1,4 @@
-package com.wordpress.stories.util
+package com.automattic.portkey.util
 
 import android.content.SharedPreferences
 import android.text.TextUtils

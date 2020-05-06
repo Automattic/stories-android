@@ -3,7 +3,7 @@ package com.automattic.portkey
 import android.annotation.SuppressLint
 import android.content.Context
 import androidx.preference.PreferenceManager
-import com.wordpress.stories.util.PreferenceUtils
+import com.automattic.portkey.util.PreferenceUtils
 
 // Guaranteed to hold a reference to the application context, which is safe
 @SuppressLint("StaticFieldLeak")
