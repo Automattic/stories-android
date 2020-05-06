@@ -7,20 +7,12 @@ import android.widget.FrameLayout
 import android.widget.TextView
 import com.wordpress.stories.R
 
-class NextButton : FrameLayout {
-    constructor(context: Context) : super(context) {
-        init()
-    }
-
-    constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
-        init(attrs)
-    }
-
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
-        init(attrs)
-    }
-
-    private fun init(attrs: AttributeSet? = null) {
+class NextButton @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : FrameLayout(context, attrs, defStyleAttr) {
+    init {
         val view = View.inflate(context, R.layout.content_next_button, null)
         val styledAttrs = context.theme.obtainStyledAttributes(
             attrs, R.styleable.NextButton,
