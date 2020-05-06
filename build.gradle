@@ -27,18 +27,20 @@ allprojects {
         jcenter()
     }
 
-    task checkstyle(type: Checkstyle) {
-        source 'src'
-        include '**/*.java'
-        include '**/*.kt'
-        exclude '**/gen/**'
+    if (tasks.findByPath('checkstyle') == null) {
+        tasks.create(name: 'checkstyle', type: Checkstyle) {
+            source 'src'
+            include '**/*.java'
+            include '**/*.kt'
+            exclude '**/gen/**'
 
-        classpath = files()
-    }
+            classpath = files()
+        }
 
-    checkstyle {
-        toolVersion = '8.3'
-        configFile file("${project.rootDir}/config/checkstyle.xml")
+        checkstyle {
+            toolVersion = '8.3'
+            configFile file("${project.rootDir}/config/checkstyle.xml")
+        }
     }
 }
 
@@ -51,16 +53,20 @@ subprojects {
         ktlint 'com.github.shyiko:ktlint:0.31.0'
     }
 
-    task ktlint(type: JavaExec) {
-        main = "com.github.shyiko.ktlint.Main"
-        classpath = configurations.ktlint
-        args "src/**/*.kt"
+    if (tasks.findByPath('ktlint') == null) {
+        tasks.create(name: 'ktlint', type: JavaExec) {
+            main = "com.github.shyiko.ktlint.Main"
+            classpath = configurations.ktlint
+            args "src/**/*.kt"
+        }
     }
 
-    task ktlintFormat(type: JavaExec) {
-        main = "com.github.shyiko.ktlint.Main"
-        classpath = configurations.ktlint
-        args "-F", "src/**/*.kt"
+    if (tasks.findByPath('ktlintFormat') == null) {
+        tasks.create(name: 'ktlintFormat', type: JavaExec) {
+            main = "com.github.shyiko.ktlint.Main"
+            classpath = configurations.ktlint
+            args "-F", "src/**/*.kt"
+        }
     }
 }
 
