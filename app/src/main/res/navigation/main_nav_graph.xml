@@ -10,6 +10,6 @@
                 app:enterAnim="@anim/nav_default_enter_anim" app:exitAnim="@anim/nav_default_exit_anim"
         />
     </fragment>
-    <activity android:id="@+id/composeLoopFrameActivity" android:name="com.automattic.portkey.compose.ComposeLoopFrameActivity"
+    <activity android:id="@+id/composeLoopFrameActivity" android:name="com.wordpress.stories.compose.ComposeLoopFrameActivity"
               android:label="ComposeLoopFrameActivity"/>
 </navigation>
