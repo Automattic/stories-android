@@ -2,4 +2,13 @@
     package="com.wordpress.stories" >
 
     <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <application>
+        <activity
+            android:name="com.wordpress.stories.compose.ComposeLoopFrameActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.Immersive">
+        </activity>
+    </application>
 </manifest>
