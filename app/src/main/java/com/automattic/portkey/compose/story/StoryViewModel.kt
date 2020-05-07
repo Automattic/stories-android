@@ -3,6 +3,7 @@ package com.automattic.portkey.compose.story
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.automattic.portkey.compose.frame.FrameSaveService
 import com.automattic.portkey.compose.frame.FrameSaveService.FrameSaveResult
 import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveSuccess
 import com.automattic.portkey.compose.story.StoryFrameItem.BackgroundSource.FileBackgroundSource
@@ -56,6 +57,7 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
     }
 
     fun discardCurrentStory() {
+        FrameSaveService.cleanUpTempStoryFrameFiles(getImmutableCurrentStoryFrames())
         repository.discardCurrentStory()
         currentSelectedFrameIndex = DEFAULT_SELECTION // default selected frame when loading a new Story
         _onSelectedFrameIndex.value = Pair(DEFAULT_SELECTION, currentSelectedFrameIndex)
@@ -159,6 +161,9 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
     }
 
     fun removeFrameAt(pos: Int) {
+        // delete any temporal files
+        FrameSaveService.cleanUpTempStoryFrameFiles(getImmutableCurrentStoryFrames().subList(pos, pos + 1))
+
         // remove from the repo
         repository.removeFrameAt(pos)
 

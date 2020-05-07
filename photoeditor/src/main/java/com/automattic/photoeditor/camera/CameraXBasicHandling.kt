@@ -159,7 +159,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     @SuppressLint("RestrictedApi")
     override fun startRecordingVideo(finishedListener: VideoRecorderFinished?) {
         activity?.let {
-            currentFile = FileUtils.getLoopFrameFile(it, true, "orig_")
+            currentFile = FileUtils.getTempCaptureFile(it, true)
         }
 
         currentFile?.let {
@@ -219,7 +219,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     override fun takePicture(onImageCapturedListener: ImageCaptureListener) {
         // Create output file to hold the image
         context?.let { context ->
-            currentFile = FileUtils.getCaptureFile(context, false, "orig_").apply { createNewFile() }
+            currentFile = FileUtils.getTempCaptureFile(context, false).apply { createNewFile() }
 
             currentFile?.let {
                 // Setup image capture metadata
