@@ -62,8 +62,8 @@ dependencies {
     // slf4j implementation
     implementation 'org.slf4j:slf4j-nop:1.7.25'
 
-    implementation project(path: ':photoeditor')
-    implementation project(path: ':stories')
+    implementation project(path: ':libs:portkey-android:photoeditor')
+    implementation project(path: ':libs:portkey-android:stories')
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'

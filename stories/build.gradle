@@ -47,7 +47,7 @@ dependencies {
 
     implementation 'org.greenrobot:eventbus:3.1.1'
 
-    implementation project(path: ':photoeditor')
+    implementation project(path: ':libs:portkey-android:photoeditor')
 
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.5'
@@ -62,16 +62,16 @@ android.buildTypes.all { buildType ->
     def inputFile = checkGradlePropertiesFile()
     def properties = loadPropertiesFromFile(inputFile)
     properties.any { property ->
-        if (property.key.toLowerCase().startsWith("stories.use.")) {
-            buildType.buildConfigField "boolean", property.key.replace("stories.", "").replace(".", "_").toUpperCase(),
+        if (property.key.toLowerCase().startsWith("wp.stories.use.")) {
+            buildType.buildConfigField "boolean", property.key.replace("wp.stories.", "").replace(".", "_").toUpperCase(),
                     "${property.value}"
         }
-        else if (property.key.toLowerCase().startsWith("stories.")) {
-            buildType.buildConfigField "String", property.key.replace("stories.", "").replace(".", "_").toUpperCase(),
+        else if (property.key.toLowerCase().startsWith("wp.stories.")) {
+            buildType.buildConfigField "String", property.key.replace("wp.stories.", "").replace(".", "_").toUpperCase(),
                     "\"${property.value}\""
         }
-        else if (property.key.toLowerCase().startsWith("stories.res.")) {
-            buildType.resValue "string", property.key.replace("stories.res.", "").replace(".", "_").toLowerCase(),
+        else if (property.key.toLowerCase().startsWith("wp.stories.res.")) {
+            buildType.resValue "string", property.key.replace("wp.stories.res.", "").replace(".", "_").toLowerCase(),
                     "${property.value}"
         }
     }

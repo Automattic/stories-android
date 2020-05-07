@@ -3,10 +3,12 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" group="portkey-android/app" />
-      <module fileurl="file://$PROJECT_DIR$/mp4compose/mp4compose.iml" filepath="$PROJECT_DIR$/mp4compose/mp4compose.iml" group="portkey-android/mp4compose" />
-      <module fileurl="file://$PROJECT_DIR$/photoeditor/photoeditor.iml" filepath="$PROJECT_DIR$/photoeditor/photoeditor.iml" group="portkey-android/photoeditor" />
+      <module fileurl="file://$PROJECT_DIR$/libs/libs.iml" filepath="$PROJECT_DIR$/libs/libs.iml" group="portkey-android/libs" />
+      <module fileurl="file://$PROJECT_DIR$/libs/portkey-android/libs-portkey-android.iml" filepath="$PROJECT_DIR$/libs/portkey-android/libs-portkey-android.iml" group="portkey-android/libs/portkey-android" />
+      <module fileurl="file://$PROJECT_DIR$/photoeditor/photoeditor.iml" filepath="$PROJECT_DIR$/photoeditor/photoeditor.iml" group="portkey-android/libs/portkey-android/photoeditor" />
       <module fileurl="file://$PROJECT_DIR$/portkey-android.iml" filepath="$PROJECT_DIR$/portkey-android.iml" group="portkey-android" />
-      <module fileurl="file://$PROJECT_DIR$/stories/stories.iml" filepath="$PROJECT_DIR$/stories/stories.iml" group="portkey-android/stories" />
+      <module fileurl="file://$PROJECT_DIR$/mp4compose/portkey-android-mp4compose.iml" filepath="$PROJECT_DIR$/mp4compose/portkey-android-mp4compose.iml" group="portkey-android/libs/portkey-android/mp4compose" />
+      <module fileurl="file://$PROJECT_DIR$/stories/stories.iml" filepath="$PROJECT_DIR$/stories/stories.iml" group="portkey-android/libs/portkey-android/stories" />
     </modules>
   </component>
 </project>
