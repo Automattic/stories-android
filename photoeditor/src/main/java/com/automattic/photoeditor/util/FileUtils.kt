@@ -10,9 +10,12 @@ import java.io.FileOutputStream
 
 class FileUtils {
     companion object {
+        const val TEMP_FILE_NAME_PREFIX = "tmp_wp_story"
+        private const val OUTPUT_FILE_NAME_PREFIX = "wp_story"
+
         fun getLoopFrameFile(context: Context, video: Boolean, seqId: String = ""): File {
             return File(getOutputDirectory(context),
-                "loop_" +
+                OUTPUT_FILE_NAME_PREFIX +
                         System.currentTimeMillis() + "_" + seqId + if (video) ".mp4" else ".jpg"
             )
         }
@@ -33,13 +36,13 @@ class FileUtils {
         }
 
         /* internal / disposable files used in capturing */
-        fun getInternalDirectory(context: Context): File {
+        private fun getInternalDirectory(context: Context): File {
             return context.getDir("tmp", 0)
         }
 
-        fun getCaptureFile(context: Context, video: Boolean, prefix: String = ""): File {
+        fun getTempCaptureFile(context: Context, video: Boolean): File {
             return File(getInternalDirectory(context),
-                "loop_tmp" +
+                TEMP_FILE_NAME_PREFIX +
                         System.currentTimeMillis() + if (video) ".mp4" else ".jpg"
             )
         }
