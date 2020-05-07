@@ -376,6 +376,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
         }
     }
+
     private fun setupStoryViewModelObservers() {
         storyViewModel.uiState.observe(this, Observer {
             // if no frames in Story, launch the capture mode
