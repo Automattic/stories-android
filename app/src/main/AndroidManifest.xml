@@ -60,11 +60,6 @@
             android:theme="@style/AppTheme.NoActionBar"
             />
 
-        <!-- Services -->
-        <service
-            android:name="com.wordpress.stories.compose.frame.FrameSaveService"
-            android:label="Frame Save Service" />
-
         <!-- FileProvider used to share photos with other apps -->
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -75,7 +70,6 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths"/>
         </provider>
-
     </application>
 
 </manifest>
