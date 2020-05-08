@@ -1,5 +1,6 @@
 # portkey-android
 Portkey concept app
+WordPres stories library
 
 # Code style
 
@@ -35,3 +36,15 @@ From there, add and enable the custom configuration file, located at [config/che
 ## ktlint
 
 You can run ktlint using `./gradlew ktlint`, and you can also run `./gradlew ktlintFormat` for auto-formatting. There is no IDEA plugin (like Checkstyle's) at this time.
+
+## Build Instructions ##
+
+1. Make sure you've installed [Android Studio](https://developer.android.com/studio/index.html).
+1. `git clone git@github.com:Automattic/portkey-android.git` in the folder of your preference.
+1. `cd portkey-android` to enter the working directory.
+1. `cp gradle.properties-example gradle.properties` to set up the sample app properties file. Specifically, you can use `portkey.use.cameraX = true` to use the CameraX underlying implementation, or `false` to use the Camera2 implementation
+1. In Android Studio, open the project from the local repository. This will auto-generate `local.properties` with the SDK location.
+1. Go to Tools → AVD Manager and create an emulated device.
+1. Run.
+
+
