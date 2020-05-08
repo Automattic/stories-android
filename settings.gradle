@@ -1,7 +1,7 @@
 include ':app'
-include ':libs:portkey-android:mp4compose'
-project(':libs:portkey-android:mp4compose').projectDir = new File(rootProject.projectDir, '/mp4compose')
-include ':libs:portkey-android:photoeditor'
-project(':libs:portkey-android:photoeditor').projectDir = new File(rootProject.projectDir, '/photoeditor')
-include ':libs:portkey-android:stories'
-project(':libs:portkey-android:stories').projectDir = new File(rootProject.projectDir, '/stories')
+include ':mp4compose'
+project(':mp4compose').projectDir = new File(rootProject.projectDir, '/mp4compose')
+include ':photoeditor'
+project(':photoeditor').projectDir = new File(rootProject.projectDir, '/photoeditor')
+include ':stories'
+project(':stories').projectDir = new File(rootProject.projectDir, '/stories')
