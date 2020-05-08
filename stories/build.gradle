@@ -62,22 +62,23 @@ android.buildTypes.all { buildType ->
     def inputFile = checkGradlePropertiesFile()
     def properties = loadPropertiesFromFile(inputFile)
     properties.any { property ->
-        if (property.key.toLowerCase().startsWith("stories.use.")) {
-            buildType.buildConfigField "boolean", property.key.replace("stories.", "").replace(".", "_").toUpperCase(),
+        if (property.key.toLowerCase().startsWith("wp.stories.use.")) {
+            buildType.buildConfigField "boolean", property.key.replace("wp.stories.", "").replace(".", "_").toUpperCase(),
                     "${property.value}"
         }
-        else if (property.key.toLowerCase().startsWith("stories.")) {
-            buildType.buildConfigField "String", property.key.replace("stories.", "").replace(".", "_").toUpperCase(),
+        else if (property.key.toLowerCase().startsWith("wp.stories.")) {
+            buildType.buildConfigField "String", property.key.replace("wp.stories.", "").replace(".", "_").toUpperCase(),
                     "\"${property.value}\""
         }
-        else if (property.key.toLowerCase().startsWith("stories.res.")) {
-            buildType.resValue "string", property.key.replace("stories.res.", "").replace(".", "_").toLowerCase(),
+        else if (property.key.toLowerCase().startsWith("wp.stories.res.")) {
+            buildType.resValue "string", property.key.replace("wp.stories.res.", "").replace(".", "_").toLowerCase(),
                     "${property.value}"
         }
-        else {
-            // use cameraX implementation by default if no gradle.properties set
-            buildType.buildConfigField "boolean", "USE_CAMERAX", "true"
-        }
+    }
+
+    if (properties.getProperty("wp.stories.use.cameraX") == null) {
+        // use cameraX implementation by default if no gradle.properties set
+        buildType.buildConfigField "boolean", "USE_CAMERAX", "true"
     }
 }
 
