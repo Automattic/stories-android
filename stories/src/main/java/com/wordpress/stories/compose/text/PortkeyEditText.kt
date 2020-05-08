@@ -2,10 +2,10 @@ package com.wordpress.stories.compose.text
 
 import android.content.Context
 import android.util.AttributeSet
-import android.widget.EditText
 import android.view.KeyEvent
+import androidx.appcompat.widget.AppCompatEditText
 
-class PortkeyEditText : EditText {
+class PortkeyEditText : AppCompatEditText {
     constructor(context: Context) : super(context)
 
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
