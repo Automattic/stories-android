@@ -74,10 +74,11 @@ android.buildTypes.all { buildType ->
             buildType.resValue "string", property.key.replace("wp.stories.res.", "").replace(".", "_").toLowerCase(),
                     "${property.value}"
         }
-        else {
-            // use cameraX implementation by default if no gradle.properties set
-            buildType.buildConfigField "boolean", "USE_CAMERAX", "true"
-        }
+    }
+
+    if (properties.getProperty("wp.stories.use.cameraX") == null) {
+        // use cameraX implementation by default if no gradle.properties set
+        buildType.buildConfigField "boolean", "USE_CAMERAX", "true"
     }
 }
 
