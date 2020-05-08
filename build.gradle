@@ -68,6 +68,14 @@ subprojects {
             args "-F", "src/**/*.kt"
         }
     }
+
+    if (tasks.findByPath('ciktlint') == null) {
+        tasks.create(name: 'ciktlint', type: JavaExec) {
+            main = "com.github.shyiko.ktlint.Main"
+            classpath = configurations.ktlint
+            args "src/**/*.kt", "--reporter=checkstyle,output=${buildDir}/ktlint.xml"
+        }
+    }
 }
 
 task clean(type: Delete) {

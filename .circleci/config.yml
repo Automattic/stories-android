@@ -22,8 +22,11 @@ jobs:
       - android/restore-gradle-cache
       - copy-gradle-properties
       - run:
-          name: Check Style
-          command: ./gradlew --stacktrace checkstyle ktlint
+          name: Checkstyle
+          command: ./gradlew --stacktrace checkstyle
+      - run:
+          name: ktlint
+          command: ./gradlew --stacktrace ciktlint
       - run:
           name: Lint
           command: |
