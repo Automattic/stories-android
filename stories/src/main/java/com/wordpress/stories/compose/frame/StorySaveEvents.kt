@@ -1,6 +1,7 @@
 package com.wordpress.stories.compose.frame
 
 import android.os.Parcelable
+import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveError
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
 import com.wordpress.stories.compose.story.StoryIndex
 import kotlinx.android.parcel.Parcelize
@@ -32,4 +33,10 @@ class StorySaveEvents {
     data class StorySaveProcessStart(
         var storyIndex: StoryIndex
     ) : Serializable
+
+    companion object {
+        @JvmStatic fun allErrorsInResult(frameSaveResult: List<FrameSaveResult>): List<FrameSaveResult> {
+            return frameSaveResult.filter { it.resultReason is SaveError }
+        }
+    }
 }

@@ -371,7 +371,7 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
             )
         }
 
-        fun buildSnackbarErrorMessage(
+        @JvmStatic fun buildSnackbarErrorMessage(
             context: Context,
             mediaItemsNotUploaded: Int,
             errorMessage: String
