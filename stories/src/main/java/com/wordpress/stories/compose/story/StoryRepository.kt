@@ -43,7 +43,7 @@ object StoryRepository {
         return storyIndex > DEFAULT_NONE_SELECTED
     }
 
-    fun getStoryAtIndex(index: Int): Story {
+    @JvmStatic fun getStoryAtIndex(index: Int): Story {
         return stories[index]
     }
 
