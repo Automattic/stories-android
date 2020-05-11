@@ -9,26 +9,26 @@ import android.net.Uri
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
-import android.os.Parcelable
 import android.util.Log
 import android.webkit.MimeTypeMap
 import com.wordpress.stories.compose.frame.FrameSaveManager.FrameSaveProgressListener
 import com.automattic.photoeditor.PhotoEditor
 import com.automattic.photoeditor.util.FileUtils.Companion.TEMP_FILE_NAME_PREFIX
 import com.wordpress.stories.R
-import com.wordpress.stories.compose.frame.FrameSaveService.SaveResultReason.SaveError
-import com.wordpress.stories.compose.frame.FrameSaveService.SaveResultReason.SaveSuccess
+import com.wordpress.stories.compose.frame.StorySaveEvents.FrameSaveResult
+import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveError
+import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
+import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveProcessStart
+import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveResult
 import com.wordpress.stories.compose.story.StoryFrameItem
 import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.FileBackgroundSource
 import com.wordpress.stories.compose.story.StoryIndex
 import com.wordpress.stories.compose.story.StoryRepository
-import kotlinx.android.parcel.Parcelize
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 import org.greenrobot.eventbus.EventBus
-import java.io.Serializable
 
 class FrameSaveService : Service() {
     private val binder = FrameSaveServiceBinder()
@@ -210,32 +210,6 @@ class FrameSaveService : Service() {
     inner class FrameSaveServiceBinder : Binder() {
         fun getService(): FrameSaveService = this@FrameSaveService
     }
-
-    @Parcelize
-    data class StorySaveResult(
-        var storyIndex: StoryIndex = 0,
-        val frameSaveResult: MutableList<FrameSaveResult> = mutableListOf()
-    ) : Parcelable {
-        fun isSuccess(): Boolean {
-            return frameSaveResult.all { it.resultReason == SaveSuccess }
-        }
-    }
-    @Parcelize
-    data class FrameSaveResult(val frameIndex: FrameIndex, val resultReason: SaveResultReason) : Parcelable
-
-    sealed class SaveResultReason : Parcelable {
-        @Parcelize
-        object SaveSuccess : SaveResultReason()
-
-        @Parcelize
-        data class SaveError(
-            var reason: String? = null
-        ) : SaveResultReason()
-    }
-
-    data class StorySaveProcessStart(
-        var storyIndex: StoryIndex
-    ) : Serializable
 
     class StorySaveProcessor(
         private val context: Context,

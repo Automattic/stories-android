@@ -9,8 +9,8 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.wordpress.stories.R
 import com.wordpress.stories.compose.ComposeLoopFrameActivity
-import com.wordpress.stories.compose.frame.FrameSaveService.SaveResultReason.SaveSuccess
-import com.wordpress.stories.compose.frame.FrameSaveService.StorySaveResult
+import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
+import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveResult
 import com.wordpress.stories.compose.story.StoryIndex
 import com.wordpress.stories.util.KEY_STORY_SAVE_RESULT
 import java.util.Random
