@@ -411,7 +411,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         if (storyViewModel.getCurrentStorySize() > newSelection) {
             val selectedFrame = storyViewModel.getCurrentStoryFrameAt(newSelection)
             updateSoundControl()
-            showRetryButtonAndHideEditControlsForErroredFrame(selectedFrame.saveResultReason !is SaveSuccess)
+            showRetryButtonAndHideEditControlsForErroredFrame(selectedFrame?.saveResultReason !is SaveSuccess)
         }
     }
 
@@ -581,7 +581,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             close_button.performClick()
         } else if (storyViewModel.getCurrentStorySize() > 0) {
             // get currently selected frame and check whether this is a video or an image
-            when (storyViewModel.getSelectedFrame().frameItemType) {
+            when (storyViewModel.getSelectedFrame()?.frameItemType) {
                 is VIDEO -> runOnUiThread {
                     // now start playing the video that was selected in the frame selector
                     showPlayVideo()
@@ -796,7 +796,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         more_button.setOnClickListener {
             view_popup_menu.setOnDeletePageButtonClickListener(OnClickListener {
                 var messageToUse = getString(R.string.dialog_discard_page_message)
-                if (storyViewModel.getSelectedFrame().saveResultReason != SaveSuccess) {
+                if (storyViewModel.getSelectedFrame()?.saveResultReason != SaveSuccess) {
                     messageToUse = getString(R.string.dialog_discard_errored_page_message)
                 }
                 // show dialog
@@ -932,7 +932,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }
 
         // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
-        currentStoryFrameItem.addedViews = AddedViewList(photoEditor.getViewsAdded())
+        currentStoryFrameItem?.addedViews = AddedViewList(photoEditor.getViewsAdded())
     }
 
     private fun showMediaPicker() {
@@ -1366,7 +1366,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     private fun updateSoundControl() {
-        if (storyViewModel.getSelectedFrame().frameItemType is VIDEO) {
+        if (storyViewModel.getSelectedFrame()?.frameItemType is VIDEO) {
             if (!storyViewModel.isSelectedFrameAudioMuted()) {
                 backgroundSurfaceManager.videoPlayerUnmute()
                 sound_button.setImageResource(R.drawable.ic_volume_up_black_24dp)
