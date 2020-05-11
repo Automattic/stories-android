@@ -211,7 +211,7 @@ class FrameSaveService : Service() {
         fun getService(): FrameSaveService = this@FrameSaveService
     }
 
-    class StorySaveProcessor(
+    internal class StorySaveProcessor(
         private val context: Context,
         private val storyIndex: StoryIndex,
         private val frameIndexOverride: FrameIndex = StoryRepository.DEFAULT_NONE_SELECTED,
