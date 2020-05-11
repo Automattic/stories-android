@@ -8,13 +8,13 @@ import androidx.navigation.Navigation
 import com.automattic.photoeditor.util.PermissionUtils
 import com.wordpress.stories.compose.ComposeLoopFrameActivity
 import com.wordpress.stories.compose.frame.FrameSaveNotifier
-import com.wordpress.stories.compose.frame.FrameSaveService.SaveResultReason.SaveError
-import com.wordpress.stories.compose.frame.FrameSaveService.StorySaveProcessStart
-import com.wordpress.stories.compose.frame.FrameSaveService.StorySaveResult
 import com.wordpress.stories.compose.story.StoryRepository
 import com.automattic.portkey.intro.IntroActivity
 import com.wordpress.stories.util.KEY_STORY_SAVE_RESULT
 import com.google.android.material.snackbar.Snackbar
+import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveError
+import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveProcessStart
+import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveResult
 import kotlinx.android.synthetic.main.activity_main.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe

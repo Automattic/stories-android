@@ -4,8 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.wordpress.stories.compose.frame.FrameSaveService
-import com.wordpress.stories.compose.frame.FrameSaveService.FrameSaveResult
-import com.wordpress.stories.compose.frame.FrameSaveService.SaveResultReason.SaveSuccess
+import com.wordpress.stories.compose.frame.StorySaveEvents.FrameSaveResult
+import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
 import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.FileBackgroundSource
 import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.UriBackgroundSource
 import com.wordpress.stories.compose.story.StoryFrameItemType.VIDEO

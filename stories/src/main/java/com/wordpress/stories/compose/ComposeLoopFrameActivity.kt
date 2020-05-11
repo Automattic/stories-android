@@ -65,9 +65,9 @@ import com.wordpress.stories.compose.emoji.EmojiPickerFragment.EmojiListener
 import com.wordpress.stories.compose.frame.FrameIndex
 import com.wordpress.stories.compose.frame.FrameSaveManager
 import com.wordpress.stories.compose.frame.FrameSaveService
-import com.wordpress.stories.compose.frame.FrameSaveService.SaveResultReason.SaveError
-import com.wordpress.stories.compose.frame.FrameSaveService.SaveResultReason.SaveSuccess
-import com.wordpress.stories.compose.frame.FrameSaveService.StorySaveResult
+import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveError
+import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
+import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveResult
 import com.wordpress.stories.compose.photopicker.MediaBrowserType
 import com.wordpress.stories.compose.photopicker.PhotoPickerActivity
 import com.wordpress.stories.compose.photopicker.PhotoPickerFragment

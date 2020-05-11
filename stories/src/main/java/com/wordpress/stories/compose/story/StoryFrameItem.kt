@@ -2,8 +2,8 @@ package com.wordpress.stories.compose.story
 
 import android.net.Uri
 import com.automattic.photoeditor.views.added.AddedViewList
-import com.wordpress.stories.compose.frame.FrameSaveService.SaveResultReason
-import com.wordpress.stories.compose.frame.FrameSaveService.SaveResultReason.SaveSuccess
+import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason
+import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
 import com.wordpress.stories.compose.story.StoryFrameItemType.IMAGE
 import java.io.File
 
