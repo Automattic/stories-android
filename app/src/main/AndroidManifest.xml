@@ -47,7 +47,7 @@
             android:theme="@style/AppTheme.NoActionBar.Intro">
         </activity>
         <activity
-                android:name="com.wordpress.stories.compose.ComposeLoopFrameActivity"
+                android:name="com.automattic.portkey.StoryComposerActivity"
                 android:label="@string/app_name"
                 android:parentActivityName="com.automattic.portkey.MainActivity"
                 android:screenOrientation="portrait"
