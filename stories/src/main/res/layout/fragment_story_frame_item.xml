@@ -1,54 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
-    android:layout_height="match_parent"
-    android:layout_gravity="center_vertical"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
     android:orientation="vertical"
     android:elevation="@dimen/story_frame_selector_item_elevation"
     android:paddingRight="@dimen/story_frame_selector_item_padding"
     android:paddingLeft="@dimen/story_frame_selector_item_padding">
 
-    <RelativeLayout
+    <!-- this will hold the thumbnail img for the frame  -->
+    <ImageView
+        android:id="@+id/frame_image"
+        android:layout_width="@dimen/story_frame_item_width"
+        android:layout_height="@dimen/story_frame_item_height"
+        android:scaleType="centerCrop"
+        android:layout_centerInParent="true"/>
+
+    <!-- unselected border  -->
+    <ImageView
+        android:id="@+id/frame_image_unselected"
+        android:layout_width="@dimen/story_frame_item_width"
+        android:layout_height="@dimen/story_frame_item_height"
+        android:background="@drawable/bg_story_item_selected"
+        android:backgroundTint="@color/gray_10"
+        android:scaleType="fitCenter"
+        android:layout_centerInParent="true"/>
+
+    <!-- selected border  -->
+    <ImageView
+        android:id="@+id/frame_image_selected"
+        android:layout_width="@dimen/story_frame_item_width"
+        android:layout_height="@dimen/story_frame_item_height"
+        android:background="@drawable/bg_story_item_selected"
+        android:scaleType="fitCenter"
+        android:layout_centerInParent="true"/>
+
+    <!-- errored exclamation sign  -->
+    <ImageView
+        android:id="@+id/frame_image_errored"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal">
-        <!-- this will hold the thumbnail img for the frame  -->
-        <ImageView
-            android:id="@+id/frame_image"
-            android:layout_width="@dimen/story_frame_item_width"
-            android:layout_height="@dimen/story_frame_item_height"
-            android:scaleType="centerCrop"
-            android:layout_centerInParent="true"/>
+        android:background="@drawable/ic_gridicons_notice"
+        android:backgroundTint="@color/white"
+        android:scaleType="fitCenter"
+        android:layout_centerInParent="true"/>
 
-        <!-- unselected border  -->
-        <ImageView
-            android:id="@+id/frame_image_unselected"
-            android:layout_width="@dimen/story_frame_item_width"
-            android:layout_height="@dimen/story_frame_item_height"
-            android:background="@drawable/bg_story_item_selected"
-            android:backgroundTint="@color/gray_10"
-            android:scaleType="fitCenter"
-            android:layout_centerInParent="true"/>
+</RelativeLayout>
 
-        <!-- selected border  -->
-        <ImageView
-            android:id="@+id/frame_image_selected"
-            android:layout_width="@dimen/story_frame_item_width"
-            android:layout_height="@dimen/story_frame_item_height"
-            android:background="@drawable/bg_story_item_selected"
-            android:scaleType="fitCenter"
-            android:layout_centerInParent="true"/>
-
-        <!-- errored exclamation sign  -->
-        <ImageView
-            android:id="@+id/frame_image_errored"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/ic_gridicons_notice"
-            android:backgroundTint="@color/white"
-            android:scaleType="fitCenter"
-            android:layout_centerInParent="true"/>
-
-    </RelativeLayout>
-
-</LinearLayout>
