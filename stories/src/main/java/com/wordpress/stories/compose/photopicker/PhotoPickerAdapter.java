@@ -1,5 +1,6 @@
 package com.wordpress.stories.compose.photopicker;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.media.MediaMetadataRetriever;
@@ -464,6 +465,7 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
     /*
      * builds the list of media items from the device
      */
+    @SuppressLint("StaticFieldLeak")
     private class BuildDeviceMediaListTask extends AsyncTask<Void, Void, Boolean> {
         private final ArrayList<PhotoPickerItem> mTmpList = new ArrayList<>();
         private final boolean mReload;
