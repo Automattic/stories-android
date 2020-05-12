@@ -50,19 +50,6 @@
     <string name="dialog_discard_story_message">If you discard this story it will not be saved as a draft.</string>
     <string name="dialog_discard_story_ok_button">Discard</string>
 
-    <!-- Intro -->
-    <string name="get_started">Get Started</string>
-
-    <string name="intro_title_text">Loop</string>
-    <string name="intro_promo_text_share">Create and share stories with the people you care about most.</string>
-    <string name="intro_promo_text_create">Bring your stories to life with stickers, audio, links, music, and more.</string>
-    <string name="intro_promo_text_organize">Group your stories by topic and update them whenever you have a new chapter to add.</string>
-    <string name="intro_promo_text_control">Your stories belong to you, share them only with who you want.</string>
-    <string name="intro_promo_text_invite">Invite others to create stories together.</string>
-
-    <string name="permissions_message">Allow Loop to access your camera, microphone, and local storage.</string>
-    <string name="permissions_turn_on">Turn On</string>
-
     <!-- Photo picker    -->
     <string name="photo_picker_thumbnail_desc">Play video</string>
     <string name="pick_photo">Select photo</string>
