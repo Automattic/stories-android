@@ -238,7 +238,7 @@
             android:tint="@color/white"
             android:contentDescription="@string/stickers_button_alt"
             android:background="@drawable/edit_mode_controls_circle_selector"
-            android:layout_marginLeft="@dimen/edit_mode_button_group_margin_between"
+            android:layout_marginStart="@dimen/edit_mode_button_group_margin_between"
             />
 
         <ImageButton
@@ -249,7 +249,7 @@
             android:tint="@color/white"
             android:contentDescription="@string/text_button_alt"
             android:background="@drawable/edit_mode_controls_circle_selector"
-            android:layout_marginLeft="@dimen/edit_mode_button_group_margin_between"
+            android:layout_marginStart="@dimen/edit_mode_button_group_margin_between"
         />
 
     </LinearLayout>
