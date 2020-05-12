@@ -121,8 +121,8 @@ internal class Mp4ComposerEngine {
                 mediaExtractor = MediaExtractor()
                 mediaMetadataRetriever = MediaMetadataRetriever()
                 if (sourceUri != null && context != null) {
-                    mediaExtractor!!.setDataSource(context!!, sourceUri!!, null)
-                    mediaMetadataRetriever!!.setDataSource(context!!, sourceUri!!)
+                    mediaExtractor!!.setDataSource(context, sourceUri, null)
+                    mediaMetadataRetriever!!.setDataSource(context, sourceUri)
                 }
 
                 try {
