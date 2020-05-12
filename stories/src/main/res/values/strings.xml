@@ -38,6 +38,15 @@
     <string name="label_control_next">Next</string>
     <string name="label_saving">Saving…</string>
 
+    <!-- content description labels   -->
+    <string name="label_close_button">Close</string>
+    <string name="label_saved_icon">Saved</string>
+    <string name="label_retry_icon">Retry</string>
+    <string name="label_frame_image">Frame</string>
+    <string name="label_frame_unselected_border">unselected</string>
+    <string name="label_frame_selected_border">selected</string>
+    <string name="label_frame_errored">errored</string>
+
     <string name="menu_delete_page">Delete page</string>
     <string name="menu_save_page">Save page</string>
 

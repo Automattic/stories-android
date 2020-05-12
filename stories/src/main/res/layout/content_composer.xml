@@ -264,6 +264,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         android:background="@drawable/ic_close_black_24dp"
         android:backgroundTint="@color/white"
+        android:contentDescription="@string/label_close_button"
         />
 
     <com.wordpress.stories.compose.NextButton

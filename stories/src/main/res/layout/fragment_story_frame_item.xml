@@ -14,6 +14,7 @@
         android:layout_width="@dimen/story_frame_item_width"
         android:layout_height="@dimen/story_frame_item_height"
         android:scaleType="centerCrop"
+        android:contentDescription="@string/label_frame_image"
         android:layout_centerInParent="true"/>
 
     <!-- unselected border  -->
@@ -24,6 +25,7 @@
         android:background="@drawable/bg_story_item_selected"
         android:backgroundTint="@color/gray_10"
         android:scaleType="fitCenter"
+        android:contentDescription="@string/label_frame_unselected_border"
         android:layout_centerInParent="true"/>
 
     <!-- selected border  -->
@@ -33,6 +35,7 @@
         android:layout_height="@dimen/story_frame_item_height"
         android:background="@drawable/bg_story_item_selected"
         android:scaleType="fitCenter"
+        android:contentDescription="@string/label_frame_selected_border"
         android:layout_centerInParent="true"/>
 
     <!-- errored exclamation sign  -->
@@ -43,6 +46,7 @@
         android:background="@drawable/ic_gridicons_notice"
         android:backgroundTint="@color/white"
         android:scaleType="fitCenter"
+        android:contentDescription="@string/label_frame_errored"
         android:layout_centerInParent="true"/>
 
 </RelativeLayout>
