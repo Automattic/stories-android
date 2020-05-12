@@ -13,6 +13,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/ic_add_white_24dp"
+        android:contentDescription="@string/label_frame_image"
         android:layout_centerInParent="true"/>
 
     <!-- selected border  -->
@@ -22,6 +23,7 @@
         android:layout_height="@dimen/story_frame_item_height"
         android:background="@drawable/bg_story_item_plus_icon"
         android:scaleType="fitCenter"
+        android:contentDescription="@string/label_frame_selected_border"
         android:layout_centerInParent="true"/>
 </RelativeLayout>
 
