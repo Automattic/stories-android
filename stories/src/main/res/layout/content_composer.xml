@@ -315,7 +315,8 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/bottom_strip_height"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toRightOf="parent"/>
+        app:layout_constraintRight_toRightOf="parent"
+        tools:ignore="FragmentTagUsage"/>
 
     <!-- note: setting the same elevation as per the Next button so this view appears on top -->
     <com.wordpress.stories.compose.CustomPopUpMenuView
