@@ -3,8 +3,6 @@
     <dimen name="margin_medium">8dp</dimen>
     <dimen name="margin_extra_large">16dp</dimen>
 
-    <dimen name="button_height">64dp</dimen>
-
     <dimen name="round_button_small">32dp</dimen>
     <dimen name="round_button_medium">64dp</dimen>
     <dimen name="round_button_large">92dp</dimen>

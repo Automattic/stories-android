@@ -37,8 +37,6 @@
 
     <color name="loop_magenta">#C9356E</color>
 
-    <color name="dark_gray">#51565F</color>
-    <color name="light_gray">#B4B1B8</color>
     <color name="lighter_gray">#E3DFE2</color>
 
     <!-- Photo picker    -->
