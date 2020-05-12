@@ -16,7 +16,8 @@
         android:backgroundTint="@color/pink_50"
         android:tint="@color/white"
         android:src="@drawable/ic_photo_camera_24px"
-        android:layout_margin="@dimen/fab_margin" />
+        android:layout_margin="@dimen/fab_margin"
+        tools:ignore="InconsistentLayout"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -31,6 +32,7 @@
             android:textSize="@dimen/text_sz_large"
             android:textColor="@color/black"
             android:layout_margin="@dimen/margin_extra_large"
+            tools:ignore="InconsistentLayout"
             />
 
         <RelativeLayout
@@ -73,7 +75,8 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
                 android:background="@android:color/white"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                tools:ignore="InconsistentLayout">
 
                 <View
                     android:layout_width="match_parent"
