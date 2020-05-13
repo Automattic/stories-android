@@ -47,3 +47,7 @@ In order to integrate the stories library, you must include the following in you
 Implement these:
 - SnackbarProvider
 - call `setSnackbarProvider()` as in the example Portkey demo app.
+
+- MediaPickerProvider
+- call `setMediaPickerProvider()` as in the example Portkey demo app.
+- remember to override `setupRequestCodes()` and set the right request codes as per the host app so it works seamlessly and media can be fed into the Composer by the externally provided MediaPicker.
