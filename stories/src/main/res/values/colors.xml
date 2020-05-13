@@ -39,15 +39,6 @@
 
     <color name="lighter_gray">#E3DFE2</color>
 
-    <!-- Photo picker    -->
-    <color name="black_translucent_50">#80000000</color>
-    <color name="gray_20">#b4b1b8</color>
-    <color name="neutral_20">@color/gray_20</color>
-    <color name="gray_0">#f7f4f5</color>
-    <color name="neutral_0">@color/gray_0</color>
-    <color name="divider">@color/gray_5</color>
-    <color name="gray_5">#e3dfe2</color>
-
     <!-- WordPress colors-->
     <color name="wordpress_blue_50">#006088</color>
     <color name="primary_50">@color/wordpress_blue_50</color>
