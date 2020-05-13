@@ -54,7 +54,7 @@
                 android:theme="@style/AppTheme.Immersive">
         </activity>
         <activity
-            android:name="com.wordpress.stories.compose.photopicker.PhotoPickerActivity"
+            android:name="com.automattic.portkey.photopicker.PhotoPickerActivity"
             android:label="@string/photo_picker_title"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"

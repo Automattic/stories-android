@@ -4,7 +4,6 @@ import android.Manifest
 import android.animation.LayoutTransition
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.ActivityOptions
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -67,10 +66,6 @@ import com.wordpress.stories.compose.frame.FrameSaveService
 import com.wordpress.stories.compose.frame.FrameSaveService.SaveResultReason.SaveError
 import com.wordpress.stories.compose.frame.FrameSaveService.SaveResultReason.SaveSuccess
 import com.wordpress.stories.compose.frame.FrameSaveService.StorySaveResult
-import com.wordpress.stories.compose.photopicker.MediaBrowserType
-import com.wordpress.stories.compose.photopicker.PhotoPickerActivity
-import com.wordpress.stories.compose.photopicker.PhotoPickerFragment
-import com.wordpress.stories.compose.photopicker.RequestCodes
 import com.wordpress.stories.compose.story.OnStoryFrameSelectorTappedListener
 import com.wordpress.stories.compose.story.StoryFrameItem
 import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.FileBackgroundSource
@@ -94,6 +89,7 @@ import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.wordpress.stories.BuildConfig
 import com.wordpress.stories.R
+import com.wordpress.stories.compose.ComposeLoopFrameActivity.ExternalMediaPickerRequestCodesAndExtraKeys
 import kotlinx.android.synthetic.main.activity_composer.*
 import kotlinx.android.synthetic.main.content_composer.*
 import org.greenrobot.eventbus.EventBus
@@ -121,6 +117,11 @@ enum class ScreenTouchBlockMode {
 
 interface SnackbarProvider {
     fun showProvidedSnackbar(message: String, actionLabel: String?, callback: () -> Unit)
+}
+
+interface MediaPickerProvider {
+    fun setupRequestCodes(requestCodes: ExternalMediaPickerRequestCodesAndExtraKeys)
+    fun showProvidedMediaPicker()
 }
 
 abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTappedListener {
@@ -154,6 +155,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private var storyIndexToSelect = -1
     private var storyFrameIndexToRetry: FrameIndex = StoryRepository.DEFAULT_NONE_SELECTED
     private var snackbarProvider: SnackbarProvider? = null
+    private var mediaPickerProvider: MediaPickerProvider? = null
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
@@ -600,13 +602,13 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         super.onActivityResult(requestCode, resultCode, data)
 
         when (requestCode) {
-            RequestCodes.PHOTO_PICKER -> if (resultCode == Activity.RESULT_OK && data != null) {
-                if (data.hasExtra(PhotoPickerActivity.EXTRA_MEDIA_URI_LIST)) {
-                    val uriList = data.getParcelableArrayListExtra<Uri>(PhotoPickerActivity.EXTRA_MEDIA_URI_LIST)
+            requestCodes.PHOTO_PICKER -> if (resultCode == Activity.RESULT_OK && data != null) {
+                if (data.hasExtra(requestCodes.EXTRA_MEDIA_URI_LIST)) {
+                    val uriList = data.getParcelableArrayListExtra<Uri>(requestCodes.EXTRA_MEDIA_URI_LIST)
                     addFramesToStoryFromMediaUriList(uriList)
                     setDefaultSelectionAndUpdateBackgroundSurfaceUI()
-                } else if (data.hasExtra(PhotoPickerActivity.EXTRA_MEDIA_URI)) {
-                    val mediaUri = data.getStringExtra(PhotoPickerActivity.EXTRA_MEDIA_URI)
+                } else if (data.hasExtra(requestCodes.EXTRA_MEDIA_URI)) {
+                    val mediaUri = data.getStringExtra(requestCodes.EXTRA_MEDIA_URI)
                     if (mediaUri == null) {
                         Log.e("Composer", "Can't resolve picked media")
                         showToast("Can't resolve picked media")
@@ -614,7 +616,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     }
                     addFrameToStoryFromMediaUri(Uri.parse(mediaUri))
                     setDefaultSelectionAndUpdateBackgroundSurfaceUI()
-                } else if (data.hasExtra(PhotoPickerActivity.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED)) {
+                } else if (data.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED)) {
                     launchCameraPreview()
                 }
             }
@@ -931,13 +933,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun showMediaPicker() {
-        val intent = Intent(this@ComposeLoopFrameActivity, PhotoPickerActivity::class.java)
-        intent.putExtra(PhotoPickerFragment.ARG_BROWSER_TYPE, MediaBrowserType.PORTKEY_PICKER)
-
-        startActivityForResult(
-            intent,
-            RequestCodes.PHOTO_PICKER,
-            ActivityOptions.makeSceneTransitionAnimation(this).toBundle())
+        mediaPickerProvider?.showProvidedMediaPicker() ?: throw Exception("MediaPickerProvider not set")
     }
 
     private fun deleteCapturedMedia() {
@@ -1708,8 +1704,24 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     fun setSnackbarProvider(provider: SnackbarProvider) {
         snackbarProvider = provider
     }
+
+    fun setMediaPickerProvider(provider: MediaPickerProvider) {
+        mediaPickerProvider = provider
+        mediaPickerProvider?.setupRequestCodes(requestCodes)
+    }
+
+    class ExternalMediaPickerRequestCodesAndExtraKeys {
+        var PHOTO_PICKER: Int = 0 // default code, can be overriden.
+                                    // Leave this value in zero so it's evident if something is not working (will break
+                                    // if not properly initialized)
+        lateinit var EXTRA_MEDIA_URI_LIST: String
+        lateinit var EXTRA_MEDIA_URI: String
+        lateinit var EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED: String
+    }
+
     companion object {
         private const val FRAGMENT_DIALOG = "dialog"
+        private val requestCodes = ExternalMediaPickerRequestCodesAndExtraKeys()
 
         private const val SURFACE_MANAGER_READY_LAUNCH_DELAY = 500L
         private const val CAMERA_VIDEO_RECORD_MAX_LENGTH_MS = 10000L

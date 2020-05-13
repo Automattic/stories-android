@@ -1,4 +1,4 @@
-package com.wordpress.stories.compose.photopicker;
+package com.automattic.portkey.photopicker;
 
 import android.Manifest.permission;
 import android.content.pm.PackageManager;
@@ -26,9 +26,9 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.wordpress.stories.R;
-import com.wordpress.stories.compose.photopicker.PhotoPickerAdapter.PhotoPickerAdapterListener;
-import com.wordpress.stories.compose.photopicker.utils.AniUtils;
+import com.automattic.portkey.photopicker.utils.AniUtils;
+import com.automattic.portkey.photopicker.PhotoPickerAdapter.PhotoPickerAdapterListener;
+import com.automattic.portkey.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;

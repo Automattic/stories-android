@@ -1,4 +1,4 @@
-package com.wordpress.stories.compose.photopicker.utils;
+package com.automattic.portkey.photopicker.utils;
 
 import android.app.Activity;
 import android.content.Context;
@@ -14,8 +14,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.FileProvider;
 
-import com.wordpress.stories.R;
-import com.wordpress.stories.compose.photopicker.RequestCodes;
+import com.automattic.portkey.photopicker.RequestCodes;
+import com.automattic.portkey.R;
 
 import java.io.File;
 import java.io.IOException;

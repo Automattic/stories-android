@@ -1,4 +1,4 @@
-package com.wordpress.stories.compose.photopicker;
+package com.automattic.portkey.photopicker;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -22,8 +22,8 @@ import androidx.core.view.GestureDetectorCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.wordpress.stories.R;
-import com.wordpress.stories.compose.photopicker.utils.CameraIntentUtils;
+import com.automattic.portkey.photopicker.utils.CameraIntentUtils;
+import com.automattic.portkey.R;
 
 import java.io.File;
 import java.util.ArrayList;
