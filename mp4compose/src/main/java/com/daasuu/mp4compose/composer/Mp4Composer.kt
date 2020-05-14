@@ -150,7 +150,7 @@ class Mp4Composer {
             if (!isStaticImageBkgSource) {
                 initializeUriDataSource(engine)
                 val videoRotate = getVideoRotation(srcUri!!)
-                val srcVideoResolution = getVideoResolution(srcUri!!, videoRotate)
+                val srcVideoResolution = getVideoResolution(srcUri)
 
                 if (outputResolution == null) {
                     if (fillMode == FillMode.CUSTOM) {
@@ -178,7 +178,7 @@ class Mp4Composer {
                     TAG,
                     "outputResolution width = " + outputResolution!!.width + " height = " + outputResolution!!.height
                 )
-                Log.d(TAG, "fillMode = " + fillMode!!)
+                Log.d(TAG, "fillMode = " + fillMode)
 
                 try {
                     if (bitrate < 0) {
@@ -309,7 +309,7 @@ class Mp4Composer {
         return bitrate
     }
 
-    private fun getVideoResolution(videoUri: Uri, rotation: Int): Size {
+    private fun getVideoResolution(videoUri: Uri): Size {
         var retriever: MediaMetadataRetriever? = null
         try {
             retriever = MediaMetadataRetriever()
