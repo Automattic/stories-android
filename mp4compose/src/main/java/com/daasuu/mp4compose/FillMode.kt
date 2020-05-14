@@ -4,6 +4,7 @@ package com.daasuu.mp4compose
  * Created by sudamasayuki on 2018/01/01.
  */
 
+@Suppress("NAME_SHADOWING")
 enum class FillMode {
     PRESERVE_ASPECT_FIT,
     PRESERVE_ASPECT_CROP,
