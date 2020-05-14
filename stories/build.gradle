@@ -50,8 +50,12 @@ dependencies {
 
     implementation project(path: ':photoeditor')
 
-    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.5'
+    // ViewModel and LiveData
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion"
+    // LiveData
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion"
+
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
 
     lintChecks 'org.wordpress:lint:1.0.1'
 
