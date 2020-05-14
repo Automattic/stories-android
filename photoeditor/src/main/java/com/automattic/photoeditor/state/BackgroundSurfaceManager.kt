@@ -50,12 +50,14 @@ class BackgroundSurfaceManager(
     private var isVideoPlayerVisible: Boolean = false
     private var isCameraRecording: Boolean = false
 
+    @Suppress("unused")
     @OnLifecycleEvent(ON_CREATE)
     fun onCreate(source: LifecycleOwner) {
         // clear surfaceTexture listeners
         photoEditorView.listeners.clear()
 
-        // add fragments
+        // add f
+        // ragments
         if (useCameraX) {
             addHandlerFragmentOrFindByTag(CAMERAX)
         } else {
@@ -69,6 +71,7 @@ class BackgroundSurfaceManager(
         if (isCameraVisible || isVideoPlayerVisible) { photoEditorView.toggleTextureView() }
     }
 
+    @Suppress("unused")
     @OnLifecycleEvent(ON_DESTROY)
     fun onDestroy(source: LifecycleOwner) {
         if (lifeCycle.currentState.isAtLeast(Lifecycle.State.DESTROYED)) {
@@ -83,20 +86,25 @@ class BackgroundSurfaceManager(
         lifeCycle.removeObserver(this)
     }
 
+    @Suppress("unused")
     @OnLifecycleEvent(ON_START)
     fun onStart(source: LifecycleOwner) {
         // TODO: get state and restart fragments / camera preview?
     }
+
+    @Suppress("unused")
     @OnLifecycleEvent(ON_STOP)
     fun onStop(source: LifecycleOwner) {
         // TODO: save state and pause fragments / camera preview?
     }
 
+    @Suppress("unused")
     @OnLifecycleEvent(ON_RESUME)
     fun onResume(source: LifecycleOwner) {
         // TODO: get state and restart fragments / camera preview?
     }
 
+    @Suppress("unused")
     @OnLifecycleEvent(ON_PAUSE)
     fun onPause(source: LifecycleOwner) {
         // TODO: save state and pause fragments / camera preview?
