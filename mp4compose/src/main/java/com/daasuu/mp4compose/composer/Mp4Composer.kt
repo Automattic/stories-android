@@ -140,10 +140,6 @@ class Mp4Composer {
                 filter = GlFilter()
             }
 
-            if (fillMode == null) {
-                fillMode = FillMode.PRESERVE_ASPECT_FIT
-            }
-
             if (fillModeCustomItem != null) {
                 fillMode = FillMode.CUSTOM
             }
