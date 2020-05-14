@@ -16,7 +16,8 @@
         android:backgroundTint="@color/pink_50"
         android:tint="@color/white"
         android:src="@drawable/ic_photo_camera_24px"
-        android:layout_margin="@dimen/fab_margin" />
+        android:layout_margin="@dimen/fab_margin"
+        tools:ignore="InconsistentLayout"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -31,13 +32,14 @@
             android:textSize="@dimen/text_sz_large"
             android:textColor="@color/black"
             android:layout_margin="@dimen/margin_extra_large"
+            tools:ignore="InconsistentLayout"
             />
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@android:color/white">
-            <com.wordpress.stories.compose.photopicker.EmptyViewRecyclerView
+            <com.automattic.portkey.photopicker.EmptyViewRecyclerView
                 android:id="@+id/recycler"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -45,7 +47,7 @@
                 android:fadeScrollbars="true"
                 android:scrollbars="vertical"/>
 
-            <com.wordpress.stories.compose.photopicker.ActionableEmptyView
+            <com.automattic.portkey.photopicker.ActionableEmptyView
                 android:id="@+id/actionable_empty_view"
                 android:layout_above="@+id/bottom_bar"
                 android:layout_height="match_parent"
@@ -54,9 +56,9 @@
                 app:aevImage="@drawable/img_illustration_media_105dp"
                 app:aevTitle="@string/media_empty_list"
                 tools:visibility="visible" >
-            </com.wordpress.stories.compose.photopicker.ActionableEmptyView>
+            </com.automattic.portkey.photopicker.ActionableEmptyView>
 
-            <com.wordpress.stories.compose.photopicker.ActionableEmptyView
+            <com.automattic.portkey.photopicker.ActionableEmptyView
                 android:id="@+id/soft_ask_view"
                 android:layout_height="match_parent"
                 android:layout_width="match_parent"
@@ -65,7 +67,7 @@
                 app:aevImage="@drawable/img_illustration_media_105dp"
                 app:aevTitle="@string/photo_picker_soft_ask_label"
                 tools:visibility="visible" >
-            </com.wordpress.stories.compose.photopicker.ActionableEmptyView>
+            </com.automattic.portkey.photopicker.ActionableEmptyView>
 
             <LinearLayout
                 android:id="@+id/bottom_bar"
@@ -73,7 +75,8 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
                 android:background="@android:color/white"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                tools:ignore="InconsistentLayout">
 
                 <View
                     android:layout_width="match_parent"
@@ -92,7 +95,8 @@
                         android:layout_weight="1"
                         android:background="?android:selectableItemBackground"
                         android:contentDescription="@string/photo_picker_device_desc"
-                        android:src="@drawable/media_bar_button_image_multiple"/>
+                        android:src="@drawable/media_bar_button_image_multiple"
+                        tools:ignore="InefficientWeight"/>
 
                     <!--<ImageView-->
                         <!--android:id="@+id/icon_camera"-->

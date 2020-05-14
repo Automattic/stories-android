@@ -1,4 +1,4 @@
-package com.wordpress.stories.compose.photopicker
+package com.automattic.portkey.photopicker
 
 import android.content.Context
 import android.util.AttributeSet
@@ -9,7 +9,7 @@ import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatButton
-import com.wordpress.stories.R
+import com.automattic.portkey.R
 
 /**
  * View shown when screen is in an empty state.  It contains the following:

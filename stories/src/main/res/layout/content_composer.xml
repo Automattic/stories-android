@@ -111,7 +111,7 @@
     <View
         android:id="@+id/gradient_top"
         android:layout_width="0dp"
-        android:layout_height="100dp"
+        android:layout_height="@dimen/gradient_top_height"
         android:background="@drawable/top_gradient"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -238,7 +238,7 @@
             android:tint="@color/white"
             android:contentDescription="@string/stickers_button_alt"
             android:background="@drawable/edit_mode_controls_circle_selector"
-            android:layout_marginLeft="@dimen/edit_mode_button_group_margin_between"
+            android:layout_marginStart="@dimen/edit_mode_button_group_margin_between"
             />
 
         <ImageButton
@@ -249,7 +249,7 @@
             android:tint="@color/white"
             android:contentDescription="@string/text_button_alt"
             android:background="@drawable/edit_mode_controls_circle_selector"
-            android:layout_marginLeft="@dimen/edit_mode_button_group_margin_between"
+            android:layout_marginStart="@dimen/edit_mode_button_group_margin_between"
         />
 
     </LinearLayout>
@@ -264,6 +264,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         android:background="@drawable/ic_close_black_24dp"
         android:backgroundTint="@color/white"
+        android:contentDescription="@string/label_close_button"
         />
 
     <com.wordpress.stories.compose.NextButton
@@ -315,7 +316,8 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/bottom_strip_height"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toRightOf="parent"/>
+        app:layout_constraintRight_toRightOf="parent"
+        tools:ignore="FragmentTagUsage"/>
 
     <!-- note: setting the same elevation as per the Next button so this view appears on top -->
     <com.wordpress.stories.compose.CustomPopUpMenuView

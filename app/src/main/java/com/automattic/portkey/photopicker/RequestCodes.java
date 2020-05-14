@@ -1,4 +1,4 @@
-package com.wordpress.stories.compose.photopicker;
+package com.automattic.portkey.photopicker;
 
 /**
  * Global intent identifiers

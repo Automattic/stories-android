@@ -1,5 +1,6 @@
-package com.wordpress.stories.compose.photopicker;
+package com.automattic.portkey.photopicker;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.media.MediaMetadataRetriever;
@@ -17,8 +18,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.wordpress.stories.R;
-import com.wordpress.stories.compose.photopicker.utils.AniUtils;
+import com.automattic.portkey.photopicker.utils.AniUtils;
+import com.automattic.portkey.photopicker.utils.AniUtils.Duration;
+import com.automattic.portkey.R;
 import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
@@ -27,7 +29,7 @@ import java.util.Comparator;
 import java.util.Locale;
 
 import static androidx.recyclerview.widget.RecyclerView.NO_POSITION;
-import static com.wordpress.stories.compose.photopicker.PhotoPickerFragment.NUM_COLUMNS;
+import static com.automattic.portkey.photopicker.PhotoPickerFragment.NUM_COLUMNS;
 import static com.wordpress.stories.util.DisplayUtilsKt.getDisplayPixelWidth;
 
 public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.ThumbnailViewHolder> {
@@ -51,7 +53,7 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
     }
 
     private final ArrayList<Integer> mSelectedPositions = new ArrayList<>();
-    private static final AniUtils.Duration ANI_DURATION = AniUtils.Duration.SHORT;
+    private static final Duration ANI_DURATION = AniUtils.Duration.SHORT;
 
     private final Context mContext;
     private RecyclerView mRecycler;
@@ -203,15 +205,15 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
                 int hours = (int) ((milliseconds / (1000 * 60 * 60)) % 24);
                 String duration = "";
                 if (hours > 0) {
-                    duration = duration + String.format("%02d", hours) + ":";
+                    duration = duration + String.format(Locale.US, "%02d", hours) + ":";
                 }
                 if (minutes > 0) {
-                    duration = duration + String.format("%02d", minutes) + ":";
+                    duration = duration + String.format(Locale.US, "%02d", minutes) + ":";
                 } else {
                     duration = duration + "00:";
                 }
                 if (seconds > 0) {
-                    duration = duration + String.format("%02d", seconds);
+                    duration = duration + String.format(Locale.US, "%02d", seconds);
                 } else {
                     duration = duration + "01"; // default to 1 second if even less than a second
                 }
@@ -464,6 +466,7 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
     /*
      * builds the list of media items from the device
      */
+    @SuppressLint("StaticFieldLeak")
     private class BuildDeviceMediaListTask extends AsyncTask<Void, Void, Boolean> {
         private final ArrayList<PhotoPickerItem> mTmpList = new ArrayList<>();
         private final boolean mReload;
