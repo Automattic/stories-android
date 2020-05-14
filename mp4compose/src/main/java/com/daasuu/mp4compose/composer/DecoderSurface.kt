@@ -306,8 +306,6 @@ internal class DecoderSurface
                 //                    Log.d(TAG, "rotation = " + rotation.getRotation());
                 //                    Log.d(TAG, "scale[0] = " + scale[0] + " scale[1] = " + scale[1]);
             }
-            else -> {
-            }
         }
 
         previewShader!!.draw(texName, MVPMatrix, STMatrix, 1f)
