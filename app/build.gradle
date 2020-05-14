@@ -5,11 +5,13 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'io.sentry.android.gradle'
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion rootProject.compileSdkVersion
+    buildToolsVersion rootProject.buildToolVersion
+
     defaultConfig {
         applicationId "com.automattic.portkey"
-        minSdkVersion 21
-        targetSdkVersion 29
+        minSdkVersion rootProject.minSdkVersion
+        targetSdkVersion rootProject.targetSdkVersion
         versionCode 11
         // Allow versionName to be overridden with property. e.g. -PversionName=1234
         if (project.hasProperty("versionName")) {
@@ -41,14 +43,15 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
 
-    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation "androidx.appcompat:appcompat:$appCompatVersion"
+    implementation "androidx.constraintlayout:constraintlayout:$constraintLayoutVersion"
     implementation 'androidx.core:core-ktx:1.2.0'
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.2.2'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.2.2'
+    implementation "androidx.navigation:navigation-fragment-ktx:$navComponentVersion"
+    implementation "androidx.navigation:navigation-ui-ktx:$navComponentVersion"
     implementation 'androidx.emoji:emoji:1.0.0'
     implementation "androidx.preference:preference-ktx:1.1.1"
     implementation "androidx.recyclerview:recyclerview:1.1.0"
+    implementation "androidx.preference:preference-ktx:1.1.1"
 
     implementation 'com.google.android.material:material:1.1.0'
 
@@ -64,11 +67,10 @@ dependencies {
 
     implementation project(path: ':photoeditor')
     implementation project(path: ':stories')
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.5'
 }
 
 android.buildTypes.all { buildType ->

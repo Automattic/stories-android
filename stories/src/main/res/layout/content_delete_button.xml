@@ -4,7 +4,7 @@
     android:layout_height="wrap_content"
     android:layout_width="wrap_content"
     >
-    <ImageButton xmlns:android="http://schemas.android.com/apk/res/android"
+    <ImageButton
         android:id="@+id/delete_button"
         android:layout_width="@dimen/edit_mode_button_size"
         android:layout_height="@dimen/edit_mode_button_size"

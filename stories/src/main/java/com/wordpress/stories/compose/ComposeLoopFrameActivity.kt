@@ -4,7 +4,6 @@ import android.Manifest
 import android.animation.LayoutTransition
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.ActivityOptions
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -28,7 +27,6 @@ import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnClickListener
-import android.view.ViewGroup
 import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -40,7 +38,7 @@ import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import com.automattic.photoeditor.OnPhotoEditorListener
 import com.automattic.photoeditor.PhotoEditor
 import com.automattic.photoeditor.SaveSettings
@@ -68,10 +66,6 @@ import com.wordpress.stories.compose.frame.FrameSaveService
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveError
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
 import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveResult
-import com.wordpress.stories.compose.photopicker.MediaBrowserType
-import com.wordpress.stories.compose.photopicker.PhotoPickerActivity
-import com.wordpress.stories.compose.photopicker.PhotoPickerFragment
-import com.wordpress.stories.compose.photopicker.RequestCodes
 import com.wordpress.stories.compose.story.OnStoryFrameSelectorTappedListener
 import com.wordpress.stories.compose.story.StoryFrameItem
 import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.FileBackgroundSource
@@ -93,9 +87,9 @@ import com.wordpress.stories.util.isVideo
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
-import com.google.android.material.snackbar.Snackbar
 import com.wordpress.stories.BuildConfig
 import com.wordpress.stories.R
+import com.wordpress.stories.compose.ComposeLoopFrameActivity.ExternalMediaPickerRequestCodesAndExtraKeys
 import kotlinx.android.synthetic.main.activity_composer.*
 import kotlinx.android.synthetic.main.content_composer.*
 import org.greenrobot.eventbus.EventBus
@@ -111,14 +105,6 @@ fun Group.setAllOnClickListener(listener: OnClickListener?) {
     }
 }
 
-fun Snackbar.config(context: Context) {
-    this.view.background = context.getDrawable(R.drawable.snackbar_background)
-    val params = this.view.layoutParams as ViewGroup.MarginLayoutParams
-    params.setMargins(12, 12, 12, 12)
-    this.view.layoutParams = params
-    ViewCompat.setElevation(this.view, 6f)
-}
-
 enum class ScreenTouchBlockMode {
     BLOCK_TOUCH_MODE_NONE,
     BLOCK_TOUCH_MODE_FULL_SCREEN, // used when saving - user is not allowed to touch anything
@@ -129,7 +115,16 @@ enum class ScreenTouchBlockMode {
                                         // but they should be good to upload the Story now
 }
 
-class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTappedListener {
+interface SnackbarProvider {
+    fun showProvidedSnackbar(message: String, actionLabel: String?, callback: () -> Unit)
+}
+
+interface MediaPickerProvider {
+    fun setupRequestCodes(requestCodes: ExternalMediaPickerRequestCodesAndExtraKeys)
+    fun showProvidedMediaPicker()
+}
+
+abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTappedListener {
     private lateinit var photoEditor: PhotoEditor
     private lateinit var backgroundSurfaceManager: BackgroundSurfaceManager
     private var currentOriginalCapturedFile: File? = null
@@ -159,6 +154,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     private var preHookRun: Boolean = false
     private var storyIndexToSelect = -1
     private var storyFrameIndexToRetry: FrameIndex = StoryRepository.DEFAULT_NONE_SELECTED
+    private var snackbarProvider: SnackbarProvider? = null
+    private var mediaPickerProvider: MediaPickerProvider? = null
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
@@ -331,7 +328,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         // before instantiating the ViewModel, we need to get the storyIndexToSelect
         storyIndexToSelect = getStoryIndexFromIntentOrBundle(savedInstanceState, intent)
 
-        storyViewModel = ViewModelProviders.of(this,
+        storyViewModel = ViewModelProvider(this,
             StoryViewModelFactory(StoryRepository, storyIndexToSelect)
         )[StoryViewModel::class.java]
 
@@ -407,6 +404,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }
     }
 
+    @Suppress("unused")
     private fun updateContentUiStateSelection(oldSelection: Int, newSelection: Int) {
         if (storyViewModel.getCurrentStorySize() > newSelection) {
             val selectedFrame = storyViewModel.getCurrentStoryFrameAt(newSelection)
@@ -469,9 +467,9 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     listener = object : FrameSaveErrorDialogOk {
                         override fun OnOkClicked(dialog: DialogFragment) {
                             dialog.dismiss()
-                            val intent = Intent(Settings.ACTION_INTERNAL_STORAGE_SETTINGS)
-                            if (intent.resolveActivity(packageManager) != null) {
-                                startActivity(intent)
+                            val settingsIntent = Intent(Settings.ACTION_INTERNAL_STORAGE_SETTINGS)
+                            if (settingsIntent.resolveActivity(packageManager) != null) {
+                                startActivity(settingsIntent)
                             }
                         }
                     }).show(supportFragmentManager, FRAGMENT_DIALOG)
@@ -605,13 +603,13 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         super.onActivityResult(requestCode, resultCode, data)
 
         when (requestCode) {
-            RequestCodes.PHOTO_PICKER -> if (resultCode == Activity.RESULT_OK && data != null) {
-                if (data.hasExtra(PhotoPickerActivity.EXTRA_MEDIA_URI_LIST)) {
-                    val uriList = data.getParcelableArrayListExtra<Uri>(PhotoPickerActivity.EXTRA_MEDIA_URI_LIST)
+            requestCodes.PHOTO_PICKER -> if (resultCode == Activity.RESULT_OK && data != null) {
+                if (data.hasExtra(requestCodes.EXTRA_MEDIA_URI_LIST)) {
+                    val uriList = data.getParcelableArrayListExtra<Uri>(requestCodes.EXTRA_MEDIA_URI_LIST)
                     addFramesToStoryFromMediaUriList(uriList)
                     setDefaultSelectionAndUpdateBackgroundSurfaceUI()
-                } else if (data.hasExtra(PhotoPickerActivity.EXTRA_MEDIA_URI)) {
-                    val mediaUri = data.getStringExtra(PhotoPickerActivity.EXTRA_MEDIA_URI)
+                } else if (data.hasExtra(requestCodes.EXTRA_MEDIA_URI)) {
+                    val mediaUri = data.getStringExtra(requestCodes.EXTRA_MEDIA_URI)
                     if (mediaUri == null) {
                         Log.e("Composer", "Can't resolve picked media")
                         showToast("Can't resolve picked media")
@@ -619,7 +617,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     }
                     addFrameToStoryFromMediaUri(Uri.parse(mediaUri))
                     setDefaultSelectionAndUpdateBackgroundSurfaceUI()
-                } else if (data.hasExtra(PhotoPickerActivity.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED)) {
+                } else if (data.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED)) {
                     launchCameraPreview()
                 }
             }
@@ -936,13 +934,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     private fun showMediaPicker() {
-        val intent = Intent(this@ComposeLoopFrameActivity, PhotoPickerActivity::class.java)
-        intent.putExtra(PhotoPickerFragment.ARG_BROWSER_TYPE, MediaBrowserType.PORTKEY_PICKER)
-
-        startActivityForResult(
-            intent,
-            RequestCodes.PHOTO_PICKER,
-            ActivityOptions.makeSceneTransitionAnimation(this).toBundle())
+        mediaPickerProvider?.showProvidedMediaPicker() ?: throw Exception("MediaPickerProvider not set")
     }
 
     private fun deleteCapturedMedia() {
@@ -1016,19 +1008,19 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
     private fun showPlayVideo(videoFile: File? = null) {
         showStoryFrameSelector()
-        showEditModeUIControls(false)
+        showEditModeUIControls()
         backgroundSurfaceManager.switchVideoPlayerOnFromFile(videoFile)
     }
 
     private fun showPlayVideo(videoUri: Uri) {
         showStoryFrameSelector()
-        showEditModeUIControls(false)
+        showEditModeUIControls()
         backgroundSurfaceManager.switchVideoPlayerOnFromUri(videoUri)
     }
 
     private fun showStaticBackground() {
         showStoryFrameSelector()
-        showEditModeUIControls(true)
+        showEditModeUIControls()
         backgroundSurfaceManager.switchStaticImageBackgroundModeOn()
     }
 
@@ -1278,19 +1270,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     private fun showSnackbar(message: String, actionLabel: String? = null, listener: OnClickListener? = null) {
-        runOnUiThread {
-            val view = findViewById<View>(android.R.id.content)
-            if (view != null) {
-                val snackbar = Snackbar.make(view, message, Snackbar.LENGTH_LONG)
-                snackbar.config(this)
-                actionLabel?.let {
-                    snackbar.setAction(it, listener)
-                }
-                snackbar.show()
-            } else {
-                Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        snackbarProvider?.let {
+            it.showProvidedSnackbar(message, actionLabel) {
+                listener?.onClick(null)
             }
-        }
+        } ?: Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
     private fun showToast(message: String) {
@@ -1317,7 +1301,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         container_gallery_upload.visibility = View.VISIBLE
     }
 
-    private fun showEditModeUIControls(noSound: Boolean) {
+    private fun showEditModeUIControls() {
         // hide capturing mode controls
         hideVideoUIControls()
         camera_capture_button.visibility = View.INVISIBLE
@@ -1367,6 +1351,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
     private fun updateSoundControl() {
         if (storyViewModel.getSelectedFrame()?.frameItemType is VIDEO) {
+            sound_button.visibility = View.VISIBLE
             if (!storyViewModel.isSelectedFrameAudioMuted()) {
                 backgroundSurfaceManager.videoPlayerUnmute()
                 sound_button.setImageResource(R.drawable.ic_volume_up_black_24dp)
@@ -1404,7 +1389,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             else -> { // no errors here! this is the normal creation situation: release touch block, enable editing
                 releaseTouchOnPhotoEditor(BLOCK_TOUCH_MODE_NONE)
                 edit_mode_controls.visibility = View.VISIBLE
-                sound_button.visibility = View.VISIBLE
                 updateSoundControl()
                 next_button.isEnabled = true
                 (bottom_strip_view as StoryFrameSelectorFragment).showAddFrameControl()
@@ -1556,6 +1540,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     // no op
                     true
                 }
+            }
+            // just don't block touch
+            BLOCK_TOUCH_MODE_NONE -> {
+                translucent_view.visibility = View.GONE
+                translucent_error_view.visibility = View.GONE
             }
         }
     }
@@ -1718,8 +1707,27 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }
     }
 
+    fun setSnackbarProvider(provider: SnackbarProvider) {
+        snackbarProvider = provider
+    }
+
+    fun setMediaPickerProvider(provider: MediaPickerProvider) {
+        mediaPickerProvider = provider
+        mediaPickerProvider?.setupRequestCodes(requestCodes)
+    }
+
+    class ExternalMediaPickerRequestCodesAndExtraKeys {
+        var PHOTO_PICKER: Int = 0 // default code, can be overriden.
+                                    // Leave this value in zero so it's evident if something is not working (will break
+                                    // if not properly initialized)
+        lateinit var EXTRA_MEDIA_URI_LIST: String
+        lateinit var EXTRA_MEDIA_URI: String
+        lateinit var EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED: String
+    }
+
     companion object {
         private const val FRAGMENT_DIALOG = "dialog"
+        private val requestCodes = ExternalMediaPickerRequestCodesAndExtraKeys()
 
         private const val SURFACE_MANAGER_READY_LAUNCH_DELAY = 500L
         private const val CAMERA_VIDEO_RECORD_MAX_LENGTH_MS = 10000L

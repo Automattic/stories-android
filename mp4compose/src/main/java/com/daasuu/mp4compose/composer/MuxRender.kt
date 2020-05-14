@@ -28,7 +28,6 @@ internal class MuxRender(private val muxer: MediaMuxer) {
         when (sampleType) {
             MuxRender.SampleType.VIDEO -> videoFormat = format
             MuxRender.SampleType.AUDIO -> audioFormat = format
-            else -> throw AssertionError()
         }
     }
 

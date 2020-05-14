@@ -133,10 +133,8 @@ internal class AudioChannel(
             0, outBuffer.position() * BYTES_PER_SHORT,
             presentationTimeUs, 0
         )
-        if (inBuffer != null) {
-            decoder.releaseOutputBuffer(inBuffer.bufferIndex, false)
-            emptyBuffers.add(inBuffer)
-        }
+        decoder.releaseOutputBuffer(inBuffer.bufferIndex, false)
+        emptyBuffers.add(inBuffer)
 
         return true
     }
