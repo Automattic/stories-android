@@ -404,6 +404,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         }
     }
 
+    @Suppress("unused")
     private fun updateContentUiStateSelection(oldSelection: Int, newSelection: Int) {
         if (storyViewModel.getCurrentStorySize() > newSelection) {
             val selectedFrame = storyViewModel.getCurrentStoryFrameAt(newSelection)
@@ -466,9 +467,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     listener = object : FrameSaveErrorDialogOk {
                         override fun OnOkClicked(dialog: DialogFragment) {
                             dialog.dismiss()
-                            val intent = Intent(Settings.ACTION_INTERNAL_STORAGE_SETTINGS)
-                            if (intent.resolveActivity(packageManager) != null) {
-                                startActivity(intent)
+                            val settingsIntent = Intent(Settings.ACTION_INTERNAL_STORAGE_SETTINGS)
+                            if (settingsIntent.resolveActivity(packageManager) != null) {
+                                startActivity(settingsIntent)
                             }
                         }
                     }).show(supportFragmentManager, FRAGMENT_DIALOG)
@@ -1007,19 +1008,19 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     private fun showPlayVideo(videoFile: File? = null) {
         showStoryFrameSelector()
-        showEditModeUIControls(false)
+        showEditModeUIControls()
         backgroundSurfaceManager.switchVideoPlayerOnFromFile(videoFile)
     }
 
     private fun showPlayVideo(videoUri: Uri) {
         showStoryFrameSelector()
-        showEditModeUIControls(false)
+        showEditModeUIControls()
         backgroundSurfaceManager.switchVideoPlayerOnFromUri(videoUri)
     }
 
     private fun showStaticBackground() {
         showStoryFrameSelector()
-        showEditModeUIControls(true)
+        showEditModeUIControls()
         backgroundSurfaceManager.switchStaticImageBackgroundModeOn()
     }
 
@@ -1300,7 +1301,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         container_gallery_upload.visibility = View.VISIBLE
     }
 
-    private fun showEditModeUIControls(noSound: Boolean) {
+    private fun showEditModeUIControls() {
         // hide capturing mode controls
         hideVideoUIControls()
         camera_capture_button.visibility = View.INVISIBLE
@@ -1350,6 +1351,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     private fun updateSoundControl() {
         if (storyViewModel.getSelectedFrame().frameItemType is VIDEO) {
+            sound_button.visibility = View.VISIBLE
             if (!storyViewModel.isSelectedFrameAudioMuted()) {
                 backgroundSurfaceManager.videoPlayerUnmute()
                 sound_button.setImageResource(R.drawable.ic_volume_up_black_24dp)
@@ -1387,7 +1389,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             else -> { // no errors here! this is the normal creation situation: release touch block, enable editing
                 releaseTouchOnPhotoEditor(BLOCK_TOUCH_MODE_NONE)
                 edit_mode_controls.visibility = View.VISIBLE
-                sound_button.visibility = View.VISIBLE
                 updateSoundControl()
                 next_button.isEnabled = true
                 (bottom_strip_view as StoryFrameSelectorFragment).showAddFrameControl()
@@ -1539,6 +1540,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     // no op
                     true
                 }
+            }
+            // just don't block touch
+            BLOCK_TOUCH_MODE_NONE -> {
+                translucent_view.visibility = View.GONE
+                translucent_error_view.visibility = View.GONE
             }
         }
     }

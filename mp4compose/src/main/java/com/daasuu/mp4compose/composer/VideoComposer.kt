@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.media.MediaCodec
 import android.media.MediaExtractor
 import android.media.MediaFormat
+import android.os.Build
 import android.util.Size
 
 import com.daasuu.mp4compose.FillMode
@@ -25,8 +26,6 @@ internal class VideoComposer {
     private val bufferInfo = MediaCodec.BufferInfo()
     private var decoder: MediaCodec? = null
     private var encoder: MediaCodec? = null
-    private var decoderInputBuffers: Array<ByteBuffer>? = null
-    private var encoderOutputBuffers: Array<ByteBuffer>? = null
     private var actualOutputFormat: MediaFormat? = null
     private var decoderSurface: DecoderSurface? = null
     private var encoderSurface: EncoderSurface? = null
@@ -95,7 +94,6 @@ internal class VideoComposer {
         }
         encoder!!.start()
         encoderStarted = true
-        encoderOutputBuffers = encoder!!.outputBuffers
 
         if (!useStaticBkg) {
             // only set up mediaExtractor if source is a video we can decode :)
@@ -127,7 +125,6 @@ internal class VideoComposer {
             decoder!!.configure(inputFormat, decoderSurface!!.surface, null, 0)
             decoder!!.start()
             decoderStarted = true
-            decoderInputBuffers = decoder!!.inputBuffers
         }
     }
 
@@ -154,7 +151,6 @@ internal class VideoComposer {
 
     fun stepPipelineStaticImageBackground(): Boolean {
         var busy = false
-        val status: Int
 
         val inputBufIdx = encoder!!.dequeueInputBuffer(0)
         // inject the image
@@ -164,7 +160,6 @@ internal class VideoComposer {
             if (writtenPresentationTimeUs > 5000000) { // fixed at 5 seconds
                 isExtractorEOS = true
                 encoder!!.queueInputBuffer(inputBufIdx, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM)
-                status = DRAIN_STATE_NONE
             } else {
                 // add bitmap into decoder.inputBuffer
                 // byte[] input = BitmapEncodingUtils.getNV12(bkgBitmap.getWidth(), bkgBitmap.getHeight(), bkgBitmap);
@@ -224,22 +219,27 @@ internal class VideoComposer {
         if (trackIndex >= 0 && trackIndex != this.trackIndex) {
             return DRAIN_STATE_NONE
         }
-        val result = decoder!!.dequeueInputBuffer(0)
-        if (result < 0) return DRAIN_STATE_NONE
-        if (trackIndex < 0) {
-            isExtractorEOS = true
-            decoder!!.queueInputBuffer(result, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM)
-            return DRAIN_STATE_NONE
+        decoder?.let { decoder ->
+            val result = decoder.dequeueInputBuffer(0)
+            if (result < 0) return DRAIN_STATE_NONE
+            if (trackIndex < 0) {
+                isExtractorEOS = true
+                decoder.queueInputBuffer(result, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM)
+                return DRAIN_STATE_NONE
+            }
+            val decoderInputBuffer = decoder.getInputBuffer(result)
+            decoderInputBuffer?.let {
+                val sampleSize = mediaExtractor.readSampleData(it, 0)
+                val isKeyFrame = mediaExtractor.sampleFlags and MediaExtractor.SAMPLE_FLAG_SYNC != 0
+                decoder.queueInputBuffer(
+                    result,
+                    0,
+                    sampleSize,
+                    mediaExtractor.sampleTime / timeScale,
+                    if (isKeyFrame) MediaCodec.BUFFER_FLAG_KEY_FRAME else 0
+                )
+            }
         }
-        val sampleSize = mediaExtractor.readSampleData(decoderInputBuffers!![result], 0)
-        val isKeyFrame = mediaExtractor.sampleFlags and MediaExtractor.SAMPLE_FLAG_SYNC != 0
-        decoder!!.queueInputBuffer(
-            result,
-            0,
-            sampleSize,
-            mediaExtractor.sampleTime / timeScale,
-            if (isKeyFrame) MediaCodec.BUFFER_FLAG_SYNC_FRAME else 0
-        )
         mediaExtractor.advance()
         return DRAIN_STATE_CONSUMED
     }
@@ -273,6 +273,7 @@ internal class VideoComposer {
     private fun drainEncoder(): Int {
         if (isFinished) return DRAIN_STATE_NONE
         val result = encoder!!.dequeueOutputBuffer(bufferInfo, 0)
+        var encoderOutputBuffer: ByteBuffer? = null
         when (result) {
             MediaCodec.INFO_TRY_AGAIN_LATER -> return DRAIN_STATE_NONE
             MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
@@ -285,10 +286,19 @@ internal class VideoComposer {
                 return DRAIN_STATE_SHOULD_RETRY_IMMEDIATELY
             }
             MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED -> {
-                encoderOutputBuffers = encoder!!.outputBuffers
+                encoderOutputBuffer = encoder!!.getOutputBuffer(result)
                 return DRAIN_STATE_SHOULD_RETRY_IMMEDIATELY
             }
+            else -> {
+                if (result >= 0) {
+                    encoderOutputBuffer = encoder!!.getOutputBuffer(result)
+                    if (encoderOutputBuffer == null) {
+                        return DRAIN_STATE_SHOULD_RETRY_IMMEDIATELY
+                    }
+                }
+            }
         }
+
         if (actualOutputFormat == null) {
             throw RuntimeException("Could not determine actual output format.")
         }
@@ -314,7 +324,7 @@ internal class VideoComposer {
                 // encodedFrameCount++;
             }
         } else {
-            muxRender.writeSampleData(MuxRender.SampleType.VIDEO, encoderOutputBuffers!![result], bufferInfo)
+            muxRender.writeSampleData(MuxRender.SampleType.VIDEO, encoderOutputBuffer!!, bufferInfo)
             writtenPresentationTimeUs = bufferInfo.presentationTimeUs
             encoder!!.releaseOutputBuffer(result, false)
         }
