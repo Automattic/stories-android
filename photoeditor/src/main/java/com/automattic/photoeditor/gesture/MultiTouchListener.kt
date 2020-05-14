@@ -74,9 +74,6 @@ internal class MultiTouchListener(
 
         val action = event.action
 
-        val x = event.rawX.toInt()
-        val y = event.rawY.toInt()
-
         when (action and event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 mPrevX = event.x
