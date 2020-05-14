@@ -151,7 +151,6 @@ internal class VideoComposer {
 
     fun stepPipelineStaticImageBackground(): Boolean {
         var busy = false
-        val status: Int
 
         val inputBufIdx = encoder!!.dequeueInputBuffer(0)
         // inject the image
@@ -161,7 +160,6 @@ internal class VideoComposer {
             if (writtenPresentationTimeUs > 5000000) { // fixed at 5 seconds
                 isExtractorEOS = true
                 encoder!!.queueInputBuffer(inputBufIdx, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM)
-                status = DRAIN_STATE_NONE
             } else {
                 // add bitmap into decoder.inputBuffer
                 // byte[] input = BitmapEncodingUtils.getNV12(bkgBitmap.getWidth(), bkgBitmap.getHeight(), bkgBitmap);
