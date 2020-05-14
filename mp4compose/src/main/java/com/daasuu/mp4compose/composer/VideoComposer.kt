@@ -4,7 +4,6 @@ import android.graphics.Bitmap
 import android.media.MediaCodec
 import android.media.MediaExtractor
 import android.media.MediaFormat
-import android.os.Build
 import android.util.Size
 
 import com.daasuu.mp4compose.FillMode
