@@ -236,7 +236,7 @@ internal class VideoComposer {
                     0,
                     sampleSize,
                     mediaExtractor.sampleTime / timeScale,
-                    if (isKeyFrame) MediaCodec.BUFFER_FLAG_SYNC_FRAME else 0
+                    if (isKeyFrame) MediaCodec.BUFFER_FLAG_KEY_FRAME else 0
                 )
             }
         }
