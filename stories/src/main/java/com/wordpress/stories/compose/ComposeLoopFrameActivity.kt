@@ -1350,7 +1350,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun updateSoundControl() {
-        if (storyViewModel.getSelectedFrame().frameItemType is VIDEO) {
+        if (storyViewModel.getSelectedFrame()?.frameItemType is VIDEO) {
             sound_button.visibility = View.VISIBLE
             if (!storyViewModel.isSelectedFrameAudioMuted()) {
                 backgroundSurfaceManager.videoPlayerUnmute()
