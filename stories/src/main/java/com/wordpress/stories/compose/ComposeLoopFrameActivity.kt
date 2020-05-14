@@ -39,7 +39,7 @@ import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import com.automattic.photoeditor.OnPhotoEditorListener
 import com.automattic.photoeditor.PhotoEditor
 import com.automattic.photoeditor.SaveSettings
@@ -326,7 +326,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // before instantiating the ViewModel, we need to get the storyIndexToSelect
         storyIndexToSelect = getStoryIndexFromIntentOrBundle(savedInstanceState, intent)
 
-        storyViewModel = ViewModelProviders.of(this,
+        storyViewModel = ViewModelProvider(this,
             StoryViewModelFactory(StoryRepository, storyIndexToSelect)
         )[StoryViewModel::class.java]
 

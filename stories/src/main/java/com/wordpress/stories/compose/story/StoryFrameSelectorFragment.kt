@@ -8,7 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
@@ -31,7 +31,7 @@ class StoryFrameSelectorFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         val storyIndex: StoryIndex = getStoryIndexFromIntentOrBundle(savedInstanceState, activity?.intent)
         storyViewModel =
-                ViewModelProviders.of(requireActivity(), // important to use Activity's context, so we don't
+                ViewModelProvider(requireActivity(), // important to use Activity's context, so we don't
                         // end up looking into the wrong ViewModelProviders bucket key
                         StoryViewModelFactory(StoryRepository, storyIndex))[StoryViewModel::class.java]
 
