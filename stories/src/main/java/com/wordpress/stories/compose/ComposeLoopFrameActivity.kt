@@ -465,9 +465,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     listener = object : FrameSaveErrorDialogOk {
                         override fun OnOkClicked(dialog: DialogFragment) {
                             dialog.dismiss()
-                            val intent = Intent(Settings.ACTION_INTERNAL_STORAGE_SETTINGS)
-                            if (intent.resolveActivity(packageManager) != null) {
-                                startActivity(intent)
+                            val settingsIntent = Intent(Settings.ACTION_INTERNAL_STORAGE_SETTINGS)
+                            if (settingsIntent.resolveActivity(packageManager) != null) {
+                                startActivity(settingsIntent)
                             }
                         }
                     }).show(supportFragmentManager, FRAGMENT_DIALOG)
