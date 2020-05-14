@@ -1545,6 +1545,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     true
                 }
             }
+            // just don't block touch
+            BLOCK_TOUCH_MODE_NONE -> {
+                translucent_view.visibility = View.GONE
+                translucent_error_view.visibility = View.GONE
+            }
         }
     }
 
