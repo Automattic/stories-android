@@ -90,6 +90,7 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.wordpress.stories.BuildConfig
 import com.wordpress.stories.R
 import com.wordpress.stories.compose.ComposeLoopFrameActivity.ExternalMediaPickerRequestCodesAndExtraKeys
+import com.wordpress.stories.compose.frame.StorySaveEvents
 import kotlinx.android.synthetic.main.activity_composer.*
 import kotlinx.android.synthetic.main.content_composer.*
 import org.greenrobot.eventbus.EventBus
@@ -842,6 +843,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         photoEditor.clearAllViews()
         storyViewModel.discardCurrentStory()
         cleanupOriginalIntentSaveResult()
+        EventBus.getDefault().removeStickyEvent(StorySaveEvents.StorySaveProcessStart::class.java)
         storyViewModel.loadStory(StoryRepository.DEFAULT_NONE_SELECTED)
     }
 
