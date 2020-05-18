@@ -844,6 +844,12 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         storyViewModel.discardCurrentStory()
         cleanupOriginalIntentSaveResult()
         EventBus.getDefault().removeStickyEvent(StorySaveEvents.StorySaveProcessStart::class.java)
+        // cancel any outstanding error notifications
+        // TODO use NativeNotificationUtils.dismissNotification() when migrating to WPAndroid
+        intent.action?.let {
+            val notificationManager = NotificationManagerCompat.from(this)
+            notificationManager.cancel(it.toInt())
+        }
         storyViewModel.loadStory(StoryRepository.DEFAULT_NONE_SELECTED)
     }
 

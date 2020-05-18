@@ -352,13 +352,6 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         doNotify(notificationId, notificationBuilder.build()) // , notificationType)
     }
 
-    fun getNotificationIdForError(storyIndex: StoryIndex): Int {
-        // TODO WPANDROID we keep the base number because we'll use SiteId and PostModel id's to identify the error
-        // notification as well, and as such we are using a different base number to avoid collision of notification
-        // ids.
-        return BASE_MEDIA_ERROR_NOTIFICATION_ID + storyIndex
-    }
-
     companion object {
         private const val BASE_MEDIA_ERROR_NOTIFICATION_ID = 72300
 
@@ -369,6 +362,13 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
                 context.getString(R.string.story_saving_failed_message_plural),
                 mediaItemsNotUploaded
             )
+        }
+
+        @JvmStatic fun getNotificationIdForError(storyIndex: StoryIndex): Int {
+            // TODO WPANDROID we keep the base number because we'll use SiteId and PostModel id's to identify the error
+            // notification as well, and as such we are using a different base number to avoid collision of notification
+            // ids.
+            return BASE_MEDIA_ERROR_NOTIFICATION_ID + storyIndex
         }
 
         @JvmStatic fun buildSnackbarErrorMessage(
