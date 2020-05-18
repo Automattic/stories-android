@@ -89,7 +89,7 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
                 errorText
             )
             val snackbar = Snackbar.make(findViewById(android.R.id.content), snackbarMessage, Snackbar.LENGTH_LONG)
-            snackbar.setAction(R.string.story_saving_failed_quick_action_manage, { view ->
+            snackbar.setAction(R.string.story_saving_failed_quick_action_manage) { view ->
                 // here go to the ComposeActivity, passing the SaveResult
                 val intent = Intent(this@MainActivity, ComposeLoopFrameActivity::class.java)
                 intent.putExtra(KEY_STORY_SAVE_RESULT, event)
@@ -111,7 +111,7 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
                 //        val notificationType = NotificationType.MEDIA_SAVE_ERROR
                 //        notificationIntent.putExtra(ARG_NOTIFICATION_TYPE, notificationType)
                 startActivity(intent)
-            })
+            }
             snackbar.show()
         }
     }
