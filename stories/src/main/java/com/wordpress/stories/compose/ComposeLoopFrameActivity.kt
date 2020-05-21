@@ -127,7 +127,7 @@ interface MediaPickerProvider {
 }
 
 interface NotificationIntentLoader {
-    fun loadIntentForErrorNotification() : Intent
+    fun loadIntentForErrorNotification(): Intent
 }
 
 abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTappedListener {

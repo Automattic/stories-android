@@ -8,7 +8,6 @@ import android.content.Intent
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.wordpress.stories.R
-import com.wordpress.stories.compose.ComposeLoopFrameActivity
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
 import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveResult
 import com.wordpress.stories.compose.story.StoryIndex
