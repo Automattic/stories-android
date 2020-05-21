@@ -16,23 +16,24 @@
 
 package com.automattic.photoeditor.camera
 
+import android.graphics.Matrix
 import android.graphics.SurfaceTexture
+import android.media.AudioManager
+import android.media.MediaMetadataRetriever
+import android.media.MediaPlayer
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.Surface
 import android.view.TextureView
-import java.io.File
-import android.media.AudioManager
-import android.media.MediaPlayer
-import android.net.Uri
+import android.webkit.URLUtil
 import androidx.fragment.app.Fragment
 import com.automattic.photoeditor.camera.interfaces.SurfaceFragmentHandler
 import com.automattic.photoeditor.camera.interfaces.VideoPlayerSoundOnOffHandler
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
+import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
-import android.media.MediaMetadataRetriever
-import android.graphics.Matrix
 
 class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlayerSoundOnOffHandler {
     // holds the File handle to the current video file to be played
@@ -208,7 +209,12 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
     private fun calculateVideoSizeAndOrientation(videoUri: Uri) {
         val metadataRetriever = MediaMetadataRetriever()
         try {
-            metadataRetriever.setDataSource(context, videoUri)
+            val isNetworkUrl = URLUtil.isNetworkUrl(videoUri.toString())
+            if (!isNetworkUrl) {
+                metadataRetriever.setDataSource(context, videoUri)
+            } else {
+                metadataRetriever.setDataSource(videoUri.toString(), HashMap<String, String>())
+            }
             val height = metadataRetriever
                 .extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)
             val width = metadataRetriever
