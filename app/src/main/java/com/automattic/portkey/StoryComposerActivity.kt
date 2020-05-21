@@ -15,6 +15,7 @@ import com.automattic.portkey.photopicker.RequestCodes
 import com.google.android.material.snackbar.Snackbar
 import com.wordpress.stories.compose.ComposeLoopFrameActivity
 import com.wordpress.stories.compose.MediaPickerProvider
+import com.wordpress.stories.compose.NotificationIntentLoader
 import com.wordpress.stories.compose.SnackbarProvider
 
 fun Snackbar.config(context: Context) {
@@ -25,11 +26,15 @@ fun Snackbar.config(context: Context) {
     ViewCompat.setElevation(this.view, 6f)
 }
 
-class StoryComposerActivity : ComposeLoopFrameActivity(), SnackbarProvider, MediaPickerProvider {
+class StoryComposerActivity : ComposeLoopFrameActivity(),
+    SnackbarProvider,
+    MediaPickerProvider,
+    NotificationIntentLoader {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setSnackbarProvider(this)
         setMediaPickerProvider(this)
+        setNotificationExtrasLoader(this)
     }
 
     override fun showProvidedSnackbar(message: String, actionLabel: String?, callback: () -> Unit) {
@@ -69,5 +74,12 @@ class StoryComposerActivity : ComposeLoopFrameActivity(), SnackbarProvider, Medi
 
     override fun providerHandlesOnActivityResult(): Boolean {
         return false
+    }
+
+    override fun loadIntentForErrorNotification(): Intent {
+        val notificationIntent = Intent(applicationContext, StoryComposerActivity::class.java)
+        notificationIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        notificationIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        return notificationIntent
     }
 }

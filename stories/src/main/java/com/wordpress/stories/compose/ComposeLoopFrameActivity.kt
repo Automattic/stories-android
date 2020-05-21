@@ -126,6 +126,10 @@ interface MediaPickerProvider {
     fun providerHandlesOnActivityResult(): Boolean
 }
 
+interface NotificationIntentLoader {
+    fun loadIntentForErrorNotification() : Intent
+}
+
 abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTappedListener {
     private lateinit var photoEditor: PhotoEditor
     private lateinit var backgroundSurfaceManager: BackgroundSurfaceManager
@@ -158,6 +162,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private var storyFrameIndexToRetry: FrameIndex = StoryRepository.DEFAULT_NONE_SELECTED
     private var snackbarProvider: SnackbarProvider? = null
     private var mediaPickerProvider: MediaPickerProvider? = null
+    private var notificationAddedExtrasLoader: NotificationIntentLoader? = null
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
@@ -171,6 +176,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 // TODO obtain the real Story title as assigned by the user when the BOTTOM SHEET is ready, and pass it up
                 storyViewModel.setCurrentStoryTitle(getString(R.string.story_saving_untitled))
             }
+            // Setup notification intent for notifications triggered from the FrameSaveService.FrameSaveNotifier class
+            notificationAddedExtrasLoader?.let {
+                frameSaveService.setNotificationIntent(it.loadIntentForErrorNotification())
+            }
+
             frameSaveService.saveStoryFrames(storyIndex, photoEditor, storyFrameIndexToRetry)
             saveServiceBound = true
 
@@ -1725,6 +1735,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     fun setMediaPickerProvider(provider: MediaPickerProvider) {
         mediaPickerProvider = provider
         mediaPickerProvider?.setupRequestCodes(requestCodes)
+    }
+
+    fun setNotificationExtrasLoader(loader: NotificationIntentLoader) {
+        notificationAddedExtrasLoader = loader
     }
 
     class ExternalMediaPickerRequestCodesAndExtraKeys {

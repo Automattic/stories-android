@@ -90,26 +90,14 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
             )
             val snackbar = Snackbar.make(findViewById(android.R.id.content), snackbarMessage, Snackbar.LENGTH_LONG)
             snackbar.setAction(R.string.story_saving_failed_quick_action_manage) { view ->
-                // here go to the ComposeActivity, passing the SaveResult
-                val intent = Intent(this@MainActivity, ComposeLoopFrameActivity::class.java)
+                // here go to the StoryComposerActivity, passing the SaveResult
+                val intent = Intent(this@MainActivity, StoryComposerActivity::class.java)
                 intent.putExtra(KEY_STORY_SAVE_RESULT, event)
-                // TODO add SITE param later when integrating with WPAndroid
-                // notificationIntent.putExtra(WordPress.SITE, site)
-
-                // we need to have a way to cancel the related error notification when the user comes
-                // from tapping on MANAGE on the snackbar (otherwise they'll be able to discard the
-                // errored story but the error notification will remain existing in the system dashboard)
-                // TODO add SITE param later when integrating with WPAndroid
-                // notificationIntent.putExtra(WordPress.SITE, site)
-
                 // we need to have a way to cancel the related error notification when the user comes
                 // from tapping on MANAGE on the snackbar (otherwise they'll be able to discard the
                 // errored story but the error notification will remain existing in the system dashboard)
                 intent.action = getNotificationIdForError(event.storyIndex).toString() + ""
 
-                // TODO add NotificationType.MEDIA_SAVE_ERROR param later when integrating with WPAndroid
-                //        val notificationType = NotificationType.MEDIA_SAVE_ERROR
-                //        notificationIntent.putExtra(ARG_NOTIFICATION_TYPE, notificationType)
                 startActivity(intent)
             }
             snackbar.show()

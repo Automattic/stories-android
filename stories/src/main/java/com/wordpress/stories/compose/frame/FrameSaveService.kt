@@ -8,6 +8,7 @@ import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Binder
 import android.os.Build
+import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
 import android.webkit.MimeTypeMap
@@ -34,6 +35,7 @@ class FrameSaveService : Service() {
     private val binder = FrameSaveServiceBinder()
     private lateinit var frameSaveNotifier: FrameSaveNotifier
     private val storySaveProcessors = ArrayList<StorySaveProcessor>()
+    private lateinit var notificationIntent: Intent
 
     override fun onCreate() {
         super.onCreate()
@@ -62,6 +64,14 @@ class FrameSaveService : Service() {
         }
 
         return START_NOT_STICKY
+    }
+
+    fun setNotificationIntent(intent: Intent) {
+        notificationIntent = intent
+    }
+
+    fun getNotificationIntent(): Intent {
+        return notificationIntent
     }
 
     fun saveStoryFrames(
