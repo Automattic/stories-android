@@ -8,7 +8,6 @@ import androidx.navigation.Navigation
 import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.portkey.intro.IntroActivity
 import com.google.android.material.snackbar.Snackbar
-import com.wordpress.stories.compose.ComposeLoopFrameActivity
 import com.wordpress.stories.compose.frame.FrameSaveNotifier
 import com.wordpress.stories.compose.frame.FrameSaveNotifier.Companion.getNotificationIdForError
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveError
