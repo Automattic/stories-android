@@ -102,19 +102,21 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
 
     override fun onPause() {
         // pause playing video
-        windDown()
+        deactivate()
         super.onPause()
     }
 
-    fun stopVideoPlay() {
+    private fun stopVideoPlay() {
         if (active) {
             if (mediaPlayer?.isPlaying() == true) {
                 mediaPlayer?.stop()
             }
-            mediaPlayer?.reset()
-            mediaPlayer?.release()
-            mediaPlayer = null
         }
+        mediaPlayer?.setDisplay(null)
+        mediaPlayer?.reset()
+        mediaPlayer?.release()
+        mediaPlayer = null
+        active = false
         // leave the transform for reusable TextureView as per the original
         textureView.setTransform(originalMatrix)
     }
@@ -127,7 +129,6 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
 
     override fun deactivate() {
         stopVideoPlay()
-        active = false
     }
 
     private fun startUp() {
@@ -136,10 +137,6 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
                 startVideoPlay(textureView.surfaceTexture)
             }
         }
-    }
-
-    private fun windDown() {
-        stopVideoPlay()
     }
 
     // WARNING: this will take currentFile and play it if not null, or take currentExternalUri and play it if available.
@@ -158,8 +155,13 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
             currentFile?.takeIf { it.exists() }?.let { file ->
                 val inputStream = FileInputStream(file)
                 textureView.setTransform(originalMatrix)
-                mediaPlayer = MediaPlayer().apply {
-                    setDataSource(inputStream.getFD())
+
+                mediaPlayer = MediaPlayer()
+                withContext(Dispatchers.IO) {
+                    mediaPlayer?.setDataSource(inputStream.getFD())
+                }
+
+                mediaPlayer?.apply {
                     setSurface(s)
                     setAudioStreamType(AudioManager.STREAM_MUSIC)
                     setLooping(true)
@@ -174,15 +176,19 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
 
             currentExternalUri?.let { uri ->
                 textureView.setTransform(originalMatrix)
+
+                mediaPlayer = MediaPlayer()
                 withContext(Dispatchers.IO) {
                     calculateVideoSizeAndOrientation(uri)
+                    mediaPlayer?.setDataSource(requireContext(), currentExternalUri!!)
                 }
+
                 // only use letterbox for landscape video
                 if (videoOrientation == 0 || videoOrientation == 180) {
                     updateTextureViewSizeForLetterbox(videoWidth.toInt(), videoHeight.toInt())
                 }
-                mediaPlayer = MediaPlayer().apply {
-                    setDataSource(requireContext(), currentExternalUri!!)
+
+                mediaPlayer?.apply {
                     setSurface(s)
                     setAudioStreamType(AudioManager.STREAM_MUSIC)
                     setLooping(true)
