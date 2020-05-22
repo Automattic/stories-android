@@ -1638,13 +1638,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             CoroutineScope(Dispatchers.Main).launch {
                 source.apply {
                     if (this is FileBackgroundSource) {
-                        // showPlayVideo(file)
-                        // FIXME DELETE THIS TEST
-                        showPlayVideo(Uri.parse("http://techslides.com/demos/sample-videos/small.mp4"))
+                        showPlayVideo(file)
                     } else (source as UriBackgroundSource).contentUri?.let {
-                        // showPlayVideo(it)
-                        // FIXME DELETE THIS TEST
-                        showPlayVideo(Uri.parse("http://techslides.com/demos/sample-videos/small.mp4"))
+                        showPlayVideo(it)
                     }
                 }
                 updateSoundControl()
