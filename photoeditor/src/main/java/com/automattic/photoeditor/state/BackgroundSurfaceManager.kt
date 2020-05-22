@@ -211,24 +211,22 @@ class BackgroundSurfaceManager(
             isCameraVisible = false
             if (isCameraRecording) {
                 stopRecordingVideo()
-
-                // we need to give a bit of time before changing the surface as the video stops recording,
-                // saves to file and so on.
-                // TODO: implement this in the saveFile listener so we're sure to only change to the option
-                // wanted (video player) once we're sure video has been successfully saved
-                val handler = Handler()
-                handler.postDelayed({
-                        cameraXAwareSurfaceDeactivator()
-                        videoPlayerHandling.currentFile = cameraBasicHandler.currentFile
-                        photoEditorView.turnTextureViewOn()
-                        videoPlayerHandling.activate()
-                    }, 500
-                )
-                return
-            } else {
-                cameraXAwareSurfaceDeactivator() // keep visible as we're going to render video from player
-                videoPlayerHandling.currentFile = cameraBasicHandler.currentFile
             }
+
+            // if the camera was visible (either for preview or recording) before switching to video player,
+            // we need to give a bit of time before changing the surface as the video stops recording,
+            // saves to file and the surface gets deactivated and activated again.
+            // This is to circumvent an issue in CameraX that should be solved in the beta version.
+            // TODO: implement this in the saveFile listener so we're sure to only change to the option
+            // wanted (video player) once we're sure video has been successfully saved
+            val handler = Handler()
+            handler.postDelayed({
+                cameraXAwareSurfaceDeactivator()
+                videoPlayerHandling.currentFile = cameraBasicHandler.currentFile
+                photoEditorView.turnTextureViewOn()
+                videoPlayerHandling.activate()
+            }, 500)
+            return
         }
         photoEditorView.turnTextureViewOn()
         videoPlayerHandling.activate()
