@@ -31,6 +31,10 @@ import androidx.fragment.app.Fragment
 import com.automattic.photoeditor.camera.interfaces.SurfaceFragmentHandler
 import com.automattic.photoeditor.camera.interfaces.VideoPlayerSoundOnOffHandler
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
@@ -54,7 +58,9 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
     val surfaceTextureListener = object : TextureView.SurfaceTextureListener {
         override fun onSurfaceTextureAvailable(texture: SurfaceTexture, width: Int, height: Int) {
             if (active) {
-                startVideoPlay(texture)
+                CoroutineScope(Dispatchers.Main).launch {
+                    startVideoPlay(texture)
+                }
             }
         }
 
@@ -126,7 +132,9 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
 
     private fun startUp() {
         if (textureView.isAvailable && active) {
-            startVideoPlay(textureView.surfaceTexture)
+            CoroutineScope(Dispatchers.Main).launch {
+                startVideoPlay(textureView.surfaceTexture)
+            }
         }
     }
 
@@ -136,7 +144,7 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
 
     // WARNING: this will take currentFile and play it if not null, or take currentExternalUri and play it if available.
     // This means currentFile (local file, for videos that were just captured by the app) has precedence.
-    fun startVideoPlay(texture: SurfaceTexture) {
+    suspend fun startVideoPlay(texture: SurfaceTexture) {
         val s = Surface(texture)
         try {
             if (mediaPlayer != null) {
@@ -153,20 +161,22 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
                 mediaPlayer = MediaPlayer().apply {
                     setDataSource(inputStream.getFD())
                     setSurface(s)
+                    setAudioStreamType(AudioManager.STREAM_MUSIC)
                     setLooping(true)
                     setOnPreparedListener {
                         playerPreparedListener?.onPlayerPrepared()
                         it.start()
                     }
                     prepareAsync()
-                    setAudioStreamType(AudioManager.STREAM_MUSIC)
                     setVolume(if (isMuted) 0f else 1f, if (isMuted) 0f else 1f)
                 }
             }
 
             currentExternalUri?.let { uri ->
                 textureView.setTransform(originalMatrix)
-                calculateVideoSizeAndOrientation(uri)
+                withContext(Dispatchers.IO) {
+                    calculateVideoSizeAndOrientation(uri)
+                }
                 // only use letterbox for landscape video
                 if (videoOrientation == 0 || videoOrientation == 180) {
                     updateTextureViewSizeForLetterbox(videoWidth.toInt(), videoHeight.toInt())
@@ -174,6 +184,7 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
                 mediaPlayer = MediaPlayer().apply {
                     setDataSource(requireContext(), currentExternalUri!!)
                     setSurface(s)
+                    setAudioStreamType(AudioManager.STREAM_MUSIC)
                     setLooping(true)
                     setOnPreparedListener {
                         playerPreparedListener?.onPlayerPrepared()
@@ -185,7 +196,6 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
                     //                setOnCompletionListener(this)
                     //                setOnPreparedListener(this)
                     //                setOnVideoSizeChangedListener(this)
-                    setAudioStreamType(AudioManager.STREAM_MUSIC)
                     setVolume(if (isMuted) 0f else 1f, if (isMuted) 0f else 1f)
                 }
             }
