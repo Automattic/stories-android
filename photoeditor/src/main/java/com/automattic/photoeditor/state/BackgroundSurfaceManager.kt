@@ -3,6 +3,7 @@ package com.automattic.photoeditor.state
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
+import android.widget.Toast
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.Event.ON_CREATE
@@ -16,6 +17,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import com.automattic.photoeditor.camera.Camera2BasicHandling
 import com.automattic.photoeditor.camera.CameraXBasicHandling
+import com.automattic.photoeditor.camera.PlayerPrepareReadyListener
 import com.automattic.photoeditor.camera.VideoPlayingBasicHandling
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
 import com.automattic.photoeditor.camera.interfaces.CameraSelection.BACK
@@ -204,6 +206,7 @@ class BackgroundSurfaceManager(
     private fun switchVideoPlayerOn() {
         // in case the Camera was being visible, set if off
         isVideoPlayerVisible = true
+        photoEditorView.showLoading()
         if (isCameraVisible) {
             isCameraVisible = false
             if (isCameraRecording) {
@@ -343,6 +346,17 @@ class BackgroundSurfaceManager(
                     // the photoEditorView layout has been recreated so, re-assign its TextureView
                     videoPlayerHandling.textureView = photoEditorView.textureView
                     videoPlayerHandling.originalMatrix = photoEditorView.textureView.getTransform(null)
+                }
+
+                videoPlayerHandling.playerPreparedListener = object : PlayerPrepareReadyListener {
+                    override fun onPlayerPrepared() {
+                        photoEditorView.hideLoading()
+                    }
+
+                    override fun onPlayerError() {
+                        photoEditorView.hideLoading()
+                        Toast.makeText(videoPlayerHandling.context, "Error playing video", Toast.LENGTH_SHORT).show()
+                    }
                 }
                 // add video player texture listener
                 photoEditorView.listeners.add(videoPlayerHandling.surfaceTextureListener)

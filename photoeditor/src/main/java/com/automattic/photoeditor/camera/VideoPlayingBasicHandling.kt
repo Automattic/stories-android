@@ -35,11 +35,17 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
 
+interface PlayerPrepareReadyListener {
+    fun onPlayerPrepared()
+    fun onPlayerError()
+}
+
 class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlayerSoundOnOffHandler {
     // holds the File handle to the current video file to be played
     var currentFile: File? = null
     var currentExternalUri: Uri? = null
     var isMuted = false
+    var playerPreparedListener: PlayerPrepareReadyListener? = null
 
     /**
      * [TextureView.SurfaceTextureListener] handles several lifecycle events on a
@@ -148,21 +154,19 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
                     setDataSource(inputStream.getFD())
                     setSurface(s)
                     setLooping(true)
-                    prepare()
-                    // TODO check whether we want fine grained error handling by setting these listeners
-    //                setOnBufferingUpdateListener(this)
-    //                setOnCompletionListener(this)
-    //                setOnPreparedListener(this)
-    //                setOnVideoSizeChangedListener(this)
+                    setOnPreparedListener {
+                        playerPreparedListener?.onPlayerPrepared()
+                        it.start()
+                    }
+                    prepareAsync()
                     setAudioStreamType(AudioManager.STREAM_MUSIC)
                     setVolume(if (isMuted) 0f else 1f, if (isMuted) 0f else 1f)
-                    start()
                 }
             }
 
-            currentExternalUri?.let {
+            currentExternalUri?.let { uri ->
                 textureView.setTransform(originalMatrix)
-                calculateVideoSizeAndOrientation(it)
+                calculateVideoSizeAndOrientation(uri)
                 // only use letterbox for landscape video
                 if (videoOrientation == 0 || videoOrientation == 180) {
                     updateTextureViewSizeForLetterbox(videoWidth.toInt(), videoHeight.toInt())
@@ -171,27 +175,35 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
                     setDataSource(requireContext(), currentExternalUri!!)
                     setSurface(s)
                     setLooping(true)
-                    prepare()
+                    setOnPreparedListener {
+                        playerPreparedListener?.onPlayerPrepared()
+                        it.start()
+                    }
+                    prepareAsync()
                     // TODO check whether we want fine grained error handling by setting these listeners
                     //                setOnBufferingUpdateListener(this)
                     //                setOnCompletionListener(this)
                     //                setOnPreparedListener(this)
                     //                setOnVideoSizeChangedListener(this)
                     setAudioStreamType(AudioManager.STREAM_MUSIC)
-                    start()
+                    setVolume(if (isMuted) 0f else 1f, if (isMuted) 0f else 1f)
                 }
             }
         } catch (e: IllegalArgumentException) {
             // TODO Auto-generated catch block
+            playerPreparedListener?.onPlayerError()
             e.printStackTrace()
         } catch (e: SecurityException) {
             // TODO Auto-generated catch block
+            playerPreparedListener?.onPlayerError()
             e.printStackTrace()
         } catch (e: IllegalStateException) {
             // TODO Auto-generated catch block
+            playerPreparedListener?.onPlayerError()
             e.printStackTrace()
         } catch (e: IOException) {
             // TODO Auto-generated catch block
+            playerPreparedListener?.onPlayerError()
             e.printStackTrace()
         }
     }
