@@ -7,7 +7,6 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Rect
 import android.graphics.Typeface
-import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.text.TextUtils
 import android.util.Log
@@ -27,6 +26,7 @@ import androidx.core.widget.TextViewCompat
 import androidx.emoji.text.EmojiCompat
 import com.automattic.photoeditor.gesture.MultiTouchListener
 import com.automattic.photoeditor.gesture.MultiTouchListener.OnMultiTouchListener
+import com.automattic.photoeditor.state.AuthenticationHeadersInterface
 import com.automattic.photoeditor.util.BitmapUtil
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.PhotoEditorView
@@ -81,6 +81,7 @@ class PhotoEditor private constructor(builder: Builder) :
     private val isTextPinchZoomable: Boolean
     private val mDefaultTextTypeface: Typeface?
     private val mDefaultEmojiTypeface: Typeface?
+    private val authenticationHeadersInterface: AuthenticationHeadersInterface?
 
     /**
      * @return true is brush mode is enabled
@@ -144,6 +145,7 @@ class PhotoEditor private constructor(builder: Builder) :
         this.isTextPinchZoomable = builder.isTextPinchZoomable
         this.mDefaultTextTypeface = builder.textTypeface
         this.mDefaultEmojiTypeface = builder.emojiTypeface
+        this.authenticationHeadersInterface = builder.authenticationHeadersInterface
         layoutInflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         brushDrawingView.setBrushViewChangeListener(this)
         addedViews = AddedViewList()
@@ -729,16 +731,33 @@ class PhotoEditor private constructor(builder: Builder) :
     ) {
         Log.d(TAG, "Video Path: $videoInputPath")
 
-        val retriever = MediaMetadataRetriever()
-        retriever.setDataSource(context, videoInputPath)
-        var width = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH))
-        var height = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT))
-        val rotation = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION))
-        // if rotation is vertical, then swap height/width
-        if (rotation == 90 || rotation == 270) {
-            width = height.also { height = width }
-        }
-        retriever.release()
+        // TODO check if we need to use this at all (check size and orientation)
+//        val retriever = MediaMetadataRetriever()
+//        val videoUri = videoInputPath.toString()
+//        try {
+//            val isNetworkUrl = URLUtil.isNetworkUrl(videoInputPath.toString())
+//            if (!isNetworkUrl) {
+//                retriever.setDataSource(context, videoInputPath)
+//            } else {
+//                authenticationHeadersInterface?.let {
+//                    retriever.setDataSource(videoUri, it.getAuthHeaders(videoUri))
+//                } ?: retriever.setDataSource(videoUri, HashMap<String, String>())
+//            }
+//            // TODO do stuff here
+//            var width = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH))
+//            var height = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT))
+//            val rotation = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION))
+//            // if rotation is vertical, then swap height/width
+//            if (rotation == 90 || rotation == 270) {
+//                width = height.also { height = width }
+//            }
+//        } catch (e: IOException) {
+//            Log.d(TAG, e.message)
+//        } catch (e: NumberFormatException) {
+//            Log.d(TAG, e.message)
+//        } finally {
+//            retriever.release()
+//        }
 
         // get the images currently on top of the screen, and add them as Filters to the mp4composer
         val filterCollection = ArrayList<GlFilter>()
@@ -767,6 +786,7 @@ class PhotoEditor private constructor(builder: Builder) :
 
         Mp4Composer(videoInputPath, videoOutputPath)
             .with(context)
+            .addedHeaders(authenticationHeadersInterface?.getAuthHeaders(videoInputPath.toString()))
 //            .size(width, height)
             // IMPORTANT: as we aim at a WYSIWYG UX, we need to produce a video of size equal to that of the phone
             // screen, given the user may be seeing a letterbox landscape video and placing emoji / text around
@@ -987,6 +1007,7 @@ class PhotoEditor private constructor(builder: Builder) :
         var emojiTypeface: Typeface? = null
         // By Default pinch zoom on text is enabled
         var isTextPinchZoomable = true
+        var authenticationHeadersInterface: AuthenticationHeadersInterface? = null
 
         fun setDeleteView(deleteView: View): Builder {
             this.deleteView = deleteView
@@ -995,6 +1016,11 @@ class PhotoEditor private constructor(builder: Builder) :
 
         fun setWorkAreaRect(workAreaBounds: Rect): Builder {
             this.workAreaRect = workAreaBounds
+            return this
+        }
+
+        fun setAuthenticatitonHeaderInterface(authHeaderInterface: AuthenticationHeadersInterface): Builder {
+            this.authenticationHeadersInterface = authHeaderInterface
             return this
         }
 

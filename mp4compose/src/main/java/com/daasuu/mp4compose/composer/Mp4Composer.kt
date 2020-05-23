@@ -38,6 +38,7 @@ class Mp4Composer {
     private var isStaticImageBkgSource = false
     private var bkgBitmap: Bitmap? = null
     private var context: Context? = null
+    private var addedRequestHeaders: Map<String, String>? = null
 
     private var executorService: ExecutorService? = null
 
@@ -59,6 +60,11 @@ class Mp4Composer {
     fun with(context: Context): Mp4Composer {
         // needed for Uri handling (content resolver)
         this.context = context
+        return this
+    }
+
+    fun addedHeaders(headers: Map<String, String>?): Mp4Composer {
+        this.addedRequestHeaders = headers
         return this
     }
 
@@ -276,7 +282,7 @@ class Mp4Composer {
     }
 
     private fun initializeUriDataSource(engine: Mp4ComposerEngine) {
-        engine.setDataSource(srcUri)
+        engine.setDataSource(srcUri, addedRequestHeaders)
     }
 
     private fun getVideoRotation(videoUri: Uri): Int {
@@ -287,7 +293,9 @@ class Mp4Composer {
             if (!isNetworkUrl) {
                 mediaMetadataRetriever.setDataSource(context, videoUri)
             } else {
-                mediaMetadataRetriever.setDataSource(videoUri.toString(), HashMap<String, String>())
+                addedRequestHeaders?.let {
+                    mediaMetadataRetriever.setDataSource(videoUri.toString(), addedRequestHeaders)
+                } ?: mediaMetadataRetriever.setDataSource(videoUri.toString(), HashMap<String, String>())
             }
             val orientation = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)
             return Integer.valueOf(orientation)
@@ -323,7 +331,9 @@ class Mp4Composer {
             if (!isNetworkUrl) {
                 retriever.setDataSource(context, videoUri)
             } else {
-                retriever.setDataSource(videoUri.toString(), HashMap<String, String>())
+                addedRequestHeaders?.let {
+                    retriever.setDataSource(videoUri.toString(), addedRequestHeaders)
+                } ?: retriever.setDataSource(videoUri.toString(), HashMap<String, String>())
             }
             val width = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH))
             val height = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT))

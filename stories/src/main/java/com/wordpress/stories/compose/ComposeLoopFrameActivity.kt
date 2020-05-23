@@ -233,10 +233,17 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             insets
         }
 
+        val authHeaderInterfaceBridge = object : AuthenticationHeadersInterface {
+            override fun getAuthHeaders(url: String): Map<String, String>? {
+                return authHeadersProvider?.getAuthHeaders(url)
+            }
+        }
+
         photoEditor = PhotoEditor.Builder(this, photoEditorView)
             .setPinchTextScalable(true) // set flag to make text scalable when pinch
             .setDeleteView(delete_view)
             .setWorkAreaRect(calculateWorkingArea())
+            .setAuthenticatitonHeaderInterface(authHeaderInterfaceBridge)
             .build() // build photo editor sdk
 
         photoEditor.setOnPhotoEditorListener(object : OnPhotoEditorListener {
@@ -318,11 +325,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 }
             },
             BuildConfig.USE_CAMERAX,
-            object : AuthenticationHeadersInterface {
-                override fun getAuthHeaders(url: String): Map<String, String>? {
-                    return authHeadersProvider?.getAuthHeaders(url)
-                }
-            }
+            authHeaderInterfaceBridge
         )
 
         lifecycle.addObserver(backgroundSurfaceManager)
