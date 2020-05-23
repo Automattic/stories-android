@@ -731,34 +731,6 @@ class PhotoEditor private constructor(builder: Builder) :
     ) {
         Log.d(TAG, "Video Path: $videoInputPath")
 
-        // TODO check if we need to use this at all (check size and orientation)
-//        val retriever = MediaMetadataRetriever()
-//        val videoUri = videoInputPath.toString()
-//        try {
-//            val isNetworkUrl = URLUtil.isNetworkUrl(videoInputPath.toString())
-//            if (!isNetworkUrl) {
-//                retriever.setDataSource(context, videoInputPath)
-//            } else {
-//                authenticationHeadersInterface?.let {
-//                    retriever.setDataSource(videoUri, it.getAuthHeaders(videoUri))
-//                } ?: retriever.setDataSource(videoUri, HashMap<String, String>())
-//            }
-//            // TODO do stuff here
-//            var width = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH))
-//            var height = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT))
-//            val rotation = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION))
-//            // if rotation is vertical, then swap height/width
-//            if (rotation == 90 || rotation == 270) {
-//                width = height.also { height = width }
-//            }
-//        } catch (e: IOException) {
-//            Log.d(TAG, e.message)
-//        } catch (e: NumberFormatException) {
-//            Log.d(TAG, e.message)
-//        } finally {
-//            retriever.release()
-//        }
-
         // get the images currently on top of the screen, and add them as Filters to the mp4composer
         val filterCollection = ArrayList<GlFilter>()
         for (v in customAddedViews) {
