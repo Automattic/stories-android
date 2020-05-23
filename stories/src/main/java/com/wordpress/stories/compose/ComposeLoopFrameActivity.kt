@@ -170,7 +170,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private var storyFrameIndexToRetry: FrameIndex = StoryRepository.DEFAULT_NONE_SELECTED
     private var snackbarProvider: SnackbarProvider? = null
     private var mediaPickerProvider: MediaPickerProvider? = null
-    private var notificationAddedExtrasLoader: NotificationIntentLoader? = null
+    private var notificationIntentLoader: NotificationIntentLoader? = null
     private var authHeadersProvider: AuthenticationHeadersProvider? = null
 
     private val connection = object : ServiceConnection {
@@ -186,7 +186,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 storyViewModel.setCurrentStoryTitle(getString(R.string.story_saving_untitled))
             }
             // Setup notification intent for notifications triggered from the FrameSaveService.FrameSaveNotifier class
-            notificationAddedExtrasLoader?.let {
+            notificationIntentLoader?.let {
                 frameSaveService.setNotificationIntent(it.loadIntentForErrorNotification())
             }
 
@@ -1758,7 +1758,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     fun setNotificationExtrasLoader(loader: NotificationIntentLoader) {
-        notificationAddedExtrasLoader = loader
+        notificationIntentLoader = loader
     }
 
     fun setAuthenticationProvider(provider: AuthenticationHeadersProvider) {
