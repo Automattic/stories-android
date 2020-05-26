@@ -3,9 +3,12 @@ package com.automattic.portkey
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.Navigation
 import com.automattic.photoeditor.util.PermissionUtils
+import com.automattic.portkey.StoryComposerActivity.Companion.KEY_EXAMPLE_METADATA
+import com.automattic.portkey.StoryComposerActivity.Companion.KEY_STORY_INDEX
 import com.automattic.portkey.intro.IntroActivity
 import com.google.android.material.snackbar.Snackbar
 import com.wordpress.stories.compose.frame.FrameSaveNotifier
@@ -66,6 +69,17 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onStorySaveResult(event: StorySaveResult) {
         EventBus.getDefault().removeStickyEvent(event)
+
+        // check the metadata we've put is effectively there in the StorySaveResult event
+        event.metadata?.let {
+            val payloadString = it.getString(KEY_EXAMPLE_METADATA)
+            val storyIndex = it.getInt(KEY_STORY_INDEX)
+            Toast.makeText(
+                this, "Payload is: " + payloadString + " - index: " + storyIndex,
+                Toast.LENGTH_SHORT)
+                .show()
+        }
+
         if (event.isSuccess()) {
             // TODO will remove this snackbar when integrating to WPAndroid as at this successful saving point we''l
             // want to enqueue the Story post and media to be uploaded to the user's site.

@@ -15,8 +15,10 @@ import com.automattic.portkey.photopicker.RequestCodes
 import com.google.android.material.snackbar.Snackbar
 import com.wordpress.stories.compose.ComposeLoopFrameActivity
 import com.wordpress.stories.compose.MediaPickerProvider
+import com.wordpress.stories.compose.MetadataProvider
 import com.wordpress.stories.compose.NotificationIntentLoader
 import com.wordpress.stories.compose.SnackbarProvider
+import com.wordpress.stories.compose.story.StoryIndex
 
 fun Snackbar.config(context: Context) {
     this.view.background = context.getDrawable(R.drawable.snackbar_background)
@@ -29,12 +31,14 @@ fun Snackbar.config(context: Context) {
 class StoryComposerActivity : ComposeLoopFrameActivity(),
     SnackbarProvider,
     MediaPickerProvider,
-    NotificationIntentLoader {
+    NotificationIntentLoader,
+    MetadataProvider {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setSnackbarProvider(this)
         setMediaPickerProvider(this)
         setNotificationExtrasLoader(this)
+        setMetadataProvider(this)
     }
 
     override fun showProvidedSnackbar(message: String, actionLabel: String?, callback: () -> Unit) {
@@ -81,5 +85,18 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
         notificationIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
         notificationIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         return notificationIntent
+    }
+
+    override fun loadMetadataForStory(index: StoryIndex): Bundle? {
+        // this is optional, external metadata that will be returned to you after the FrameSaveService finishes
+        val bundle = Bundle()
+        bundle.putString(KEY_EXAMPLE_METADATA, "example metadata")
+        bundle.putInt(KEY_STORY_INDEX, index)
+        return bundle
+    }
+
+    companion object {
+        const val KEY_EXAMPLE_METADATA = "key_example_metadata"
+        const val KEY_STORY_INDEX = "key_story_index"
     }
 }
