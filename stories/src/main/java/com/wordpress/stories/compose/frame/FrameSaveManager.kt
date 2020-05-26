@@ -150,6 +150,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
                 }
             }
         }
+        frame.composedFrameFile = frameFile
         return frameFile
     }
 
