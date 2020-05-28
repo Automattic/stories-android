@@ -877,11 +877,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
             storySaveResult?.let {
                 // where there any errors when we opened the Activity to handle those errors?
-                for (result in it.frameSaveResult) {
-                    if (result.resultReason != SaveSuccess) {
-                        return true
-                    }
-                }
+                return storySaveResult.isSuccess()
             }
         }
         return false
