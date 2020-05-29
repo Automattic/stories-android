@@ -272,8 +272,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                 CameraX.unbindAll()
                 startCamera()
             } catch (exc: Exception) {
-                // Do nothing
-                // TODO error handling here
+                // no op - they can most probably just tap the flip switch again and it'll work
             }
         }
         return portkeyCameraSelectionFromCameraXLensFacing(lensFacing)

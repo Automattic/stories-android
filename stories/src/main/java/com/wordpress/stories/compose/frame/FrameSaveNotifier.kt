@@ -94,10 +94,6 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
             return
         }
 
-        // TODO leaving this check for future WPAndroid integration / FluxC work proof
-        // only update if media item is in our map - this check is performed because
-        // it could happen that a media item is already done uploading but we receive an upload
-        // progress event from FluxC after that. We just need to avoid re-adding the item to the map.
         val currentProgress = notificationData.mediaItemToProgressMap.get(id)
         // also, only set updates in increments of 5% per media item to avoid lots of notification updates
         if (currentProgress != null && progress > currentProgress + 0.05f) {
@@ -261,7 +257,6 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         return 0
     }
 
-    // TODO WPANDROID: change signature to receive a CPT (Post) as parameter instead of a plain String
     @Synchronized private fun startOrUpdateForegroundNotification(title: String) {
         updateNotificationBuilder(title)
         if (notificationData.notificationId == 0) {
@@ -276,11 +271,6 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         }
     }
 
-    // TODO WPANDROID: we'll need the SiteModel and we can base the notification error IDs on the site ID plus
-    // PostModel id, the same we do for failed to upload Posts in WPAndroid's UploadService
-    // For now we will use the StoryIndex that comes with the StorySaveResult, as we can rest assured
-    // the storyIndex will remain accurate for as long as the notification lives (i.e. we'll cancel it on
-    // open or when the Composer activity is loaded with the corresponding Story)
     fun updateNotificationErrorForStoryFramesSave(
         // mediaList: List<MediaModel>,
         // site: SiteModel,
@@ -328,7 +318,7 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         notificationBuilder.setContentIntent(pendingIntent)
         notificationBuilder.setAutoCancel(true)
         notificationBuilder.setOnlyAlertOnce(true)
-        // TODO add deleteIntent later when integrating with WPAndroid
+        // TODO WPANDROID add deleteIntent later when integrating with WPAndroid
 //        notificationBuilder.setDeleteIntent(
 //            NotificationsProcessingService
 //                .getPendingIntentForNotificationDismiss(

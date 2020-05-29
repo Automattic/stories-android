@@ -541,7 +541,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 if (storySaveResult != null &&
                     StoryRepository.getStoryAtIndex(storySaveResult.storyIndex).frames.isNotEmpty()) {
                     // dismiss the error notification
-                    // TODO use NativeNotificationUtils.dismissNotification() when migrating to WPAndroid
                     intent.action?.let {
                         val notificationManager = NotificationManagerCompat.from(this)
                         notificationManager.cancel(it.toInt())
@@ -889,7 +888,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         cleanupOriginalIntentSaveResult()
         EventBus.getDefault().removeStickyEvent(StorySaveEvents.StorySaveProcessStart::class.java)
         // cancel any outstanding error notifications
-        // TODO use NativeNotificationUtils.dismissNotification() when migrating to WPAndroid
         intent.action?.let {
             val notificationManager = NotificationManagerCompat.from(this)
             notificationManager.cancel(it.toInt())
@@ -944,7 +942,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
         if (anyOfOriginalIntentResultsIsError() && !storyViewModel.anyOfCurrentStoryFramesIsErrored()) {
             // all solved? cancel any outstanding error notifications
-            // TODO use NativeNotificationUtils.dismissNotification() when migrating to WPAndroid
             intent.action?.let {
                 val notificationManager = NotificationManagerCompat.from(this)
                 notificationManager.cancel(it.toInt())
