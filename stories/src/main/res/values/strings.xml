@@ -76,8 +76,11 @@
     <string name="dialog_insufficient_device_storage_error_message">We need to save the story on your device before it can be published. Review your storage settings and remove files to free up space.</string>
     <string name="dialog_insufficient_device_storage_error_ok_button">View Storage</string>
 
-<!--    general error toasts-->
+    <!--    general error toasts-->
     <string name="toast_story_page_not_found">Couldn\'t find Story page</string>
+    <string name="toast_capture_operation_in_progress">Operation in progress, try again</string>
+    <string name="toast_error_saving_image">Error saving image</string>
+    <string name="toast_error_saving_video">Video could not be saved</string>
 
     <!-- WordPress Android strings - matching in case of future integration -->
     <!-- Android O notification channels, these show in the Android app settings -->

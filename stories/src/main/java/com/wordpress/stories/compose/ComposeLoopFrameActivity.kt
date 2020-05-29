@@ -706,7 +706,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     object : PressAndHoldGestureListener {
                         override fun onClickGesture() {
                             if (cameraOperationInCourse) {
-                                showToast("Operation in progress, try again")
+                                showToast(getString(R.string.toast_capture_operation_in_progress))
                                 return
                             }
                             timesUpHandler.removeCallbacksAndMessages(null)
@@ -727,7 +727,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
                         override fun onStartDetectionWait() {
                             if (cameraOperationInCourse) {
-                                showToast("Operation in progress, try again")
+                                showToast(getString(R.string.toast_capture_operation_in_progress))
                                 return
                             }
                             // when the wait to see whether this is a "press and hold" gesture starts,
@@ -1105,9 +1105,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 }
             }
             override fun onError(message: String, cause: Throwable?) {
-                // TODO implement error handling
                 runOnUiThread {
-                    showToast("ERROR SAVING IMAGE")
+                    showToast(getString(R.string.toast_error_saving_image))
                     waitToReenableCapture()
                 }
             }
@@ -1123,7 +1122,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             startRecordingVideo()
         }, VIBRATION_INDICATION_LENGTH_MS)
         hideVideoUIControls()
-        showToast("VIDEO STARTED")
         vibrate()
     }
 
@@ -1157,9 +1155,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             }
 
             override fun onError(message: String?, cause: Throwable?) {
-                // TODO implement error handling
                 runOnUiThread {
-                    showToast("Video could not be saved: $message")
+                    showToast(getString(R.string.toast_error_saving_video) + ": $message")
                 }
                 waitToReenableCapture()
             }
@@ -1195,11 +1192,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 .duration = PressAndHoldGestureHelper.CLICK_LENGTH / 4
             backgroundSurfaceManager.stopRecordingVideo()
             showVideoUIControls()
-            if (isCanceled) {
-                showToast("GESTURE CANCELLED, VIDEO SAVED")
-            } else {
-                showToast("VIDEO SAVED")
-            }
         }
     }
 
