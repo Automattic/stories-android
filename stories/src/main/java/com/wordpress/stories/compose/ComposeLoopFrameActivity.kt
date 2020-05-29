@@ -552,14 +552,16 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                         onStoryFrameSelected(oldIndex = StoryRepository.DEFAULT_FRAME_NONE_SELECTED, newIndex = 0)
                     }
                 } else {
-                    // TODO couldn't find the story frames? Show some Error Dialog - we can't recover here
+                    showToast(getString(R.string.toast_story_page_not_found))
+                    finish()
                 }
             } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED) {
                 if (StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.isNotEmpty()) {
                     storyViewModel.loadStory(storyIndexToSelect)
                     refreshStoryFrameSelection()
                 } else {
-                    // TODO couldn't find the story frames? Show some Error Dialog - we can't recover here
+                    showToast(getString(R.string.toast_story_page_not_found))
+                    finish()
                 }
             } else {
                 launchCameraPreview()
