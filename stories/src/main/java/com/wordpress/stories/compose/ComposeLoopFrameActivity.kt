@@ -203,6 +203,14 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             }
             // Setup notification intent for notifications triggered from the FrameSaveService.FrameSaveNotifier class
             notificationIntentLoader?.let {
+                // set the base notification Error Id. This is given on purpose so the host app can give a unique
+                // set of notific   ations ID to base our error notifications from, and avoid collision with other
+                // notifications the host app may have
+                // IMPORTANT: this needs to be the first call in the methods linedup for NotificationIntentLoader
+                frameSaveService.setNotificationErrorBaseId(
+                        it.setupErrorNotificationBaseId()
+                )
+
                 frameSaveService.setNotificationIntent(it.loadIntentForErrorNotification())
                 val notificationId = FrameSaveNotifier.getNotificationIdForError(
                     frameSaveService.getNotificationErrorBaseId(),
@@ -211,13 +219,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
                 frameSaveService.setDeleteNotificationPendingIntent(
                     it.loadPendingIntentForErrorNotificationDeletion(notificationId)
-                )
-
-                // set the base notification Error Id. This is given on purpose so the host app can give a unique
-                // set of notifications ID to base our error notifications from, and avoid collision with other
-                // notifications the host app may have
-                frameSaveService.setNotificationErrorBaseId(
-                        it.setupErrorNotificationBaseId()
                 )
             }
 
