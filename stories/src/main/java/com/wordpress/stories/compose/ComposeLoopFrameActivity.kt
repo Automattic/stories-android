@@ -71,7 +71,6 @@ import com.wordpress.stories.compose.emoji.EmojiPickerFragment.EmojiListener
 import com.wordpress.stories.compose.frame.FrameIndex
 import com.wordpress.stories.compose.frame.FrameSaveManager
 import com.wordpress.stories.compose.frame.FrameSaveNotifier
-import com.wordpress.stories.compose.frame.FrameSaveNotifier.Companion
 import com.wordpress.stories.compose.frame.FrameSaveService
 import com.wordpress.stories.compose.frame.StorySaveEvents
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveError
@@ -137,6 +136,7 @@ interface MediaPickerProvider {
 interface NotificationIntentLoader {
     fun loadIntentForErrorNotification(): Intent
     fun loadPendingIntentForErrorNotificationDeletion(notificationId: Int): PendingIntent?
+    fun setupErrorNotificationBaseId(): Int
 }
 
 interface AuthenticationHeadersProvider {
@@ -208,19 +208,22 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     frameSaveService.getNotificationErrorBaseId(),
                     storyIndex
                 )
+
                 frameSaveService.setDeleteNotificationPendingIntent(
                     it.loadPendingIntentForErrorNotificationDeletion(notificationId)
+                )
+
+                // set the base notification Error Id. This is given on purpose so the host app can give a unique
+                // set of notifications ID to base our error notifications from, and avoid collision with other
+                // notifications the host app may have
+                frameSaveService.setNotificationErrorBaseId(
+                        it.setupErrorNotificationBaseId()
                 )
             }
 
             metadataProvider?.let {
                 frameSaveService.setMetadata(it.loadMetadataForStory(storyIndex))
             }
-
-            // set the base notification Error Id. This is given on purpose so the host app can give a unique
-            // set of notifications ID to base our error notifications from, and avoid collision with other
-            // notifications
-            frameSaveService.setNotificationErrorBaseId(requestCodes.BASE_FRAME_MEDIA_ERROR_NOTIFICATION_ID)
 
             frameSaveService.saveStoryFrames(storyIndex, photoEditor, storyFrameIndexToRetry)
             saveServiceBound = true
@@ -1797,7 +1800,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         var PHOTO_PICKER: Int = 0 // default code, can be overriden.
                                     // Leave this value in zero so it's evident if something is not working (will break
                                     // if not properly initialized)
-        var BASE_FRAME_MEDIA_ERROR_NOTIFICATION_ID: Int = 0
         lateinit var EXTRA_MEDIA_URIS: String
         lateinit var EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED: String
     }
