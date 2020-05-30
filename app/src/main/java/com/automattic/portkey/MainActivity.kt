@@ -13,6 +13,7 @@ import com.automattic.portkey.intro.IntroActivity
 import com.google.android.material.snackbar.Snackbar
 import com.wordpress.stories.compose.frame.FrameSaveNotifier
 import com.wordpress.stories.compose.frame.FrameSaveNotifier.Companion.getNotificationIdForError
+import com.wordpress.stories.compose.frame.FrameSaveService
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveError
 import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveProcessStart
 import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveResult
@@ -105,7 +106,8 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
                 // we need to have a way to cancel the related error notification when the user comes
                 // from tapping on MANAGE on the snackbar (otherwise they'll be able to discard the
                 // errored story but the error notification will remain existing in the system dashboard)
-                intent.action = getNotificationIdForError(event.storyIndex).toString() + ""
+                intent.action = getNotificationIdForError(
+                    StoryComposerActivity.BASE_FRAME_MEDIA_ERROR_NOTIFICATION_ID, event.storyIndex).toString() + ""
 
                 startActivity(intent)
             }

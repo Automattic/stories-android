@@ -206,6 +206,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 frameSaveService.setMetadata(it.loadMetadataForStory(storyIndex))
             }
 
+            // set the base notification Error Id. This is given on purpose so the host app can give a unique
+            // set of notifications ID to base our error notifications from, and avoid collision with other
+            // notifications
+            frameSaveService.setNotificationErrorBaseId(requestCodes.BASE_FRAME_MEDIA_ERROR_NOTIFICATION_ID)
+
             frameSaveService.saveStoryFrames(storyIndex, photoEditor, storyFrameIndexToRetry)
             saveServiceBound = true
 
@@ -1781,6 +1786,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         var PHOTO_PICKER: Int = 0 // default code, can be overriden.
                                     // Leave this value in zero so it's evident if something is not working (will break
                                     // if not properly initialized)
+        var BASE_FRAME_MEDIA_ERROR_NOTIFICATION_ID: Int = 0
         lateinit var EXTRA_MEDIA_URIS: String
         lateinit var EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED: String
     }

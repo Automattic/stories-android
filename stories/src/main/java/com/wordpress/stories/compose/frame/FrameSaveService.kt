@@ -37,6 +37,7 @@ class FrameSaveService : Service() {
     private val storySaveProcessors = ArrayList<StorySaveProcessor>()
     private lateinit var notificationIntent: Intent
     private var optionalMetadata: Bundle? = null // keeps optional metadata about the Story
+    private var notificationErrorBaseId: Int = 700 // default
 
     override fun onCreate() {
         super.onCreate()
@@ -81,6 +82,14 @@ class FrameSaveService : Service() {
 
     fun getMetadata(): Bundle? {
         return optionalMetadata
+    }
+
+    fun setNotificationErrorBaseId(baseId: Int) {
+        notificationErrorBaseId = baseId
+    }
+
+    fun getNotificationErrorBaseId(): Int {
+        return notificationErrorBaseId
     }
 
     fun saveStoryFrames(

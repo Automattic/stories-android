@@ -285,7 +285,7 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         )
 
         // val notificationId = getNotificationIdForMedia(site)
-        val notificationId = getNotificationIdForError(storySaveResult.storyIndex)
+        val notificationId = getNotificationIdForError(service.getNotificationErrorBaseId(), storySaveResult.storyIndex)
         // Tap notification intent (open the media browser)
         val notificationIntent = service.getNotificationIntent()
         notificationIntent.putExtra(KEY_STORY_SAVE_RESULT, storySaveResult)
@@ -337,8 +337,6 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
     }
 
     companion object {
-        private const val BASE_MEDIA_ERROR_NOTIFICATION_ID = 72300
-
         fun buildErrorMessageForMedia(context: Context, mediaItemsNotUploaded: Int) = if (mediaItemsNotUploaded == 1) {
         context.getString(R.string.story_saving_failed_message_singular)
         } else {
@@ -348,11 +346,8 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
             )
         }
 
-        @JvmStatic fun getNotificationIdForError(storyIndex: StoryIndex): Int {
-            // TODO WPANDROID we keep the base number because we'll use SiteId and PostModel id's to identify the error
-            // notification as well, and as such we are using a different base number to avoid collision of notification
-            // ids.
-            return BASE_MEDIA_ERROR_NOTIFICATION_ID + storyIndex
+        @JvmStatic fun getNotificationIdForError(baseId: Int, storyIndex: StoryIndex): Int {
+            return baseId + storyIndex
         }
 
         @JvmStatic fun buildSnackbarErrorMessage(

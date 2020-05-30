@@ -67,6 +67,7 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
         requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED =
             PhotoPickerActivity.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED
         requestCodes.EXTRA_MEDIA_URIS = PhotoPickerActivity.EXTRA_MEDIA_URIS
+        requestCodes.BASE_FRAME_MEDIA_ERROR_NOTIFICATION_ID = BASE_FRAME_MEDIA_ERROR_NOTIFICATION_ID
     }
 
     override fun showProvidedMediaPicker() {
@@ -101,6 +102,7 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
     companion object {
         const val KEY_EXAMPLE_METADATA = "key_example_metadata"
         const val KEY_STORY_INDEX = "key_story_index"
+        const val BASE_FRAME_MEDIA_ERROR_NOTIFICATION_ID: Int = 72300
     }
 
     override fun onStoryDiscarded() {
