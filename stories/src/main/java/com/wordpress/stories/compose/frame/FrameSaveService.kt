@@ -1,5 +1,6 @@
 package com.wordpress.stories.compose.frame
 
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -36,6 +37,7 @@ class FrameSaveService : Service() {
     private lateinit var frameSaveNotifier: FrameSaveNotifier
     private val storySaveProcessors = ArrayList<StorySaveProcessor>()
     private lateinit var notificationIntent: Intent
+    private var deleteNotificationPendingIntent: PendingIntent? = null
     private var optionalMetadata: Bundle? = null // keeps optional metadata about the Story
     private var notificationErrorBaseId: Int = 700 // default
 
@@ -74,6 +76,14 @@ class FrameSaveService : Service() {
 
     fun getNotificationIntent(): Intent {
         return notificationIntent
+    }
+
+    fun setDeleteNotificationPendingIntent(pendingIntent: PendingIntent?) {
+        deleteNotificationPendingIntent = pendingIntent
+    }
+
+    fun getDeleteNotificationPendingIntent(): PendingIntent? {
+        return deleteNotificationPendingIntent
     }
 
     fun setMetadata(bundle: Bundle?) {

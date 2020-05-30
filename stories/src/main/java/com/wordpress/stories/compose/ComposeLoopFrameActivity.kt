@@ -4,6 +4,7 @@ import android.Manifest
 import android.animation.LayoutTransition
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -69,6 +70,8 @@ import com.wordpress.stories.compose.emoji.EmojiPickerFragment
 import com.wordpress.stories.compose.emoji.EmojiPickerFragment.EmojiListener
 import com.wordpress.stories.compose.frame.FrameIndex
 import com.wordpress.stories.compose.frame.FrameSaveManager
+import com.wordpress.stories.compose.frame.FrameSaveNotifier
+import com.wordpress.stories.compose.frame.FrameSaveNotifier.Companion
 import com.wordpress.stories.compose.frame.FrameSaveService
 import com.wordpress.stories.compose.frame.StorySaveEvents
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveError
@@ -133,6 +136,7 @@ interface MediaPickerProvider {
 
 interface NotificationIntentLoader {
     fun loadIntentForErrorNotification(): Intent
+    fun loadPendingIntentForErrorNotificationDeletion(notificationId: Int): PendingIntent?
 }
 
 interface AuthenticationHeadersProvider {
@@ -200,6 +204,13 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             // Setup notification intent for notifications triggered from the FrameSaveService.FrameSaveNotifier class
             notificationIntentLoader?.let {
                 frameSaveService.setNotificationIntent(it.loadIntentForErrorNotification())
+                val notificationId = FrameSaveNotifier.getNotificationIdForError(
+                    frameSaveService.getNotificationErrorBaseId(),
+                    storyIndex
+                )
+                frameSaveService.setDeleteNotificationPendingIntent(
+                    it.loadPendingIntentForErrorNotificationDeletion(notificationId)
+                )
             }
 
             metadataProvider?.let {

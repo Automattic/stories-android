@@ -1,6 +1,7 @@
 package com.automattic.portkey
 
 import android.app.ActivityOptions
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -89,6 +90,11 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
         notificationIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
         notificationIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         return notificationIntent
+    }
+
+    override fun loadPendingIntentForErrorNotificationDeletion(notificationId: Int): PendingIntent? {
+        // demo app doesn't need to provide an implementation
+        return null
     }
 
     override fun loadMetadataForStory(index: StoryIndex): Bundle? {

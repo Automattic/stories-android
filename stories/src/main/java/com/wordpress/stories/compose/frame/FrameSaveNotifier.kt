@@ -318,14 +318,9 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         notificationBuilder.setContentIntent(pendingIntent)
         notificationBuilder.setAutoCancel(true)
         notificationBuilder.setOnlyAlertOnce(true)
-        // TODO WPANDROID add deleteIntent later when integrating with WPAndroid
-//        notificationBuilder.setDeleteIntent(
-//            NotificationsProcessingService
-//                .getPendingIntentForNotificationDismiss(
-//                    mContext, notificationId.toInt(),
-//                    notificationType
-//                )
-//        )
+        service.getDeleteNotificationPendingIntent()?.let {
+            notificationBuilder.setDeleteIntent(service.getDeleteNotificationPendingIntent())
+        }
 
         // Add MANAGE action and default action
         notificationBuilder.addAction(
