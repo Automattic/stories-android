@@ -13,7 +13,6 @@ import com.automattic.portkey.intro.IntroActivity
 import com.google.android.material.snackbar.Snackbar
 import com.wordpress.stories.compose.frame.FrameSaveNotifier
 import com.wordpress.stories.compose.frame.FrameSaveNotifier.Companion.getNotificationIdForError
-import com.wordpress.stories.compose.frame.FrameSaveService
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveError
 import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveProcessStart
 import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveResult
