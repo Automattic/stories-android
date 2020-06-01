@@ -5,14 +5,17 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
 import androidx.core.provider.FontRequest
 import androidx.emoji.text.EmojiCompat
 import androidx.emoji.text.FontRequestEmojiCompatConfig
 import com.automattic.portkey.R.array
 import com.automattic.portkey.R.string
 import com.automattic.portkey.util.CrashLoggingUtils
+import com.wordpress.stories.compose.NotificationTrackerProvider
+import com.wordpress.stories.compose.frame.StoryNotificationType
 
-class Portkey : Application() {
+class Portkey : Application(), NotificationTrackerProvider {
     private var statusBarHeight: Int = 0
 
     override fun onCreate() {
@@ -117,5 +120,20 @@ class Portkey : Application() {
 
     fun getStatusBarHeight(): Int {
         return statusBarHeight
+    }
+
+    override fun trackShownNotification(storyNotificationType: StoryNotificationType) {
+        // example
+        Toast.makeText(this, "Notification shown! : ", Toast.LENGTH_LONG).show()
+    }
+
+    override fun trackTappedNotification(storyNotificationType: StoryNotificationType) {
+        // example
+        Toast.makeText(this, "Notification tapped! : " + storyNotificationType, Toast.LENGTH_LONG).show()
+    }
+
+    override fun trackDismissedNotification(storyNotificationType: StoryNotificationType) {
+        // example
+        Toast.makeText(this, "Notification dismissed! : " + storyNotificationType, Toast.LENGTH_LONG).show()
     }
 }

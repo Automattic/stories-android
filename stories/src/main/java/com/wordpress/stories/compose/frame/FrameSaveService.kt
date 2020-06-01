@@ -17,6 +17,7 @@ import com.wordpress.stories.compose.frame.FrameSaveManager.FrameSaveProgressLis
 import com.automattic.photoeditor.PhotoEditor
 import com.automattic.photoeditor.util.FileUtils.Companion.TEMP_FILE_NAME_PREFIX
 import com.wordpress.stories.R
+import com.wordpress.stories.compose.NotificationTrackerProvider
 import com.wordpress.stories.compose.frame.StorySaveEvents.FrameSaveResult
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveError
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
@@ -40,6 +41,7 @@ class FrameSaveService : Service() {
     private var deleteNotificationPendingIntent: PendingIntent? = null
     private var optionalMetadata: Bundle? = null // keeps optional metadata about the Story
     private var notificationErrorBaseId: Int = 700 // default
+    private var notificationTrackerProvider: NotificationTrackerProvider? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -100,6 +102,14 @@ class FrameSaveService : Service() {
 
     fun getNotificationErrorBaseId(): Int {
         return notificationErrorBaseId
+    }
+
+    fun setNotificationTrackerProvider(provider: NotificationTrackerProvider) {
+        notificationTrackerProvider = provider
+    }
+
+    fun getNotificationTrackerProvider(): NotificationTrackerProvider? {
+        return notificationTrackerProvider
     }
 
     fun saveStoryFrames(

@@ -8,6 +8,7 @@ import android.content.Intent
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.wordpress.stories.R
+import com.wordpress.stories.compose.frame.StoryNotificationType.STORY_SAVE_ERROR
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
 import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveResult
 import com.wordpress.stories.compose.story.StoryIndex
@@ -147,7 +148,7 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
             Math.ceil((getCurrentOverallProgress() * 100).toDouble()).toInt(),
             false
         )
-        doNotify(notificationData.notificationId, notificationBuilder.build())
+        doNotify(notificationData.notificationId, notificationBuilder.build(), null)
     }
 
     @Synchronized private fun setProgressForMediaItem(id: String, progress: Float) {
@@ -178,16 +179,14 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
     // TODO: uncomment these lines when migrating code to WPAndroid
     @Synchronized private fun doNotify(
         id: Int,
-        notification: Notification
-//        notificationType: NotificationType?
+        notification: Notification,
+        notificationType: StoryNotificationType?
     ) {
         try {
             notificationManager.notify(id, notification)
-            // TODO track notification when integrating in WPAndroid
-            // note: commented out code left on purpose
-//            if (notificationType != null) {
-//                mSystemNotificationsTracker.trackShownNotification(notificationType)
-//            }
+            notificationType?.let {
+                service.getNotificationTrackerProvider()?.trackShownNotification(it)
+            }
         } catch (runtimeException: RuntimeException) {
 //            CrashLoggingUtils.logException(
 //                runtimeException,
@@ -267,7 +266,7 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
             )
         } else {
             // service was already started, let's just modify the notification
-            doNotify(notificationData.notificationId, notificationBuilder.build())
+            doNotify(notificationData.notificationId, notificationBuilder.build(), null)
         }
     }
 
@@ -328,7 +327,7 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
             pendingIntent
         ).color = context.resources.getColor(R.color.colorAccent)
 
-        doNotify(notificationId, notificationBuilder.build()) // , notificationType)
+        doNotify(notificationId, notificationBuilder.build(), STORY_SAVE_ERROR)
     }
 
     companion object {

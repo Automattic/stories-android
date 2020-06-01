@@ -72,6 +72,7 @@ import com.wordpress.stories.compose.frame.FrameIndex
 import com.wordpress.stories.compose.frame.FrameSaveManager
 import com.wordpress.stories.compose.frame.FrameSaveNotifier
 import com.wordpress.stories.compose.frame.FrameSaveService
+import com.wordpress.stories.compose.frame.StoryNotificationType
 import com.wordpress.stories.compose.frame.StorySaveEvents
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveError
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
@@ -139,6 +140,12 @@ interface NotificationIntentLoader {
     fun setupErrorNotificationBaseId(): Int
 }
 
+interface NotificationTrackerProvider {
+    fun trackShownNotification(storyNotificationType: StoryNotificationType)
+    fun trackTappedNotification(storyNotificationType: StoryNotificationType)
+    fun trackDismissedNotification(storyNotificationType: StoryNotificationType)
+}
+
 interface AuthenticationHeadersProvider {
     fun getAuthHeaders(url: String): Map<String, String>?
 }
@@ -188,6 +195,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private var authHeadersProvider: AuthenticationHeadersProvider? = null
     private var metadataProvider: MetadataProvider? = null
     private var storyDiscardListener: StoryDiscardListener? = null
+    private var notificationTrackerProvider: NotificationTrackerProvider? = null
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
@@ -220,6 +228,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 frameSaveService.setDeleteNotificationPendingIntent(
                     it.loadPendingIntentForErrorNotificationDeletion(notificationId)
                 )
+            }
+
+            // setup notification tracker if such a thing exists
+            notificationTrackerProvider?.let {
+                frameSaveService.setNotificationTrackerProvider(it)
             }
 
             metadataProvider?.let {
@@ -1795,6 +1808,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     fun setStoryDiscardListener(listener: StoryDiscardListener) {
         storyDiscardListener = listener
+    }
+
+    fun setNotificationTrackerProvider(provider: NotificationTrackerProvider) {
+        notificationTrackerProvider = provider
     }
 
     class ExternalMediaPickerRequestCodesAndExtraKeys {

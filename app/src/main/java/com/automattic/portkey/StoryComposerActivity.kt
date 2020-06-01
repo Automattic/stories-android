@@ -18,8 +18,10 @@ import com.wordpress.stories.compose.ComposeLoopFrameActivity
 import com.wordpress.stories.compose.MediaPickerProvider
 import com.wordpress.stories.compose.MetadataProvider
 import com.wordpress.stories.compose.NotificationIntentLoader
+import com.wordpress.stories.compose.NotificationTrackerProvider
 import com.wordpress.stories.compose.SnackbarProvider
 import com.wordpress.stories.compose.StoryDiscardListener
+import com.wordpress.stories.compose.frame.StoryNotificationType
 import com.wordpress.stories.compose.story.StoryIndex
 
 fun Snackbar.config(context: Context) {
@@ -43,6 +45,9 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
         setNotificationExtrasLoader(this)
         setMetadataProvider(this)
         setStoryDiscardListener(this) // optionally listen to discard events
+        setNotificationTrackerProvider(application as Portkey) // optionally set Notification Tracker.
+        // The notifiationTracker needs to be something that outlives the Activity, given the Service could be running
+        // after the user has exited ComposeLoopFrameActivity
     }
 
     override fun showProvidedSnackbar(message: String, actionLabel: String?, callback: () -> Unit) {
