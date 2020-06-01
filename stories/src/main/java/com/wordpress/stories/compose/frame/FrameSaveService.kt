@@ -253,6 +253,7 @@ class FrameSaveService : Service() {
         for (processor in storySaveProcessors) {
             processor.onCancel()
         }
+        notificationTrackerProvider = null
         super.onDestroy()
     }
 
