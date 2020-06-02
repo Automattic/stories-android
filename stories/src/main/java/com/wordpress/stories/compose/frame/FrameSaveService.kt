@@ -134,7 +134,8 @@ class FrameSaveService : Service() {
             // now create a processor and run it.
             // also hold a reference to it in the storySaveProcessors list in case the Service is destroyed, so
             // we can cancel each coroutine.
-            val processor = createProcessor(storyIndex, frameIndex, photoEditor)
+            val isRetry = frameIndex > StoryRepository.DEFAULT_NONE_SELECTED
+            val processor = createProcessor(storyIndex, frameIndex, photoEditor, isRetry)
             storySaveProcessors.add(processor)
             runProcessor(
                 processor,
@@ -166,7 +167,8 @@ class FrameSaveService : Service() {
     private fun createProcessor(
         storyIndex: StoryIndex,
         frameIndex: FrameIndex,
-        photoEditor: PhotoEditor
+        photoEditor: PhotoEditor,
+        isRetry: Boolean
     ): StorySaveProcessor {
         return StorySaveProcessor(
             this,
@@ -174,6 +176,7 @@ class FrameSaveService : Service() {
             frameIndex,
             frameSaveNotifier,
             FrameSaveManager(photoEditor),
+            isRetry,
             metadata = optionalMetadata
         )
     }
@@ -267,9 +270,10 @@ class FrameSaveService : Service() {
         private val frameIndexOverride: FrameIndex = StoryRepository.DEFAULT_NONE_SELECTED,
         private val frameSaveNotifier: FrameSaveNotifier,
         private val frameSaveManager: FrameSaveManager,
+        private val isRetry: Boolean,
         private val metadata: Bundle? = null
     ) : FrameSaveProgressListener {
-        val storySaveResult = StorySaveResult(metadata = metadata)
+        val storySaveResult = StorySaveResult(isRetry = isRetry, metadata = metadata)
         val title =
             StoryRepository.getStoryAtIndex(storyIndex).title ?: context.getString(R.string.story_saving_untitled)
 
