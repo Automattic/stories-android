@@ -177,6 +177,7 @@ class FrameSaveService : Service() {
             frameSaveNotifier,
             FrameSaveManager(photoEditor),
             isRetry,
+            FrameSaveTimeTracker(),
             metadata = optionalMetadata
         )
     }
@@ -186,11 +187,14 @@ class FrameSaveService : Service() {
         storyIndex: Int,
         frames: List<StoryFrameItem>
     ) {
+        storySaveProcessor.timeTracker.start()
         val frameFileList =
             storySaveProcessor.saveStory(
                 this,
                 frames
             )
+        storySaveProcessor.timeTracker.end()
+        storySaveProcessor.updateStorySaveResultTimeElapsed()
 
         // once all frames have been saved, issue a broadcast so the system knows these frames are ready
         sendNewMediaReadyBroadcast(frameFileList)
@@ -271,6 +275,7 @@ class FrameSaveService : Service() {
         private val frameSaveNotifier: FrameSaveNotifier,
         private val frameSaveManager: FrameSaveManager,
         private val isRetry: Boolean,
+        val timeTracker: FrameSaveTimeTracker,
         private val metadata: Bundle? = null
     ) : FrameSaveProgressListener {
         val storySaveResult = StorySaveResult(isRetry = isRetry, metadata = metadata)
@@ -336,6 +341,10 @@ class FrameSaveService : Service() {
 
         fun detachProgressListener() {
             frameSaveManager.saveProgressListener = null
+        }
+
+        fun updateStorySaveResultTimeElapsed() {
+            storySaveResult.elapsedTime = timeTracker.elapsedTime()
         }
 
         // frameIndex on listeners can be overriden if we're saving just one frame. This comes in handy
