@@ -389,7 +389,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         })
 
         storyViewModel.onSelectedFrameIndex.observe(this, Observer { selectedFrameIndexChange ->
-            updateContentUiStateSelection(selectedFrameIndexChange.first, selectedFrameIndexChange.second)
+            updateSelectedFrameControls(selectedFrameIndexChange.first, selectedFrameIndexChange.second)
         })
 
         storyViewModel.erroredItemUiState.observe(this, Observer { uiStateFrame ->
@@ -397,7 +397,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         })
 
         storyViewModel.muteFrameAudioUiState.observe(this, Observer { frameIndex ->
-            updateUiStateForAudioMuted(uiStateFrameIndex)
+            updateUiStateForAudioMuted(frameIndex)
         })
     }
 

@@ -21,8 +21,8 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
     private val _ErroredItemUiState: MutableLiveData<StoryFrameListItemUiStateFrame> = MutableLiveData()
     val erroredItemUiState: LiveData<StoryFrameListItemUiStateFrame> = _ErroredItemUiState
 
-    private val _itemAtIndexChangedUiState = SingleLiveEvent<Int>()
-    val itemAtIndexChangedUiState = _itemAtIndexChangedUiState
+    private val _muteFrameAudioUiState = SingleLiveEvent<Int>()
+    val muteFrameAudioUiState = _muteFrameAudioUiState
 
     private val _itemAtIndexChangedMuteAudioUiState = SingleLiveEvent<Int>()
     val itemAtIndexChangedMuteAudioUiState = _itemAtIndexChangedMuteAudioUiState
@@ -230,7 +230,7 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
                 _ErroredItemUiState.value = it
             }
         }
-        _itemAtIndexChangedUiState.value = selectedIndex
+        _muteFrameAudioUiState.value = selectedIndex
     }
 
     private fun updateUiStateForAudioMuted(selectedIndex: Int, muteAudio: Boolean) {

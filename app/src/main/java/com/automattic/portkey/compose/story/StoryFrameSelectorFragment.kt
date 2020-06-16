@@ -53,7 +53,7 @@ class StoryFrameSelectorFragment : Fragment() {
             storyFrameTappedListener?.onStoryFrameAddTapped()
         })
 
-        storyViewModel.itemAtIndexChangedUiState.observe(this, Observer { uiStateFrameIndex ->
+        storyViewModel.muteFrameAudioUiState.observe(this, Observer { uiStateFrameIndex ->
             updateContentUiStateItem(uiStateFrameIndex)
         })
 
