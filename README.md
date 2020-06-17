@@ -35,3 +35,19 @@ From there, add and enable the custom configuration file, located at [config/che
 ## ktlint
 
 You can run ktlint using `./gradlew ktlint`, and you can also run `./gradlew ktlintFormat` for auto-formatting. There is no IDEA plugin (like Checkstyle's) at this time.
+
+## The Stories library
+
+In order to integrate the stories library, you must include the following in your project:
+```
+    implementation project(path: ':photoeditor')
+    implementation project(path: ':stories')
+```
+
+Implement these:
+- SnackbarProvider
+- call `setSnackbarProvider()` as in the example Portkey demo app.
+
+- MediaPickerProvider
+- call `setMediaPickerProvider()` as in the example Portkey demo app.
+- remember to override `setupRequestCodes()` and set the right request codes as per the host app so it works seamlessly and media can be fed into the Composer by the externally provided MediaPicker.

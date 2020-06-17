@@ -18,7 +18,10 @@ class CrashLoggingUtils {
         }
 
         @JvmStatic fun startCrashLogging(context: android.content.Context) {
-            if (shouldEnableCrashLogging(context)) {
+            if (shouldEnableCrashLogging(
+                    context
+                )
+            ) {
                 enableCrashLogging(context)
             }
         }

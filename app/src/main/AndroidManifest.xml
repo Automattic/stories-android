@@ -47,23 +47,18 @@
             android:theme="@style/AppTheme.NoActionBar.Intro">
         </activity>
         <activity
-                android:name=".compose.ComposeLoopFrameActivity"
+                android:name="com.automattic.portkey.StoryComposerActivity"
                 android:label="@string/app_name"
                 android:parentActivityName="com.automattic.portkey.MainActivity"
                 android:screenOrientation="portrait"
                 android:theme="@style/AppTheme.Immersive">
         </activity>
         <activity
-            android:name=".compose.photopicker.PhotoPickerActivity"
+            android:name="com.automattic.portkey.photopicker.PhotoPickerActivity"
             android:label="@string/photo_picker_title"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             />
-
-        <!-- Services -->
-        <service
-            android:name=".compose.frame.FrameSaveService"
-            android:label="Frame Save Service" />
 
         <!-- FileProvider used to share photos with other apps -->
         <provider
@@ -75,7 +70,6 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths"/>
         </provider>
-
     </application>
 
 </manifest>

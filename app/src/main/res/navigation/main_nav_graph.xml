@@ -6,10 +6,10 @@
     <fragment android:id="@+id/mainFragment" android:name="com.automattic.portkey.MainFragment"
               android:label="fragment_main" tools:layout="@layout/fragment_main">
         <action android:id="@+id/action_mainFragment_to_composeLoopFrameActivity"
-                app:destination="@id/composeLoopFrameActivity"
+                app:destination="@id/storyComposerActivity"
                 app:enterAnim="@anim/nav_default_enter_anim" app:exitAnim="@anim/nav_default_exit_anim"
         />
     </fragment>
-    <activity android:id="@+id/composeLoopFrameActivity" android:name="com.automattic.portkey.compose.ComposeLoopFrameActivity"
-              android:label="ComposeLoopFrameActivity"/>
+    <activity android:id="@+id/storyComposerActivity" android:name="com.automattic.portkey.StoryComposerActivity"
+              android:label="StoryComposerActivity"/>
 </navigation>
