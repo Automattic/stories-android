@@ -32,15 +32,11 @@ import android.view.ViewGroup
 import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.view.menu.MenuBuilder
-import androidx.appcompat.view.menu.MenuPopupHelper
-import androidx.appcompat.widget.PopupMenu
 import androidx.constraintlayout.widget.Group
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.GestureDetectorCompat
-import androidx.core.view.MenuCompat
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Observer
@@ -225,6 +221,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             addInsetTopMargin(next_button.layoutParams, nextButtonBaseTopMargin, insets.systemWindowInsetTop)
             addInsetTopMargin(close_button.layoutParams, topControlsBaseTopMargin, insets.systemWindowInsetTop)
             addInsetTopMargin(control_flash_group.layoutParams, topControlsBaseTopMargin, insets.systemWindowInsetTop)
+            view_popup_menu.setTopOffset(
+                next_button.measuredHeight + (nextButtonBaseTopMargin * 2) + insets.systemWindowInsetTop)
             insets
         }
 
@@ -241,7 +239,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 }
 
                 isEditingText = true
-                editModeHideAllUIControls(false)
+                editModeHideAllUIControls(true)
                 if (isJustAdded) {
                     // hide new text views
                     rootView.visibility = View.GONE
@@ -563,6 +561,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     override fun onBackPressed() {
+        if (view_popup_menu.visibility == View.VISIBLE) {
+            view_popup_menu.visibility = View.GONE
+            return
+        }
+
         if (!backgroundSurfaceManager.cameraVisible()) {
             close_button.performClick()
         } else if (storyViewModel.getCurrentStorySize() > 0) {
@@ -596,7 +599,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     val uriList = data.getParcelableArrayListExtra<Uri>(PhotoPickerActivity.EXTRA_MEDIA_URI_LIST)
                     addFramesToStoryFromMediaUriList(uriList)
                     setDefaultSelectionAndUpdateBackgroundSurfaceUI()
-                } else {
+                } else if (data.hasExtra(PhotoPickerActivity.EXTRA_MEDIA_URI)) {
                     val mediaUri = data.getStringExtra(PhotoPickerActivity.EXTRA_MEDIA_URI)
                     if (mediaUri == null) {
                         Log.e("Composer", "Can't resolve picked media")
@@ -605,6 +608,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     }
                     addFrameToStoryFromMediaUri(Uri.parse(mediaUri))
                     setDefaultSelectionAndUpdateBackgroundSurfaceUI()
+                } else if (data.hasExtra(PhotoPickerActivity.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED)) {
+                    launchCameraPreview()
                 }
             }
         }
@@ -722,14 +727,13 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                     listener = object : FrameSaveErrorDialogOk {
                         override fun OnOkClicked(dialog: DialogFragment) {
                             dialog.dismiss()
-                            photoEditor.clearAllViews()
-                            storyViewModel.discardCurrentStory()
-                            storyViewModel.loadStory(StoryRepository.DEFAULT_NONE_SELECTED)
+                            // discard the whole story
+                            safelyDiscardCurrentStoryAndCleanUpIntent()
                         }
                     }).show(supportFragmentManager, FRAGMENT_DIALOG)
             } else {
-                storyViewModel.discardCurrentStory()
-                storyViewModel.loadStory(StoryRepository.DEFAULT_NONE_SELECTED)
+                // discard the whole story
+                safelyDiscardCurrentStoryAndCleanUpIntent()
             }
         }
 
@@ -741,7 +745,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             } else {
                 backgroundSurfaceManager.videoPlayerMute()
                 videoPlayerMuted = true
-                sound_button.setImageResource(R.drawable.ic_volume_mute_black_24dp)
+                sound_button.setImageResource(R.drawable.ic_volume_off_black_24dp)
             }
         }
 
@@ -786,7 +790,33 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }
 
         more_button.setOnClickListener {
-            showMoreOptionsPopup(it)
+            view_popup_menu.setOnDeletePageButtonClickListener(OnClickListener {
+                var messageToUse = getString(R.string.dialog_discard_page_message)
+                if (storyViewModel.getSelectedFrame().saveResultReason != SaveSuccess) {
+                    messageToUse = getString(R.string.dialog_discard_errored_page_message)
+                }
+                // show dialog
+                FrameSaveErrorDialog.newInstance(
+                    title = getString(R.string.dialog_discard_page_title),
+                    message = messageToUse,
+                    okButtonLabel = getString(R.string.dialog_discard_page_ok_button),
+                    listener = object : FrameSaveErrorDialogOk {
+                        override fun OnOkClicked(dialog: DialogFragment) {
+                            dialog.dismiss()
+                            if (storyViewModel.getCurrentStorySize() == 1) {
+                                // discard the whole story
+                                safelyDiscardCurrentStoryAndCleanUpIntent()
+                            } else {
+                                // get currentFrame value as it will change after calling onAboutToDeleteStoryFrame
+                                val currentFrameToDeleteIndex = storyViewModel.getSelectedFrameIndex()
+                                onAboutToDeleteStoryFrame(currentFrameToDeleteIndex)
+                                // now discard it from the viewModel
+                                storyViewModel.removeFrameAt(currentFrameToDeleteIndex)
+                            }
+                        }
+                    }).show(supportFragmentManager, FRAGMENT_DIALOG)
+            })
+            view_popup_menu.visibility = View.VISIBLE
         }
     }
 
@@ -804,6 +834,19 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             }
         }
         return false
+    }
+
+    private fun safelyDiscardCurrentStoryAndCleanUpIntent() {
+        photoEditor.clearAllViews()
+        storyViewModel.discardCurrentStory()
+        cleanupOriginalIntentSaveResult()
+        storyViewModel.loadStory(StoryRepository.DEFAULT_NONE_SELECTED)
+    }
+
+    private fun cleanupOriginalIntentSaveResult() {
+        if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
+            intent.removeExtra(KEY_STORY_SAVE_RESULT)
+        }
     }
 
     private fun saveStory() {
@@ -886,53 +929,6 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
 
         // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
         currentStoryFrameItem.addedViews = AddedViewList(photoEditor.getViewsAdded())
-    }
-
-    private fun showMoreOptionsPopup(view: View) {
-        val popup = PopupMenu(this, view)
-        val inflater = popup.getMenuInflater()
-        inflater.inflate(R.menu.edit_mode_more, popup.getMenu())
-        MenuCompat.setGroupDividerEnabled(popup.menu, true)
-        popup.setOnMenuItemClickListener {
-            when (it.itemId) {
-                R.id.menu_delete_page -> {
-                    var messageToUse = getString(R.string.dialog_discard_page_message)
-                    if (storyViewModel.getSelectedFrame().saveResultReason != SaveSuccess) {
-                        messageToUse = getString(R.string.dialog_discard_errored_page_message)
-                    }
-                    // show dialog
-                    FrameSaveErrorDialog.newInstance(
-                        title = getString(R.string.dialog_discard_page_title),
-                        message = messageToUse,
-                        okButtonLabel = getString(R.string.dialog_discard_page_ok_button),
-                        listener = object : FrameSaveErrorDialogOk {
-                            override fun OnOkClicked(dialog: DialogFragment) {
-                                dialog.dismiss()
-                                if (storyViewModel.getCurrentStorySize() == 1) {
-                                    // discard the whole story
-                                    photoEditor.clearAllViews()
-                                    storyViewModel.discardCurrentStory()
-                                    storyViewModel.loadStory(StoryRepository.DEFAULT_NONE_SELECTED)
-                                } else {
-                                    // get currentFrame value as it will change after calling onAboutToDeleteStoryFrame
-                                    val currentFrameToDeleteIndex = storyViewModel.getSelectedFrameIndex()
-                                    onAboutToDeleteStoryFrame(currentFrameToDeleteIndex)
-                                    // now discard it from the viewModel
-                                    storyViewModel.removeFrameAt(currentFrameToDeleteIndex)
-                                }
-                            }
-                        }).show(supportFragmentManager, FRAGMENT_DIALOG)
-                }
-                R.id.menu_save_page -> {
-                    // TODO only save this one, and stay here.
-                    showToast("not implemented yet")
-                }
-            }
-            true
-        }
-        val menuHelper = MenuPopupHelper(this, popup.getMenu() as MenuBuilder, view)
-        menuHelper.setForceShowIcon(true)
-        menuHelper.show()
     }
 
     private fun showMediaPicker() {
@@ -1026,9 +1022,9 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         backgroundSurfaceManager.switchVideoPlayerOnFromUri(videoUri)
     }
 
-    private fun showStaticBackground(showTextAndStickers: Boolean = true) {
+    private fun showStaticBackground() {
         showStoryFrameSelector()
-        showEditModeUIControls(true, showTextAndStickers)
+        showEditModeUIControls(true)
         backgroundSurfaceManager.switchStaticImageBackgroundModeOn()
     }
 
@@ -1316,18 +1312,14 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         container_gallery_upload.visibility = View.VISIBLE
     }
 
-    private fun showEditModeUIControls(noSound: Boolean, showTextAndStickers: Boolean = true) {
+    private fun showEditModeUIControls(noSound: Boolean) {
         // hide capturing mode controls
         hideVideoUIControls()
         camera_capture_button.visibility = View.INVISIBLE
 
         // show proper edit mode controls
         close_button.visibility = View.VISIBLE
-        if (showTextAndStickers) {
-            edit_mode_controls.visibility = View.VISIBLE
-        } else {
-            edit_mode_controls.visibility = View.INVISIBLE
-        }
+        updateEditMode()
         more_button.visibility = View.VISIBLE
         next_button.visibility = View.VISIBLE
 
@@ -1642,8 +1634,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
                 .load(model)
                 .transform(CenterCrop())
                 .into(photoEditorView.source)
-            // we'll decide whether to show text/stickers later if this is an errored frame
-            showStaticBackground(showTextAndStickers = false)
+            showStaticBackground()
         }
 
         // make sure to release the added views before re-selecting them
@@ -1665,7 +1656,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
         // now clear addedViews so we don't leak View.Context
         photoEditor.clearAllViews()
-        launchCameraPreview()
+        showMediaPicker()
     }
 
     private inner class FlingGestureListener : GestureDetector.SimpleOnGestureListener() {

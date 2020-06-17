@@ -9,32 +9,15 @@ import androidx.core.content.ContextCompat.getDrawable
 import com.automattic.portkey.R
 import kotlinx.android.synthetic.main.content_save_button.view.*
 
-class SaveButton : FrameLayout {
+class SaveButton @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : FrameLayout(context, attrs, defStyleAttr) {
     private var savingState = false
     private var saveButtonClickListener: OnClickListener? = null
 
-    constructor(context: Context) : super(context) {
-        init()
-    }
-
-    constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
-        init()
-    }
-
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
-        init()
-    }
-
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int, defStyleRes: Int) : super(
-        context,
-        attrs,
-        defStyleAttr,
-        defStyleRes
-    ) {
-        init()
-    }
-
-    private fun init() {
+    init {
         val view = View.inflate(context, R.layout.content_save_button, null)
         addView(view)
         setSaving(false)

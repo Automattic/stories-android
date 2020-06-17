@@ -10,33 +10,16 @@ import androidx.core.content.ContextCompat.getDrawable
 
 import com.automattic.portkey.R
 
-class DeleteButton : FrameLayout {
+class DeleteButton @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : FrameLayout(context, attrs, defStyleAttr) {
     private var readyForDeleteState = false
     private var deleteButtonClickListener: OnClickListener? = null
-    private lateinit var deleteButton: ImageButton
+    private var deleteButton: ImageButton
 
-    constructor(context: Context) : super(context) {
-        init()
-    }
-
-    constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
-        init()
-    }
-
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
-        init()
-    }
-
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int, defStyleRes: Int) : super(
-        context,
-        attrs,
-        defStyleAttr,
-        defStyleRes
-    ) {
-        init()
-    }
-
-    private fun init() {
+    init {
         val view = View.inflate(context, R.layout.content_delete_button, null)
         deleteButton = view.findViewById(R.id.delete_button)
         addView(view)

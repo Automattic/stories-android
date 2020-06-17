@@ -27,7 +27,6 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.automattic.portkey.R;
-import com.automattic.portkey.compose.NextButton;
 import com.automattic.portkey.compose.photopicker.PhotoPickerAdapter.PhotoPickerAdapterListener;
 import com.automattic.portkey.compose.photopicker.utils.AniUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -47,6 +46,7 @@ public class PhotoPickerFragment extends Fragment {
         ANDROID_CHOOSE_VIDEO,
         ANDROID_CAPTURE_PHOTO,
         ANDROID_CAPTURE_VIDEO,
+        WP_STORIES_CAPTURE,
         WP_MEDIA,
         STOCK_MEDIA,
         GIPHY
@@ -75,7 +75,6 @@ public class PhotoPickerFragment extends Fragment {
     private ArrayList<Integer> mSelectedPositions;
     private TextView mChooseItemsDescription;
     private FloatingActionButton mTakePicture;
-    private NextButton mNextButton;
 
 //    public static PhotoPickerFragment newInstance(@NonNull PhotoPickerListener listener,
 //                                                  @NonNull MediaBrowserType browserType,
@@ -129,15 +128,7 @@ public class PhotoPickerFragment extends Fragment {
         mTakePicture = view.findViewById(R.id.take_picture);
         mTakePicture.setOnClickListener(new OnClickListener() {
             @Override public void onClick(View view) {
-                doIconClicked(PhotoPickerIcon.ANDROID_CAPTURE_PHOTO);
-            }
-        });
-
-        mNextButton = view.findViewById(R.id.next_button);
-        mNextButton.setOnClickListener(new OnClickListener() {
-            @Override public void onClick(View view) {
-                ArrayList<Uri> uriList = getAdapter().getSelectedURIs();
-                mListener.onPhotoPickerMediaChosen(uriList);
+                doIconClicked(PhotoPickerIcon.WP_STORIES_CAPTURE);
             }
         });
 
@@ -249,7 +240,9 @@ public class PhotoPickerFragment extends Fragment {
     public void doIconClicked(@NonNull PhotoPickerIcon icon) {
         mLastTappedIcon = icon;
 
-        if (icon == PhotoPickerIcon.ANDROID_CAPTURE_PHOTO || icon == PhotoPickerIcon.ANDROID_CAPTURE_VIDEO) {
+        if (icon == PhotoPickerIcon.ANDROID_CAPTURE_PHOTO
+            || icon == PhotoPickerIcon.ANDROID_CAPTURE_VIDEO
+            || icon == PhotoPickerIcon.WP_STORIES_CAPTURE) {
             if (ContextCompat.checkSelfPermission(
                     getActivity(), permission.CAMERA) != PackageManager.PERMISSION_GRANTED || !hasStoragePermission()) {
 //                requestCameraPermission();
@@ -378,14 +371,12 @@ public class PhotoPickerFragment extends Fragment {
             if (count == 0) {
                 finishActionMode();
                 mTakePicture.show();
-                mNextButton.setVisibility(View.GONE);
             } else {
                 if (mActionMode == null) {
                     ((AppCompatActivity) getActivity()).startSupportActionMode(new ActionModeCallback());
                 }
                 updateActionModeTitle(mAdapter.isSelectedSingleItemVideo());
                 mTakePicture.hide();
-                mNextButton.setVisibility(View.VISIBLE);
             }
         }
 
@@ -522,7 +513,6 @@ public class PhotoPickerFragment extends Fragment {
             mActionMode = null;
             showBottomBar();
             getAdapter().clearSelection();
-            mNextButton.setVisibility(View.GONE);
             mTakePicture.show();
         }
     }

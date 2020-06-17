@@ -1,7 +1,6 @@
 package com.automattic.portkey.compose.frame
 
 import android.content.Context
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
 import android.view.ViewGroup.LayoutParams
@@ -18,6 +17,8 @@ import com.automattic.portkey.compose.story.StoryFrameItemType.IMAGE
 import com.automattic.portkey.compose.story.StoryFrameItemType.VIDEO
 import com.automattic.portkey.util.cloneViewSpecs
 import com.automattic.portkey.util.removeViewFromParent
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -113,8 +114,16 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         var frameFile: File? = null
         when (frame.frameItemType) {
             VIDEO -> {
-                frameFile = saveVideoFrame(frame, frameIndex)
-                releaseAddedViewsAfterSnapshot(frame)
+                // - if we have addedViews then we need to process the vido with mp4composer
+                // - if the source video is a Uri, let's process it through mp4composer anyway to obtain
+                // a local file we can upload
+                if (frame.addedViews.isNotEmpty() || frame.source is UriBackgroundSource) {
+                    frameFile = saveVideoFrame(frame, frameIndex)
+                    releaseAddedViewsAfterSnapshot(frame)
+                } else {
+                    // don't process the video but return the original file if no added views in this Story frame
+                    frameFile = (frame.source as FileBackgroundSource).file
+                }
             }
             IMAGE -> {
                 // check whether there are any GIF stickers - if there are, we need to produce a video instead
@@ -125,7 +134,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
                     try {
                         // create ghost PhotoEditorView to be used for saving off-screen
                         val ghostPhotoEditorView = createGhostPhotoEditor(context, photoEditor.composedCanvas)
-                        frameFile = saveImageFrame(frame, ghostPhotoEditorView, frameIndex)
+                        frameFile = saveImageFrame(context, frame, ghostPhotoEditorView, frameIndex)
                         saveProgressListener?.onFrameSaveCompleted(frameIndex)
                     } catch (ex: Exception) {
                         saveProgressListener?.onFrameSaveFailed(frameIndex, ex.message)
@@ -145,12 +154,13 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
     }
 
     private suspend fun saveImageFrame(
+        context: Context,
         frame: StoryFrameItem,
         ghostPhotoEditorView: PhotoEditorView,
         frameIndex: FrameIndex
     ): File {
         // prepare the ghostview with its background image and the AddedViews on top of it
-        preparePhotoEditorViewForSnapshot(frame, ghostPhotoEditorView)
+        preparePhotoEditorViewForSnapshot(context, frame, ghostPhotoEditorView)
 
         val file = withContext(Dispatchers.IO) {
             return@withContext photoEditor.saveImageFromPhotoEditorViewAsLoopFrameFile(frameIndex, ghostPhotoEditorView)
@@ -240,20 +250,24 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
     }
 
     private suspend fun preparePhotoEditorViewForSnapshot(
+        context: Context,
         frame: StoryFrameItem,
         ghostPhotoEditorView: PhotoEditorView
     ) {
         // prepare background
-        if (frame.source is FileBackgroundSource) {
-            frame.source.file?.let {
-                ghostPhotoEditorView.source.setImageBitmap(BitmapFactory.decodeFile(it.absolutePath))
-            }
-        }
-        if (frame.source is UriBackgroundSource) {
-            frame.source.contentUri?.let {
-                ghostPhotoEditorView.source.setImageURI(it)
-            }
-        }
+        val uri = (frame.source as? UriBackgroundSource)?.contentUri
+            ?: (frame.source as FileBackgroundSource).file
+
+        // making use of Glide to decode bitmap and get the right orientation automatically
+        // http://bumptech.github.io/glide/doc/getting-started.html#background-threads
+        val futureTarget = Glide.with(context)
+            .asBitmap()
+            .load(uri)
+            .transform(CenterCrop()) // also use CenterCrop as it's the same the user was seeing as per WYSIWYG
+            .submit(ghostPhotoEditorView.source.measuredWidth, ghostPhotoEditorView.source.measuredHeight)
+        val bitmap = futureTarget.get()
+        ghostPhotoEditorView.source.setImageBitmap(bitmap)
+        Glide.with(context).clear(futureTarget)
 
         // removeViewFromParent for views that were added in the UI thread need to also run on the main thread
         // otherwise we'd get a android.view.ViewRootImpl$CalledFromWrongThreadException:
@@ -277,7 +291,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
 
     private fun createGhostPhotoEditor(context: Context, originalPhotoEditorView: PhotoEditorView): PhotoEditorView {
         val ghostPhotoView = PhotoEditorView(context)
-        cloneViewSpecs(context, originalPhotoEditorView, ghostPhotoView)
+        cloneViewSpecs(originalPhotoEditorView, ghostPhotoView)
         ghostPhotoView.setBackgroundColor(Color.BLACK)
         return ghostPhotoView
     }

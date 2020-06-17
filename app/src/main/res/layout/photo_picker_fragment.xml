@@ -12,8 +12,9 @@
         android:id="@+id/take_picture"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="start|bottom"
-        android:tint="@color/text_color_blue"
+        android:layout_gravity="end|bottom"
+        android:backgroundTint="@color/pink_50"
+        android:tint="@color/white"
         android:src="@drawable/ic_photo_camera_24px"
         android:layout_margin="@dimen/fab_margin" />
 
@@ -115,18 +116,5 @@
             </LinearLayout>
         </RelativeLayout>
     </LinearLayout>
-
-    <com.automattic.portkey.compose.NextButton
-        android:id="@+id/next_button"
-        android:layout_width="@dimen/next_button_total_width"
-        android:layout_height="@dimen/next_button_total_height"
-        android:layout_marginBottom="@dimen/next_button_bottom_margin"
-        android:layout_marginRight="@dimen/next_button_right_margin"
-        app:text="@string/label_control_next"
-        android:background="@drawable/next_button_background"
-        android:elevation="@dimen/next_button_elevation"
-        android:visibility="gone"
-        android:layout_gravity="end|bottom"
-        />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

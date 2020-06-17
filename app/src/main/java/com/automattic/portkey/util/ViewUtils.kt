@@ -1,6 +1,5 @@
 package com.automattic.portkey.util
 
-import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.children
@@ -14,7 +13,7 @@ fun removeViewFromParent(view: View) {
     }
 }
 
-fun cloneViewSpecs(context: Context, originalView: View, targetView: View) {
+fun cloneViewSpecs(originalView: View, targetView: View) {
     val originalWidth = originalView.getWidth()
     val originalHeight = originalView.getHeight()
 

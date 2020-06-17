@@ -317,6 +317,19 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"/>
 
+    <!-- note: setting the same elevation as per the Next button so this view appears on top -->
+    <com.automattic.portkey.compose.CustomPopUpMenuView
+        android:id="@+id/view_popup_menu"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:elevation="@dimen/next_button_elevation"
+        android:layout_centerHorizontal="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        />
 
     <FrameLayout
         android:id="@+id/translucent_view"

@@ -383,7 +383,7 @@ class PhotoEditor private constructor(builder: Builder) :
     }
 
     fun addViewToParentWithTouchListener(rootView: View, viewType: ViewType, sourceUri: Uri? = null) {
-        val multiTouchListenerInstance = getNewMultitouchListener() // newMultiTouchListener
+        val multiTouchListenerInstance = getNewMultitouchListener(rootView) // newMultiTouchListener
         when {
             viewType == EMOJI -> {
                 multiTouchListenerInstance.setOnGestureControl(object :
@@ -726,11 +726,6 @@ class PhotoEditor private constructor(builder: Builder) :
     ) {
         Log.d(TAG, "Video Path: $videoInputPath")
 
-        if (customAddedViews.size == 0) {
-            onSaveListener.onCancel(true)
-            return
-        }
-
         val retriever = MediaMetadataRetriever()
         retriever.setDataSource(context, videoInputPath)
         var width = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH))
@@ -775,7 +770,7 @@ class PhotoEditor private constructor(builder: Builder) :
             // the black parts of the screen.
             .size(originalCanvasWidth, originalCanvasHeight)
             .fillMode(FillMode.PRESERVE_ASPECT_FIT)
-            .filter(GlFilterGroup(filterCollection))
+            .filter(if (customAddedViews.isNotEmpty()) GlFilterGroup(filterCollection) else null)
             .listener(object : Mp4Composer.Listener {
                 override fun onProgress(progress: Double) {
                     Log.d(TAG, "onProgress = $progress")

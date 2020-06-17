@@ -4,7 +4,9 @@
     android:layout_height="match_parent"
     android:layout_gravity="center_vertical"
     android:orientation="vertical"
-    android:padding="@dimen/story_frame_item_padding">
+    android:elevation="@dimen/story_frame_selector_item_elevation"
+    android:paddingRight="@dimen/story_frame_selector_item_padding"
+    android:paddingLeft="@dimen/story_frame_selector_item_padding">
 
     <RelativeLayout
         android:layout_width="wrap_content"

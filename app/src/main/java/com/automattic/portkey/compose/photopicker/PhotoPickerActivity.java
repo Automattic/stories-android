@@ -42,6 +42,8 @@ public class PhotoPickerActivity extends AppCompatActivity
 
     // the enum name of the source will be returned as a string in EXTRA_MEDIA_SOURCE
     public static final String EXTRA_MEDIA_SOURCE = "media_source";
+    public static final String EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED
+            = "launch_wpstories_camera_requested";
 
     public static final String LOCAL_POST_ID = "local_post_id";
 
@@ -221,6 +223,13 @@ public class PhotoPickerActivity extends AppCompatActivity
                                   });
     }
 
+    private void launchWPStoriesCamera() {
+        Intent intent = new Intent()
+                .putExtra(EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED, true);
+        setResult(RESULT_OK, intent);
+        finish();
+    }
+
     private void launchPictureLibrary() {
 //        WPMediaUtils.launchPictureLibrary(this, false);
         startActivityForResult(
@@ -334,6 +343,9 @@ public class PhotoPickerActivity extends AppCompatActivity
             case ANDROID_CAPTURE_VIDEO:
                 break;
             case GIPHY:
+                break;
+            case WP_STORIES_CAPTURE:
+                launchWPStoriesCamera();
                 break;
         }
     }
