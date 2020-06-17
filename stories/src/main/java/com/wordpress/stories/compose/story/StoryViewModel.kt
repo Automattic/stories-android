@@ -99,25 +99,29 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
     }
 
     fun flipCurrentSelectedFrameOnAudioMuted() {
-        if (getSelectedFrame().frameItemType is VIDEO) {
+        if (getSelectedFrame()?.frameItemType is VIDEO) {
             updateCurrentSelectedFrameOnAudioMuted(!isSelectedFrameAudioMuted())
         }
     }
 
     fun isSelectedFrameAudioMuted(): Boolean {
-        return (getSelectedFrame().frameItemType as? VIDEO)?.muteAudio ?: false
+        return (getSelectedFrame()?.frameItemType as? VIDEO)?.muteAudio ?: false
     }
 
     fun getSelectedFrameIndex(): Int {
         return currentSelectedFrameIndex
     }
 
-    fun getSelectedFrame(): StoryFrameItem {
+    fun getSelectedFrame(): StoryFrameItem? {
         return getCurrentStoryFrameAt(currentSelectedFrameIndex)
     }
 
-    fun getCurrentStoryFrameAt(index: Int): StoryFrameItem {
-        return repository.getImmutableCurrentStoryFrames()[index]
+    fun getCurrentStoryFrameAt(index: Int): StoryFrameItem? {
+        if (getCurrentStorySize() > index) {
+            return repository.getImmutableCurrentStoryFrames()[index]
+        } else {
+            return null
+        }
     }
 
     fun getCurrentStorySize(): Int {
