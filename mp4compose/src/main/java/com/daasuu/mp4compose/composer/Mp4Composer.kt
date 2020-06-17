@@ -71,6 +71,11 @@ class Mp4Composer {
         return this
     }
 
+    fun size(size: Size): Mp4Composer {
+        this.outputResolution = size
+        return this
+    }
+
     fun videoBitrate(bitrate: Int): Mp4Composer {
         this.bitrate = bitrate
         return this
