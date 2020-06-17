@@ -28,7 +28,6 @@ import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnClickListener
-import android.view.ViewGroup
 import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -93,7 +92,6 @@ import com.wordpress.stories.util.isVideo
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
-import com.google.android.material.snackbar.Snackbar
 import com.wordpress.stories.BuildConfig
 import com.wordpress.stories.R
 import kotlinx.android.synthetic.main.activity_composer.*
@@ -111,14 +109,6 @@ fun Group.setAllOnClickListener(listener: OnClickListener?) {
     }
 }
 
-fun Snackbar.config(context: Context) {
-    this.view.background = context.getDrawable(R.drawable.snackbar_background)
-    val params = this.view.layoutParams as ViewGroup.MarginLayoutParams
-    params.setMargins(12, 12, 12, 12)
-    this.view.layoutParams = params
-    ViewCompat.setElevation(this.view, 6f)
-}
-
 enum class ScreenTouchBlockMode {
     BLOCK_TOUCH_MODE_NONE,
     BLOCK_TOUCH_MODE_FULL_SCREEN, // used when saving - user is not allowed to touch anything
@@ -129,7 +119,11 @@ enum class ScreenTouchBlockMode {
                                         // but they should be good to upload the Story now
 }
 
-class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTappedListener {
+interface SnackbarProvider {
+    fun showProvidedSnackbar(message: String, actionLabel: String?, callback: () -> Unit)
+}
+
+abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTappedListener {
     private lateinit var photoEditor: PhotoEditor
     private lateinit var backgroundSurfaceManager: BackgroundSurfaceManager
     private var currentOriginalCapturedFile: File? = null
@@ -159,6 +153,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     private var preHookRun: Boolean = false
     private var storyIndexToSelect = -1
     private var storyFrameIndexToRetry: FrameIndex = StoryRepository.DEFAULT_NONE_SELECTED
+    private var snackbarProvider: SnackbarProvider? = null
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
@@ -1278,19 +1273,11 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
     }
 
     private fun showSnackbar(message: String, actionLabel: String? = null, listener: OnClickListener? = null) {
-        runOnUiThread {
-            val view = findViewById<View>(android.R.id.content)
-            if (view != null) {
-                val snackbar = Snackbar.make(view, message, Snackbar.LENGTH_LONG)
-                snackbar.config(this)
-                actionLabel?.let {
-                    snackbar.setAction(it, listener)
-                }
-                snackbar.show()
-            } else {
-                Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        snackbarProvider?.let {
+            it.showProvidedSnackbar(message, actionLabel) {
+                listener?.onClick(null)
             }
-        }
+        } ?: Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
     private fun showToast(message: String) {
@@ -1718,6 +1705,9 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }
     }
 
+    fun setSnackbarProvider(provider: SnackbarProvider) {
+        snackbarProvider = provider
+    }
     companion object {
         private const val FRAGMENT_DIALOG = "dialog"
 
