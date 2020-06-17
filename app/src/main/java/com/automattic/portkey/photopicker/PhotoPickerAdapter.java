@@ -1,4 +1,4 @@
-package com.wordpress.stories.compose.photopicker;
+package com.automattic.portkey.photopicker;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -18,8 +18,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.wordpress.stories.R;
-import com.wordpress.stories.compose.photopicker.utils.AniUtils;
+import com.automattic.portkey.photopicker.utils.AniUtils;
+import com.automattic.portkey.photopicker.utils.AniUtils.Duration;
+import com.automattic.portkey.R;
 import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ import java.util.Comparator;
 import java.util.Locale;
 
 import static androidx.recyclerview.widget.RecyclerView.NO_POSITION;
-import static com.wordpress.stories.compose.photopicker.PhotoPickerFragment.NUM_COLUMNS;
+import static com.automattic.portkey.photopicker.PhotoPickerFragment.NUM_COLUMNS;
 import static com.wordpress.stories.util.DisplayUtilsKt.getDisplayPixelWidth;
 
 public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.ThumbnailViewHolder> {
@@ -52,7 +53,7 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
     }
 
     private final ArrayList<Integer> mSelectedPositions = new ArrayList<>();
-    private static final AniUtils.Duration ANI_DURATION = AniUtils.Duration.SHORT;
+    private static final Duration ANI_DURATION = AniUtils.Duration.SHORT;
 
     private final Context mContext;
     private RecyclerView mRecycler;

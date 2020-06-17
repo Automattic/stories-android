@@ -1,6 +1,4 @@
 <resources>
-    <string name="photo_picker_title">Portkey Photo Picker</string>
-
     <string name="capture_button_alt">Capture</string>
     <string name="flip_button_alt">Flip camera</string>
     <string name="flash_button_alt">Flash</string>
@@ -39,30 +37,6 @@
     <string name="dialog_discard_story_title">Discard Story?</string>
     <string name="dialog_discard_story_message">If you discard this story it will not be saved as a draft.</string>
     <string name="dialog_discard_story_ok_button">Discard</string>
-
-    <!-- Photo picker    -->
-    <string name="photo_picker_thumbnail_desc">Play video</string>
-    <string name="pick_photo">Select photo</string>
-    <string name="pick_video">Select video</string>
-    <string name="photo_picker_choose_video">Choose video from device</string>
-    <string name="photo_picker_choose_photo">Choose photo from device</string>
-    <string name="confirm">Confirm</string>
-    <string name="photo_picker_use_photo">Use this photo</string>
-    <string name="photo_picker_use_video">Use this video</string>
-    <string name="cab_selected">%d selected</string>
-    <string name="media_empty_list">You don\'t have any media</string>
-    <string name="photo_picker_soft_ask_allow">Allow</string>
-    <string name="photo_picker_soft_ask_label">%s needs permissions to access your photos</string>
-    <string name="photo_picker_device_desc">pick from device</string>
-    <string name="photo_picker_camera_desc">open camera</string>
-    <string name="photo_picker_wpmedia_desc">pick from WordPress media</string>
-    <string name="content_description_person_reading_device_notification">Person reading device with notifications</string>
-
-    <!-- Photo picker - Portkey   -->
-    <string name="photo_picker_add_photos_to_story">Choose the photos and videos you\'d like to add to your story</string>
-    <!-- SD Card errors -->
-    <string name="sdcard_title">SD Card Required</string>
-    <string name="sdcard_message">A mounted SD card is required to upload media</string>
 
     <!--preference keys-->
     <string name="pref_camera_selection" translatable="false">pref_camera_selection</string>

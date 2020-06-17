@@ -1,4 +1,4 @@
-package com.wordpress.stories.compose.photopicker.utils;
+package com.automattic.portkey.photopicker.utils;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
