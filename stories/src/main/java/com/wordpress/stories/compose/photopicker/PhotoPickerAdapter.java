@@ -1,5 +1,6 @@
 package com.wordpress.stories.compose.photopicker;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.media.MediaMetadataRetriever;
@@ -203,15 +204,15 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
                 int hours = (int) ((milliseconds / (1000 * 60 * 60)) % 24);
                 String duration = "";
                 if (hours > 0) {
-                    duration = duration + String.format("%02d", hours) + ":";
+                    duration = duration + String.format(Locale.US, "%02d", hours) + ":";
                 }
                 if (minutes > 0) {
-                    duration = duration + String.format("%02d", minutes) + ":";
+                    duration = duration + String.format(Locale.US, "%02d", minutes) + ":";
                 } else {
                     duration = duration + "00:";
                 }
                 if (seconds > 0) {
-                    duration = duration + String.format("%02d", seconds);
+                    duration = duration + String.format(Locale.US, "%02d", seconds);
                 } else {
                     duration = duration + "01"; // default to 1 second if even less than a second
                 }
@@ -464,6 +465,7 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
     /*
      * builds the list of media items from the device
      */
+    @SuppressLint("StaticFieldLeak")
     private class BuildDeviceMediaListTask extends AsyncTask<Void, Void, Boolean> {
         private final ArrayList<PhotoPickerItem> mTmpList = new ArrayList<>();
         private final boolean mReload;

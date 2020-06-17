@@ -8,9 +8,6 @@
     <color name="colorPrimaryDark_wp">#006088</color>
     <color name="colorAccent_wp">@color/white</color>
 
-    <color name="colorPrimary_loop">#008577</color>
-    <color name="colorPrimaryDark_loop">#00574B</color>
-    <color name="colorAccent_loop">#D81B60</color>
     <color name="pink_50">#c9356e</color>
 
     <color name="white">#FFFFFF</color>
@@ -21,7 +18,6 @@
     <color name="black_transp">#99000000</color>
     <color name="black_transp_light">#66000000</color>
     <color name="black_transp_light_darker">#99000000</color>
-    <color name="black_transp_delete">#4D000000</color>
     <color name="black_transp_story_frame_selector">@color/black_transp_light</color>
     <color name="black_transp_edit_mode_controls">@color/black_transp_light</color>
     <color name="black_transp_edit_mode_controls_pressed">@color/black_transp_light_darker</color>
@@ -40,10 +36,7 @@
 
 
     <color name="loop_magenta">#C9356E</color>
-    <color name="loop_magenta_disabled">#EB6594</color>
 
-    <color name="dark_gray">#51565F</color>
-    <color name="light_gray">#B4B1B8</color>
     <color name="lighter_gray">#E3DFE2</color>
 
     <!-- Photo picker    -->

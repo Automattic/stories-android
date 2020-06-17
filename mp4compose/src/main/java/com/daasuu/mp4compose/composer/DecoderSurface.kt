@@ -127,6 +127,11 @@ internal class DecoderSurface
         // SurfaceTextureを生成
         previewTexture = GlSurfaceTexture(texName)
         previewTexture!!.setOnFrameAvailableListener(this)
+        // SupressWarnings explanation:
+        // Many resources, such as TypedArrays, VelocityTrackers, etc., should be recycled (with a recycle() call) after
+        // use. This lint check looks for missing recycle() calls.
+        // Note from editor: it is being released in fun release() so, should be OK.
+        @SuppressWarnings("Recycle")
         surface = Surface(previewTexture!!.surfaceTexture)
 
         GLES20.glBindTexture(previewTexture!!.textureTarget, texName)
@@ -300,8 +305,6 @@ internal class DecoderSurface
                 //                    Log.d(TAG, "out = " + outputResolution.getWidth() + " height = " + outputResolution.getHeight());
                 //                    Log.d(TAG, "rotation = " + rotation.getRotation());
                 //                    Log.d(TAG, "scale[0] = " + scale[0] + " scale[1] = " + scale[1]);
-            }
-            else -> {
             }
         }
 

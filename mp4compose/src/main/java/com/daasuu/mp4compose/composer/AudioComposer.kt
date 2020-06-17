@@ -48,7 +48,7 @@ internal class AudioComposer(
         val sampleSize = mediaExtractor.readSampleData(buffer, 0)
         assert(sampleSize <= bufferSize)
         val isKeyFrame = mediaExtractor.sampleFlags and MediaExtractor.SAMPLE_FLAG_SYNC != 0
-        val flags = if (isKeyFrame) MediaCodec.BUFFER_FLAG_SYNC_FRAME else 0
+        val flags = if (isKeyFrame) MediaCodec.BUFFER_FLAG_KEY_FRAME else 0
         bufferInfo.set(0, sampleSize, mediaExtractor.sampleTime, flags)
         muxRender.writeSampleData(sampleType, buffer, bufferInfo)
         writtenPresentationTimeUs = bufferInfo.presentationTimeUs

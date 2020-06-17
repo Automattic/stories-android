@@ -167,7 +167,7 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
                     updateTextureViewSizeForLetterbox(videoWidth.toInt(), videoHeight.toInt())
                 }
                 mediaPlayer = MediaPlayer().apply {
-                    setDataSource(context!!, currentExternalUri!!)
+                    setDataSource(requireContext(), currentExternalUri!!)
                     setSurface(s)
                     setLooping(true)
                     prepare()

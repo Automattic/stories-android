@@ -1,15 +1,6 @@
 <resources>
     <string name="photo_picker_title">Portkey Photo Picker</string>
 
-    <string name="label_tool_text">Text tool</string>
-    <string name="label_tool_emoji">Emoji tool</string>
-    <string name="label_tool_brush">Brush tool</string>
-    <string name="label_tool_eraser">Eraser tool</string>
-
-    <string name="text_placeholder">your text here</string>
-
-    <string name="main_placeholder">Still working on this! Tap the + to continue.</string>
-
     <string name="capture_button_alt">Capture</string>
     <string name="flip_button_alt">Flip camera</string>
     <string name="flash_button_alt">Flash</string>
@@ -20,26 +11,25 @@
     <string name="label_control_flip_camera">Flip</string>
     <string name="label_control_upload">Upload</string>
     <string name="label_control_flash">Flash</string>
-    <string name="label_control_stickers">Stickers</string>
-    <string name="label_control_text">Text</string>
-    <string name="label_control_sound_on">Sound on</string>
-    <string name="label_control_sound_off">Sound off</string>
-    <string name="label_control_save">Save</string>
     <string name="label_control_saving">Saving</string>
     <string name="label_control_saved">Saved</string>
     <string name="label_control_retry">Retry</string>
-    <string name="label_control_retrying">retrying</string>
     <string name="label_snackbar_loop_frame_saved">Saved to photos</string>
     <string name="label_snackbar_share">SHARE</string>
     <string name="label_share_to">Share to</string>
-    <string name="label_remove">Drag here to remove</string>
     <string name="label_done">Done</string>
     <string name="label_control_publish">Publish</string>
-    <string name="label_control_next">Next</string>
-    <string name="label_saving">Saving...</string>
+
+    <!-- content description labels   -->
+    <string name="label_close_button">Close</string>
+    <string name="label_saved_icon">Saved</string>
+    <string name="label_retry_icon">Retry</string>
+    <string name="label_frame_image">Frame</string>
+    <string name="label_frame_unselected_border">unselected</string>
+    <string name="label_frame_selected_border">selected</string>
+    <string name="label_frame_errored">errored</string>
 
     <string name="menu_delete_page">Delete page</string>
-    <string name="menu_save_page">Save page</string>
 
     <string name="dialog_discard_page_title">Delete story page?</string>
     <string name="dialog_discard_page_message">This page will be removed from your story.</string>
@@ -49,19 +39,6 @@
     <string name="dialog_discard_story_title">Discard Story?</string>
     <string name="dialog_discard_story_message">If you discard this story it will not be saved as a draft.</string>
     <string name="dialog_discard_story_ok_button">Discard</string>
-
-    <!-- Intro -->
-    <string name="get_started">Get Started</string>
-
-    <string name="intro_title_text">Loop</string>
-    <string name="intro_promo_text_share">Create and share stories with the people you care about most.</string>
-    <string name="intro_promo_text_create">Bring your stories to life with stickers, audio, links, music, and more.</string>
-    <string name="intro_promo_text_organize">Group your stories by topic and update them whenever you have a new chapter to add.</string>
-    <string name="intro_promo_text_control">Your stories belong to you, share them only with who you want.</string>
-    <string name="intro_promo_text_invite">Invite others to create stories together.</string>
-
-    <string name="permissions_message">Allow Loop to access your camera, microphone, and local storage.</string>
-    <string name="permissions_turn_on">Turn On</string>
 
     <!-- Photo picker    -->
     <string name="photo_picker_thumbnail_desc">Play video</string>
@@ -93,13 +70,21 @@
     <string name="pref_key_send_crash" translatable="false">pref_key_send_crash</string>
 
     <!-- Save Frame process strings-->
+    <!--suppress UnusedResources -->
     <string name="story_saving_untitled">Untitled</string>
-    <string name="story_saving_title">Saving "%1$s"...</string>
+    <!--suppress UnusedResources -->
+    <string name="story_saving_title">Saving "%1$s"…</string>
+    <!--suppress UnusedResources -->
     <string name="story_saving_title_several">several stories</string>
+    <!--suppress UnusedResources -->
     <string name="story_saving_subtitle_frames_remaining_singular">1 page remaining</string>
+    <!--suppress UnusedResources -->
     <string name="story_saving_subtitle_frames_remaining_plural">%1$d pages remaining</string>
-    <string name="story_saving_snackbar_started">Uploading "%1$s"...</string>
+    <!--suppress UnusedResources -->
+    <string name="story_saving_snackbar_started">Uploading "%1$s"…</string>
+    <!--suppress UnusedResources -->
     <string name="story_saving_snackbar_finished_successfully">"%1$s" published</string>
+    <!--suppress UnusedResources -->
     <string name="story_saving_snackbar_finished_with_error">Unable to upload "%1$s"</string>
 
     <!-- Save Frame process error notification strings-->

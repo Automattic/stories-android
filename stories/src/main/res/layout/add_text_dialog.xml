@@ -12,7 +12,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
         android:layout_margin="20dp"
         android:background="@drawable/rounded_border_text_view"
@@ -38,23 +37,16 @@
         android:inputType="textMultiLine"
         android:textSize="@dimen/editor_initial_text_size" />
 
-    <RelativeLayout
-        android:id="@+id/add_text_color_picker_relative_layout"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/add_text_color_picker_recycler_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/color_picker_item_margin"
         android:layout_centerHorizontal="true"
-        android:layout_alignParentBottom="true">
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/add_text_color_picker_recycler_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:background="@android:color/black"
-            tools:listitem="@layout/color_picker_list_item" />
-
-    </RelativeLayout>
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        tools:background="@android:color/black"
+        tools:listitem="@layout/color_picker_list_item" />
 
 </RelativeLayout>
