@@ -389,7 +389,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         })
 
         storyViewModel.onSelectedFrameIndex.observe(this, Observer { selectedFrameIndexChange ->
-            updateContentUiStateSelection(selectedFrameIndexChange.first, selectedFrameIndexChange.second)
+            updateSelectedFrameControls(selectedFrameIndexChange.first, selectedFrameIndexChange.second)
         })
 
         storyViewModel.erroredItemUiState.observe(this, Observer { uiStateFrame ->
@@ -407,7 +407,7 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
         }
     }
 
-    private fun updateContentUiStateSelection(oldSelection: Int, newSelection: Int) {
+    private fun updateSelectedFrameControls(oldSelection: Int, newSelection: Int) {
         if (storyViewModel.getCurrentStorySize() > newSelection) {
             val selectedFrame = storyViewModel.getCurrentStoryFrameAt(newSelection)
             updateSoundControl()
