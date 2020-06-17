@@ -396,8 +396,8 @@ class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTapped
             updateContentUiStateFrame(uiStateFrame)
         })
 
-        storyViewModel.itemAtIndexChangedMuteAudioUiState.observe(this, Observer { uiStateFrameIndex ->
-            updateUiStateForAudioMuted(uiStateFrameIndex)
+        storyViewModel.muteFrameAudioUiState.observe(this, Observer { frameIndex ->
+            updateUiStateForAudioMuted(frameIndex)
         })
     }
 
