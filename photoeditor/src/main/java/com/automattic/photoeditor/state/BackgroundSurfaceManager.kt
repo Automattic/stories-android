@@ -17,7 +17,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
 import com.automattic.photoeditor.camera.Camera2BasicHandling
 import com.automattic.photoeditor.camera.CameraXBasicHandling
-import com.automattic.photoeditor.camera.PlayerPrepareReadyListener
+import com.automattic.photoeditor.camera.PlayerPreparedListener
 import com.automattic.photoeditor.camera.VideoPlayingBasicHandling
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
 import com.automattic.photoeditor.camera.interfaces.CameraSelection.BACK
@@ -353,7 +353,7 @@ class BackgroundSurfaceManager(
                     videoPlayerHandling.originalMatrix = photoEditorView.textureView.getTransform(null)
                 }
 
-                videoPlayerHandling.playerPreparedListener = object : PlayerPrepareReadyListener {
+                videoPlayerHandling.playerPreparedListener = object : PlayerPreparedListener {
                     override fun onPlayerPrepared() {
                         photoEditorView.hideLoading()
                     }

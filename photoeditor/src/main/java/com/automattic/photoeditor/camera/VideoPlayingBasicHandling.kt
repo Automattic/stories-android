@@ -40,7 +40,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
 
-interface PlayerPrepareReadyListener {
+interface PlayerPreparedListener {
     fun onPlayerPrepared()
     fun onPlayerError()
 }
@@ -51,7 +51,7 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
     var currentExternalUri: Uri? = null
     var currentExternalUriHeaders: Map<String, String>? = null
     var isMuted = false
-    var playerPreparedListener: PlayerPrepareReadyListener? = null
+    var playerPreparedListener: PlayerPreparedListener? = null
     var mAuthenticationHeadersInterface: AuthenticationHeadersInterface? = null
 
     /**
