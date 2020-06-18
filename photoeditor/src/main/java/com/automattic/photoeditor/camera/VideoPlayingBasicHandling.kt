@@ -16,28 +16,40 @@
 
 package com.automattic.photoeditor.camera
 
+import android.graphics.Matrix
 import android.graphics.SurfaceTexture
+import android.media.AudioManager
+import android.media.MediaMetadataRetriever
+import android.media.MediaPlayer
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.Surface
 import android.view.TextureView
-import java.io.File
-import android.media.AudioManager
-import android.media.MediaPlayer
-import android.net.Uri
+import android.webkit.URLUtil
 import androidx.fragment.app.Fragment
 import com.automattic.photoeditor.camera.interfaces.SurfaceFragmentHandler
 import com.automattic.photoeditor.camera.interfaces.VideoPlayerSoundOnOffHandler
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
-import android.media.MediaMetadataRetriever
-import android.graphics.Matrix
+
+interface PlayerPrepareReadyListener {
+    fun onPlayerPrepared()
+    fun onPlayerError()
+}
 
 class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlayerSoundOnOffHandler {
     // holds the File handle to the current video file to be played
     var currentFile: File? = null
     var currentExternalUri: Uri? = null
+    var isMuted = false
+    var playerPreparedListener: PlayerPrepareReadyListener? = null
 
     /**
      * [TextureView.SurfaceTextureListener] handles several lifecycle events on a
@@ -46,7 +58,9 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
     val surfaceTextureListener = object : TextureView.SurfaceTextureListener {
         override fun onSurfaceTextureAvailable(texture: SurfaceTexture, width: Int, height: Int) {
             if (active) {
-                startVideoPlay(texture)
+                CoroutineScope(Dispatchers.Main).launch {
+                    startVideoPlay(texture)
+                }
             }
         }
 
@@ -88,19 +102,21 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
 
     override fun onPause() {
         // pause playing video
-        windDown()
+        deactivate()
         super.onPause()
     }
 
-    fun stopVideoPlay() {
+    private fun stopVideoPlay() {
         if (active) {
             if (mediaPlayer?.isPlaying() == true) {
                 mediaPlayer?.stop()
             }
-            mediaPlayer?.reset()
-            mediaPlayer?.release()
-            mediaPlayer = null
         }
+        mediaPlayer?.setDisplay(null)
+        mediaPlayer?.reset()
+        mediaPlayer?.release()
+        mediaPlayer = null
+        active = false
         // leave the transform for reusable TextureView as per the original
         textureView.setTransform(originalMatrix)
     }
@@ -113,22 +129,19 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
 
     override fun deactivate() {
         stopVideoPlay()
-        active = false
     }
 
     private fun startUp() {
         if (textureView.isAvailable && active) {
-            startVideoPlay(textureView.surfaceTexture)
+            CoroutineScope(Dispatchers.Main).launch {
+                startVideoPlay(textureView.surfaceTexture)
+            }
         }
-    }
-
-    private fun windDown() {
-        stopVideoPlay()
     }
 
     // WARNING: this will take currentFile and play it if not null, or take currentExternalUri and play it if available.
     // This means currentFile (local file, for videos that were just captured by the app) has precedence.
-    fun startVideoPlay(texture: SurfaceTexture) {
+    suspend fun startVideoPlay(texture: SurfaceTexture) {
         val s = Surface(texture)
         try {
             if (mediaPlayer != null) {
@@ -142,69 +155,94 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
             currentFile?.takeIf { it.exists() }?.let { file ->
                 val inputStream = FileInputStream(file)
                 textureView.setTransform(originalMatrix)
-                mediaPlayer = MediaPlayer().apply {
-                    setDataSource(inputStream.getFD())
+
+                mediaPlayer = MediaPlayer()
+                withContext(Dispatchers.IO) {
+                    mediaPlayer?.setDataSource(inputStream.getFD())
+                }
+
+                mediaPlayer?.apply {
                     setSurface(s)
-                    setLooping(true)
-                    prepare()
-                    // TODO check whether we want fine grained error handling by setting these listeners
-    //                setOnBufferingUpdateListener(this)
-    //                setOnCompletionListener(this)
-    //                setOnPreparedListener(this)
-    //                setOnVideoSizeChangedListener(this)
                     setAudioStreamType(AudioManager.STREAM_MUSIC)
-                    start()
+                    setLooping(true)
+                    setOnPreparedListener {
+                        playerPreparedListener?.onPlayerPrepared()
+                        it.start()
+                    }
+                    prepareAsync()
+                    setVolume(if (isMuted) 0f else 1f, if (isMuted) 0f else 1f)
                 }
             }
 
-            currentExternalUri?.let {
+            currentExternalUri?.let { uri ->
                 textureView.setTransform(originalMatrix)
-                calculateVideoSizeAndOrientation(it)
+
+                mediaPlayer = MediaPlayer()
+                withContext(Dispatchers.IO) {
+                    calculateVideoSizeAndOrientation(uri)
+                    mediaPlayer?.setDataSource(requireContext(), currentExternalUri!!)
+                }
+
                 // only use letterbox for landscape video
                 if (videoOrientation == 0 || videoOrientation == 180) {
                     updateTextureViewSizeForLetterbox(videoWidth.toInt(), videoHeight.toInt())
                 }
-                mediaPlayer = MediaPlayer().apply {
-                    setDataSource(context!!, currentExternalUri!!)
+
+                mediaPlayer?.apply {
                     setSurface(s)
+                    setAudioStreamType(AudioManager.STREAM_MUSIC)
                     setLooping(true)
-                    prepare()
+                    setOnPreparedListener {
+                        playerPreparedListener?.onPlayerPrepared()
+                        it.start()
+                    }
+                    prepareAsync()
                     // TODO check whether we want fine grained error handling by setting these listeners
                     //                setOnBufferingUpdateListener(this)
                     //                setOnCompletionListener(this)
                     //                setOnPreparedListener(this)
                     //                setOnVideoSizeChangedListener(this)
-                    setAudioStreamType(AudioManager.STREAM_MUSIC)
-                    start()
+                    setVolume(if (isMuted) 0f else 1f, if (isMuted) 0f else 1f)
                 }
             }
         } catch (e: IllegalArgumentException) {
             // TODO Auto-generated catch block
+            playerPreparedListener?.onPlayerError()
             e.printStackTrace()
         } catch (e: SecurityException) {
             // TODO Auto-generated catch block
+            playerPreparedListener?.onPlayerError()
             e.printStackTrace()
         } catch (e: IllegalStateException) {
             // TODO Auto-generated catch block
+            playerPreparedListener?.onPlayerError()
             e.printStackTrace()
         } catch (e: IOException) {
             // TODO Auto-generated catch block
+            playerPreparedListener?.onPlayerError()
             e.printStackTrace()
         }
     }
 
     override fun mute() {
         mediaPlayer?.setVolume(0f, 0f)
+        isMuted = true
     }
 
     override fun unmute() {
         mediaPlayer?.setVolume(1f, 1f)
+        isMuted = false
     }
 
     private fun calculateVideoSizeAndOrientation(videoUri: Uri) {
         val metadataRetriever = MediaMetadataRetriever()
         try {
-            metadataRetriever.setDataSource(context, videoUri)
+            val isNetworkUrl = URLUtil.isNetworkUrl(videoUri.toString())
+            if (!isNetworkUrl) {
+                metadataRetriever.setDataSource(context, videoUri)
+            } else {
+                metadataRetriever.setDataSource(videoUri.toString(), HashMap<String, String>())
+            }
             val height = metadataRetriever
                 .extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)
             val width = metadataRetriever

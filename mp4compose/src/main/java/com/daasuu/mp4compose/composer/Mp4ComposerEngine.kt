@@ -20,6 +20,7 @@ import java.io.IOException
 import android.media.MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar
 import android.media.MediaFormat.MIMETYPE_VIDEO_AVC
 import android.net.Uri
+import android.webkit.URLUtil
 
 // Refer: https://github.com/ypresto/android-transcoder/blob/master/lib/src/main/java/net/ypresto/androidtranscoder/engine/MediaTranscoderEngine.java
 
@@ -120,9 +121,16 @@ internal class Mp4ComposerEngine {
             if (!useStaticBkg) {
                 mediaExtractor = MediaExtractor()
                 mediaMetadataRetriever = MediaMetadataRetriever()
-                if (sourceUri != null && context != null) {
-                    mediaExtractor!!.setDataSource(context!!, sourceUri!!, null)
-                    mediaMetadataRetriever!!.setDataSource(context!!, sourceUri!!)
+
+                sourceUri?.let { uri ->
+                    val isNetworkUrl = URLUtil.isNetworkUrl(uri.toString())
+                    if (!isNetworkUrl) {
+                        mediaExtractor!!.setDataSource(context, uri, null)
+                        mediaMetadataRetriever!!.setDataSource(context, uri)
+                    } else {
+                        mediaExtractor!!.setDataSource(uri.toString(), HashMap<String, String>())
+                        mediaMetadataRetriever!!.setDataSource(uri.toString(), HashMap<String, String>())
+                    }
                 }
 
                 try {

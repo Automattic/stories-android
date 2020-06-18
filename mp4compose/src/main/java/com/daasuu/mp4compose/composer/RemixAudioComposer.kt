@@ -107,7 +107,7 @@ internal class RemixAudioComposer(
             0,
             sampleSize,
             extractor.sampleTime,
-            if (isKeyFrame) MediaCodec.BUFFER_FLAG_SYNC_FRAME else 0
+            if (isKeyFrame) MediaCodec.BUFFER_FLAG_KEY_FRAME else 0
         )
         extractor.advance()
         return DRAIN_STATE_CONSUMED

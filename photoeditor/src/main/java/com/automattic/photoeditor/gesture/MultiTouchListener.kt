@@ -1,5 +1,6 @@
 package com.automattic.photoeditor.gesture
 
+import android.annotation.SuppressLint
 import android.graphics.Rect
 import android.view.GestureDetector
 import android.view.MotionEvent
@@ -60,6 +61,7 @@ internal class MultiTouchListener(
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouch(viewTouched: View, event: MotionEvent): Boolean {
         val view = mainView ?: viewTouched
 
@@ -71,9 +73,6 @@ internal class MultiTouchListener(
         }
 
         val action = event.action
-
-        val x = event.rawX.toInt()
-        val y = event.rawY.toInt()
 
         when (action and event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {

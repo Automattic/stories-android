@@ -6,15 +6,16 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.Navigation
 import com.automattic.photoeditor.util.PermissionUtils
-import com.automattic.portkey.compose.ComposeLoopFrameActivity
-import com.automattic.portkey.compose.frame.FrameSaveNotifier
-import com.automattic.portkey.compose.frame.FrameSaveService.SaveResultReason.SaveError
-import com.automattic.portkey.compose.frame.FrameSaveService.StorySaveProcessStart
-import com.automattic.portkey.compose.frame.FrameSaveService.StorySaveResult
-import com.automattic.portkey.compose.story.StoryRepository
 import com.automattic.portkey.intro.IntroActivity
-import com.automattic.portkey.util.KEY_STORY_SAVE_RESULT
 import com.google.android.material.snackbar.Snackbar
+import com.wordpress.stories.compose.ComposeLoopFrameActivity
+import com.wordpress.stories.compose.frame.FrameSaveNotifier
+import com.wordpress.stories.compose.frame.FrameSaveNotifier.Companion.getNotificationIdForError
+import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveError
+import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveProcessStart
+import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveResult
+import com.wordpress.stories.compose.story.StoryRepository
+import com.wordpress.stories.util.KEY_STORY_SAVE_RESULT
 import kotlinx.android.synthetic.main.activity_main.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -88,12 +89,23 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
                 errorText
             )
             val snackbar = Snackbar.make(findViewById(android.R.id.content), snackbarMessage, Snackbar.LENGTH_LONG)
-            snackbar.setAction(R.string.story_saving_failed_quick_action_manage, { view ->
+            snackbar.setAction(R.string.story_saving_failed_quick_action_manage) { view ->
                 // here go to the ComposeActivity, passing the SaveResult
                 val intent = Intent(this@MainActivity, ComposeLoopFrameActivity::class.java)
                 intent.putExtra(KEY_STORY_SAVE_RESULT, event)
+                // TODO add SITE param later when integrating with WPAndroid
+                // notificationIntent.putExtra(WordPress.SITE, site)
+
+                // we need to have a way to cancel the related error notification when the user comes
+                // from tapping on MANAGE on the snackbar (otherwise they'll be able to discard the
+                // errored story but the error notification will remain existing in the system dashboard)
+                intent.action = getNotificationIdForError(event.storyIndex).toString() + ""
+
+                // TODO add NotificationType.MEDIA_SAVE_ERROR param later when integrating with WPAndroid
+                //        val notificationType = NotificationType.MEDIA_SAVE_ERROR
+                //        notificationIntent.putExtra(ARG_NOTIFICATION_TYPE, notificationType)
                 startActivity(intent)
-            })
+            }
             snackbar.show()
         }
     }

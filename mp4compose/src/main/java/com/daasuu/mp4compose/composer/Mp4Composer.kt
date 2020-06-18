@@ -6,6 +6,7 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.util.Log
 import android.util.Size
+import android.webkit.URLUtil
 
 import com.daasuu.mp4compose.FillMode
 import com.daasuu.mp4compose.FillModeCustomItem
@@ -140,10 +141,6 @@ class Mp4Composer {
                 filter = GlFilter()
             }
 
-            if (fillMode == null) {
-                fillMode = FillMode.PRESERVE_ASPECT_FIT
-            }
-
             if (fillModeCustomItem != null) {
                 fillMode = FillMode.CUSTOM
             }
@@ -154,7 +151,7 @@ class Mp4Composer {
             if (!isStaticImageBkgSource) {
                 initializeUriDataSource(engine)
                 val videoRotate = getVideoRotation(srcUri!!)
-                val srcVideoResolution = getVideoResolution(srcUri!!, videoRotate)
+                val srcVideoResolution = getVideoResolution(srcUri)
 
                 if (outputResolution == null) {
                     if (fillMode == FillMode.CUSTOM) {
@@ -182,7 +179,7 @@ class Mp4Composer {
                     TAG,
                     "outputResolution width = " + outputResolution!!.width + " height = " + outputResolution!!.height
                 )
-                Log.d(TAG, "fillMode = " + fillMode!!)
+                Log.d(TAG, "fillMode = " + fillMode)
 
                 try {
                     if (bitrate < 0) {
@@ -286,7 +283,12 @@ class Mp4Composer {
         var mediaMetadataRetriever: MediaMetadataRetriever? = null
         try {
             mediaMetadataRetriever = MediaMetadataRetriever()
-            mediaMetadataRetriever.setDataSource(context, videoUri)
+            val isNetworkUrl = URLUtil.isNetworkUrl(videoUri.toString())
+            if (!isNetworkUrl) {
+                mediaMetadataRetriever.setDataSource(context, videoUri)
+            } else {
+                mediaMetadataRetriever.setDataSource(videoUri.toString(), HashMap<String, String>())
+            }
             val orientation = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)
             return Integer.valueOf(orientation)
         } catch (e: IllegalArgumentException) {
@@ -313,11 +315,16 @@ class Mp4Composer {
         return bitrate
     }
 
-    private fun getVideoResolution(videoUri: Uri, rotation: Int): Size {
+    private fun getVideoResolution(videoUri: Uri): Size {
         var retriever: MediaMetadataRetriever? = null
         try {
             retriever = MediaMetadataRetriever()
-            retriever.setDataSource(context, videoUri)
+            val isNetworkUrl = URLUtil.isNetworkUrl(videoUri.toString())
+            if (!isNetworkUrl) {
+                retriever.setDataSource(context, videoUri)
+            } else {
+                retriever.setDataSource(videoUri.toString(), HashMap<String, String>())
+            }
             val width = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH))
             val height = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT))
 

@@ -698,6 +698,7 @@ class PhotoEditor private constructor(builder: Builder) :
     fun saveVideoAsLoopFrameFile(
         sequenceId: Int,
         videoInputPath: Uri,
+        muteAudio: Boolean,
         canvasWidth: Int,
         canvasHeight: Int,
         customAddedViews: AddedViewList,
@@ -708,6 +709,7 @@ class PhotoEditor private constructor(builder: Builder) :
         saveVideoAsFile(
             videoInputPath = videoInputPath,
             videoOutputPath = localFile.absolutePath,
+            muteAudio = muteAudio,
             originalCanvasWidth = canvasWidth,
             originalCanvasHeight = canvasHeight,
             customAddedViews = customAddedViews,
@@ -719,6 +721,7 @@ class PhotoEditor private constructor(builder: Builder) :
     fun saveVideoAsFile(
         videoInputPath: Uri,
         videoOutputPath: String,
+        muteAudio: Boolean,
         originalCanvasWidth: Int,
         originalCanvasHeight: Int,
         customAddedViews: AddedViewList,
@@ -771,6 +774,7 @@ class PhotoEditor private constructor(builder: Builder) :
             .size(originalCanvasWidth, originalCanvasHeight)
             .fillMode(FillMode.PRESERVE_ASPECT_FIT)
             .filter(if (customAddedViews.isNotEmpty()) GlFilterGroup(filterCollection) else null)
+            .mute(muteAudio)
             .listener(object : Mp4Composer.Listener {
                 override fun onProgress(progress: Double) {
                     Log.d(TAG, "onProgress = $progress")
@@ -806,11 +810,13 @@ class PhotoEditor private constructor(builder: Builder) :
     fun saveVideoAsFile(
         videoInputPath: Uri,
         videoOutputPath: String,
+        muteAudio: Boolean,
         onSaveListener: OnSaveWithCancelAndProgressListener
     ) {
         saveVideoAsFile(
             videoInputPath,
             videoOutputPath,
+            muteAudio,
             parentView.width,
             parentView.height,
             addedViews,

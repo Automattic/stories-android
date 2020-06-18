@@ -1,1 +1,7 @@
-include ':app', ':photoeditor', ':mp4compose'
+include ':app'
+include ':mp4compose'
+project(':mp4compose').projectDir = new File(rootProject.projectDir, '/mp4compose')
+include ':photoeditor'
+project(':photoeditor').projectDir = new File(rootProject.projectDir, '/photoeditor')
+include ':stories'
+project(':stories').projectDir = new File(rootProject.projectDir, '/stories')
