@@ -9,8 +9,8 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.wordpress.stories.R
 import com.wordpress.stories.compose.ComposeLoopFrameActivity
-import com.wordpress.stories.compose.frame.FrameSaveService.SaveResultReason.SaveSuccess
-import com.wordpress.stories.compose.frame.FrameSaveService.StorySaveResult
+import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
+import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveResult
 import com.wordpress.stories.compose.story.StoryIndex
 import com.wordpress.stories.util.KEY_STORY_SAVE_RESULT
 import java.util.Random
@@ -352,13 +352,6 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         doNotify(notificationId, notificationBuilder.build()) // , notificationType)
     }
 
-    fun getNotificationIdForError(storyIndex: StoryIndex): Int {
-        // TODO WPANDROID we keep the base number because we'll use SiteId and PostModel id's to identify the error
-        // notification as well, and as such we are using a different base number to avoid collision of notification
-        // ids.
-        return BASE_MEDIA_ERROR_NOTIFICATION_ID + storyIndex
-    }
-
     companion object {
         private const val BASE_MEDIA_ERROR_NOTIFICATION_ID = 72300
 
@@ -371,7 +364,14 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
             )
         }
 
-        fun buildSnackbarErrorMessage(
+        @JvmStatic fun getNotificationIdForError(storyIndex: StoryIndex): Int {
+            // TODO WPANDROID we keep the base number because we'll use SiteId and PostModel id's to identify the error
+            // notification as well, and as such we are using a different base number to avoid collision of notification
+            // ids.
+            return BASE_MEDIA_ERROR_NOTIFICATION_ID + storyIndex
+        }
+
+        @JvmStatic fun buildSnackbarErrorMessage(
             context: Context,
             mediaItemsNotUploaded: Int,
             errorMessage: String

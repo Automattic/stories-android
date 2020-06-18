@@ -2,7 +2,7 @@ package com.wordpress.stories.util
 
 import android.content.Intent
 import android.os.Bundle
-import com.wordpress.stories.compose.frame.FrameSaveService.StorySaveResult
+import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveResult
 import com.wordpress.stories.compose.story.StoryRepository.DEFAULT_NONE_SELECTED
 
 fun getStoryIndexFromIntentOrBundle(savedInstanceState: Bundle?, intent: Intent?): Int {

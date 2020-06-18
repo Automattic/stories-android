@@ -63,9 +63,9 @@ import com.wordpress.stories.compose.emoji.EmojiPickerFragment.EmojiListener
 import com.wordpress.stories.compose.frame.FrameIndex
 import com.wordpress.stories.compose.frame.FrameSaveManager
 import com.wordpress.stories.compose.frame.FrameSaveService
-import com.wordpress.stories.compose.frame.FrameSaveService.SaveResultReason.SaveError
-import com.wordpress.stories.compose.frame.FrameSaveService.SaveResultReason.SaveSuccess
-import com.wordpress.stories.compose.frame.FrameSaveService.StorySaveResult
+import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveError
+import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
+import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveResult
 import com.wordpress.stories.compose.story.OnStoryFrameSelectorTappedListener
 import com.wordpress.stories.compose.story.StoryFrameItem
 import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.FileBackgroundSource
@@ -90,6 +90,7 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.wordpress.stories.BuildConfig
 import com.wordpress.stories.R
 import com.wordpress.stories.compose.ComposeLoopFrameActivity.ExternalMediaPickerRequestCodesAndExtraKeys
+import com.wordpress.stories.compose.frame.StorySaveEvents
 import kotlinx.android.synthetic.main.activity_composer.*
 import kotlinx.android.synthetic.main.content_composer.*
 import org.greenrobot.eventbus.EventBus
@@ -842,6 +843,13 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         photoEditor.clearAllViews()
         storyViewModel.discardCurrentStory()
         cleanupOriginalIntentSaveResult()
+        EventBus.getDefault().removeStickyEvent(StorySaveEvents.StorySaveProcessStart::class.java)
+        // cancel any outstanding error notifications
+        // TODO use NativeNotificationUtils.dismissNotification() when migrating to WPAndroid
+        intent.action?.let {
+            val notificationManager = NotificationManagerCompat.from(this)
+            notificationManager.cancel(it.toInt())
+        }
         storyViewModel.loadStory(StoryRepository.DEFAULT_NONE_SELECTED)
     }
 

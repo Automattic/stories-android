@@ -1,8 +1,8 @@
 package com.wordpress.stories.compose.story
 
 import com.wordpress.stories.compose.frame.FrameIndex
-import com.wordpress.stories.compose.frame.FrameSaveService.FrameSaveResult
-import com.wordpress.stories.compose.frame.FrameSaveService.StorySaveResult
+import com.wordpress.stories.compose.frame.StorySaveEvents.FrameSaveResult
+import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveResult
 import com.wordpress.stories.compose.story.StoryFrameItemType.VIDEO
 import java.util.Collections
 
@@ -43,7 +43,7 @@ object StoryRepository {
         return storyIndex > DEFAULT_NONE_SELECTED
     }
 
-    fun getStoryAtIndex(index: Int): Story {
+    @JvmStatic fun getStoryAtIndex(index: Int): Story {
         return stories[index]
     }
 
