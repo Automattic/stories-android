@@ -26,12 +26,12 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Surface
 import android.view.TextureView
-import android.webkit.URLUtil
 import androidx.fragment.app.Fragment
 import com.automattic.photoeditor.camera.interfaces.SurfaceFragmentHandler
 import com.automattic.photoeditor.camera.interfaces.VideoPlayerSoundOnOffHandler
 import com.automattic.photoeditor.state.AuthenticationHeadersInterface
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
+import com.daasuu.mp4compose.utils.DataSourceUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -240,14 +240,16 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
     private fun calculateVideoSizeAndOrientation(videoUri: Uri) {
         val metadataRetriever = MediaMetadataRetriever()
         try {
-            val isNetworkUrl = URLUtil.isNetworkUrl(videoUri.toString())
-            if (!isNetworkUrl) {
-                metadataRetriever.setDataSource(context, videoUri)
-            } else {
-                mAuthenticationHeadersInterface?.let {
-                    metadataRetriever.setDataSource(videoUri.toString(), it.getAuthHeaders(videoUri.toString()))
-                } ?: metadataRetriever.setDataSource(videoUri.toString(), HashMap<String, String>())
+            context?.let {
+                DataSourceUtil.setDataSource(
+                    it,
+                    videoUri,
+                    mediaExtractor = null,
+                    mediaMetadataRetriever = metadataRetriever,
+                    addedRequestHeaders = mAuthenticationHeadersInterface?.getAuthHeaders(videoUri.toString())
+                )
             }
+
             val height = metadataRetriever
             .extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)
             val width = metadataRetriever

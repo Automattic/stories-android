@@ -6,13 +6,13 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.util.Log
 import android.util.Size
-import android.webkit.URLUtil
 
 import com.daasuu.mp4compose.FillMode
 import com.daasuu.mp4compose.FillModeCustomItem
 import com.daasuu.mp4compose.Rotation
 import com.daasuu.mp4compose.composer.Mp4ComposerEngine.ProgressCallback
 import com.daasuu.mp4compose.filter.GlFilter
+import com.daasuu.mp4compose.utils.DataSourceUtil
 
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -289,13 +289,16 @@ class Mp4Composer {
         var mediaMetadataRetriever: MediaMetadataRetriever? = null
         try {
             mediaMetadataRetriever = MediaMetadataRetriever()
-            val isNetworkUrl = URLUtil.isNetworkUrl(videoUri.toString())
-            if (!isNetworkUrl) {
-                mediaMetadataRetriever.setDataSource(context, videoUri)
-            } else {
-                addedRequestHeaders?.let {
-                    mediaMetadataRetriever.setDataSource(videoUri.toString(), addedRequestHeaders)
-                } ?: mediaMetadataRetriever.setDataSource(videoUri.toString(), HashMap<String, String>())
+            videoUri?.let { uri ->
+                context?.let {
+                    DataSourceUtil.setDataSource(
+                        it,
+                        uri,
+                        mediaExtractor = null,
+                        mediaMetadataRetriever = mediaMetadataRetriever,
+                        addedRequestHeaders = addedRequestHeaders
+                    )
+                }
             }
             val orientation = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)
             return Integer.valueOf(orientation)
@@ -327,14 +330,16 @@ class Mp4Composer {
         var retriever: MediaMetadataRetriever? = null
         try {
             retriever = MediaMetadataRetriever()
-            val isNetworkUrl = URLUtil.isNetworkUrl(videoUri.toString())
-            if (!isNetworkUrl) {
-                retriever.setDataSource(context, videoUri)
-            } else {
-                addedRequestHeaders?.let {
-                    retriever.setDataSource(videoUri.toString(), addedRequestHeaders)
-                } ?: retriever.setDataSource(videoUri.toString(), HashMap<String, String>())
+            context?.let {
+                DataSourceUtil.setDataSource(
+                    it,
+                    videoUri,
+                    mediaExtractor = null,
+                    mediaMetadataRetriever = retriever,
+                    addedRequestHeaders = addedRequestHeaders
+                )
             }
+
             val width = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH))
             val height = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT))
 
