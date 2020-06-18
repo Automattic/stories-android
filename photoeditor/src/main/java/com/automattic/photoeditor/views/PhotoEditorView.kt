@@ -13,6 +13,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.ImageView.ScaleType.CENTER_CROP
+import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import androidx.annotation.RequiresApi
 import com.automattic.photoeditor.OnSaveBitmap
@@ -41,6 +42,8 @@ class PhotoEditorView : RelativeLayout {
     private lateinit var backgroundImage: BackgroundImageView
     private lateinit var brushDrawingView: BrushDrawingView
     private lateinit var imageFilterView: ImageFilterView
+    private lateinit var progressBar: ProgressBar
+
     private var surfaceListeners: ArrayList<SurfaceTextureListener> = ArrayList()
 
     private val mainSurfaceTextureListener = object : TextureView.SurfaceTextureListener {
@@ -162,6 +165,17 @@ class PhotoEditorView : RelativeLayout {
             }
         })
 
+        // Setup loading view
+        progressBar = ProgressBar(context).apply {
+            visibility = View.GONE
+        }
+        // Align brush to the size of image view
+        val progressBarParam = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
+            addRule(CENTER_IN_PARENT, TRUE)
+            addRule(ALIGN_TOP, imgSrcId)
+            addRule(ALIGN_BOTTOM, imgSrcId)
+        }
+
         // Add camera preview
         addView(autoFitTextureView, cameraParam)
 
@@ -173,6 +187,9 @@ class PhotoEditorView : RelativeLayout {
 
         // Add brush view
         addView(brushDrawingView, brushParam)
+
+        // Add progress view
+        addView(progressBar, progressBarParam)
     }
 
     // added this method as a helper due to the reasons outlined here:
@@ -255,6 +272,16 @@ class PhotoEditorView : RelativeLayout {
     internal fun turnTextureAndImageViewOff() {
         backgroundImage.visibility = View.INVISIBLE
         autoFitTextureView.visibility = View.INVISIBLE
+    }
+
+    internal fun showLoading() {
+        progressBar.visibility = View.VISIBLE
+        progressBar.invalidate()
+    }
+
+    internal fun hideLoading() {
+        progressBar.visibility = View.GONE
+        progressBar.invalidate()
     }
 
     companion object {

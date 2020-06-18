@@ -93,6 +93,9 @@ import com.wordpress.stories.util.getStoryIndexFromIntentOrBundle
 import com.wordpress.stories.util.isVideo
 import kotlinx.android.synthetic.main.activity_composer.*
 import kotlinx.android.synthetic.main.content_composer.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -1632,14 +1635,16 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // 3. image/uri source
         // 4. image/file source
         if (newSelectedFrame.frameItemType is VIDEO) {
-            source.apply {
-                if (this is FileBackgroundSource) {
-                    showPlayVideo(file)
-                } else (source as UriBackgroundSource).contentUri?.let {
-                    showPlayVideo(it)
+            CoroutineScope(Dispatchers.Main).launch {
+                source.apply {
+                    if (this is FileBackgroundSource) {
+                        showPlayVideo(file)
+                    } else (source as UriBackgroundSource).contentUri?.let {
+                        showPlayVideo(it)
+                    }
                 }
+                updateSoundControl()
             }
-            updateSoundControl()
         } else {
             val model = (source as? FileBackgroundSource)?.file ?: (source as UriBackgroundSource).contentUri
             Glide.with(this@ComposeLoopFrameActivity)
