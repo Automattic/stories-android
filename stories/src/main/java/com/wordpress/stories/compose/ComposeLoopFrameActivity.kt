@@ -123,6 +123,7 @@ interface SnackbarProvider {
 interface MediaPickerProvider {
     fun setupRequestCodes(requestCodes: ExternalMediaPickerRequestCodesAndExtraKeys)
     fun showProvidedMediaPicker()
+    fun providerHandlesOnActivityResult(): Boolean
 }
 
 abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTappedListener {
@@ -605,7 +606,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
         when (requestCode) {
             requestCodes.PHOTO_PICKER -> if (resultCode == Activity.RESULT_OK && data != null) {
-                if (data.hasExtra(requestCodes.EXTRA_MEDIA_URIS)) {
+                val providerHandlesMediaPickerResult = mediaPickerProvider?.providerHandlesOnActivityResult() ?: false
+                if (data.hasExtra(requestCodes.EXTRA_MEDIA_URIS) && !providerHandlesMediaPickerResult) {
                     val uriList: List<Uri> = convertStringArrayIntoUrisList(
                         data.getStringArrayExtra(requestCodes.EXTRA_MEDIA_URIS)
                     )
@@ -618,7 +620,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         }
     }
 
-    private fun convertStringArrayIntoUrisList(stringArray: Array<String>): List<Uri> {
+    protected fun convertStringArrayIntoUrisList(stringArray: Array<String>): List<Uri> {
         val uris: ArrayList<Uri> = ArrayList(stringArray.size)
         for (stringUri in stringArray) {
             uris.add(Uri.parse(stringUri))
@@ -626,19 +628,19 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         return uris
     }
 
-    private fun setDefaultSelectionAndUpdateBackgroundSurfaceUI() {
+    protected fun setDefaultSelectionAndUpdateBackgroundSurfaceUI() {
         val defaultSelectedFrameIndex = storyViewModel.getLastFrameIndexInCurrentStory()
         storyViewModel.setSelectedFrame(defaultSelectedFrameIndex)
         updateBackgroundSurfaceUIWithStoryFrame(defaultSelectedFrameIndex)
     }
 
-    private fun addFramesToStoryFromMediaUriList(uriList: List<Uri>) {
+    protected fun addFramesToStoryFromMediaUriList(uriList: List<Uri>) {
         for (mediaUri in uriList) {
             addFrameToStoryFromMediaUri(mediaUri)
         }
     }
 
-    private fun addFrameToStoryFromMediaUri(mediaUri: Uri) {
+    protected fun addFrameToStoryFromMediaUri(mediaUri: Uri) {
         storyViewModel
             .addStoryFrameItemToCurrentStory(StoryFrameItem(
                 UriBackgroundSource(contentUri = Uri.parse(mediaUri.toString())),
@@ -1268,12 +1270,12 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         }
     }
 
-    private fun showLoading() {
+    protected fun showLoading() {
         editModeHideAllUIControls(true)
         blockTouchOnPhotoEditor(BLOCK_TOUCH_MODE_FULL_SCREEN)
     }
 
-    private fun hideLoading() {
+    protected fun hideLoading() {
         editModeRestoreAllUIControls()
         releaseTouchOnPhotoEditor(BLOCK_TOUCH_MODE_FULL_SCREEN)
     }

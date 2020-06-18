@@ -66,4 +66,8 @@ class StoryComposerActivity : ComposeLoopFrameActivity(), SnackbarProvider, Medi
             RequestCodes.PHOTO_PICKER,
             ActivityOptions.makeSceneTransitionAnimation(this).toBundle())
     }
+
+    override fun providerHandlesOnActivityResult(): Boolean {
+        return false
+    }
 }
