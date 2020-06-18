@@ -54,6 +54,12 @@ import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.ViewType
 import com.automattic.photoeditor.views.ViewType.TEXT
 import com.automattic.photoeditor.views.added.AddedViewList
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.wordpress.stories.BuildConfig
+import com.wordpress.stories.R
+import com.wordpress.stories.compose.ComposeLoopFrameActivity.ExternalMediaPickerRequestCodesAndExtraKeys
 import com.wordpress.stories.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_FULL_SCREEN
 import com.wordpress.stories.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_NONE
 import com.wordpress.stories.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION
@@ -63,6 +69,7 @@ import com.wordpress.stories.compose.emoji.EmojiPickerFragment.EmojiListener
 import com.wordpress.stories.compose.frame.FrameIndex
 import com.wordpress.stories.compose.frame.FrameSaveManager
 import com.wordpress.stories.compose.frame.FrameSaveService
+import com.wordpress.stories.compose.frame.StorySaveEvents
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveError
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
 import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveResult
@@ -84,13 +91,6 @@ import com.wordpress.stories.util.STATE_KEY_CURRENT_STORY_INDEX
 import com.wordpress.stories.util.getDisplayPixelSize
 import com.wordpress.stories.util.getStoryIndexFromIntentOrBundle
 import com.wordpress.stories.util.isVideo
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.CenterCrop
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
-import com.wordpress.stories.BuildConfig
-import com.wordpress.stories.R
-import com.wordpress.stories.compose.ComposeLoopFrameActivity.ExternalMediaPickerRequestCodesAndExtraKeys
-import com.wordpress.stories.compose.frame.StorySaveEvents
 import kotlinx.android.synthetic.main.activity_composer.*
 import kotlinx.android.synthetic.main.content_composer.*
 import org.greenrobot.eventbus.EventBus
@@ -123,6 +123,7 @@ interface SnackbarProvider {
 interface MediaPickerProvider {
     fun setupRequestCodes(requestCodes: ExternalMediaPickerRequestCodesAndExtraKeys)
     fun showProvidedMediaPicker()
+    fun providerHandlesOnActivityResult(): Boolean
 }
 
 abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTappedListener {
@@ -605,18 +606,12 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
         when (requestCode) {
             requestCodes.PHOTO_PICKER -> if (resultCode == Activity.RESULT_OK && data != null) {
-                if (data.hasExtra(requestCodes.EXTRA_MEDIA_URI_LIST)) {
-                    val uriList = data.getParcelableArrayListExtra<Uri>(requestCodes.EXTRA_MEDIA_URI_LIST)
+                val providerHandlesMediaPickerResult = mediaPickerProvider?.providerHandlesOnActivityResult() ?: false
+                if (data.hasExtra(requestCodes.EXTRA_MEDIA_URIS) && !providerHandlesMediaPickerResult) {
+                    val uriList: List<Uri> = convertStringArrayIntoUrisList(
+                        data.getStringArrayExtra(requestCodes.EXTRA_MEDIA_URIS)
+                    )
                     addFramesToStoryFromMediaUriList(uriList)
-                    setDefaultSelectionAndUpdateBackgroundSurfaceUI()
-                } else if (data.hasExtra(requestCodes.EXTRA_MEDIA_URI)) {
-                    val mediaUri = data.getStringExtra(requestCodes.EXTRA_MEDIA_URI)
-                    if (mediaUri == null) {
-                        Log.e("Composer", "Can't resolve picked media")
-                        showToast("Can't resolve picked media")
-                        return
-                    }
-                    addFrameToStoryFromMediaUri(Uri.parse(mediaUri))
                     setDefaultSelectionAndUpdateBackgroundSurfaceUI()
                 } else if (data.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED)) {
                     launchCameraPreview()
@@ -625,19 +620,27 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         }
     }
 
-    private fun setDefaultSelectionAndUpdateBackgroundSurfaceUI() {
+    protected fun convertStringArrayIntoUrisList(stringArray: Array<String>): List<Uri> {
+        val uris: ArrayList<Uri> = ArrayList(stringArray.size)
+        for (stringUri in stringArray) {
+            uris.add(Uri.parse(stringUri))
+        }
+        return uris
+    }
+
+    protected fun setDefaultSelectionAndUpdateBackgroundSurfaceUI() {
         val defaultSelectedFrameIndex = storyViewModel.getLastFrameIndexInCurrentStory()
         storyViewModel.setSelectedFrame(defaultSelectedFrameIndex)
         updateBackgroundSurfaceUIWithStoryFrame(defaultSelectedFrameIndex)
     }
 
-    private fun addFramesToStoryFromMediaUriList(uriList: ArrayList<Uri>) {
+    protected fun addFramesToStoryFromMediaUriList(uriList: List<Uri>) {
         for (mediaUri in uriList) {
             addFrameToStoryFromMediaUri(mediaUri)
         }
     }
 
-    private fun addFrameToStoryFromMediaUri(mediaUri: Uri) {
+    protected fun addFrameToStoryFromMediaUri(mediaUri: Uri) {
         storyViewModel
             .addStoryFrameItemToCurrentStory(StoryFrameItem(
                 UriBackgroundSource(contentUri = Uri.parse(mediaUri.toString())),
@@ -1267,12 +1270,12 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         }
     }
 
-    private fun showLoading() {
+    protected fun showLoading() {
         editModeHideAllUIControls(true)
         blockTouchOnPhotoEditor(BLOCK_TOUCH_MODE_FULL_SCREEN)
     }
 
-    private fun hideLoading() {
+    protected fun hideLoading() {
         editModeRestoreAllUIControls()
         releaseTouchOnPhotoEditor(BLOCK_TOUCH_MODE_FULL_SCREEN)
     }
@@ -1728,8 +1731,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         var PHOTO_PICKER: Int = 0 // default code, can be overriden.
                                     // Leave this value in zero so it's evident if something is not working (will break
                                     // if not properly initialized)
-        lateinit var EXTRA_MEDIA_URI_LIST: String
-        lateinit var EXTRA_MEDIA_URI: String
+        lateinit var EXTRA_MEDIA_URIS: String
         lateinit var EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED: String
     }
 

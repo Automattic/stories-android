@@ -54,8 +54,7 @@ class StoryComposerActivity : ComposeLoopFrameActivity(), SnackbarProvider, Medi
         requestCodes.PHOTO_PICKER = RequestCodes.PHOTO_PICKER
         requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED =
             PhotoPickerActivity.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED
-        requestCodes.EXTRA_MEDIA_URI = PhotoPickerActivity.EXTRA_MEDIA_URI
-        requestCodes.EXTRA_MEDIA_URI_LIST = PhotoPickerActivity.EXTRA_MEDIA_URI_LIST
+        requestCodes.EXTRA_MEDIA_URIS = PhotoPickerActivity.EXTRA_MEDIA_URIS
     }
 
     override fun showProvidedMediaPicker() {
@@ -66,5 +65,9 @@ class StoryComposerActivity : ComposeLoopFrameActivity(), SnackbarProvider, Medi
             intent,
             RequestCodes.PHOTO_PICKER,
             ActivityOptions.makeSceneTransitionAnimation(this).toBundle())
+    }
+
+    override fun providerHandlesOnActivityResult(): Boolean {
+        return false
     }
 }

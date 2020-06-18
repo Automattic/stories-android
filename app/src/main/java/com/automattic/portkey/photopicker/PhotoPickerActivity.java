@@ -24,9 +24,10 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.automattic.portkey.photopicker.utils.CameraIntentUtils;
 import com.automattic.portkey.R;
+import com.automattic.portkey.util.WPMediaUtils;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -35,8 +36,7 @@ public class PhotoPickerActivity extends AppCompatActivity
     private static final String PICKER_FRAGMENT_TAG = "picker_fragment_tag";
     private static final String KEY_MEDIA_CAPTURE_PATH = "media_capture_path";
 
-    public static final String EXTRA_MEDIA_URI = "media_uri";
-    public static final String EXTRA_MEDIA_URI_LIST = "media_uri_list";
+    public static final String EXTRA_MEDIA_URIS = "media_uris";
     public static final String EXTRA_MEDIA_ID = "media_id";
     public static final String EXTRA_MEDIA_QUEUED = "media_queued";
 
@@ -176,9 +176,9 @@ public class PhotoPickerActivity extends AppCompatActivity
             // user chose a photo from the device library
             case RequestCodes.PICTURE_LIBRARY:
                 if (data != null) {
-                    Uri imageUri = data.getData();
-                    if (imageUri != null) {
-                        doMediaUriSelected(imageUri, PhotoPickerMediaSource.ANDROID_PICKER);
+                    if (data != null) {
+                        doMediaUrisSelected(WPMediaUtils.retrieveMediaUris(data),
+                                PhotoPickerMediaSource.ANDROID_PICKER);
                     }
                 }
                 break;
@@ -187,8 +187,8 @@ public class PhotoPickerActivity extends AppCompatActivity
                 try {
                     CameraIntentUtils.scanMediaFile(this, mMediaCapturePath);
                     File f = new File(mMediaCapturePath);
-                    Uri capturedImageUri = Uri.fromFile(f);
-                    doMediaUriSelected(capturedImageUri, PhotoPickerMediaSource.ANDROID_CAMERA);
+                    List<Uri> capturedImageUri = Collections.singletonList(Uri.fromFile(f));
+                    doMediaUrisSelected(capturedImageUri, PhotoPickerMediaSource.ANDROID_CAMERA);
                 } catch (RuntimeException e) {
                     Log.e(PhotoPickerActivity.class.getName(), e.getMessage());
                 }
@@ -269,41 +269,81 @@ public class PhotoPickerActivity extends AppCompatActivity
 //        }
 //    }
 
-    private void doMediaUriSelected(@NonNull Uri mediaUri, @NonNull PhotoPickerMediaSource source) {
+//    private void doMediaUriSelected(@NonNull Uri mediaUri, @NonNull PhotoPickerMediaSource source) {
+//        // if user chose a featured image, we need to upload it and return the uploaded media object
+////        if (mBrowserType == MediaBrowserType.FEATURED_IMAGE_PICKER) {
+////            final String mimeType = getContentResolver().getType(mediaUri);
+////            WPMediaUtils.fetchMediaAndDoNext(this, mediaUri,
+////                                             new WPMediaUtils.MediaFetchDoNext() {
+////                                                 @Override
+////                                                 public void doNext(Uri uri) {
+////                                                     mFeaturedImageHelper
+////                                                             .queueFeaturedImageForUpload(PhotoPickerActivity.this,
+////                                                                     mLocalPostId, mSite, uri, mimeType);
+////                                                     Intent intent = new Intent()
+////                                                             .putExtra(EXTRA_MEDIA_QUEUED, true);
+////                                                     setResult(RESULT_OK, intent);
+////                                                     finish();
+////                                                 }
+////                                             });
+////        } else {
+//            Intent intent = new Intent()
+//                    .putExtra(EXTRA_MEDIA_URI, mediaUri.toString())
+//                    .putExtra(EXTRA_MEDIA_SOURCE, source.name());
+//            setResult(RESULT_OK, intent);
+//            finish();
+////        }
+//    }
+
+    private void doMediaUrisSelected(@NonNull List<Uri> mediaUris, @NonNull PhotoPickerMediaSource source) {
         // if user chose a featured image, we need to upload it and return the uploaded media object
 //        if (mBrowserType == MediaBrowserType.FEATURED_IMAGE_PICKER) {
+//            Uri mediaUri = mediaUris.get(0);
 //            final String mimeType = getContentResolver().getType(mediaUri);
+//
+//            mFeaturedImageHelper.trackFeaturedImageEvent(
+//                    FeaturedImageHelper.TrackableEvent.IMAGE_PICKED,
+//                    mLocalPostId
+//                                                        );
+//
 //            WPMediaUtils.fetchMediaAndDoNext(this, mediaUri,
-//                                             new WPMediaUtils.MediaFetchDoNext() {
-//                                                 @Override
-//                                                 public void doNext(Uri uri) {
-//                                                     mFeaturedImageHelper
-//                                                             .queueFeaturedImageForUpload(PhotoPickerActivity.this,
-//                                                                     mLocalPostId, mSite, uri, mimeType);
-//                                                     Intent intent = new Intent()
-//                                                             .putExtra(EXTRA_MEDIA_QUEUED, true);
-//                                                     setResult(RESULT_OK, intent);
-//                                                     finish();
-//                                                 }
-//                                             });
+//                    new WPMediaUtils.MediaFetchDoNext() {
+//                        @Override
+//                        public void doNext(Uri uri) {
+//                            EnqueueFeaturedImageResult queueImageResult = mFeaturedImageHelper
+//                                    .queueFeaturedImageForUpload(mLocalPostId, mSite, uri,
+//                                            mimeType);
+//                            // we intentionally display a toast instead of a snackbar as a
+//                            // Snackbar is tied to an Activity and the activity is finished
+//                            // right after this call
+//                            switch (queueImageResult) {
+//                                case FILE_NOT_FOUND:
+//                                    Toast.makeText(getApplicationContext(),
+//                                            R.string.file_not_found, Toast.LENGTH_SHORT)
+//                                         .show();
+//                                    break;
+//                                case INVALID_POST_ID:
+//                                    Toast.makeText(getApplicationContext(),
+//                                            R.string.error_generic, Toast.LENGTH_SHORT)
+//                                         .show();
+//                                    break;
+//                                case SUCCESS:
+//                                    // noop
+//                                    break;
+//                            }
+//                            Intent intent = new Intent()
+//                                    .putExtra(EXTRA_MEDIA_QUEUED, true);
+//                            setResult(RESULT_OK, intent);
+//                            finish();
+//                        }
+//                    });
 //        } else {
             Intent intent = new Intent()
-                    .putExtra(EXTRA_MEDIA_URI, mediaUri.toString())
+                    .putExtra(EXTRA_MEDIA_URIS, convertUrisListToStringArray(mediaUris))
                     .putExtra(EXTRA_MEDIA_SOURCE, source.name());
             setResult(RESULT_OK, intent);
             finish();
 //        }
-    }
-
-
-    // ToDo: this method added in Portkey, will most probably need to be added in WPAndroid's
-    //  PhotoPicker when integrating there
-    private void doMediaUriListSelected(@NonNull ArrayList<Uri> mediaUriList, @NonNull PhotoPickerMediaSource source) {
-        Intent intent = new Intent()
-                .putExtra(EXTRA_MEDIA_URI_LIST, mediaUriList)
-                .putExtra(EXTRA_MEDIA_SOURCE, source.name());
-        setResult(RESULT_OK, intent);
-        finish();
     }
 
     private void doMediaIdSelected(long mediaId, @NonNull PhotoPickerMediaSource source) {
@@ -316,10 +356,8 @@ public class PhotoPickerActivity extends AppCompatActivity
 
     @Override
     public void onPhotoPickerMediaChosen(@NonNull List<Uri> uriList) {
-        if (uriList.size() > 1) {
-            doMediaUriListSelected(new ArrayList<>(uriList), PhotoPickerMediaSource.APP_PICKER);
-        } else {
-            doMediaUriSelected(uriList.get(0), PhotoPickerMediaSource.APP_PICKER);
+        if (uriList.size() > 0) {
+            doMediaUrisSelected(uriList, PhotoPickerMediaSource.APP_PICKER);
         }
     }
 
@@ -365,5 +403,13 @@ public class PhotoPickerActivity extends AppCompatActivity
             }
             return super.onFling(e1, e2, velocityX, velocityY);
         }
+    }
+
+    private String[] convertUrisListToStringArray(List<Uri> uris) {
+        String[] stringUris = new String[uris.size()];
+        for (int i = 0; i < uris.size(); i++) {
+            stringUris[i] = uris.get(i).toString();
+        }
+        return stringUris;
     }
 }
