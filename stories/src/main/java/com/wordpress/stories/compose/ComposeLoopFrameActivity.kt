@@ -541,7 +541,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 if (storySaveResult != null &&
                     StoryRepository.getStoryAtIndex(storySaveResult.storyIndex).frames.isNotEmpty()) {
                     // dismiss the error notification
-                    // TODO use NativeNotificationUtils.dismissNotification() when migrating to WPAndroid
                     intent.action?.let {
                         val notificationManager = NotificationManagerCompat.from(this)
                         notificationManager.cancel(it.toInt())
@@ -553,14 +552,16 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                         onStoryFrameSelected(oldIndex = StoryRepository.DEFAULT_FRAME_NONE_SELECTED, newIndex = 0)
                     }
                 } else {
-                    // TODO couldn't find the story frames? Show some Error Dialog - we can't recover here
+                    showToast(getString(R.string.toast_story_page_not_found))
+                    finish()
                 }
             } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED) {
                 if (StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.isNotEmpty()) {
                     storyViewModel.loadStory(storyIndexToSelect)
                     refreshStoryFrameSelection()
                 } else {
-                    // TODO couldn't find the story frames? Show some Error Dialog - we can't recover here
+                    showToast(getString(R.string.toast_story_page_not_found))
+                    finish()
                 }
             } else {
                 launchCameraPreview()
@@ -705,7 +706,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     object : PressAndHoldGestureListener {
                         override fun onClickGesture() {
                             if (cameraOperationInCourse) {
-                                showToast("Operation in progress, try again")
+                                showToast(getString(R.string.toast_capture_operation_in_progress))
                                 return
                             }
                             timesUpHandler.removeCallbacksAndMessages(null)
@@ -726,7 +727,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
                         override fun onStartDetectionWait() {
                             if (cameraOperationInCourse) {
-                                showToast("Operation in progress, try again")
+                                showToast(getString(R.string.toast_capture_operation_in_progress))
                                 return
                             }
                             // when the wait to see whether this is a "press and hold" gesture starts,
@@ -889,7 +890,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         cleanupOriginalIntentSaveResult()
         EventBus.getDefault().removeStickyEvent(StorySaveEvents.StorySaveProcessStart::class.java)
         // cancel any outstanding error notifications
-        // TODO use NativeNotificationUtils.dismissNotification() when migrating to WPAndroid
         intent.action?.let {
             val notificationManager = NotificationManagerCompat.from(this)
             notificationManager.cancel(it.toInt())
@@ -944,7 +944,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
         if (anyOfOriginalIntentResultsIsError() && !storyViewModel.anyOfCurrentStoryFramesIsErrored()) {
             // all solved? cancel any outstanding error notifications
-            // TODO use NativeNotificationUtils.dismissNotification() when migrating to WPAndroid
             intent.action?.let {
                 val notificationManager = NotificationManagerCompat.from(this)
                 notificationManager.cancel(it.toInt())
@@ -1106,9 +1105,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 }
             }
             override fun onError(message: String, cause: Throwable?) {
-                // TODO implement error handling
                 runOnUiThread {
-                    showToast("ERROR SAVING IMAGE")
+                    showToast(getString(R.string.toast_error_saving_image))
                     waitToReenableCapture()
                 }
             }
@@ -1124,7 +1122,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             startRecordingVideo()
         }, VIBRATION_INDICATION_LENGTH_MS)
         hideVideoUIControls()
-        showToast("VIDEO STARTED")
         vibrate()
     }
 
@@ -1158,9 +1155,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             }
 
             override fun onError(message: String?, cause: Throwable?) {
-                // TODO implement error handling
                 runOnUiThread {
-                    showToast("Video could not be saved: $message")
+                    showToast(getString(R.string.toast_error_saving_video) + ": $message")
                 }
                 waitToReenableCapture()
             }
@@ -1196,11 +1192,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 .duration = PressAndHoldGestureHelper.CLICK_LENGTH / 4
             backgroundSurfaceManager.stopRecordingVideo()
             showVideoUIControls()
-            if (isCanceled) {
-                showToast("GESTURE CANCELLED, VIDEO SAVED")
-            } else {
-                showToast("VIDEO SAVED")
-            }
         }
     }
 

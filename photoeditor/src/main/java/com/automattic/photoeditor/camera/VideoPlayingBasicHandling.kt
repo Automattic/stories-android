@@ -213,19 +213,15 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
                 }
             }
         } catch (e: IllegalArgumentException) {
-            // TODO Auto-generated catch block
             playerPreparedListener?.onPlayerError()
             e.printStackTrace()
         } catch (e: SecurityException) {
-            // TODO Auto-generated catch block
             playerPreparedListener?.onPlayerError()
             e.printStackTrace()
         } catch (e: IllegalStateException) {
-            // TODO Auto-generated catch block
             playerPreparedListener?.onPlayerError()
             e.printStackTrace()
         } catch (e: IOException) {
-            // TODO Auto-generated catch block
             playerPreparedListener?.onPlayerError()
             e.printStackTrace()
         }

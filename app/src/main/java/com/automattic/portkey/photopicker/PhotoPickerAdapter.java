@@ -69,7 +69,7 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
 
     private final ArrayList<PhotoPickerItem> mMediaList = new ArrayList<>();
 
-    // TODO: used in WP, not sure to delete it for now
+    // comes from  WPAndroid, not used in portkey demo app
 //    protected final ImageManager mImageManager;
 
     PhotoPickerAdapter(Context context,

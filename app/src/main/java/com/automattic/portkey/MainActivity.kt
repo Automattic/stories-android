@@ -81,17 +81,13 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
         }
 
         if (event.isSuccess()) {
-            // TODO will remove this snackbar when integrating to WPAndroid as at this successful saving point we''l
-            // want to enqueue the Story post and media to be uploaded to the user's site.
             val text = String.format(
                 getString(R.string.story_saving_snackbar_finished_successfully),
                 StoryRepository.getStoryAtIndex(event.storyIndex).title
             )
             Snackbar.make(findViewById(android.R.id.content), text, Snackbar.LENGTH_SHORT).show()
         } else {
-            // TODO show snackbar and add the PendingIntent with the StorySaveResult as a Serialized object if errors
-            // TODO replace this with calls to snackbarSequencer.enqueue() when integrating code in WPAndroid
-
+            // show snackbar and add the PendingIntent with the StorySaveResult as a Serialized object if errors
             val errorText = String.format(
                 getString(R.string.story_saving_snackbar_finished_with_error),
                 StoryRepository.getStoryAtIndex(event.storyIndex).title
@@ -123,7 +119,6 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onStorySaveStart(event: StorySaveProcessStart) {
         EventBus.getDefault().removeStickyEvent(event)
-        // TODO replace this with calls to snackbarSequencer.enqueue() when integrating code in WPAndroid
         val text = String.format(
             getString(R.string.story_saving_snackbar_started),
             StoryRepository.getStoryAtIndex(event.storyIndex).title

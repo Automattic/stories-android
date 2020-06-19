@@ -254,8 +254,7 @@ class PhotoEditor private constructor(builder: Builder) :
                 }
 
                 override fun onLongClick() {
-                    // TODO implement the DELETE action (hide every other view, allow this view to be dragged to the trash
-                    // bin)
+                    // no op
                 }
             })
 
@@ -359,8 +358,7 @@ class PhotoEditor private constructor(builder: Builder) :
                 }
 
                 override fun onLongClick() {
-                    // TODO implement the DELETE action (hide every other view, allow this view to be dragged to the trash
-                    // bin)
+                    // no op
                 }
             })
             touchableArea.setOnTouchListener(multiTouchListenerInstance)
@@ -417,8 +415,7 @@ class PhotoEditor private constructor(builder: Builder) :
                     }
 
                     override fun onLongClick() {
-                        // TODO implement the DELETE action (hide every other view, allow this view to be dragged to the trash
-                        // bin)
+                        // no op
                     }
                 })
                 rootView.setOnTouchListener(multiTouchListenerInstance)
