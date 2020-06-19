@@ -34,6 +34,7 @@ class FrameSaveService : Service() {
     private val binder = FrameSaveServiceBinder()
     private lateinit var frameSaveNotifier: FrameSaveNotifier
     private val storySaveProcessors = ArrayList<StorySaveProcessor>()
+    private lateinit var notificationIntent: Intent
 
     override fun onCreate() {
         super.onCreate()
@@ -62,6 +63,14 @@ class FrameSaveService : Service() {
         }
 
         return START_NOT_STICKY
+    }
+
+    fun setNotificationIntent(intent: Intent) {
+        notificationIntent = intent
+    }
+
+    fun getNotificationIntent(): Intent {
+        return notificationIntent
     }
 
     fun saveStoryFrames(

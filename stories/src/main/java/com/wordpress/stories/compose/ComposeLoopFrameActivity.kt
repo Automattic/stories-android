@@ -130,6 +130,10 @@ interface MediaPickerProvider {
     fun providerHandlesOnActivityResult(): Boolean
 }
 
+interface NotificationIntentLoader {
+    fun loadIntentForErrorNotification(): Intent
+}
+
 interface AuthenticationHeadersProvider {
     fun getAuthHeaders(url: String): Map<String, String>?
 }
@@ -166,6 +170,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private var storyFrameIndexToRetry: FrameIndex = StoryRepository.DEFAULT_NONE_SELECTED
     private var snackbarProvider: SnackbarProvider? = null
     private var mediaPickerProvider: MediaPickerProvider? = null
+    private var notificationIntentLoader: NotificationIntentLoader? = null
     private var authHeadersProvider: AuthenticationHeadersProvider? = null
 
     private val connection = object : ServiceConnection {
@@ -180,6 +185,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 // TODO obtain the real Story title as assigned by the user when the BOTTOM SHEET is ready, and pass it up
                 storyViewModel.setCurrentStoryTitle(getString(R.string.story_saving_untitled))
             }
+            // Setup notification intent for notifications triggered from the FrameSaveService.FrameSaveNotifier class
+            notificationIntentLoader?.let {
+                frameSaveService.setNotificationIntent(it.loadIntentForErrorNotification())
+            }
+
             frameSaveService.saveStoryFrames(storyIndex, photoEditor, storyFrameIndexToRetry)
             saveServiceBound = true
 
@@ -1745,6 +1755,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     fun setMediaPickerProvider(provider: MediaPickerProvider) {
         mediaPickerProvider = provider
         mediaPickerProvider?.setupRequestCodes(requestCodes)
+    }
+
+    fun setNotificationExtrasLoader(loader: NotificationIntentLoader) {
+        notificationIntentLoader = loader
     }
 
     fun setAuthenticationProvider(provider: AuthenticationHeadersProvider) {

@@ -8,7 +8,6 @@ import android.content.Intent
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.wordpress.stories.R
-import com.wordpress.stories.compose.ComposeLoopFrameActivity
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
 import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveResult
 import com.wordpress.stories.compose.story.StoryIndex
@@ -298,16 +297,11 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         // val notificationId = getNotificationIdForMedia(site)
         val notificationId = getNotificationIdForError(storySaveResult.storyIndex)
         // Tap notification intent (open the media browser)
-        val notificationIntent = Intent(context, ComposeLoopFrameActivity::class.java)
+        val notificationIntent = service.getNotificationIntent()
         notificationIntent.putExtra(KEY_STORY_SAVE_RESULT, storySaveResult)
         notificationIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
         notificationIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        // TODO add SITE param later when integrating with WPAndroid
-        // notificationIntent.putExtra(WordPress.SITE, site)
         notificationIntent.setAction(notificationId.toString())
-        // TODO add NotificationType.MEDIA_SAVE_ERROR param later when integrating with WPAndroid
-//        val notificationType = NotificationType.MEDIA_SAVE_ERROR
-//        notificationIntent.putExtra(ARG_NOTIFICATION_TYPE, notificationType)
 
         val pendingIntent = PendingIntent.getActivity(
             context,

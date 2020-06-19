@@ -8,7 +8,6 @@ import androidx.navigation.Navigation
 import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.portkey.intro.IntroActivity
 import com.google.android.material.snackbar.Snackbar
-import com.wordpress.stories.compose.ComposeLoopFrameActivity
 import com.wordpress.stories.compose.frame.FrameSaveNotifier
 import com.wordpress.stories.compose.frame.FrameSaveNotifier.Companion.getNotificationIdForError
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveError
@@ -90,8 +89,8 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
             )
             val snackbar = Snackbar.make(findViewById(android.R.id.content), snackbarMessage, Snackbar.LENGTH_LONG)
             snackbar.setAction(R.string.story_saving_failed_quick_action_manage) { view ->
-                // here go to the ComposeActivity, passing the SaveResult
-                val intent = Intent(this@MainActivity, ComposeLoopFrameActivity::class.java)
+                // here go to the StoryComposerActivity, passing the SaveResult
+                val intent = Intent(this@MainActivity, StoryComposerActivity::class.java)
                 intent.putExtra(KEY_STORY_SAVE_RESULT, event)
                 // TODO add SITE param later when integrating with WPAndroid
                 // notificationIntent.putExtra(WordPress.SITE, site)
@@ -101,9 +100,6 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
                 // errored story but the error notification will remain existing in the system dashboard)
                 intent.action = getNotificationIdForError(event.storyIndex).toString() + ""
 
-                // TODO add NotificationType.MEDIA_SAVE_ERROR param later when integrating with WPAndroid
-                //        val notificationType = NotificationType.MEDIA_SAVE_ERROR
-                //        notificationIntent.putExtra(ARG_NOTIFICATION_TYPE, notificationType)
                 startActivity(intent)
             }
             snackbar.show()
