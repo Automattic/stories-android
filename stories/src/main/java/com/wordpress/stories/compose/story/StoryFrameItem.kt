@@ -11,7 +11,8 @@ data class StoryFrameItem(
     val source: BackgroundSource,
     val frameItemType: StoryFrameItemType = IMAGE,
     var addedViews: AddedViewList = AddedViewList(),
-    var saveResultReason: SaveResultReason = SaveSuccess
+    var saveResultReason: SaveResultReason = SaveSuccess,
+    var composedFrameFile: File? = null
 ) {
     sealed class BackgroundSource {
         data class UriBackgroundSource(var contentUri: Uri? = null) : BackgroundSource()
