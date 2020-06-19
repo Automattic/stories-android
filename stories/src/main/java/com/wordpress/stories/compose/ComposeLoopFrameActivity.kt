@@ -416,15 +416,15 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         })
 
         storyViewModel.onSelectedFrameIndex.observe(this, Observer { selectedFrameIndexChange ->
-            updateContentUiStateSelection(selectedFrameIndexChange.first, selectedFrameIndexChange.second)
+            updateSelectedFrameControls(selectedFrameIndexChange.first, selectedFrameIndexChange.second)
         })
 
         storyViewModel.erroredItemUiState.observe(this, Observer { uiStateFrame ->
             updateContentUiStateFrame(uiStateFrame)
         })
 
-        storyViewModel.itemAtIndexChangedMuteAudioUiState.observe(this, Observer { uiStateFrameIndex ->
-            updateUiStateForAudioMuted(uiStateFrameIndex)
+        storyViewModel.muteFrameAudioUiState.observe(this, Observer { frameIndex ->
+            updateUiStateForAudioMuted(frameIndex)
         })
     }
 
@@ -435,7 +435,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     @Suppress("unused")
-    private fun updateContentUiStateSelection(oldSelection: Int, newSelection: Int) {
+    private fun updateSelectedFrameControls(oldSelection: Int, newSelection: Int) {
         if (storyViewModel.getCurrentStorySize() > newSelection) {
             val selectedFrame = storyViewModel.getCurrentStoryFrameAt(newSelection)
             updateSoundControl()
