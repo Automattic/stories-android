@@ -1,5 +1,6 @@
 package com.wordpress.stories.compose.frame
 
+import android.os.Bundle
 import android.os.Parcelable
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveError
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
@@ -11,7 +12,8 @@ class StorySaveEvents {
     @Parcelize
     data class StorySaveResult(
         var storyIndex: StoryIndex = 0,
-        val frameSaveResult: MutableList<FrameSaveResult> = mutableListOf()
+        val frameSaveResult: MutableList<FrameSaveResult> = mutableListOf(),
+        val metadata: Bundle? = null
     ) : Parcelable {
         fun isSuccess(): Boolean {
             return frameSaveResult.all { it.resultReason == SaveSuccess }

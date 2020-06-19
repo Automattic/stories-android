@@ -82,6 +82,7 @@ import com.wordpress.stories.compose.story.StoryFrameItemType
 import com.wordpress.stories.compose.story.StoryFrameItemType.IMAGE
 import com.wordpress.stories.compose.story.StoryFrameItemType.VIDEO
 import com.wordpress.stories.compose.story.StoryFrameSelectorFragment
+import com.wordpress.stories.compose.story.StoryIndex
 import com.wordpress.stories.compose.story.StoryRepository
 import com.wordpress.stories.compose.story.StoryViewModel
 import com.wordpress.stories.compose.story.StoryViewModel.StoryFrameListItemUiState.StoryFrameListItemUiStateFrame
@@ -138,6 +139,11 @@ interface AuthenticationHeadersProvider {
     fun getAuthHeaders(url: String): Map<String, String>?
 }
 
+// metadata is going to be passed from init to finish so the caller can identify and add whatever information they need
+interface MetadataProvider {
+    fun loadMetadataForStory(index: StoryIndex): Bundle?
+}
+
 abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTappedListener {
     private lateinit var photoEditor: PhotoEditor
     private lateinit var backgroundSurfaceManager: BackgroundSurfaceManager
@@ -172,6 +178,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private var mediaPickerProvider: MediaPickerProvider? = null
     private var notificationIntentLoader: NotificationIntentLoader? = null
     private var authHeadersProvider: AuthenticationHeadersProvider? = null
+    private var metadataProvider: MetadataProvider? = null
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
@@ -188,6 +195,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             // Setup notification intent for notifications triggered from the FrameSaveService.FrameSaveNotifier class
             notificationIntentLoader?.let {
                 frameSaveService.setNotificationIntent(it.loadIntentForErrorNotification())
+            }
+
+            metadataProvider?.let {
+                frameSaveService.setMetadata(it.loadMetadataForStory(storyIndex))
             }
 
             frameSaveService.saveStoryFrames(storyIndex, photoEditor, storyFrameIndexToRetry)
@@ -1763,6 +1774,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     fun setAuthenticationProvider(provider: AuthenticationHeadersProvider) {
         authHeadersProvider = provider
+    }
+
+    fun setMetadataProvider(provider: MetadataProvider) {
+        metadataProvider = provider
     }
 
     class ExternalMediaPickerRequestCodesAndExtraKeys {

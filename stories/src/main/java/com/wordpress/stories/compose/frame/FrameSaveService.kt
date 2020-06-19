@@ -8,6 +8,7 @@ import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Binder
 import android.os.Build
+import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
 import android.webkit.MimeTypeMap
@@ -35,6 +36,7 @@ class FrameSaveService : Service() {
     private lateinit var frameSaveNotifier: FrameSaveNotifier
     private val storySaveProcessors = ArrayList<StorySaveProcessor>()
     private lateinit var notificationIntent: Intent
+    private var optionalMetadata: Bundle? = null // keeps optional metadata about the Story
 
     override fun onCreate() {
         super.onCreate()
@@ -71,6 +73,14 @@ class FrameSaveService : Service() {
 
     fun getNotificationIntent(): Intent {
         return notificationIntent
+    }
+
+    fun setMetadata(bundle: Bundle?) {
+        optionalMetadata = bundle
+    }
+
+    fun getMetadata(): Bundle? {
+        return optionalMetadata
     }
 
     fun saveStoryFrames(
@@ -134,7 +144,8 @@ class FrameSaveService : Service() {
             storyIndex,
             frameIndex,
             frameSaveNotifier,
-            FrameSaveManager(photoEditor)
+            FrameSaveManager(photoEditor),
+            metadata = optionalMetadata
         )
     }
 
@@ -225,9 +236,10 @@ class FrameSaveService : Service() {
         private val storyIndex: StoryIndex,
         private val frameIndexOverride: FrameIndex = StoryRepository.DEFAULT_NONE_SELECTED,
         private val frameSaveNotifier: FrameSaveNotifier,
-        private val frameSaveManager: FrameSaveManager
+        private val frameSaveManager: FrameSaveManager,
+        private val metadata: Bundle? = null
     ) : FrameSaveProgressListener {
-        val storySaveResult = StorySaveResult()
+        val storySaveResult = StorySaveResult(metadata = metadata)
         val title =
             StoryRepository.getStoryAtIndex(storyIndex).title ?: context.getString(R.string.story_saving_untitled)
 
