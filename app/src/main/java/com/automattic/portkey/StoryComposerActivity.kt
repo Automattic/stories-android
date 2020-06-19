@@ -18,6 +18,7 @@ import com.wordpress.stories.compose.MediaPickerProvider
 import com.wordpress.stories.compose.MetadataProvider
 import com.wordpress.stories.compose.NotificationIntentLoader
 import com.wordpress.stories.compose.SnackbarProvider
+import com.wordpress.stories.compose.StoryDiscardListener
 import com.wordpress.stories.compose.story.StoryIndex
 
 fun Snackbar.config(context: Context) {
@@ -32,13 +33,15 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
     SnackbarProvider,
     MediaPickerProvider,
     NotificationIntentLoader,
-    MetadataProvider {
+    MetadataProvider,
+    StoryDiscardListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setSnackbarProvider(this)
         setMediaPickerProvider(this)
         setNotificationExtrasLoader(this)
         setMetadataProvider(this)
+        setStoryDiscardListener(this) // optionally listen to discard events
     }
 
     override fun showProvidedSnackbar(message: String, actionLabel: String?, callback: () -> Unit) {
@@ -98,5 +101,10 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
     companion object {
         const val KEY_EXAMPLE_METADATA = "key_example_metadata"
         const val KEY_STORY_INDEX = "key_story_index"
+    }
+
+    override fun onStoryDiscarded() {
+        // example: do any cleanup you may need here
+        Toast.makeText(this, "Story has been discarded!", Toast.LENGTH_SHORT).show()
     }
 }

@@ -144,6 +144,10 @@ interface MetadataProvider {
     fun loadMetadataForStory(index: StoryIndex): Bundle?
 }
 
+interface StoryDiscardListener {
+    fun onStoryDiscarded()
+}
+
 abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTappedListener {
     private lateinit var photoEditor: PhotoEditor
     private lateinit var backgroundSurfaceManager: BackgroundSurfaceManager
@@ -179,6 +183,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private var notificationIntentLoader: NotificationIntentLoader? = null
     private var authHeadersProvider: AuthenticationHeadersProvider? = null
     private var metadataProvider: MetadataProvider? = null
+    private var storyDiscardListener: StoryDiscardListener? = null
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
@@ -631,6 +636,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 }
             }
         } else {
+            storyDiscardListener?.onStoryDiscarded()
             super.onBackPressed()
         }
     }
@@ -871,11 +877,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
             storySaveResult?.let {
                 // where there any errors when we opened the Activity to handle those errors?
-                for (result in it.frameSaveResult) {
-                    if (result.resultReason != SaveSuccess) {
-                        return true
-                    }
-                }
+                return storySaveResult.isSuccess()
             }
         }
         return false
@@ -1778,6 +1780,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     fun setMetadataProvider(provider: MetadataProvider) {
         metadataProvider = provider
+    }
+
+    fun setStoryDiscardListener(listener: StoryDiscardListener) {
+        storyDiscardListener = listener
     }
 
     class ExternalMediaPickerRequestCodesAndExtraKeys {
