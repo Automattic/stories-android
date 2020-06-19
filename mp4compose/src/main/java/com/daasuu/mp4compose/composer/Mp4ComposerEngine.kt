@@ -29,6 +29,7 @@ import android.webkit.URLUtil
  */
 internal class Mp4ComposerEngine {
     private var sourceUri: Uri? = null
+    private var addedRequestHeaders: Map<String, String>? = null
     private var videoComposer: VideoComposer? = null
     private var audioComposer: IAudioComposer? = null
     private var mediaExtractor: MediaExtractor? = null
@@ -41,8 +42,9 @@ internal class Mp4ComposerEngine {
     private var bkgBitmap: Bitmap? = null
     private var context: Context? = null
 
-    fun setDataSource(uri: Uri?) {
+    fun setDataSource(uri: Uri?, addedRequestHeaders: Map<String, String>?) {
         this.sourceUri = uri
+        this.addedRequestHeaders = addedRequestHeaders
     }
 
     fun setProgressCallback(progressCallback: ProgressCallback) {
@@ -127,6 +129,9 @@ internal class Mp4ComposerEngine {
                     if (!isNetworkUrl) {
                         mediaExtractor!!.setDataSource(context, uri, null)
                         mediaMetadataRetriever!!.setDataSource(context, uri)
+                    } else if (addedRequestHeaders != null) {
+                        mediaExtractor!!.setDataSource(uri.toString(), addedRequestHeaders)
+                        mediaMetadataRetriever!!.setDataSource(uri.toString(), addedRequestHeaders)
                     } else {
                         mediaExtractor!!.setDataSource(uri.toString(), HashMap<String, String>())
                         mediaMetadataRetriever!!.setDataSource(uri.toString(), HashMap<String, String>())

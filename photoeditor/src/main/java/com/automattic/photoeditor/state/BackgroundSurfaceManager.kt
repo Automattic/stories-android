@@ -32,13 +32,18 @@ import com.automattic.photoeditor.state.BackgroundSurfaceManager.SurfaceHandlerT
 import com.automattic.photoeditor.views.PhotoEditorView
 import java.io.File
 
+interface AuthenticationHeadersInterface {
+    fun getAuthHeaders(url: String): Map<String, String>?
+}
+
 class BackgroundSurfaceManager(
     private val savedInstanceState: Bundle?,
     private val lifeCycle: Lifecycle,
     private val photoEditorView: PhotoEditorView,
     private val supportFragmentManager: FragmentManager,
     private val flashSupportChangeListener: FlashSupportChangeListener,
-    private val useCameraX: Boolean
+    private val useCameraX: Boolean,
+    private val authenticationHeadersInterface: AuthenticationHeadersInterface? = null
 ) : LifecycleObserver {
     private lateinit var cameraBasicHandler: VideoRecorderFragment
     private lateinit var videoPlayerHandling: VideoPlayingBasicHandling
@@ -198,6 +203,8 @@ class BackgroundSurfaceManager(
     fun switchVideoPlayerOnFromUri(videoUri: Uri) {
         // if coming from Activity restart, use the passed parameter
         videoPlayerHandling.currentExternalUri = videoUri
+        videoPlayerHandling.currentExternalUriHeaders =
+                authenticationHeadersInterface?.getAuthHeaders(videoUri.toString())
         videoPlayerHandling.currentFile = null
         cameraBasicHandler.currentFile = null
         switchVideoPlayerOn()
@@ -356,6 +363,9 @@ class BackgroundSurfaceManager(
                         Toast.makeText(videoPlayerHandling.context, "Error playing video", Toast.LENGTH_SHORT).show()
                     }
                 }
+
+                videoPlayerHandling.mAuthenticationHeadersInterface = authenticationHeadersInterface
+
                 // add video player texture listener
                 photoEditorView.listeners.add(videoPlayerHandling.surfaceTextureListener)
             }

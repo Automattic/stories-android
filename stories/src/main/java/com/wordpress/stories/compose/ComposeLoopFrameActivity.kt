@@ -47,6 +47,7 @@ import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFinished
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment.FlashSupportChangeListener
+import com.automattic.photoeditor.state.AuthenticationHeadersInterface
 import com.automattic.photoeditor.state.BackgroundSurfaceManager
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.util.FileUtils.Companion.getLoopFrameFile
@@ -129,6 +130,10 @@ interface MediaPickerProvider {
     fun providerHandlesOnActivityResult(): Boolean
 }
 
+interface AuthenticationHeadersProvider {
+    fun getAuthHeaders(url: String): Map<String, String>?
+}
+
 abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTappedListener {
     private lateinit var photoEditor: PhotoEditor
     private lateinit var backgroundSurfaceManager: BackgroundSurfaceManager
@@ -161,6 +166,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private var storyFrameIndexToRetry: FrameIndex = StoryRepository.DEFAULT_NONE_SELECTED
     private var snackbarProvider: SnackbarProvider? = null
     private var mediaPickerProvider: MediaPickerProvider? = null
+    private var authHeadersProvider: AuthenticationHeadersProvider? = null
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
@@ -227,10 +233,17 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             insets
         }
 
+        val authHeaderInterfaceBridge = object : AuthenticationHeadersInterface {
+            override fun getAuthHeaders(url: String): Map<String, String>? {
+                return authHeadersProvider?.getAuthHeaders(url)
+            }
+        }
+
         photoEditor = PhotoEditor.Builder(this, photoEditorView)
             .setPinchTextScalable(true) // set flag to make text scalable when pinch
             .setDeleteView(delete_view)
             .setWorkAreaRect(calculateWorkingArea())
+            .setAuthenticatitonHeaderInterface(authHeaderInterfaceBridge)
             .build() // build photo editor sdk
 
         photoEditor.setOnPhotoEditorListener(object : OnPhotoEditorListener {
@@ -311,7 +324,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     }
                 }
             },
-            BuildConfig.USE_CAMERAX)
+            BuildConfig.USE_CAMERAX,
+            authHeaderInterfaceBridge
+        )
 
         lifecycle.addObserver(backgroundSurfaceManager)
 
@@ -1730,6 +1745,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     fun setMediaPickerProvider(provider: MediaPickerProvider) {
         mediaPickerProvider = provider
         mediaPickerProvider?.setupRequestCodes(requestCodes)
+    }
+
+    fun setAuthenticationProvider(provider: AuthenticationHeadersProvider) {
+        authHeadersProvider = provider
     }
 
     class ExternalMediaPickerRequestCodesAndExtraKeys {
