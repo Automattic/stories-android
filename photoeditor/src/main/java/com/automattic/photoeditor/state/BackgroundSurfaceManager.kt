@@ -15,6 +15,7 @@ import androidx.lifecycle.Lifecycle.Event.ON_PAUSE
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
+import com.automattic.photoeditor.R
 import com.automattic.photoeditor.camera.Camera2BasicHandling
 import com.automattic.photoeditor.camera.CameraXBasicHandling
 import com.automattic.photoeditor.camera.PlayerPreparedListener
@@ -360,7 +361,10 @@ class BackgroundSurfaceManager(
 
                     override fun onPlayerError() {
                         photoEditorView.hideLoading()
-                        Toast.makeText(videoPlayerHandling.context, "Error playing video", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(videoPlayerHandling.context,
+                                requireNotNull(videoPlayerHandling.context)
+                                        .getString(R.string.toast_error_playing_video),
+                                Toast.LENGTH_SHORT).show()
                     }
                 }
 
