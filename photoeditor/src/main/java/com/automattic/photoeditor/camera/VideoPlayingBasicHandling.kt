@@ -21,7 +21,6 @@ import android.graphics.SurfaceTexture
 import android.media.AudioManager
 import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
-import android.media.MediaPlayer.OnErrorListener
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -205,12 +204,10 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
                         it.start()
                         it.setLooping(true)
                     }
-                    setOnErrorListener(object: OnErrorListener {
-                        override fun onError(mp: MediaPlayer?, what: Int, extra: Int): Boolean {
-                            playerPreparedListener?.onPlayerError()
-                            return true
-                        }
-                    })
+                    setOnErrorListener { mp, what, extra ->
+                        playerPreparedListener?.onPlayerError()
+                        true
+                    }
                     setOnCompletionListener {
                         if (it.isLooping) {
                             it.seekTo(0)
