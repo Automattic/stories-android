@@ -21,6 +21,7 @@ import android.graphics.SurfaceTexture
 import android.media.AudioManager
 import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
+import android.media.MediaPlayer.OnErrorListener
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -185,7 +186,7 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
                     calculateVideoSizeAndOrientation(uri)
                     mAuthenticationHeadersInterface?.let {
                         mediaPlayer?.setDataSource(requireContext(),
-                                currentExternalUri!!,
+                                uri,
                                 it.getAuthHeaders(uri.toString()))
                     } ?: mediaPlayer?.setDataSource(requireContext(), currentExternalUri!!)
                 }
@@ -202,13 +203,20 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
                     setOnPreparedListener {
                         playerPreparedListener?.onPlayerPrepared()
                         it.start()
+                        it.setLooping(true)
+                    }
+                    setOnErrorListener(object: OnErrorListener {
+                        override fun onError(mp: MediaPlayer?, what: Int, extra: Int): Boolean {
+                            playerPreparedListener?.onPlayerError()
+                            return true
+                        }
+                    })
+                    setOnCompletionListener {
+                        if (it.isLooping) {
+                            it.seekTo(0)
+                        }
                     }
                     prepareAsync()
-                    // TODO check whether we want fine grained error handling by setting these listeners
-                    //                setOnBufferingUpdateListener(this)
-                    //                setOnCompletionListener(this)
-                    //                setOnPreparedListener(this)
-                    //                setOnVideoSizeChangedListener(this)
                     setVolume(if (isMuted) 0f else 1f, if (isMuted) 0f else 1f)
                 }
             }
