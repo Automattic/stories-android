@@ -3,7 +3,7 @@ package com.automattic.photoeditor.state
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
-import android.widget.Toast
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.Event.ON_CREATE
@@ -19,6 +19,7 @@ import com.automattic.photoeditor.R
 import com.automattic.photoeditor.camera.Camera2BasicHandling
 import com.automattic.photoeditor.camera.CameraXBasicHandling
 import com.automattic.photoeditor.camera.ErrorDialog
+import com.automattic.photoeditor.camera.ErrorDialogOk
 import com.automattic.photoeditor.camera.PlayerPreparedListener
 import com.automattic.photoeditor.camera.VideoPlayingBasicHandling
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
@@ -366,8 +367,13 @@ class BackgroundSurfaceManager(
                     override fun onPlayerError() {
                         photoEditorView.hideLoading()
                         ErrorDialog.newInstance(requireNotNull(videoPlayerHandling.context)
-                                .getString(R.string.toast_error_playing_video))
-                                .show(supportFragmentManager,
+                                .getString(R.string.toast_error_playing_video),
+                                    object : ErrorDialogOk {
+                                        override fun OnOkClicked(dialog: DialogFragment) {
+                                            dialog.dismiss()
+                                        }
+                                    }
+                                ).show(supportFragmentManager,
                                         FRAGMENT_DIALOG
                                 )
                     }
