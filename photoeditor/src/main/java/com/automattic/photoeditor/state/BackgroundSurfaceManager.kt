@@ -85,6 +85,7 @@ class BackgroundSurfaceManager(
         if (lifeCycle.currentState.isAtLeast(Lifecycle.State.DESTROYED)) {
             cameraBasicHandler.deactivate()
             videoPlayerHandling.deactivate()
+            photoEditorView.hideLoading()
             // clear surfaceTexture listeners
             photoEditorView.listeners.clear()
         }
@@ -146,6 +147,7 @@ class BackgroundSurfaceManager(
         isVideoPlayerVisible = false
         cameraXAwareSurfaceDeactivator()
         videoPlayerHandling.deactivate()
+        photoEditorView.hideLoading()
         photoEditorView.turnTextureViewOff()
     }
 
@@ -159,6 +161,7 @@ class BackgroundSurfaceManager(
         // now, start showing camera preview
         photoEditorView.turnTextureViewOn()
         videoPlayerHandling.deactivate()
+        photoEditorView.hideLoading()
         cameraBasicHandler.activate()
     }
 
