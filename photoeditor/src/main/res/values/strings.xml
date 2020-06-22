@@ -410,5 +410,5 @@
 
 
     <string name="camera_error">This device doesn\'t support Camera2 API.</string>
-    <string name="toast_error_playing_video">Error playing video</string>
+    <string name="toast_error_playing_video">There was an error playing video</string>
 </resources>

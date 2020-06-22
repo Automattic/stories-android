@@ -18,6 +18,7 @@ import androidx.lifecycle.OnLifecycleEvent
 import com.automattic.photoeditor.R
 import com.automattic.photoeditor.camera.Camera2BasicHandling
 import com.automattic.photoeditor.camera.CameraXBasicHandling
+import com.automattic.photoeditor.camera.ErrorDialog
 import com.automattic.photoeditor.camera.PlayerPreparedListener
 import com.automattic.photoeditor.camera.VideoPlayingBasicHandling
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
@@ -364,10 +365,11 @@ class BackgroundSurfaceManager(
 
                     override fun onPlayerError() {
                         photoEditorView.hideLoading()
-                        Toast.makeText(videoPlayerHandling.context,
-                                requireNotNull(videoPlayerHandling.context)
-                                        .getString(R.string.toast_error_playing_video),
-                                Toast.LENGTH_SHORT).show()
+                        ErrorDialog.newInstance(requireNotNull(videoPlayerHandling.context)
+                                .getString(R.string.toast_error_playing_video))
+                                .show(supportFragmentManager,
+                                        FRAGMENT_DIALOG
+                                )
                     }
                 }
 
@@ -387,5 +389,6 @@ class BackgroundSurfaceManager(
         private const val KEY_IS_CAMERA_RECORDING = "key_is_camera_recording"
         private const val KEY_CAMERA_SELECTION = "key_camera_selection"
         private const val KEY_FLASH_MODE_SELECTION = "key_flash_mode_selection"
+        private const val FRAGMENT_DIALOG = "fragment_dialog"
     }
 }
