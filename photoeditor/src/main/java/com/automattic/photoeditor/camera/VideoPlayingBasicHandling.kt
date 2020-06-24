@@ -134,6 +134,10 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
         stopVideoPlay()
     }
 
+    override fun isActive(): Boolean {
+        return active
+    }
+
     private fun startUp() {
         if (textureView.isAvailable && active) {
             CoroutineScope(Dispatchers.Main).launch {

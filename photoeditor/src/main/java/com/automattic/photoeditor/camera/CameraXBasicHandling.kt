@@ -59,6 +59,10 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         }
     }
 
+    override fun isActive(): Boolean {
+        return active
+    }
+
     private fun startUp() {
         if (active) {
             startCamera()

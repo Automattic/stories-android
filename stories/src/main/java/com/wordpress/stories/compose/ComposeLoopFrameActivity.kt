@@ -50,6 +50,7 @@ import com.automattic.photoeditor.camera.interfaces.VideoRecorderFinished
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment.FlashSupportChangeListener
 import com.automattic.photoeditor.state.AuthenticationHeadersInterface
 import com.automattic.photoeditor.state.BackgroundSurfaceManager
+import com.automattic.photoeditor.state.BackgroundSurfaceManagerReadyListener
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.util.FileUtils.Companion.getLoopFrameFile
 import com.automattic.photoeditor.util.PermissionUtils
@@ -196,6 +197,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private var metadataProvider: MetadataProvider? = null
     private var storyDiscardListener: StoryDiscardListener? = null
     private var notificationTrackerProvider: NotificationTrackerProvider? = null
+    private var firstIntentLoaded: Boolean = false
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
@@ -384,6 +386,14 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 }
             },
             BuildConfig.USE_CAMERAX,
+            object: BackgroundSurfaceManagerReadyListener {
+                override fun onBackgroundSurfaceManagerReady() {
+                    if (savedInstanceState == null && !firstIntentLoaded) {
+                        onLoadFromIntent(intent)
+                        firstIntentLoaded = true
+                    }
+                }
+            },
             authHeaderInterfaceBridge
         )
 
@@ -411,10 +421,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             StoryViewModelFactory(StoryRepository, storyIndexToSelect)
         )[StoryViewModel::class.java]
 
-        if (savedInstanceState == null) {
-            // small tweak to make sure to not show the background image for the static image background mode
-            backgroundSurfaceManager.preTurnTextureViewOn()
+        // request the BackgroundSurfaceManager to prime the textureView so it's ready when needed.
+        backgroundSurfaceManager.preTurnTextureViewOn()
 
+        if (savedInstanceState == null) {
             // check camera selection, flash state from preferences
             CameraSelection.valueOf(
                 getPreferences(Context.MODE_PRIVATE).getInt(getString(R.string.pref_camera_selection), 0))?.let {
@@ -429,8 +439,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             updateFlashModeSelectionIcon()
 
             setupStoryViewModelObservers()
-
-            onLoadFromIntent(intent)
         } else {
             currentOriginalCapturedFile =
                 savedInstanceState.getSerializable(STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE) as File?
@@ -454,8 +462,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     private fun setupStoryViewModelObservers() {
         storyViewModel.uiState.observe(this, Observer {
-            // if no frames in Story, launch the capture mode
-            if (storyViewModel.getCurrentStorySize() == 0) {
+            // if no frames in Story, fall back to launch the capture mode
+            if (storyViewModel.getCurrentStorySize() == 0 && firstIntentLoaded) {
                 next_button.isEnabled = true
                 photoEditor.clearAllViews()
                 launchCameraPreview()
@@ -563,61 +571,52 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        // See https://developer.android.com/reference/android/app/Activity#onNewIntent(android.content.Intent)
+        setIntent(intent)
         onLoadFromIntent(intent)
     }
 
     private fun onLoadFromIntent(intent: Intent) {
-        photoEditorView.postDelayed({
-            storyViewModel.loadStory(storyIndexToSelect)
-            if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
-                val storySaveResult = intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
-                if (storySaveResult != null &&
-                    StoryRepository.getStoryAtIndex(storySaveResult.storyIndex).frames.isNotEmpty()) {
-                    // dismiss the error notification
-                    intent.action?.let {
-                        val notificationManager = NotificationManagerCompat.from(this)
-                        notificationManager.cancel(it.toInt())
-                    }
+        storyViewModel.loadStory(storyIndexToSelect)
+        if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
+            val storySaveResult = intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
+            if (storySaveResult != null &&
+                StoryRepository.getStoryAtIndex(storySaveResult.storyIndex).frames.isNotEmpty()) {
+                // dismiss the error notification
+                intent.action?.let {
+                    val notificationManager = NotificationManagerCompat.from(this)
+                    notificationManager.cancel(it.toInt())
+                }
 
-                    if (!storySaveResult.isSuccess()) {
-                        prepareErrorScreen(storySaveResult)
-                    } else {
-                        onStoryFrameSelected(oldIndex = StoryRepository.DEFAULT_FRAME_NONE_SELECTED, newIndex = 0)
-                    }
+                if (!storySaveResult.isSuccess()) {
+                    prepareErrorScreen(storySaveResult)
                 } else {
-                    showToast(getString(R.string.toast_story_page_not_found))
-                    finish()
+                    onStoryFrameSelected(oldIndex = StoryRepository.DEFAULT_FRAME_NONE_SELECTED, newIndex = 0)
                 }
-            } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED) {
-                if (StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.isNotEmpty()) {
-                    storyViewModel.loadStory(storyIndexToSelect)
-                    refreshStoryFrameSelection()
-                } else {
-                    showToast(getString(R.string.toast_story_page_not_found))
-                    finish()
-                }
-            } else if (intent.hasExtra(requestCodes.EXTRA_MEDIA_URIS)) {
-                // create new Story from passed media Uris
-                storyViewModel.createNewStory()
-                val uriList: List<Uri> = convertStringArrayIntoUrisList(
-                        intent.getStringArrayExtra(requestCodes.EXTRA_MEDIA_URIS)
-                )
-                addFramesToStoryFromMediaUriList(uriList)
-                setDefaultSelectionAndUpdateBackgroundSurfaceUI()
             } else {
-                launchCameraPreview()
-                storyViewModel.uiState.observe(this, Observer {
-                    // if no frames in Story, launch the capture mode
-                    if (storyViewModel.getCurrentStorySize() == 0) {
-                        photoEditor.clearAllViews()
-                        launchCameraPreview()
-                        // finally, delete the captured media
-                        deleteCapturedMedia()
-                        checkForLowSpaceAndShowDialog()
-                    }
-                })
+                showToast(getString(R.string.toast_story_page_not_found))
+                finish()
             }
-        }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
+        } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED) {
+            if (StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.isNotEmpty()) {
+                storyViewModel.loadStory(storyIndexToSelect)
+                refreshStoryFrameSelection()
+            } else {
+                showToast(getString(R.string.toast_story_page_not_found))
+                finish()
+            }
+        } else if (intent.hasExtra(requestCodes.EXTRA_MEDIA_URIS)) {
+            // create new Story from passed media Uris
+            storyViewModel.createNewStory()
+            val uriList: List<Uri> = convertStringArrayIntoUrisList(
+                    intent.getStringArrayExtra(requestCodes.EXTRA_MEDIA_URIS)
+            )
+            addFramesToStoryFromMediaUriList(uriList)
+            setDefaultSelectionAndUpdateBackgroundSurfaceUI()
+        } else {
+            launchCameraPreview()
+            checkForLowSpaceAndShowDialog()
+        }
     }
 
     override fun onDestroy() {
