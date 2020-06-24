@@ -62,6 +62,7 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.wordpress.stories.BuildConfig
 import com.wordpress.stories.R
 import com.wordpress.stories.compose.ComposeLoopFrameActivity.ExternalMediaPickerRequestCodesAndExtraKeys
+import com.wordpress.stories.compose.ScreenModeState.SCREEN_MODE_COMPOSER
 import com.wordpress.stories.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_FULL_SCREEN
 import com.wordpress.stories.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_NONE
 import com.wordpress.stories.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION
@@ -596,6 +597,14 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     showToast(getString(R.string.toast_story_page_not_found))
                     finish()
                 }
+            } else if (intent.hasExtra(requestCodes.EXTRA_MEDIA_URIS)) {
+                // create new Story from passed media Uris
+                storyViewModel.createNewStory()
+                val uriList: List<Uri> = convertStringArrayIntoUrisList(
+                        intent.getStringArrayExtra(requestCodes.EXTRA_MEDIA_URIS)
+                )
+                addFramesToStoryFromMediaUriList(uriList)
+                setDefaultSelectionAndUpdateBackgroundSurfaceUI()
             } else {
                 launchCameraPreview()
                 storyViewModel.uiState.observe(this, Observer {
