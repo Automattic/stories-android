@@ -386,7 +386,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 }
             },
             BuildConfig.USE_CAMERAX,
-            object: BackgroundSurfaceManagerReadyListener {
+            object : BackgroundSurfaceManagerReadyListener {
                 override fun onBackgroundSurfaceManagerReady() {
                     if (savedInstanceState == null && !firstIntentLoaded) {
                         onLoadFromIntent(intent)

@@ -89,7 +89,8 @@ class BackgroundSurfaceManager(
                         override fun onSurfaceTextureAvailable(texture: SurfaceTexture, width: Int, height: Int) {
                             it.onBackgroundSurfaceManagerReady()
                         }
-                        override fun onSurfaceTextureSizeChanged(texture: SurfaceTexture, width: Int, height: Int)= Unit
+                        override
+                        fun onSurfaceTextureSizeChanged(texture: SurfaceTexture, width: Int, height: Int) = Unit
 
                         override fun onSurfaceTextureDestroyed(texture: SurfaceTexture) = true
 
