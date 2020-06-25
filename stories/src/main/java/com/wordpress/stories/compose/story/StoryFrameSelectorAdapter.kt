@@ -90,13 +90,16 @@ class StoryFrameSelectorAdapter : RecyclerView.Adapter<StoryFrameSelectorAdapter
                 onFrameSelected = requireNotNull(uiState.onItemTapped) { "OnItemTapped is required." }
                 uiState as StoryFrameListItemUiStateFrame
 
-                // get the first frame in the video, that is the frame located at frameTime 0
-                val options = RequestOptions().frame(0)
-                Glide.with(imageView.context)
-                    .load(uiState.filePath)
-                    .apply(options)
-                    .transform(CenterCrop(), RoundedCorners(8))
-                    .into(imageView)
+                val remoteDelayMillis = 1000.toLong()
+                imageView.postDelayed({
+                    // get the first frame in the video, that is the frame located at frameTime 0
+                    val options = RequestOptions().frame(0)
+                    Glide.with(imageView.context)
+                        .load(uiState.filePath)
+                        .apply(options)
+                        .transform(CenterCrop(), RoundedCorners(8))
+                        .into(imageView)
+                }, remoteDelayMillis)
 
                 if (uiState.selected) {
                     frameBorder.visibility = View.VISIBLE
