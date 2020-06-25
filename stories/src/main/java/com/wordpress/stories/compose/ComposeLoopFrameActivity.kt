@@ -730,7 +730,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     protected fun addFrameToStoryFromMediaUri(mediaUri: Uri) {
         storyViewModel
             .addStoryFrameItemToCurrentStory(StoryFrameItem(
-                UriBackgroundSource(contentUri = Uri.parse(mediaUri.toString())),
+                UriBackgroundSource(contentUri = mediaUri),
                 frameItemType = if (isVideo(mediaUri.toString())) VIDEO() else IMAGE
             ))
     }
