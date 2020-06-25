@@ -462,14 +462,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     private fun setupStoryViewModelObservers() {
         storyViewModel.uiState.observe(this, Observer {
-            // if no frames in Story, fall back to launch the capture mode
+            // if no frames in Story, finish
             if (storyViewModel.getCurrentStorySize() == 0 && firstIntentLoaded) {
-                next_button.isEnabled = true
-                photoEditor.clearAllViews()
-                launchCameraPreview()
-                checkForLowSpaceAndShowDialog()
                 // finally, delete the captured media
                 deleteCapturedMedia()
+                finish()
             }
         })
 
