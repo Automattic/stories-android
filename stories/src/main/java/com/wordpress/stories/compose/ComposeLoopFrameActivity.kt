@@ -648,7 +648,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         if (PermissionUtils.allRequiredPermissionsGranted(this)) {
-            switchCameraPreviewOn()
+            onLoadFromIntent(intent)
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
@@ -698,6 +698,15 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     addFramesToStoryFromMediaUriList(uriList)
                     setDefaultSelectionAndUpdateBackgroundSurfaceUI()
                 } else if (data.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED)) {
+                    if (!areAllNeededPermissionsGranted()) {
+                        // at this point, the user wants to launch the camera
+                        // but we need to check whether we have permissions for thatt.
+                        // after permissions are requestted, we need the original intent to be set differently
+                        // so: we need to tweak the intent for when we come back after user gives us permission
+                        if (intent.hasExtra(requestCodes.EXTRA_MEDIA_URIS)) {
+                            intent.removeExtra(requestCodes.EXTRA_MEDIA_URIS)
+                        }
+                    }
                     launchCameraPreview()
                 }
             }
@@ -1076,10 +1085,14 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         photoEditor.addNewImageView(true, Uri.parse("https://i.giphy.com/Ok4HaWlYrewuY.gif"))
     }
 
+    private fun areAllNeededPermissionsGranted(): Boolean {
+        return (!PermissionUtils.checkPermission(this, Manifest.permission.RECORD_AUDIO) ||
+                !PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) ||
+                !PermissionUtils.checkPermission(this, Manifest.permission.CAMERA))
+    }
+
     private fun launchCameraPreview() {
-        if (!PermissionUtils.checkPermission(this, Manifest.permission.RECORD_AUDIO) ||
-            !PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) ||
-            !PermissionUtils.checkPermission(this, Manifest.permission.CAMERA)) {
+        if (!areAllNeededPermissionsGranted()) {
             val permissions = arrayOf(
                 Manifest.permission.RECORD_AUDIO,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
