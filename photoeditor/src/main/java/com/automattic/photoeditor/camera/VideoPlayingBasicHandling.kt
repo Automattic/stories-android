@@ -134,6 +134,10 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
         stopVideoPlay()
     }
 
+    override fun isActive(): Boolean {
+        return active
+    }
+
     private fun startUp() {
         if (textureView.isAvailable && active) {
             CoroutineScope(Dispatchers.Main).launch {
@@ -185,7 +189,7 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
                     calculateVideoSizeAndOrientation(uri)
                     mAuthenticationHeadersInterface?.let {
                         mediaPlayer?.setDataSource(requireContext(),
-                                currentExternalUri!!,
+                                uri,
                                 it.getAuthHeaders(uri.toString()))
                     } ?: mediaPlayer?.setDataSource(requireContext(), currentExternalUri!!)
                 }
@@ -202,13 +206,18 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
                     setOnPreparedListener {
                         playerPreparedListener?.onPlayerPrepared()
                         it.start()
+                        it.setLooping(true)
+                    }
+                    setOnErrorListener { mp, what, extra ->
+                        playerPreparedListener?.onPlayerError()
+                        true
+                    }
+                    setOnCompletionListener {
+                        if (it.isLooping) {
+                            it.seekTo(0)
+                        }
                     }
                     prepareAsync()
-                    // TODO check whether we want fine grained error handling by setting these listeners
-                    //                setOnBufferingUpdateListener(this)
-                    //                setOnCompletionListener(this)
-                    //                setOnPreparedListener(this)
-                    //                setOnVideoSizeChangedListener(this)
                     setVolume(if (isMuted) 0f else 1f, if (isMuted) 0f else 1f)
                 }
             }

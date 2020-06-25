@@ -1,9 +1,11 @@
 package com.automattic.photoeditor.state
 
+import android.graphics.SurfaceTexture
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
-import android.widget.Toast
+import android.view.TextureView
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.Event.ON_CREATE
@@ -15,8 +17,11 @@ import androidx.lifecycle.Lifecycle.Event.ON_PAUSE
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
+import com.automattic.photoeditor.R
 import com.automattic.photoeditor.camera.Camera2BasicHandling
 import com.automattic.photoeditor.camera.CameraXBasicHandling
+import com.automattic.photoeditor.camera.ErrorDialog
+import com.automattic.photoeditor.camera.ErrorDialogOk
 import com.automattic.photoeditor.camera.PlayerPreparedListener
 import com.automattic.photoeditor.camera.VideoPlayingBasicHandling
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
@@ -36,6 +41,10 @@ interface AuthenticationHeadersInterface {
     fun getAuthHeaders(url: String): Map<String, String>?
 }
 
+interface BackgroundSurfaceManagerReadyListener {
+    fun onBackgroundSurfaceManagerReady()
+}
+
 class BackgroundSurfaceManager(
     private val savedInstanceState: Bundle?,
     private val lifeCycle: Lifecycle,
@@ -43,6 +52,7 @@ class BackgroundSurfaceManager(
     private val supportFragmentManager: FragmentManager,
     private val flashSupportChangeListener: FlashSupportChangeListener,
     private val useCameraX: Boolean,
+    private val managerReadyListener: BackgroundSurfaceManagerReadyListener? = null,
     private val authenticationHeadersInterface: AuthenticationHeadersInterface? = null
 ) : LifecycleObserver {
     private lateinit var cameraBasicHandler: VideoRecorderFragment
@@ -75,6 +85,22 @@ class BackgroundSurfaceManager(
         // important: only retrieve state after having restored fragments with addHandlerFragmentOrFindByTag as above
         getStateFromBundle()
 
+        // add general BackgroundSurfaceManager's surfaceTextureListener
+        managerReadyListener?.let {
+            photoEditorView.listeners.add(
+                    object : TextureView.SurfaceTextureListener {
+                        override fun onSurfaceTextureAvailable(texture: SurfaceTexture, width: Int, height: Int) {
+                            it.onBackgroundSurfaceManagerReady()
+                        }
+                        override
+                        fun onSurfaceTextureSizeChanged(texture: SurfaceTexture, width: Int, height: Int) = Unit
+
+                        override fun onSurfaceTextureDestroyed(texture: SurfaceTexture) = true
+
+                        override fun onSurfaceTextureUpdated(texture: SurfaceTexture) = Unit
+                    }
+            )
+        }
         if (isCameraVisible || isVideoPlayerVisible) { photoEditorView.toggleTextureView() }
     }
 
@@ -84,6 +110,7 @@ class BackgroundSurfaceManager(
         if (lifeCycle.currentState.isAtLeast(Lifecycle.State.DESTROYED)) {
             cameraBasicHandler.deactivate()
             videoPlayerHandling.deactivate()
+            photoEditorView.hideLoading()
             // clear surfaceTexture listeners
             photoEditorView.listeners.clear()
         }
@@ -145,6 +172,7 @@ class BackgroundSurfaceManager(
         isVideoPlayerVisible = false
         cameraXAwareSurfaceDeactivator()
         videoPlayerHandling.deactivate()
+        photoEditorView.hideLoading()
         photoEditorView.turnTextureViewOff()
     }
 
@@ -158,6 +186,7 @@ class BackgroundSurfaceManager(
         // now, start showing camera preview
         photoEditorView.turnTextureViewOn()
         videoPlayerHandling.deactivate()
+        photoEditorView.hideLoading()
         cameraBasicHandler.activate()
     }
 
@@ -248,11 +277,13 @@ class BackgroundSurfaceManager(
     }
 
     private fun cameraXAwareSurfaceDeactivator() {
-        cameraBasicHandler.deactivate()
-        if (useCameraX) {
-            // IMPORTANT: remove and add the TextureView back again to the view hierarchy so the SurfaceTexture
-            // is available for reuse by other fragments (i.e. VideoPlayingBasicHandler)
-            photoEditorView.removeAndAddTextureViewBack()
+        if (cameraBasicHandler.isActive()) {
+            cameraBasicHandler.deactivate()
+            if (useCameraX) {
+                // IMPORTANT: remove and add the TextureView back again to the view hierarchy so the SurfaceTexture
+                // is available for reuse by other fragments (i.e. VideoPlayingBasicHandler)
+                photoEditorView.removeAndAddTextureViewBack()
+            }
         }
     }
 
@@ -360,7 +391,16 @@ class BackgroundSurfaceManager(
 
                     override fun onPlayerError() {
                         photoEditorView.hideLoading()
-                        Toast.makeText(videoPlayerHandling.context, "Error playing video", Toast.LENGTH_SHORT).show()
+                        ErrorDialog.newInstance(requireNotNull(videoPlayerHandling.context)
+                                .getString(R.string.toast_error_playing_video),
+                                    object : ErrorDialogOk {
+                                        override fun OnOkClicked(dialog: DialogFragment) {
+                                            dialog.dismiss()
+                                        }
+                                    }
+                                ).show(supportFragmentManager,
+                                        FRAGMENT_DIALOG
+                                )
                     }
                 }
 
@@ -380,5 +420,6 @@ class BackgroundSurfaceManager(
         private const val KEY_IS_CAMERA_RECORDING = "key_is_camera_recording"
         private const val KEY_CAMERA_SELECTION = "key_camera_selection"
         private const val KEY_FLASH_MODE_SELECTION = "key_flash_mode_selection"
+        private const val FRAGMENT_DIALOG = "fragment_dialog"
     }
 }

@@ -290,6 +290,10 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
         windDown()
     }
 
+    override fun isActive(): Boolean {
+        return active
+    }
+
     private fun startUp() {
         // When the screen is turned off and turned back on, the SurfaceTexture is already
         // available, and "onSurfaceTextureAvailable" will not be called. In that case, we can open
