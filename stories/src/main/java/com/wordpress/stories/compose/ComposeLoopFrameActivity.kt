@@ -467,6 +467,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 next_button.isEnabled = true
                 photoEditor.clearAllViews()
                 launchCameraPreview()
+                checkForLowSpaceAndShowDialog()
                 // finally, delete the captured media
                 deleteCapturedMedia()
             }
@@ -576,7 +577,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         onLoadFromIntent(intent)
     }
 
-    private fun onLoadFromIntent(intent: Intent) {
+    protected open fun onLoadFromIntent(intent: Intent) {
         storyViewModel.loadStory(storyIndexToSelect)
         if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
             val storySaveResult = intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
@@ -613,7 +614,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             )
             addFramesToStoryFromMediaUriList(uriList)
             setDefaultSelectionAndUpdateBackgroundSurfaceUI()
-        } else {
+        } else if (intent.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED)) {
             launchCameraPreview()
             checkForLowSpaceAndShowDialog()
         }
