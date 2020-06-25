@@ -815,25 +815,32 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
 
         close_button.setOnClickListener {
-            addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
+            when {
+                backgroundSurfaceManager.cameraVisible() -> {
+                    onBackPressed()
+                }
+                !backgroundSurfaceManager.cameraVisible() -> {
+                    addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
 
-            // add discard dialog
-            if (storyViewModel.anyOfCurrentStoryFramesHasViews()) {
-                // show dialog
-                FrameSaveErrorDialog.newInstance(
-                    title = getString(R.string.dialog_discard_story_title),
-                    message = getString(R.string.dialog_discard_story_message),
-                    okButtonLabel = getString(R.string.dialog_discard_story_ok_button),
-                    listener = object : FrameSaveErrorDialogOk {
-                        override fun OnOkClicked(dialog: DialogFragment) {
-                            dialog.dismiss()
-                            // discard the whole story
-                            safelyDiscardCurrentStoryAndCleanUpIntent()
-                        }
-                    }).show(supportFragmentManager, FRAGMENT_DIALOG)
-            } else {
-                // discard the whole story
-                safelyDiscardCurrentStoryAndCleanUpIntent()
+                    // add discard dialog
+                    if (storyViewModel.anyOfCurrentStoryFramesHasViews()) {
+                        // show dialog
+                        FrameSaveErrorDialog.newInstance(
+                                title = getString(R.string.dialog_discard_story_title),
+                                message = getString(R.string.dialog_discard_story_message),
+                                okButtonLabel = getString(R.string.dialog_discard_story_ok_button),
+                                listener = object : FrameSaveErrorDialogOk {
+                                    override fun OnOkClicked(dialog: DialogFragment) {
+                                        dialog.dismiss()
+                                        // discard the whole story
+                                        safelyDiscardCurrentStoryAndCleanUpIntent()
+                                    }
+                                }).show(supportFragmentManager, FRAGMENT_DIALOG)
+                    } else {
+                        // discard the whole story
+                        safelyDiscardCurrentStoryAndCleanUpIntent()
+                    }
+                }
             }
         }
 
@@ -1395,7 +1402,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         camera_capture_button.visibility = View.INVISIBLE
 
         // show proper edit mode controls
-        close_button.visibility = View.VISIBLE
         updateEditMode()
         more_button.visibility = View.VISIBLE
         next_button.visibility = View.VISIBLE
@@ -1413,7 +1419,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         camera_capture_button.visibility = View.VISIBLE
 
         // hide proper edit mode controls
-        close_button.visibility = View.INVISIBLE
         edit_mode_controls.visibility = View.INVISIBLE
         more_button.visibility = View.INVISIBLE
         sound_button.visibility = View.INVISIBLE
@@ -1425,7 +1430,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     private fun editModeHideAllUIControls(hideNextButton: Boolean, hideFrameSelector: Boolean = true) {
         // momentarily hide proper edit mode controls
-        close_button.visibility = View.INVISIBLE
         edit_mode_controls.visibility = View.INVISIBLE
         more_button.visibility = View.INVISIBLE
         sound_button.visibility = View.INVISIBLE
@@ -1486,7 +1490,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     private fun editModeRestoreAllUIControls() {
         // show all edit mode controls
-        close_button.visibility = View.VISIBLE
         updateEditMode()
         more_button.visibility = View.VISIBLE
         next_button.visibility = View.VISIBLE
