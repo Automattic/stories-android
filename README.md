@@ -1,6 +1,8 @@
 # portkey-android
 Portkey concept app
 
+WordPress stories library
+
 # Code style
 
 Our code style guidelines are based on the [Android Code Style Guidelines for Contributors](https://source.android.com/source/code-style.html). We only changed a few rules:
@@ -51,3 +53,15 @@ Implement these:
 - MediaPickerProvider
 - call `setMediaPickerProvider()` as in the example Portkey demo app.
 - remember to override `setupRequestCodes()` and set the right request codes as per the host app so it works seamlessly and media can be fed into the Composer by the externally provided MediaPicker.
+
+## Build Instructions ##
+
+1. Make sure you've installed [Android Studio](https://developer.android.com/studio/index.html).
+1. `git clone git@github.com:Automattic/portkey-android.git` in the folder of your preference.
+1. `cd portkey-android` to enter the working directory.
+1. `cp gradle.properties-example gradle.properties` to set up the sample app properties file. Specifically, you can use `portkey.use.cameraX = true` to use the CameraX underlying implementation, or `false` to use the Camera2 implementation
+1. In Android Studio, open the project from the local repository. This will auto-generate `local.properties` with the SDK location.
+1. Go to Tools → AVD Manager and create an emulated device.
+1. Run.
+
+
