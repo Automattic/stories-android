@@ -2,12 +2,12 @@ package com.wordpress.stories.compose.emoji
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.content.ContextCompat
 import androidx.emoji.text.EmojiCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -42,6 +42,11 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
 
     interface EmojiListener {
         fun onEmojiClick(emojiUnicode: String)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setStyle(STYLE_NORMAL, R.style.EmojiBottomSheetDialogTheme)
     }
 
     override fun onResume() {
@@ -79,8 +84,6 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
             (params.behavior as? BottomSheetBehavior)?.setBottomSheetCallback(bottomSheetBehaviorCallback)
             (params.behavior as? BottomSheetBehavior)?.state = BottomSheetBehavior.STATE_EXPANDED
 
-            (contentView.parent as View).setBackgroundColor(
-                ContextCompat.getColor(activity, android.R.color.transparent))
             contentView.rvEmoji.layoutManager = GridLayoutManager(activity, COLUMNS)
             contentView.rvEmoji.adapter = EmojiAdapter(PhotoEditor.getEmojis(activity))
         }
