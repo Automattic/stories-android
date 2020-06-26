@@ -24,8 +24,8 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
     private val _itemAtIndexChangedUiState = SingleLiveEvent<Int>()
     val itemAtIndexChangedUiState = _itemAtIndexChangedUiState
 
-    private val _itemAtIndexChangedMuteAudioUiState = SingleLiveEvent<Int>()
-    val itemAtIndexChangedMuteAudioUiState = _itemAtIndexChangedMuteAudioUiState
+    private val _muteFrameAudioUiState = SingleLiveEvent<Int>()
+    val muteFrameAudioUiState = _muteFrameAudioUiState
 
     private val _onSelectedFrameIndex: MutableLiveData<Pair<Int, Int>> by lazy {
         MutableLiveData<Pair<Int, Int>>().also {
@@ -243,7 +243,7 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
                 it.muteAudio = muteAudio
             }
         }
-        _itemAtIndexChangedMuteAudioUiState.value = selectedIndex
+        _muteFrameAudioUiState.value = selectedIndex
     }
 
     private fun updateUiStateForItemSwap(oldIndex: Int, newIndex: Int) {
