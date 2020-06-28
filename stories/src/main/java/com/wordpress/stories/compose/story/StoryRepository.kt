@@ -120,8 +120,8 @@ object StoryRepository {
         Collections.swap(currentStoryFrames, pos1, pos2)
     }
 
-    fun getStoryFrameThumbnailUrl(index: Int): String {
-        val model = currentStoryFrames[index]
+    fun getCurrentStoryThumbnailUrl(): String {
+        val model = currentStoryFrames[0]
         return if ((model.source is UriBackgroundSource)) {
             model.source.contentUri.toString()
         } else {
