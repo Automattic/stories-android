@@ -925,7 +925,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         }
     }
 
-    private fun processStorySaving() {
+    fun processStorySaving() {
         addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
 
         // if we were in an error-handling situation but now all pages are OK, we don't need to save them again

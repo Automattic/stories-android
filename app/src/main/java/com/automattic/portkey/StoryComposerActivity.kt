@@ -126,5 +126,6 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
 
     override fun onStorySaveButtonPressed() {
         Toast.makeText(this, "Next button has been pressed!", Toast.LENGTH_SHORT).show()
+        processStorySaving()
     }
 }
