@@ -3,6 +3,8 @@ package com.wordpress.stories.compose.story
 import com.wordpress.stories.compose.frame.FrameIndex
 import com.wordpress.stories.compose.frame.StorySaveEvents.FrameSaveResult
 import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveResult
+import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.FileBackgroundSource
+import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.UriBackgroundSource
 import com.wordpress.stories.compose.story.StoryFrameItemType.VIDEO
 import java.util.Collections
 
@@ -33,7 +35,8 @@ object StoryRepository {
                 currentStoryFrames.clear()
                 currentStoryFrames.addAll(stories[storyIndex].frames)
                 return stories[storyIndex]
-            } else -> {
+            }
+            else -> {
                 return null
             }
         }
@@ -115,5 +118,14 @@ object StoryRepository {
 
     fun swapItemsInPositions(pos1: Int, pos2: Int) {
         Collections.swap(currentStoryFrames, pos1, pos2)
+    }
+
+    fun getStoryFrameThumbnailUrl(index: Int): String {
+        val model = currentStoryFrames[index]
+        return if ((model.source is UriBackgroundSource)) {
+            model.source.contentUri.toString()
+        } else {
+            (model.source as FileBackgroundSource).file.toString()
+        }
     }
 }
