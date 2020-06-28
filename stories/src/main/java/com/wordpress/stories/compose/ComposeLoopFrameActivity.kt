@@ -119,10 +119,11 @@ enum class ScreenTouchBlockMode {
     BLOCK_TOUCH_MODE_NONE,
     BLOCK_TOUCH_MODE_FULL_SCREEN, // used when saving - user is not allowed to touch anything
     BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION, // used when in error resolution mode: user needs to take
-                                    // action, so we allow them to use the StoryFrameSelector and menu, but no edits on
-                                    // the Photo Editor canvas are allowed at this stage
+
+    // action, so we allow them to use the StoryFrameSelector and menu, but no edits on
+    // the Photo Editor canvas are allowed at this stage
     BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY // used when errors have been sorted out by the user - no edits allowed,
-                                        // but they should be good to upload the Story now
+    // but they should be good to upload the Story now
 }
 
 interface SnackbarProvider {
@@ -154,6 +155,10 @@ interface AuthenticationHeadersProvider {
 // metadata is going to be passed from init to finish so the caller can identify and add whatever information they need
 interface MetadataProvider {
     fun loadMetadataForStory(index: StoryIndex): Bundle?
+}
+
+interface PrepublishingEventProvider {
+    fun onStorySaveButtonPressed()
 }
 
 interface StoryDiscardListener {
@@ -197,6 +202,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private var metadataProvider: MetadataProvider? = null
     private var storyDiscardListener: StoryDiscardListener? = null
     private var notificationTrackerProvider: NotificationTrackerProvider? = null
+    private var prepublishingEventProvider: PrepublishingEventProvider? = null
     private var firstIntentLoaded: Boolean = false
     private var permissionsRequestInProcess: Boolean = false
 
@@ -219,7 +225,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 // notifications the host app may have
                 // IMPORTANT: this needs to be the first call in the methods linedup for NotificationIntentLoader
                 frameSaveService.setNotificationErrorBaseId(
-                        it.setupErrorNotificationBaseId()
+                    it.setupErrorNotificationBaseId()
                 )
 
                 frameSaveService.setNotificationIntent(it.loadIntentForErrorNotification())
@@ -275,7 +281,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             xCoord,
             yCoord + topAreaHeight,
             xCoord + width,
-            yCoord + height - bottomAreaHeight)
+            yCoord + height - bottomAreaHeight
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -291,7 +298,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             addInsetTopMargin(close_button.layoutParams, topControlsBaseTopMargin, insets.systemWindowInsetTop)
             addInsetTopMargin(control_flash_group.layoutParams, topControlsBaseTopMargin, insets.systemWindowInsetTop)
             view_popup_menu.setTopOffset(
-                next_button.measuredHeight + (nextButtonBaseTopMargin * 2) + insets.systemWindowInsetTop)
+                next_button.measuredHeight + (nextButtonBaseTopMargin * 2) + insets.systemWindowInsetTop
+            )
             insets
         }
 
@@ -323,7 +331,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 val textEditorDialogFragment = TextEditorDialogFragment.show(
                     this@ComposeLoopFrameActivity,
                     text,
-                    colorCode)
+                    colorCode
+                )
                 textEditorDialogFragment.setOnTextEditorListener(object : TextEditorDialogFragment.TextEditor {
                     override fun onDone(inputText: String, colorCode: Int) {
                         isEditingText = false
@@ -418,7 +427,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // before instantiating the ViewModel, we need to get the storyIndexToSelect
         storyIndexToSelect = getStoryIndexFromIntentOrBundle(savedInstanceState, intent)
 
-        storyViewModel = ViewModelProvider(this,
+        storyViewModel = ViewModelProvider(
+            this,
             StoryViewModelFactory(StoryRepository, storyIndexToSelect)
         )[StoryViewModel::class.java]
 
@@ -428,11 +438,13 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         if (savedInstanceState == null) {
             // check camera selection, flash state from preferences
             CameraSelection.valueOf(
-                getPreferences(Context.MODE_PRIVATE).getInt(getString(R.string.pref_camera_selection), 0))?.let {
+                getPreferences(Context.MODE_PRIVATE).getInt(getString(R.string.pref_camera_selection), 0)
+            )?.let {
                 cameraSelection = it
             }
             FlashIndicatorState.valueOf(
-                getPreferences(Context.MODE_PRIVATE).getInt(getString(R.string.pref_flash_mode_selection), 0))?.let {
+                getPreferences(Context.MODE_PRIVATE).getInt(getString(R.string.pref_flash_mode_selection), 0)
+            )?.let {
                 flashModeSelection = it
             }
 
@@ -582,7 +594,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
             val storySaveResult = intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
             if (storySaveResult != null &&
-                StoryRepository.getStoryAtIndex(storySaveResult.storyIndex).frames.isNotEmpty()) {
+                StoryRepository.getStoryAtIndex(storySaveResult.storyIndex).frames.isNotEmpty()
+            ) {
                 // dismiss the error notification
                 intent.action?.let {
                     val notificationManager = NotificationManagerCompat.from(this)
@@ -610,7 +623,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             // create new Story from passed media Uris
             storyViewModel.createNewStory()
             val uriList: List<Uri> = convertStringArrayIntoUrisList(
-                    intent.getStringArrayExtra(requestCodes.EXTRA_MEDIA_URIS)
+                intent.getStringArrayExtra(requestCodes.EXTRA_MEDIA_URIS)
             )
             addFramesToStoryFromMediaUriList(uriList)
             setDefaultSelectionAndUpdateBackgroundSurfaceUI(uriList)
@@ -636,8 +649,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // Before setting full screen flags, we must wait a bit to let UI settle; otherwise, we may
         // be trying to set app to immersive mode before it's ready and the flags do not stick
         photoEditorView.postDelayed({
-                hideStatusBar(window)
-                photoEditor.updateWorkAreaRect(calculateWorkingArea())
+            hideStatusBar(window)
+            photoEditor.updateWorkAreaRect(calculateWorkingArea())
         }, IMMERSIVE_FLAG_TIMEOUT)
     }
 
@@ -739,10 +752,12 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     protected fun addFrameToStoryFromMediaUri(mediaUri: Uri) {
         storyViewModel
-            .addStoryFrameItemToCurrentStory(StoryFrameItem(
-                UriBackgroundSource(contentUri = mediaUri),
-                frameItemType = if (isVideo(mediaUri.toString())) VIDEO() else IMAGE
-            ))
+            .addStoryFrameItemToCurrentStory(
+                StoryFrameItem(
+                    UriBackgroundSource(contentUri = mediaUri),
+                    frameItemType = if (isVideo(mediaUri.toString())) VIDEO() else IMAGE
+                )
+            )
     }
 
     private fun updateBackgroundSurfaceUIWithStoryFrame(storyFrameIndex: Int) {
@@ -763,6 +778,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                             timesUpHandler.removeCallbacksAndMessages(null)
                             takeStillPicture()
                         }
+
                         override fun onHoldingGestureStart() {
                             timesUpHandler.removeCallbacksAndMessages(null)
                             startRecordingVideoAfterVibrationIndication()
@@ -836,16 +852,16 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     if (storyViewModel.anyOfCurrentStoryFramesHasViews()) {
                         // show dialog
                         FrameSaveErrorDialog.newInstance(
-                                title = getString(R.string.dialog_discard_story_title),
-                                message = getString(R.string.dialog_discard_story_message),
-                                okButtonLabel = getString(R.string.dialog_discard_story_ok_button),
-                                listener = object : FrameSaveErrorDialogOk {
-                                    override fun OnOkClicked(dialog: DialogFragment) {
-                                        dialog.dismiss()
-                                        // discard the whole story
-                                        safelyDiscardCurrentStoryAndCleanUpIntent()
-                                    }
-                                }).show(supportFragmentManager, FRAGMENT_DIALOG)
+                            title = getString(R.string.dialog_discard_story_title),
+                            message = getString(R.string.dialog_discard_story_message),
+                            okButtonLabel = getString(R.string.dialog_discard_story_ok_button),
+                            listener = object : FrameSaveErrorDialogOk {
+                                override fun OnOkClicked(dialog: DialogFragment) {
+                                    dialog.dismiss()
+                                    // discard the whole story
+                                    safelyDiscardCurrentStoryAndCleanUpIntent()
+                                }
+                            }).show(supportFragmentManager, FRAGMENT_DIALOG)
                     } else {
                         // discard the whole story
                         safelyDiscardCurrentStoryAndCleanUpIntent()
@@ -868,28 +884,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         }
 
         next_button.setOnClickListener {
-            addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
-
-            // if we were in an error-handling situation but now all pages are OK, we don't need to save them again
-            if (anyOfOriginalIntentResultsIsError() && !storyViewModel.anyOfCurrentStoryFramesIsErrored()) {
-                // everything is already saved by now
-                // TODO kick the UploadService here! when in WPAndroid
-                showToast("Awesome! Upload starting...")
-                finish()
-            } else {
-                // TODO show bottom sheet
-                // then save everything if they hit PUBLISH
-                showToast("bottom sheet not implemented yet")
-
-                // fresh intent, go fully save the Story
-                if (storyViewModel.getCurrentStorySize() > 0) {
-                    // save all composed frames
-                    if (PermissionUtils.checkAndRequestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                        storyFrameIndexToRetry = StoryRepository.DEFAULT_NONE_SELECTED
-                        saveStory()
-                    }
-                }
-            }
+            prepublishingEventProvider?.onStorySaveButtonPressed()
         }
 
         retry_button.setOnClickListener {
@@ -927,6 +922,27 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     }).show(supportFragmentManager, FRAGMENT_DIALOG)
             })
             view_popup_menu.visibility = View.VISIBLE
+        }
+    }
+
+    private fun processStorySaving() {
+        addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
+
+        // if we were in an error-handling situation but now all pages are OK, we don't need to save them again
+        if (anyOfOriginalIntentResultsIsError() && !storyViewModel.anyOfCurrentStoryFramesIsErrored()) {
+            // everything is already saved by now
+            // TODO kick the UploadService here! when in WPAndroid
+            showToast("Awesome! Upload starting...")
+            finish()
+        } else {
+            // fresh intent, go fully save the Story
+            if (storyViewModel.getCurrentStorySize() > 0) {
+                // save all composed frames
+                if (PermissionUtils.checkAndRequestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    storyFrameIndexToRetry = StoryRepository.DEFAULT_NONE_SELECTED
+                    saveStory()
+                }
+            }
         }
     }
 
@@ -1160,6 +1176,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     waitToReenableCapture()
                 }
             }
+
             override fun onError(message: String, cause: Throwable?) {
                 runOnUiThread {
                     showToast(getString(R.string.toast_error_saving_image))
@@ -1197,8 +1214,12 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 file?.let {
                     runOnUiThread {
                         storyViewModel.apply {
-                            addStoryFrameItemToCurrentStory(StoryFrameItem(FileBackgroundSource(file = it),
-                                frameItemType = VIDEO()))
+                            addStoryFrameItemToCurrentStory(
+                                StoryFrameItem(
+                                    FileBackgroundSource(file = it),
+                                    frameItemType = VIDEO()
+                                )
+                            )
                             setSelectedFrame(storyViewModel.getLastFrameIndexInCurrentStory())
                         }
                     }
@@ -1223,8 +1244,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
         // Vibrate for 100 milliseconds
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibrator.vibrate(VibrationEffect.createOneShot(
-                VIBRATION_INDICATION_LENGTH_MS, VibrationEffect.DEFAULT_AMPLITUDE))
+            vibrator.vibrate(
+                VibrationEffect.createOneShot(
+                    VIBRATION_INDICATION_LENGTH_MS, VibrationEffect.DEFAULT_AMPLITUDE
+                )
+            )
         } else {
             // deprecated in API 26
             @Suppress("DEPRECATION")
@@ -1541,7 +1565,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private fun shareAction(mediaFile: File) {
         val apkURI = FileProvider.getUriForFile(
             this,
-            applicationContext.packageName + ".provider", mediaFile)
+            applicationContext.packageName + ".provider", mediaFile
+        )
         val shareIntent: Intent = Intent().apply {
             action = Intent.ACTION_SEND
             setDataAndType(apkURI, "image/jpeg")
@@ -1569,7 +1594,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         val mimeType = MimeTypeMap.getSingleton()
             .getMimeTypeFromExtension(mediaFile.extension)
         MediaScannerConnection.scanFile(
-            this, arrayOf(mediaFile.absolutePath), arrayOf(mimeType), null)
+            this, arrayOf(mediaFile.absolutePath), arrayOf(mimeType), null
+        )
     }
 
     private fun sendNewStoryReadyBroadcast(rawMediaFileList: List<File?>) {
@@ -1599,7 +1625,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // but otherwise other apps will not be able to access our images unless we
         // scan them using [MediaScannerConnection]
         MediaScannerConnection.scanFile(
-            this, arrayOfPaths, arrayOfmimeTypes, null)
+            this, arrayOfPaths, arrayOfmimeTypes, null
+        )
     }
 
     private fun blockTouchOnPhotoEditor(touchBlockMode: ScreenTouchBlockMode, message: String? = null) {
@@ -1778,7 +1805,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                         }
                         return false
                     } else if (e2.y - e1.y > SWIPE_MIN_DISTANCE &&
-                        abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
+                        abs(velocityY) > SWIPE_THRESHOLD_VELOCITY
+                    ) {
                         // Top to bottom
                         return false
                     }
@@ -1833,10 +1861,15 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         notificationTrackerProvider = provider
     }
 
+    fun setPrepublishingEventProvider(provider: PrepublishingEventProvider) {
+        prepublishingEventProvider = provider
+    }
+
     class ExternalMediaPickerRequestCodesAndExtraKeys {
         var PHOTO_PICKER: Int = 0 // default code, can be overriden.
-                                    // Leave this value in zero so it's evident if something is not working (will break
-                                    // if not properly initialized)
+
+        // Leave this value in zero so it's evident if something is not working (will break
+        // if not properly initialized)
         lateinit var EXTRA_MEDIA_URIS: String
         lateinit var EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED: String
     }

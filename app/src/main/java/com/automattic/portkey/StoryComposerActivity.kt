@@ -18,6 +18,7 @@ import com.wordpress.stories.compose.ComposeLoopFrameActivity
 import com.wordpress.stories.compose.MediaPickerProvider
 import com.wordpress.stories.compose.MetadataProvider
 import com.wordpress.stories.compose.NotificationIntentLoader
+import com.wordpress.stories.compose.PrepublishingEventProvider
 import com.wordpress.stories.compose.SnackbarProvider
 import com.wordpress.stories.compose.StoryDiscardListener
 import com.wordpress.stories.compose.story.StoryIndex
@@ -35,7 +36,7 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
     MediaPickerProvider,
     NotificationIntentLoader,
     MetadataProvider,
-    StoryDiscardListener {
+    StoryDiscardListener, PrepublishingEventProvider {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setSnackbarProvider(this)
@@ -43,6 +44,7 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
         setNotificationExtrasLoader(this)
         setMetadataProvider(this)
         setStoryDiscardListener(this) // optionally listen to discard events
+        setPrepublishingEventProvider(this)
         setNotificationTrackerProvider(application as Portkey) // optionally set Notification Tracker.
         // The notifiationTracker needs to be something that outlives the Activity, given the Service could be running
         // after the user has exited ComposeLoopFrameActivity
@@ -120,5 +122,9 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
     override fun onStoryDiscarded() {
         // example: do any cleanup you may need here
         Toast.makeText(this, "Story has been discarded!", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onStorySaveButtonPressed() {
+        Toast.makeText(this, "Next button has been pressed!", Toast.LENGTH_SHORT).show()
     }
 }
