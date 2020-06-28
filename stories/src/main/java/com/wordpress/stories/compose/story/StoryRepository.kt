@@ -84,6 +84,8 @@ object StoryRepository {
         stories[currentStoryIndex].title = title
     }
 
+    fun getCurrentStoryTitle() = stories[currentStoryIndex].title
+
     fun setCurrentStorySaveResultsOnFrames(storyIndex: StoryIndex, saveResult: StorySaveResult) {
         // iterate over the StorySaveResult, check their indexes, and set the corresponding frame result
         for (index in 0..saveResult.frameSaveResult.size - 1) {
