@@ -170,7 +170,7 @@ class BackgroundSurfaceManager(
         }
         isCameraVisible = false
         isVideoPlayerVisible = false
-        cameraXAwareSurfaceDeactivator()
+        cameraXAwareSurfaceDeactivate()
         videoPlayerHandling.deactivate()
         photoEditorView.hideLoading()
         photoEditorView.turnTextureViewOff()
@@ -266,7 +266,7 @@ class BackgroundSurfaceManager(
     }
 
     private fun doDeactivateReactivateSurfaceAndPlay() {
-        cameraXAwareSurfaceDeactivator()
+        cameraXAwareSurfaceDeactivate()
         photoEditorView.turnTextureViewOn()
         videoPlayerHandling.activate()
     }
@@ -279,7 +279,7 @@ class BackgroundSurfaceManager(
         videoPlayerHandling.unmute()
     }
 
-    private fun cameraXAwareSurfaceDeactivator() {
+    private fun cameraXAwareSurfaceDeactivate() {
         if (cameraBasicHandler.isActive()) {
             cameraBasicHandler.deactivate()
         }
