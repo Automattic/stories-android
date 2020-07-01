@@ -583,7 +583,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     protected open fun onLoadFromIntent(intent: Intent) {
-        // storyViewModel.loadStory(storyIndexToSelect)
         if (storyViewModel.getCurrentStoryIndex() == StoryRepository.DEFAULT_NONE_SELECTED) {
             storyViewModel.loadStory(storyIndexToSelect)
             storyIndexToSelect = storyViewModel.getCurrentStoryIndex()
