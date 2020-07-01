@@ -213,10 +213,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
             // keep these as they're changing when we call `storyViewModel.finishCurrentStory()`
             val storyIndex = storyViewModel.getCurrentStoryIndex()
-            if (storyFrameIndexToRetry == StoryRepository.DEFAULT_NONE_SELECTED) {
-                // TODO obtain the real Story title as assigned by the user when the BOTTOM SHEET is ready, and pass it up
-                storyViewModel.setCurrentStoryTitle(getString(R.string.story_saving_untitled))
-            }
+
             // Setup notification intent for notifications triggered from the FrameSaveService.FrameSaveNotifier class
             notificationIntentLoader?.let {
                 // set the base notification Error Id. This is given on purpose so the host app can give a unique
