@@ -471,7 +471,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             // if no frames in Story, finish
             // note momentarily there will be times when this LiveData is triggered while permissions are
             // being requested so, don't proceed if that is the case
-            if (storyViewModel.getCurrentStorySize() == 0 && firstIntentLoaded && !permissionsRequestForCameraInProgress) {
+            if (storyViewModel.getCurrentStorySize() == 0 &&
+                    firstIntentLoaded && !permissionsRequestForCameraInProgress) {
                 // finally, delete the captured media
                 deleteCapturedMedia()
                 finish()
@@ -588,8 +589,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             storyIndexToSelect = storyViewModel.getCurrentStoryIndex()
         }
 
-        if (intent.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED)
-            || permissionsRequestForCameraInProgress) {
+        if (intent.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED) ||
+                permissionsRequestForCameraInProgress) {
             launchCameraPreview()
             checkForLowSpaceAndShowDialog()
         } else if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
