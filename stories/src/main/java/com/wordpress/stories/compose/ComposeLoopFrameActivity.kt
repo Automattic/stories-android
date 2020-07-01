@@ -1112,6 +1112,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun launchCameraPreview() {
+        hideStoryFrameSelector()
+        hideEditModeUIControls()
+
         if (!PermissionUtils.allRequiredPermissionsGranted(this)) {
             permissionsRequestForCameraInProgress = true
             PermissionUtils.requestAllRequiredPermissions(this)
@@ -1121,9 +1124,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         if (backgroundSurfaceManager.cameraVisible()) {
             return
         }
-
-        hideStoryFrameSelector()
-        hideEditModeUIControls()
 
         // set the correct camera as selected by the user last time they used the app
         backgroundSurfaceManager.selectCamera(cameraSelection)
