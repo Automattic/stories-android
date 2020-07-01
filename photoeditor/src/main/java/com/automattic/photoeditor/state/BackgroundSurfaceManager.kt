@@ -257,13 +257,16 @@ class BackgroundSurfaceManager(
             // wanted (video player) once we're sure video has been successfully saved
             val handler = Handler()
             handler.postDelayed({
-                cameraXAwareSurfaceDeactivator()
                 videoPlayerHandling.currentFile = cameraBasicHandler.currentFile
-                photoEditorView.turnTextureViewOn()
-                videoPlayerHandling.activate()
+                doDeactivateReactivateSurfaceAndPlay()
             }, 500)
             return
         }
+        doDeactivateReactivateSurfaceAndPlay()
+    }
+
+    private fun doDeactivateReactivateSurfaceAndPlay() {
+        cameraXAwareSurfaceDeactivator()
         photoEditorView.turnTextureViewOn()
         videoPlayerHandling.activate()
     }
@@ -279,11 +282,12 @@ class BackgroundSurfaceManager(
     private fun cameraXAwareSurfaceDeactivator() {
         if (cameraBasicHandler.isActive()) {
             cameraBasicHandler.deactivate()
-            if (useCameraX) {
-                // IMPORTANT: remove and add the TextureView back again to the view hierarchy so the SurfaceTexture
-                // is available for reuse by other fragments (i.e. VideoPlayingBasicHandler)
-                photoEditorView.removeAndAddTextureViewBack()
-            }
+        }
+
+        if (useCameraX) {
+            // IMPORTANT: remove and add the TextureView back again to the view hierarchy so the SurfaceTexture
+            // is available for reuse by other fragments (i.e. VideoPlayingBasicHandler)
+            photoEditorView.removeAndAddTextureViewBack()
         }
     }
 
