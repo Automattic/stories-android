@@ -669,6 +669,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             // On the contrary, if we already have some Story slides/frames, we will just stay where we are,
             // and people can try adding more slides from the provided media picker.
             finish()
+        } else {
+            // if user won't give permissions but we have an ongoing Story with frames, just come back to where we were.
+            showCurrentSelectedFrame()
         }
     }
 
@@ -681,20 +684,24 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         if (!backgroundSurfaceManager.cameraVisible()) {
             close_button.performClick()
         } else if (storyViewModel.getCurrentStorySize() > 0) {
-            // get currently selected frame and check whether this is a video or an image
-            when (storyViewModel.getSelectedFrame()?.frameItemType) {
-                is VIDEO -> runOnUiThread {
-                    // now start playing the video that was selected in the frame selector
-                    showPlayVideo()
-                }
-                is IMAGE -> runOnUiThread {
-                    // switch to static background
-                    showStaticBackground()
-                }
-            }
+            showCurrentSelectedFrame()
         } else {
             storyDiscardListener?.onStoryDiscarded()
             super.onBackPressed()
+        }
+    }
+
+    private fun showCurrentSelectedFrame() {
+        // get currently selected frame and check whether this is a video or an image
+        when (storyViewModel.getSelectedFrame()?.frameItemType) {
+            is VIDEO -> runOnUiThread {
+                // now start playing the video that was selected in the frame selector
+                showPlayVideo()
+            }
+            is IMAGE -> runOnUiThread {
+                // switch to static background
+                showStaticBackground()
+            }
         }
     }
 
