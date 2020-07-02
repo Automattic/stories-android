@@ -10,6 +10,7 @@ import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.portkey.StoryComposerActivity.Companion.KEY_EXAMPLE_METADATA
 import com.automattic.portkey.StoryComposerActivity.Companion.KEY_STORY_INDEX
 import com.automattic.portkey.intro.IntroActivity
+import com.automattic.portkey.photopicker.PhotoPickerActivity
 import com.google.android.material.snackbar.Snackbar
 import com.wordpress.stories.compose.frame.FrameSaveNotifier
 import com.wordpress.stories.compose.frame.FrameSaveNotifier.Companion.getNotificationIdForError
@@ -48,8 +49,14 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
 
         fab.setOnClickListener { view ->
             fab.isEnabled = false
+            // NOTE: we want to start with camera capture mode in this demo app, so we pass the
+            // bundle with the corresponding parameter.
+            // If we had URIs to start the composer already populated with them, we'd use
+            // EXTRA_MEDIA_URIS and a list of URIs for media items we want to use as Story frames.
+            val bundle = Bundle()
+            bundle.putBoolean(PhotoPickerActivity.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED, true)
             Navigation.findNavController(this, R.id.nav_host_fragment)
-                .navigate(R.id.action_mainFragment_to_composeLoopFrameActivity)
+                .navigate(R.id.action_mainFragment_to_composeLoopFrameActivity, bundle)
         }
     }
 

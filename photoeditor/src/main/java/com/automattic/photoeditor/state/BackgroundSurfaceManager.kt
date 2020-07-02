@@ -1,8 +1,10 @@
 package com.automattic.photoeditor.state
 
+import android.graphics.SurfaceTexture
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
+import android.view.TextureView
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
@@ -39,6 +41,10 @@ interface AuthenticationHeadersInterface {
     fun getAuthHeaders(url: String): Map<String, String>?
 }
 
+interface BackgroundSurfaceManagerReadyListener {
+    fun onBackgroundSurfaceManagerReady()
+}
+
 class BackgroundSurfaceManager(
     private val savedInstanceState: Bundle?,
     private val lifeCycle: Lifecycle,
@@ -46,6 +52,7 @@ class BackgroundSurfaceManager(
     private val supportFragmentManager: FragmentManager,
     private val flashSupportChangeListener: FlashSupportChangeListener,
     private val useCameraX: Boolean,
+    private val managerReadyListener: BackgroundSurfaceManagerReadyListener? = null,
     private val authenticationHeadersInterface: AuthenticationHeadersInterface? = null
 ) : LifecycleObserver {
     private lateinit var cameraBasicHandler: VideoRecorderFragment
@@ -78,6 +85,22 @@ class BackgroundSurfaceManager(
         // important: only retrieve state after having restored fragments with addHandlerFragmentOrFindByTag as above
         getStateFromBundle()
 
+        // add general BackgroundSurfaceManager's surfaceTextureListener
+        managerReadyListener?.let {
+            photoEditorView.listeners.add(
+                    object : TextureView.SurfaceTextureListener {
+                        override fun onSurfaceTextureAvailable(texture: SurfaceTexture, width: Int, height: Int) {
+                            it.onBackgroundSurfaceManagerReady()
+                        }
+                        override
+                        fun onSurfaceTextureSizeChanged(texture: SurfaceTexture, width: Int, height: Int) = Unit
+
+                        override fun onSurfaceTextureDestroyed(texture: SurfaceTexture) = true
+
+                        override fun onSurfaceTextureUpdated(texture: SurfaceTexture) = Unit
+                    }
+            )
+        }
         if (isCameraVisible || isVideoPlayerVisible) { photoEditorView.toggleTextureView() }
     }
 
@@ -254,11 +277,13 @@ class BackgroundSurfaceManager(
     }
 
     private fun cameraXAwareSurfaceDeactivator() {
-        cameraBasicHandler.deactivate()
-        if (useCameraX) {
-            // IMPORTANT: remove and add the TextureView back again to the view hierarchy so the SurfaceTexture
-            // is available for reuse by other fragments (i.e. VideoPlayingBasicHandler)
-            photoEditorView.removeAndAddTextureViewBack()
+        if (cameraBasicHandler.isActive()) {
+            cameraBasicHandler.deactivate()
+            if (useCameraX) {
+                // IMPORTANT: remove and add the TextureView back again to the view hierarchy so the SurfaceTexture
+                // is available for reuse by other fragments (i.e. VideoPlayingBasicHandler)
+                photoEditorView.removeAndAddTextureViewBack()
+            }
         }
     }
 
