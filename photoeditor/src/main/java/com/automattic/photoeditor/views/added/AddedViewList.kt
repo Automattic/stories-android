@@ -3,12 +3,15 @@ package com.automattic.photoeditor.views.added
 import android.view.View
 import com.automattic.photoeditor.views.ViewType
 import java.util.ArrayList
+import kotlinx.serialization.Serializable
 
-class AddedViewList(addedViewList: AddedViewList? = null) : ArrayList<AddedView>() {
-    init {
-        addedViewList?.let {
+@Serializable
+class AddedViewList : ArrayList<AddedView>() {
+    fun copyOf(addedViewList: AddedViewList): AddedViewList {
+        addedViewList.let {
             addAll(it)
         }
+        return this
     }
 
     fun containsView(element: View): Boolean {

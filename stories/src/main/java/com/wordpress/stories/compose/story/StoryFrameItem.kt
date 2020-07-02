@@ -5,15 +5,20 @@ import com.automattic.photoeditor.views.added.AddedViewList
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
 import com.wordpress.stories.compose.story.StoryFrameItemType.IMAGE
+import kotlinx.serialization.ContextualSerialization
+import kotlinx.serialization.Serializable
 import java.io.File
 
+@Serializable
 data class StoryFrameItem(
     val source: BackgroundSource,
     val frameItemType: StoryFrameItemType = IMAGE,
     var addedViews: AddedViewList = AddedViewList(),
     var saveResultReason: SaveResultReason = SaveSuccess,
+    @ContextualSerialization
     var composedFrameFile: File? = null
 ) {
+    @Serializable
     sealed class BackgroundSource {
         data class UriBackgroundSource(var contentUri: Uri? = null) : BackgroundSource()
         data class FileBackgroundSource(var file: File? = null) : BackgroundSource()

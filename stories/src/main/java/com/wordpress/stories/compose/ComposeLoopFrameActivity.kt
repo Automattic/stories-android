@@ -1059,7 +1059,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         }
 
         // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
-        currentStoryFrameItem?.addedViews = AddedViewList(photoEditor.getViewsAdded())
+        currentStoryFrameItem?.addedViews = AddedViewList().copyOf(photoEditor.getViewsAdded())
     }
 
     private fun showMediaPicker() {
