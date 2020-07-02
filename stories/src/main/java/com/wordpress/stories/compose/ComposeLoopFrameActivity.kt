@@ -613,7 +613,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     intent.getStringArrayExtra(requestCodes.EXTRA_MEDIA_URIS)
             )
             addFramesToStoryFromMediaUriList(uriList)
-            setDefaultSelectionAndUpdateBackgroundSurfaceUI()
+            setDefaultSelectionAndUpdateBackgroundSurfaceUI(uriList)
         } else if (intent.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED)) {
             launchCameraPreview()
             checkForLowSpaceAndShowDialog()
@@ -700,7 +700,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                         data.getStringArrayExtra(requestCodes.EXTRA_MEDIA_URIS)
                     )
                     addFramesToStoryFromMediaUriList(uriList)
-                    setDefaultSelectionAndUpdateBackgroundSurfaceUI()
+                    setDefaultSelectionAndUpdateBackgroundSurfaceUI(uriList)
                 } else if (data.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED)) {
                     if (!PermissionUtils.allRequiredPermissionsGranted(this)) {
                         // at this point, the user wants to launch the camera
@@ -725,8 +725,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         return uris
     }
 
-    protected fun setDefaultSelectionAndUpdateBackgroundSurfaceUI() {
-        val defaultSelectedFrameIndex = storyViewModel.getLastFrameIndexInCurrentStory()
+    protected fun setDefaultSelectionAndUpdateBackgroundSurfaceUI(uriList: List<Uri>) {
+        val defaultSelectedFrameIndex = storyViewModel.getCurrentStorySize() - uriList.size
         storyViewModel.setSelectedFrame(defaultSelectedFrameIndex)
         updateBackgroundSurfaceUIWithStoryFrame(defaultSelectedFrameIndex)
     }
