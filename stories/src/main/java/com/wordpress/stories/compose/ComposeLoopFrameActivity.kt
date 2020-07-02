@@ -1037,6 +1037,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun switchCameraPreviewOn() {
+        cameraOperationInCourse = false
         hideStoryFrameSelector()
         backgroundSurfaceManager.switchCameraPreviewOn()
     }
@@ -1099,18 +1100,21 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun showPlayVideo(videoFile: File? = null) {
+        cameraOperationInCourse = false
         showStoryFrameSelector()
         showEditModeUIControls()
         backgroundSurfaceManager.switchVideoPlayerOnFromFile(videoFile)
     }
 
     private fun showPlayVideo(videoUri: Uri) {
+        cameraOperationInCourse = false
         showStoryFrameSelector()
         showEditModeUIControls()
         backgroundSurfaceManager.switchVideoPlayerOnFromUri(videoUri)
     }
 
     private fun showStaticBackground() {
+        cameraOperationInCourse = false
         showStoryFrameSelector()
         showEditModeUIControls()
         backgroundSurfaceManager.switchStaticImageBackgroundModeOn()
