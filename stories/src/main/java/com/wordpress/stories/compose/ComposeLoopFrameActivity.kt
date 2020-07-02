@@ -198,6 +198,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private var storyDiscardListener: StoryDiscardListener? = null
     private var notificationTrackerProvider: NotificationTrackerProvider? = null
     private var firstIntentLoaded: Boolean = false
+    private var permissionsRequestInProcess: Boolean = false
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
@@ -463,7 +464,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private fun setupStoryViewModelObservers() {
         storyViewModel.uiState.observe(this, Observer {
             // if no frames in Story, finish
-            if (storyViewModel.getCurrentStorySize() == 0 && firstIntentLoaded) {
+            // note momentarily there will be times when this LiveData is triggered while permissions are
+            // being requested so, don't proceed if that is the case
+            if (storyViewModel.getCurrentStorySize() == 0 && firstIntentLoaded && !permissionsRequestInProcess) {
                 // finally, delete the captured media
                 deleteCapturedMedia()
                 finish()
@@ -648,7 +651,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         if (PermissionUtils.allRequiredPermissionsGranted(this)) {
-            switchCameraPreviewOn()
+            onLoadFromIntent(intent)
+            permissionsRequestInProcess = false
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
@@ -698,6 +702,15 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     addFramesToStoryFromMediaUriList(uriList)
                     setDefaultSelectionAndUpdateBackgroundSurfaceUI()
                 } else if (data.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED)) {
+                    if (!PermissionUtils.allRequiredPermissionsGranted(this)) {
+                        // at this point, the user wants to launch the camera
+                        // but we need to check whether we have permissions for thatt.
+                        // after permissions are requestted, we need the original intent to be set differently
+                        // so: we need to tweak the intent for when we come back after user gives us permission
+                        if (intent.hasExtra(requestCodes.EXTRA_MEDIA_URIS)) {
+                            intent.removeExtra(requestCodes.EXTRA_MEDIA_URIS)
+                        }
+                    }
                     launchCameraPreview()
                 }
             }
@@ -1077,15 +1090,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun launchCameraPreview() {
-        if (!PermissionUtils.checkPermission(this, Manifest.permission.RECORD_AUDIO) ||
-            !PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) ||
-            !PermissionUtils.checkPermission(this, Manifest.permission.CAMERA)) {
-            val permissions = arrayOf(
-                Manifest.permission.RECORD_AUDIO,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.CAMERA
-            )
-            PermissionUtils.requestPermissions(this, permissions)
+        if (!PermissionUtils.allRequiredPermissionsGranted(this)) {
+            permissionsRequestInProcess = true
+            PermissionUtils.requestAllRequiredPermissions(this)
             return
         }
 
