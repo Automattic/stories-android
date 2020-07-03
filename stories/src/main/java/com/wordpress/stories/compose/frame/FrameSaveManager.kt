@@ -75,7 +75,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
     }
 
     private fun preDispatchStartProgressListenerCalls(framesAmount: Int) {
-        for (frameIndex in 0..framesAmount) {
+        for (frameIndex in 0 until framesAmount) {
             saveProgressListener?.onFrameSaveStart(frameIndex)
         }
     }
