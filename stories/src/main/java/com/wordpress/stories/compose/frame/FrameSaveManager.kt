@@ -277,8 +277,10 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         withContext(Dispatchers.Main) {
             // now call addViewToParent the addedViews remembered by this frame
             for (oneView in frame.addedViews) {
-                removeViewFromParent(oneView.view)
-                ghostPhotoEditorView.addView(oneView.view, getViewLayoutParams())
+                oneView.view?.let {
+                    removeViewFromParent(it)
+                    ghostPhotoEditorView.addView(it, getViewLayoutParams())
+                }
             }
         }
     }
@@ -315,7 +317,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         fun releaseAddedViews(frame: StoryFrameItem) {
             // don't forget to remove these views from ghost offscreen view before exiting
             for (oneView in frame.addedViews) {
-                removeViewFromParent(oneView.view)
+                removeViewFromParent(requireNotNull(oneView.view))
             }
         }
     }

@@ -35,6 +35,7 @@ import com.automattic.photoeditor.views.ViewType
 import com.automattic.photoeditor.views.ViewType.EMOJI
 import com.automattic.photoeditor.views.ViewType.TEXT
 import com.automattic.photoeditor.views.added.AddedView
+import com.automattic.photoeditor.views.added.AddedView.Companion
 import com.automattic.photoeditor.views.added.AddedViewList
 import com.automattic.photoeditor.views.brush.BrushDrawingView
 import com.automattic.photoeditor.views.brush.BrushViewChangeListener
@@ -300,7 +301,9 @@ class PhotoEditor private constructor(builder: Builder) :
             inputTextView.setTextColor(colorCode)
             parentView.updateViewLayout(view, view.layoutParams)
             val i = addedViews.indexOfView(view)
-            if (i > -1) addedViews[i] = AddedView(view, addedViews[i].viewType)
+            if (i > -1) {
+                addedViews[i] = AddedView.buildAddedViewFromView(view, addedViews[i].viewType)
+            }
         }
     }
 
@@ -379,7 +382,7 @@ class PhotoEditor private constructor(builder: Builder) :
         )
         params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
         parentView.addView(rootView, params)
-        addedViews.add(AddedView(rootView, viewType, sourceUri))
+        addedViews.add(AddedView.buildAddedViewFromView(rootView, viewType, sourceUri))
         mOnPhotoEditorListener?.onAddViewListener(viewType, addedViews.size)
     }
 
@@ -544,7 +547,7 @@ class PhotoEditor private constructor(builder: Builder) :
                 redoViews.add(removeView)
             }
             mOnPhotoEditorListener?.onRemoveViewListener(addedViews.size)
-            val viewTag = removeView.view.tag
+            val viewTag = removeView.view?.tag
             (viewTag as? ViewType)?.let {
                 mOnPhotoEditorListener?.onRemoveViewListener(it, addedViews.size)
             }
@@ -567,7 +570,7 @@ class PhotoEditor private constructor(builder: Builder) :
                 parentView.addView(redoView.view)
                 addedViews.add(redoView)
             }
-            val viewTag = redoView.view.tag
+            val viewTag = redoView.view?.tag
             if (viewTag != null && viewTag is ViewType) {
                 mOnPhotoEditorListener?.onAddViewListener(viewTag, addedViews.size)
             }
@@ -585,7 +588,9 @@ class PhotoEditor private constructor(builder: Builder) :
      */
     fun clearAllViews() {
         for (addedView in addedViews) {
-            parentView.removeView(addedView.view)
+            addedView.view?.let {
+                parentView.removeView(it)
+            }
         }
 
         if (addedViews.containsView(brushDrawingView)) {
@@ -735,9 +740,9 @@ class PhotoEditor private constructor(builder: Builder) :
             val viewPositionInfo = ViewPositionInfo(
                 originalCanvasWidth,
                 originalCanvasHeight,
-                v.view.width,
-                v.view.height,
-                v.view.matrix
+                requireNotNull(v.view).width,
+                requireNotNull(v.view).height,
+                requireNotNull(v.view).matrix
             )
             when (v.viewType) {
                 ViewType.STICKER_ANIMATED -> {
@@ -887,9 +892,9 @@ class PhotoEditor private constructor(builder: Builder) :
             val viewPositionInfo = ViewPositionInfo(
                 widthParent,
                 heightParent,
-                v.view.width,
-                v.view.height,
-                v.view.matrix
+                requireNotNull(v.view).width,
+                requireNotNull(v.view).height,
+                requireNotNull(v.view).matrix
             )
             when (v.viewType) {
                 ViewType.STICKER_ANIMATED -> {
@@ -975,15 +980,17 @@ class PhotoEditor private constructor(builder: Builder) :
         if (redoViews.size > 0) {
             redoViews.removeAt(redoViews.size - 1)
         }
-        addedViews.add(AddedView(brushDrawingView, ViewType.BRUSH_DRAWING))
+        addedViews.add(AddedView.buildAddedViewFromView(brushDrawingView, ViewType.BRUSH_DRAWING))
         mOnPhotoEditorListener?.onAddViewListener(ViewType.BRUSH_DRAWING, addedViews.size)
     }
 
     override fun onViewRemoved(brushDrawingView: BrushDrawingView) {
         if (addedViews.size > 0) {
             val removeView = addedViews.removeAt(addedViews.size - 1)
-            if (removeView.view !is BrushDrawingView) {
-                parentView.removeView(removeView.view)
+            removeView.view?.let {
+                if (it !is BrushDrawingView) {
+                    parentView.removeView(it)
+                }
             }
             redoViews.add(removeView)
         }
