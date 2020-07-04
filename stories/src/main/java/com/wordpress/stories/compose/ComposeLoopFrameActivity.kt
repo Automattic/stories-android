@@ -621,9 +621,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             if (StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.isNotEmpty()) {
                 storyViewModel.loadStory(storyIndexToSelect)
                 refreshStoryFrameSelection()
-            } else {
-                showToast(getString(R.string.toast_story_page_not_found))
-                finish()
             }
         }
     }

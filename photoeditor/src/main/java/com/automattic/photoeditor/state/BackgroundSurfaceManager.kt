@@ -170,7 +170,6 @@ class BackgroundSurfaceManager(
         }
         isCameraVisible = false
         isVideoPlayerVisible = false
-        cameraXAwareSurfaceDeactivate()
         videoPlayerHandling.deactivate()
         photoEditorView.hideLoading()
         photoEditorView.turnTextureViewOff()
