@@ -56,6 +56,7 @@ import com.automattic.photoeditor.util.FileUtils.Companion.getLoopFrameFile
 import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.ViewType
 import com.automattic.photoeditor.views.ViewType.TEXT
+import com.automattic.photoeditor.views.added.AddedView
 import com.automattic.photoeditor.views.added.AddedViewList
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
@@ -92,6 +93,7 @@ import com.wordpress.stories.compose.story.StoryViewModel
 import com.wordpress.stories.compose.story.StoryViewModel.StoryFrameListItemUiState.StoryFrameListItemUiStateFrame
 import com.wordpress.stories.compose.story.StoryViewModelFactory
 import com.wordpress.stories.compose.story.deserializeAddedViews
+import com.wordpress.stories.compose.story.serializeAddedViewTest
 import com.wordpress.stories.compose.story.serializeAddedViews
 import com.wordpress.stories.compose.text.TextEditorDialogFragment
 import com.wordpress.stories.util.KEY_STORY_SAVE_RESULT
@@ -1054,7 +1056,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // purge multitouch listeners
         val addedViews = photoEditor.getViewsAdded()
         for (addedView in addedViews) {
-            addedView.view?.setOnTouchListener(null)
+            addedView.view?.let {
+                // while iterating, also update the ViewInfo for each view
+                addedView.update()
+                addedView.view?.setOnTouchListener(null)
+            }
         }
 
         // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
@@ -1062,6 +1068,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
         // TODO REMOVE TEST CODE START
         val serializedObj = serializeAddedViews(photoEditor.getViewsAdded())
+        for (item in photoEditor.getViewsAdded()) {
+            val tetstSerializedObj = serializeAddedViewTest(item)
+            Log.d("PORTKEY",  "ACA VA: " + tetstSerializedObj)
+        }
         val deserializedObj = deserializeAddedViews(serializedObj)
         currentStoryFrameItem?.addedViews = deserializedObj
         // TODO REMOVE TEST CODE END

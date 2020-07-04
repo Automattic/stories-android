@@ -23,7 +23,7 @@ import kotlinx.serialization.withName
 class AddedView(
     @Transient val view: View?,
     val viewType: ViewType,
-    val viewInfo: AddedViewInfo,
+    var viewInfo: AddedViewInfo,
     @Serializable(with = UriSerializer::class)
     val uri: Uri? = null
 ) {
@@ -47,7 +47,7 @@ class AddedView(
             var uri: Uri? = null
 
             decoder.beginStructure(descriptor).run {
-                loop@ while (true) {
+                loop@while (true) {
                     when (val i = decodeElementIndex(descriptor)) {
                         CompositeDecoder.READ_DONE -> break@loop
                         0 -> viewType = decodeSerializableElement(descriptor, i, ViewType.serializer())
@@ -71,6 +71,10 @@ class AddedView(
             viewType: ViewType,
             uri: Uri? = null
         ) : AddedView {
+            return AddedView(view, viewType, buildViewInfoFromView(view, getTextFromActualView(view, viewType)), uri)
+        }
+
+        fun getTextFromActualView(view: View, viewType: ViewType): String {
             var text = ""
             when (viewType) {
                 EMOJI -> {
@@ -82,14 +86,29 @@ class AddedView(
                     text = txtView.text.toString()
                 }
             }
-            var viewInfo = AddedViewInfo(
+            return text
+        }
+
+        fun buildViewInfoFromView(view: View, text: String): AddedViewInfo {
+            return AddedViewInfo(
                 view.rotation,
                 view.translationX,
                 view.translationY,
                 view.scaleX,
                 text
             )
-            return AddedView(view, viewType, viewInfo, uri)
+        }
+    }
+
+    fun update() {
+        view?.let {
+            viewInfo = AddedViewInfo(
+                it.rotation,
+                it.translationX,
+                it.translationY,
+                it.scaleX,
+                getTextFromActualView(view, viewType)
+            )
         }
     }
 
