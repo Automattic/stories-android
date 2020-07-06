@@ -56,7 +56,6 @@ import com.automattic.photoeditor.util.FileUtils.Companion.getLoopFrameFile
 import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.ViewType
 import com.automattic.photoeditor.views.ViewType.TEXT
-import com.automattic.photoeditor.views.added.AddedView
 import com.automattic.photoeditor.views.added.AddedViewList
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
@@ -1070,7 +1069,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         val serializedObj = serializeAddedViews(photoEditor.getViewsAdded())
         for (item in photoEditor.getViewsAdded()) {
             val tetstSerializedObj = serializeAddedViewTest(item)
-            Log.d("PORTKEY",  "ACA VA: " + tetstSerializedObj)
+            Log.d("PORTKEY", "ACA VA: " + tetstSerializedObj)
         }
         val deserializedObj = deserializeAddedViews(serializedObj)
         currentStoryFrameItem?.addedViews = deserializedObj

@@ -16,7 +16,7 @@ class AddedViewList : ArrayList<AddedView>() {
 
     fun containsView(element: View): Boolean {
         for (n in this) {
-            n.view?.let{
+            n.view?.let {
                 if (it == element) {
                     return true
                 }

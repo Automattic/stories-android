@@ -24,20 +24,20 @@ class AddedView(
 ) {
     companion object {
         fun buildAddedViewFromView(
-                view: View,
-                viewType: ViewType,
-                uri: Uri? = null
-            ) : AddedView {
-                return AddedView(
+            view: View,
+            viewType: ViewType,
+            uri: Uri? = null
+        ): AddedView {
+            return AddedView(
+                view,
+                viewType,
+                buildViewInfoFromView(
                     view,
-                    viewType,
-                    buildViewInfoFromView(
-                        view,
-                        getTextInfoFromActualView(view, viewType)
-                    ),
-                    uri
-                )
-            }
+                    getTextInfoFromActualView(view, viewType)
+                ),
+                uri
+            )
+        }
 
         fun getTextInfoFromActualView(view: View, viewType: ViewType): AddedViewTextInfo {
             val txtView: TextView

@@ -23,7 +23,6 @@ import androidx.annotation.ColorInt
 import androidx.annotation.IntRange
 import androidx.annotation.RequiresPermission
 import androidx.annotation.UiThread
-import androidx.core.content.ContextCompat
 import androidx.core.widget.TextViewCompat
 import androidx.emoji.text.EmojiCompat
 import com.automattic.photoeditor.gesture.MultiTouchListener
@@ -36,7 +35,6 @@ import com.automattic.photoeditor.views.ViewType
 import com.automattic.photoeditor.views.ViewType.EMOJI
 import com.automattic.photoeditor.views.ViewType.TEXT
 import com.automattic.photoeditor.views.added.AddedView
-import com.automattic.photoeditor.views.added.AddedView.Companion
 import com.automattic.photoeditor.views.added.AddedViewInfo
 import com.automattic.photoeditor.views.added.AddedViewList
 import com.automattic.photoeditor.views.brush.BrushDrawingView
