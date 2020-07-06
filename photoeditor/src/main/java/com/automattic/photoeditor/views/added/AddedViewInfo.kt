@@ -8,5 +8,8 @@ data class AddedViewInfo(
     val translationX: Float,
     val translationY: Float,
     val scale: Float,
-    val text: String
+    val addedViewTextInfo: AddedViewTextInfo
 )
+
+@Serializable
+data class AddedViewTextInfo(val text: String, val fontSizeSp: Float, val textColor: Int)

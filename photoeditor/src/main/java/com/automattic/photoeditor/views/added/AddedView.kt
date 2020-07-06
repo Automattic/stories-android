@@ -31,35 +31,38 @@ class AddedView(
                 return AddedView(
                     view,
                     viewType,
-                    buildViewInfoFromView(view,
-                        getTextFromActualView(view, viewType)
+                    buildViewInfoFromView(
+                        view,
+                        getTextInfoFromActualView(view, viewType)
                     ),
                     uri
                 )
             }
 
-            fun getTextFromActualView(view: View, viewType: ViewType): String {
-                var text = ""
-                when (viewType) {
-                    EMOJI -> {
-                        val txtView = view.findViewById<TextView>(R.id.tvPhotoEditorEmoji)
-                        text = txtView.text.toString()
-                    }
-                    TEXT -> {
-                        val txtView = view.findViewById<TextView>(R.id.tvPhotoEditorText)
-                        text = txtView.text.toString()
-                    }
+        fun getTextInfoFromActualView(view: View, viewType: ViewType): AddedViewTextInfo {
+            val txtView: TextView
+            when (viewType) {
+                EMOJI -> {
+                    txtView = view.findViewById(R.id.tvPhotoEditorEmoji)
                 }
-                return text
+                TEXT -> {
+                    txtView = view.findViewById(R.id.tvPhotoEditorText)
+                }
+                else -> {
+                    // default text
+                    txtView = view.findViewById(R.id.tvPhotoEditorText)
+                }
             }
+            return AddedViewTextInfo(txtView.text.toString(), txtView.textSize, txtView.currentTextColor)
+        }
 
-        fun buildViewInfoFromView(view: View, text: String): AddedViewInfo {
+        fun buildViewInfoFromView(view: View, addedViewText: AddedViewTextInfo): AddedViewInfo {
             return AddedViewInfo(
                 view.rotation,
                 view.translationX,
                 view.translationY,
                 view.scaleX,
-                text
+                addedViewText
             )
         }
     }
@@ -71,7 +74,7 @@ class AddedView(
                 it.translationX,
                 it.translationY,
                 it.scaleX,
-                getTextFromActualView(view, viewType)
+                getTextInfoFromActualView(view, viewType)
             )
         }
     }

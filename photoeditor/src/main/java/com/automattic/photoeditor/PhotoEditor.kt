@@ -403,11 +403,19 @@ class PhotoEditor private constructor(builder: Builder) :
         when (viewType) {
             EMOJI -> {
                 // create emoji view layout
-                view = addEmoji(addedViewInfo.text)
+                view = addEmoji(addedViewInfo.addedViewTextInfo.text)
+                // apply specific TextView parameters for emoji (fontsize)
+                val emojiTextView = view?.findViewById<TextView>(R.id.tvPhotoEditorEmoji)
+                emojiTextView?.textSize = addedViewInfo.addedViewTextInfo.fontSizeSp
             }
             TEXT -> {
                 // create TEXT view layout
-                view = addText(addedViewInfo.text, ContextCompat.getColor(context, android.R.color.white))
+                // view = addText(addedViewInfo.addedViewTextInfo.text, ContextCompat.getColor(context, android.R.color.white))
+                view = addText(addedViewInfo.addedViewTextInfo.text, addedViewInfo.addedViewTextInfo.textColor)
+                // apply specific TextView parameters for text (fontsize, text color)
+                val normalTextView = view?.findViewById<TextView>(R.id.tvPhotoEditorText)
+                normalTextView?.textSize = addedViewInfo.addedViewTextInfo.fontSizeSp
+                normalTextView?.setTextColor(addedViewInfo.addedViewTextInfo.textColor)
             }
         }
 
