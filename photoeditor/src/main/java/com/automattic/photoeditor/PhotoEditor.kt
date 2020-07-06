@@ -416,7 +416,7 @@ class PhotoEditor private constructor(builder: Builder) :
             }
         }
 
-        // now apply all parameters to newly created view object
+        // now apply all common parameters to newly created view object
         view?.let {
             it.rotation = addedViewInfo.rotation
             it.translationX = addedViewInfo.translationX
