@@ -234,7 +234,13 @@ class PhotoEditor private constructor(builder: Builder) :
      * @param colorCodeTextView text color to be displayed
      */
     @SuppressLint("ClickableViewAccessibility")
-    fun addText(text: String, colorCodeTextView: Int, textTypeface: Typeface? = null, fontSizeSp: Float = 18f): View? {
+    fun addText(
+        text: String,
+        colorCodeTextView: Int,
+        textTypeface: Typeface? = null,
+        fontSizeSp: Float = 18f,
+        isViewReadd: Boolean = false
+    ): View? {
         brushDrawingView.brushDrawingMode = false
         val view: View?
         view = getLayout(ViewType.TEXT)?.apply {
@@ -264,8 +270,8 @@ class PhotoEditor private constructor(builder: Builder) :
             setOnTouchListener(multiTouchListenerInstance)
             addViewToParent(this, ViewType.TEXT)
 
-            // now open TextEditor right away
-            if (mOnPhotoEditorListener != null) {
+            // now open TextEditor right away if this is new text being added
+            if (mOnPhotoEditorListener != null && !isViewReadd) {
                 val textInput = textInputTv.text.toString()
                 val currentTextColor = textInputTv.currentTextColor
                 mOnPhotoEditorListener?.onEditTextChangeListener(this, textInput, currentTextColor, true)
@@ -408,7 +414,11 @@ class PhotoEditor private constructor(builder: Builder) :
             }
             TEXT -> {
                 // create TEXT view layout
-                view = addText(addedViewInfo.addedViewTextInfo.text, addedViewInfo.addedViewTextInfo.textColor)
+                view = addText(
+                    text = addedViewInfo.addedViewTextInfo.text,
+                    colorCodeTextView = addedViewInfo.addedViewTextInfo.textColor,
+                    isViewReadd = true
+                )
                 // apply specific TextView parameters for text (fontsize, text color)
                 val normalTextView = view?.findViewById<TextView>(R.id.tvPhotoEditorText)
                 normalTextView?.textSize = addedViewInfo.addedViewTextInfo.fontSizeSp
