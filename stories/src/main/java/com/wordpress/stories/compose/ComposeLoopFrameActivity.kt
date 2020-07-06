@@ -92,7 +92,7 @@ import com.wordpress.stories.compose.story.StoryViewModel
 import com.wordpress.stories.compose.story.StoryViewModel.StoryFrameListItemUiState.StoryFrameListItemUiStateFrame
 import com.wordpress.stories.compose.story.StoryViewModelFactory
 import com.wordpress.stories.compose.story.deserializeAddedViews
-import com.wordpress.stories.compose.story.serializeAddedViewTest
+import com.wordpress.stories.compose.story.serializeAddedView
 import com.wordpress.stories.compose.story.serializeAddedViews
 import com.wordpress.stories.compose.text.TextEditorDialogFragment
 import com.wordpress.stories.util.KEY_STORY_SAVE_RESULT
@@ -1068,7 +1068,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // TODO REMOVE TEST CODE START
         val serializedObj = serializeAddedViews(photoEditor.getViewsAdded())
         for (item in photoEditor.getViewsAdded()) {
-            val tetstSerializedObj = serializeAddedViewTest(item)
+            val tetstSerializedObj = serializeAddedView(item)
             Log.d("PORTKEY", "serialized obj: " + tetstSerializedObj)
         }
         val deserializedObj = deserializeAddedViews(serializedObj)

@@ -25,7 +25,7 @@ fun serializeAddedViews(addedViews: AddedViewList): String {
     return Json.stringify(ArrayListSerializer(AddedView.serializer()), addedViews)
 }
 
-fun serializeAddedViewTest(addedView: AddedView): String {
+fun serializeAddedView(addedView: AddedView): String {
     return Json.stringify(AddedView.serializer(), addedView)
 }
 
