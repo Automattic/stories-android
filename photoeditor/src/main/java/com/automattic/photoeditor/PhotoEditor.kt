@@ -23,6 +23,7 @@ import androidx.annotation.ColorInt
 import androidx.annotation.IntRange
 import androidx.annotation.RequiresPermission
 import androidx.annotation.UiThread
+import androidx.core.content.ContextCompat
 import androidx.core.widget.TextViewCompat
 import androidx.emoji.text.EmojiCompat
 import com.automattic.photoeditor.gesture.MultiTouchListener
@@ -36,6 +37,7 @@ import com.automattic.photoeditor.views.ViewType.EMOJI
 import com.automattic.photoeditor.views.ViewType.TEXT
 import com.automattic.photoeditor.views.added.AddedView
 import com.automattic.photoeditor.views.added.AddedView.Companion
+import com.automattic.photoeditor.views.added.AddedViewInfo
 import com.automattic.photoeditor.views.added.AddedViewList
 import com.automattic.photoeditor.views.brush.BrushDrawingView
 import com.automattic.photoeditor.views.brush.BrushViewChangeListener
@@ -234,9 +236,10 @@ class PhotoEditor private constructor(builder: Builder) :
      * @param colorCodeTextView text color to be displayed
      */
     @SuppressLint("ClickableViewAccessibility")
-    fun addText(text: String, colorCodeTextView: Int, textTypeface: Typeface? = null, fontSizeSp: Float = 18f) {
+    fun addText(text: String, colorCodeTextView: Int, textTypeface: Typeface? = null, fontSizeSp: Float = 18f): View? {
         brushDrawingView.brushDrawingMode = false
-        getLayout(ViewType.TEXT)?.apply {
+        val view: View?
+        view = getLayout(ViewType.TEXT)?.apply {
             val textInputTv = findViewById<TextView>(R.id.tvPhotoEditorText)
 
             textInputTv.text = text
@@ -270,6 +273,7 @@ class PhotoEditor private constructor(builder: Builder) :
                 mOnPhotoEditorListener?.onEditTextChangeListener(this, textInput, currentTextColor, true)
             }
         }
+        return view
     }
 
     /**
@@ -313,8 +317,8 @@ class PhotoEditor private constructor(builder: Builder) :
      *
      * @param emojiName unicode in form of string to display emoji
      */
-    fun addEmoji(emojiName: String) {
-        addEmoji(null, emojiName)
+    fun addEmoji(emojiName: String): View? {
+        return addEmoji(null, emojiName)
     }
 
     /**
@@ -324,9 +328,10 @@ class PhotoEditor private constructor(builder: Builder) :
      * @param emojiTypeface typeface for custom font to show emoji unicode in specific font
      * @param emojiName unicode in form of string to display emoji
      */
-    fun addEmoji(emojiTypeface: Typeface?, emojiName: String) {
+    fun addEmoji(emojiTypeface: Typeface?, emojiName: String): View? {
         brushDrawingView.brushDrawingMode = false
-        getLayout(ViewType.EMOJI)?.apply {
+        val view = getLayout(ViewType.EMOJI)
+        view?.apply {
             val emojiTextView = findViewById<TextView>(R.id.tvPhotoEditorEmoji)
 
             if (emojiTypeface != null) {
@@ -369,6 +374,7 @@ class PhotoEditor private constructor(builder: Builder) :
             // setOnTouchListener(multiTouchListenerInstance)
             addViewToParent(this, ViewType.EMOJI)
         }
+        return view
     }
 
     /**
@@ -386,7 +392,38 @@ class PhotoEditor private constructor(builder: Builder) :
         mOnPhotoEditorListener?.onAddViewListener(viewType, addedViews.size)
     }
 
-    fun addViewToParentWithTouchListener(rootView: View, viewType: ViewType, sourceUri: Uri? = null) {
+    fun addViewToParentWithTouchListener(addedView: AddedView) {
+        addedView.view?.let {
+            addViewToParentWithTouchListener(it, addedView.viewType, addedView.uri)
+        } ?: buildViewFromAddedViewInfo(addedView.viewInfo, addedView.viewType)
+    }
+
+    private fun buildViewFromAddedViewInfo(addedViewInfo: AddedViewInfo, viewType: ViewType): View? {
+        var view: View? = null
+        when (viewType) {
+            EMOJI -> {
+                // create emoji view layout
+                view = addEmoji(addedViewInfo.text)
+            }
+            TEXT -> {
+                // create TEXT view layout
+                view = addText(addedViewInfo.text, ContextCompat.getColor(context, android.R.color.white))
+            }
+        }
+
+        // now apply all parameters to newly created view object
+        view?.let {
+            it.rotation = addedViewInfo.rotation
+            it.translationX = addedViewInfo.translationX
+            it.translationY = addedViewInfo.translationY
+            it.scaleX = addedViewInfo.scale
+            it.scaleY = addedViewInfo.scale
+        }
+
+        return view
+    }
+
+    private fun addViewToParentWithTouchListener(rootView: View, viewType: ViewType, sourceUri: Uri? = null) {
         val multiTouchListenerInstance = getNewMultitouchListener(rootView) // newMultiTouchListener
         when {
             viewType == EMOJI -> {

@@ -1775,7 +1775,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // now call addViewToParent the addedViews remembered by this frame
         newSelectedFrame.addedViews.let {
             for (oneView in it) {
-                photoEditor.addViewToParentWithTouchListener(requireNotNull(oneView.view), oneView.viewType)
+                photoEditor.addViewToParentWithTouchListener(oneView)
             }
         }
 

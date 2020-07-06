@@ -317,7 +317,9 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         fun releaseAddedViews(frame: StoryFrameItem) {
             // don't forget to remove these views from ghost offscreen view before exiting
             for (oneView in frame.addedViews) {
-                removeViewFromParent(requireNotNull(oneView.view))
+                oneView.view?.let {
+                    removeViewFromParent(it)
+                }
             }
         }
     }
