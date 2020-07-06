@@ -2,6 +2,7 @@ package com.wordpress.stories.compose.story
 
 import com.automattic.photoeditor.views.added.AddedView
 import com.automattic.photoeditor.views.added.AddedViewList
+import kotlinx.serialization.internal.ArrayListSerializer
 import kotlinx.serialization.json.Json
 
 fun serializeStory(story: Story): String {
@@ -21,7 +22,7 @@ fun deserializeStoryFrameItem(storyFrameItem: String): StoryFrameItem {
 }
 
 fun serializeAddedViews(addedViews: AddedViewList): String {
-    return Json.stringify(AddedViewList.serializer(), addedViews)
+    return Json.stringify(ArrayListSerializer(AddedView.serializer()), addedViews)
 }
 
 fun serializeAddedViewTest(addedView: AddedView): String {
@@ -29,5 +30,7 @@ fun serializeAddedViewTest(addedView: AddedView): String {
 }
 
 fun deserializeAddedViews(addedViews: String): AddedViewList {
-    return Json.parse(AddedViewList.serializer(), addedViews)
+    val newList = AddedViewList()
+    newList.addAll(Json.parse(ArrayListSerializer(AddedView.serializer()), addedViews))
+    return newList
 }
