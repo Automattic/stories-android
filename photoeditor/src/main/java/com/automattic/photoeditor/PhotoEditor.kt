@@ -53,8 +53,8 @@ import kotlinx.android.synthetic.main.view_photo_editor_emoji.view.*
 import kotlinx.android.synthetic.main.view_photo_editor_text.view.*
 import java.io.File
 import java.io.FileInputStream
-import java.util.ArrayList
 import java.lang.ref.WeakReference
+import java.util.ArrayList
 
 /**
  *
@@ -410,7 +410,8 @@ class PhotoEditor private constructor(builder: Builder) :
                 view = addEmoji(addedViewInfo.addedViewTextInfo.text)
                 // apply specific TextView parameters for emoji (fontsize)
                 val emojiTextView = view?.findViewById<TextView>(R.id.tvPhotoEditorEmoji)
-                emojiTextView?.textSize = addedViewInfo.addedViewTextInfo.fontSizeSp
+                // the actual calculated text size as obtained from the view is expressed in px.
+                emojiTextView?.setTextSize(TypedValue.COMPLEX_UNIT_PX, addedViewInfo.addedViewTextInfo.fontSizePx)
             }
             TEXT -> {
                 // create TEXT view layout
@@ -421,7 +422,8 @@ class PhotoEditor private constructor(builder: Builder) :
                 )
                 // apply specific TextView parameters for text (fontsize, text color)
                 val normalTextView = view?.findViewById<TextView>(R.id.tvPhotoEditorText)
-                normalTextView?.textSize = addedViewInfo.addedViewTextInfo.fontSizeSp
+                // the actual calculated text size as obtained from the view is expressed in px.
+                normalTextView?.setTextSize(TypedValue.COMPLEX_UNIT_PX, addedViewInfo.addedViewTextInfo.fontSizePx)
                 normalTextView?.setTextColor(addedViewInfo.addedViewTextInfo.textColor)
             }
         }
