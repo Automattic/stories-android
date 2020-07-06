@@ -408,7 +408,6 @@ class PhotoEditor private constructor(builder: Builder) :
             }
             TEXT -> {
                 // create TEXT view layout
-                // view = addText(addedViewInfo.addedViewTextInfo.text, ContextCompat.getColor(context, android.R.color.white))
                 view = addText(addedViewInfo.addedViewTextInfo.text, addedViewInfo.addedViewTextInfo.textColor)
                 // apply specific TextView parameters for text (fontsize, text color)
                 val normalTextView = view?.findViewById<TextView>(R.id.tvPhotoEditorText)
