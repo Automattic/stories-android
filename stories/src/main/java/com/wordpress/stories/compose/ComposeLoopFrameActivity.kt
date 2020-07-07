@@ -91,9 +91,6 @@ import com.wordpress.stories.compose.story.StoryRepository
 import com.wordpress.stories.compose.story.StoryViewModel
 import com.wordpress.stories.compose.story.StoryViewModel.StoryFrameListItemUiState.StoryFrameListItemUiStateFrame
 import com.wordpress.stories.compose.story.StoryViewModelFactory
-import com.wordpress.stories.compose.story.deserializeAddedViews
-import com.wordpress.stories.compose.story.serializeAddedView
-import com.wordpress.stories.compose.story.serializeAddedViews
 import com.wordpress.stories.compose.text.TextEditorDialogFragment
 import com.wordpress.stories.util.KEY_STORY_SAVE_RESULT
 import com.wordpress.stories.util.STATE_KEY_CURRENT_STORY_INDEX
