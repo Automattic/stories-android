@@ -1064,16 +1064,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
         // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
         currentStoryFrameItem?.addedViews = AddedViewList().copyOf(photoEditor.getViewsAdded())
-
-        // TODO REMOVE TEST CODE START
-        val serializedObj = serializeAddedViews(photoEditor.getViewsAdded())
-        for (item in photoEditor.getViewsAdded()) {
-            val tetstSerializedObj = serializeAddedView(item)
-            Log.d("PORTKEY", "serialized obj: " + tetstSerializedObj)
-        }
-        val deserializedObj = deserializeAddedViews(serializedObj)
-        currentStoryFrameItem?.addedViews = deserializedObj
-        // TODO REMOVE TEST CODE END
     }
 
     private fun showMediaPicker() {
