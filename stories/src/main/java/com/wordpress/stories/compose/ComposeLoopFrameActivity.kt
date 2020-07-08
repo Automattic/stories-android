@@ -654,6 +654,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         outState.putSerializable(STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE, currentOriginalCapturedFile)
         outState.putInt(STATE_KEY_CURRENT_STORY_INDEX, storyIndexToSelect)
         outState.putBoolean(STATE_KEY_PREHOOK_RUN, preHookRun)
+
+        // save Story slide (frame) state
+        addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
         outState.putString(STATE_KEY_STORY_SAVE_STATE, StorySerializerUtils.serializeStory(
             storyViewModel.getStoryAtIndex(storyViewModel.getCurrentStoryIndex()))
         )
