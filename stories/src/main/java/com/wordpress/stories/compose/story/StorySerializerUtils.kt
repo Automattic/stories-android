@@ -1,36 +1,54 @@
 package com.wordpress.stories.compose.story
 
+import android.os.Parcelable
 import com.automattic.photoeditor.views.added.AddedView
 import com.automattic.photoeditor.views.added.AddedViewList
+import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason
+import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveError
+import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
 import kotlinx.serialization.internal.ArrayListSerializer
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModule
 
-fun serializeStory(story: Story): String {
-    return Json.stringify(Story.serializer(), story)
+class StorySerializerUtils {
+    companion object {
+        private val saveResultModule = SerializersModule { // 1
+            polymorphic(Parcelable::class, SaveResultReason::class) { // 2
+                SaveSuccess::class with SaveSuccess.serializer() // 3
+                SaveError::class with SaveError.serializer() // 4
+            }
+        }
+        private val json = Json(context = saveResultModule)
+
+        fun serializeStory(story: Story): String {
+            return json.stringify(Story.serializer(), story)
+        }
+
+        fun serializeStoryFrameItem(storyFrameItem: StoryFrameItem): String {
+            return json.stringify(StoryFrameItem.serializer(), storyFrameItem)
+        }
+
+        fun deserializeStory(story: String): Story {
+            return json.parse(Story.serializer(), story)
+        }
+
+        fun deserializeStoryFrameItem(storyFrameItem: String): StoryFrameItem {
+            return json.parse(StoryFrameItem.serializer(), storyFrameItem)
+        }
+
+        fun serializeAddedViews(addedViews: AddedViewList): String {
+            return Json.stringify(ArrayListSerializer(AddedView.serializer()), addedViews)
+        }
+
+        fun serializeAddedView(addedView: AddedView): String {
+            return Json.stringify(AddedView.serializer(), addedView)
+        }
+
+        fun deserializeAddedViews(addedViews: String): AddedViewList {
+            val newList = AddedViewList()
+            newList.addAll(Json.parse(ArrayListSerializer(AddedView.serializer()), addedViews))
+            return newList
+        }
+    }
 }
 
-fun serializeStoryFrameItem(storyFrameItem: StoryFrameItem): String {
-    return Json.stringify(StoryFrameItem.serializer(), storyFrameItem)
-}
-
-fun deserializeStory(story: String): Story {
-    return Json.parse(Story.serializer(), story)
-}
-
-fun deserializeStoryFrameItem(storyFrameItem: String): StoryFrameItem {
-    return Json.parse(StoryFrameItem.serializer(), storyFrameItem)
-}
-
-fun serializeAddedViews(addedViews: AddedViewList): String {
-    return Json.stringify(ArrayListSerializer(AddedView.serializer()), addedViews)
-}
-
-fun serializeAddedView(addedView: AddedView): String {
-    return Json.stringify(AddedView.serializer(), addedView)
-}
-
-fun deserializeAddedViews(addedViews: String): AddedViewList {
-    val newList = AddedViewList()
-    newList.addAll(Json.parse(ArrayListSerializer(AddedView.serializer()), addedViews))
-    return newList
-}

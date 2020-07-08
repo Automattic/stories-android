@@ -88,11 +88,10 @@ import com.wordpress.stories.compose.story.StoryFrameItemType.VIDEO
 import com.wordpress.stories.compose.story.StoryFrameSelectorFragment
 import com.wordpress.stories.compose.story.StoryIndex
 import com.wordpress.stories.compose.story.StoryRepository
+import com.wordpress.stories.compose.story.StorySerializerUtils
 import com.wordpress.stories.compose.story.StoryViewModel
 import com.wordpress.stories.compose.story.StoryViewModel.StoryFrameListItemUiState.StoryFrameListItemUiStateFrame
 import com.wordpress.stories.compose.story.StoryViewModelFactory
-import com.wordpress.stories.compose.story.deserializeStory
-import com.wordpress.stories.compose.story.serializeStory
 import com.wordpress.stories.compose.text.TextEditorDialogFragment
 import com.wordpress.stories.util.KEY_STORY_SAVE_RESULT
 import com.wordpress.stories.util.STATE_KEY_CURRENT_STORY_INDEX
@@ -449,8 +448,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 savedInstanceState.getSerializable(STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE) as File?
             preHookRun = savedInstanceState.getBoolean(STATE_KEY_PREHOOK_RUN)
 
-            val story = deserializeStory(savedInstanceState.getString(STATE_KEY_STORY_SAVE_STATE))
-            storyViewModel.loadStory(story)
+            storyViewModel.loadStory(
+                StorySerializerUtils.deserializeStory(savedInstanceState.getString(STATE_KEY_STORY_SAVE_STATE))
+            )
 
             photoEditorView.postDelayed({
                 when {
@@ -654,7 +654,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         outState.putSerializable(STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE, currentOriginalCapturedFile)
         outState.putInt(STATE_KEY_CURRENT_STORY_INDEX, storyIndexToSelect)
         outState.putBoolean(STATE_KEY_PREHOOK_RUN, preHookRun)
-        outState.putString(STATE_KEY_STORY_SAVE_STATE, serializeStory(
+        outState.putString(STATE_KEY_STORY_SAVE_STATE, StorySerializerUtils.serializeStory(
             storyViewModel.getStoryAtIndex(storyViewModel.getCurrentStoryIndex()))
         )
         super.onSaveInstanceState(outState)
