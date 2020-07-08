@@ -239,7 +239,7 @@ class PhotoEditor private constructor(builder: Builder) :
         colorCodeTextView: Int,
         textTypeface: Typeface? = null,
         fontSizeSp: Float = 18f,
-        isViewReadd: Boolean = false
+        isViewBeingReadded: Boolean = false
     ): View? {
         brushDrawingView.brushDrawingMode = false
         val view: View?
@@ -271,7 +271,7 @@ class PhotoEditor private constructor(builder: Builder) :
             addViewToParent(this, ViewType.TEXT)
 
             // now open TextEditor right away if this is new text being added
-            if (mOnPhotoEditorListener != null && !isViewReadd) {
+            if (mOnPhotoEditorListener != null && !isViewBeingReadded) {
                 val textInput = textInputTv.text.toString()
                 val currentTextColor = textInputTv.currentTextColor
                 mOnPhotoEditorListener?.onEditTextChangeListener(this, textInput, currentTextColor, true)
@@ -418,7 +418,7 @@ class PhotoEditor private constructor(builder: Builder) :
                 view = addText(
                     text = addedViewInfo.addedViewTextInfo.text,
                     colorCodeTextView = addedViewInfo.addedViewTextInfo.textColor,
-                    isViewReadd = true
+                    isViewBeingReadded = true
                 )
                 // apply specific TextView parameters for text (fontsize, text color)
                 val normalTextView = view?.findViewById<TextView>(R.id.tvPhotoEditorText)
