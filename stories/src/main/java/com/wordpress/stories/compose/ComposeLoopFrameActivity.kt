@@ -119,10 +119,10 @@ enum class ScreenTouchBlockMode {
     BLOCK_TOUCH_MODE_NONE,
     BLOCK_TOUCH_MODE_FULL_SCREEN, // used when saving - user is not allowed to touch anything
     BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION, // used when in error resolution mode: user needs to take
-                                    // action, so we allow them to use the StoryFrameSelector and menu, but no edits on
-                                    // the Photo Editor canvas are allowed at this stage
+    // action, so we allow them to use the StoryFrameSelector and menu, but no edits on
+    // the Photo Editor canvas are allowed at this stage
     BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY // used when errors have been sorted out by the user - no edits allowed,
-                                        // but they should be good to upload the Story now
+    // but they should be good to upload the Story now
 }
 
 interface SnackbarProvider {
@@ -154,6 +154,10 @@ interface AuthenticationHeadersProvider {
 // metadata is going to be passed from init to finish so the caller can identify and add whatever information they need
 interface MetadataProvider {
     fun loadMetadataForStory(index: StoryIndex): Bundle?
+}
+
+interface PrepublishingEventProvider {
+    fun onStorySaveButtonPressed()
 }
 
 interface StoryDiscardListener {
@@ -197,6 +201,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private var metadataProvider: MetadataProvider? = null
     private var storyDiscardListener: StoryDiscardListener? = null
     private var notificationTrackerProvider: NotificationTrackerProvider? = null
+    private var prepublishingEventProvider: PrepublishingEventProvider? = null
     private var firstIntentLoaded: Boolean = false
     private var permissionsRequestInProcess: Boolean = false
 
@@ -219,7 +224,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 // notifications the host app may have
                 // IMPORTANT: this needs to be the first call in the methods linedup for NotificationIntentLoader
                 frameSaveService.setNotificationErrorBaseId(
-                        it.setupErrorNotificationBaseId()
+                    it.setupErrorNotificationBaseId()
                 )
 
                 frameSaveService.setNotificationIntent(it.loadIntentForErrorNotification())
@@ -610,7 +615,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             // create new Story from passed media Uris
             storyViewModel.createNewStory()
             val uriList: List<Uri> = convertStringArrayIntoUrisList(
-                    intent.getStringArrayExtra(requestCodes.EXTRA_MEDIA_URIS)
+                intent.getStringArrayExtra(requestCodes.EXTRA_MEDIA_URIS)
             )
             addFramesToStoryFromMediaUriList(uriList)
             setDefaultSelectionAndUpdateBackgroundSurfaceUI(uriList)
@@ -636,8 +641,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // Before setting full screen flags, we must wait a bit to let UI settle; otherwise, we may
         // be trying to set app to immersive mode before it's ready and the flags do not stick
         photoEditorView.postDelayed({
-                hideStatusBar(window)
-                photoEditor.updateWorkAreaRect(calculateWorkingArea())
+            hideStatusBar(window)
+            photoEditor.updateWorkAreaRect(calculateWorkingArea())
         }, IMMERSIVE_FLAG_TIMEOUT)
     }
 
@@ -836,16 +841,16 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     if (storyViewModel.anyOfCurrentStoryFramesHasViews()) {
                         // show dialog
                         FrameSaveErrorDialog.newInstance(
-                                title = getString(R.string.dialog_discard_story_title),
-                                message = getString(R.string.dialog_discard_story_message),
-                                okButtonLabel = getString(R.string.dialog_discard_story_ok_button),
-                                listener = object : FrameSaveErrorDialogOk {
-                                    override fun OnOkClicked(dialog: DialogFragment) {
-                                        dialog.dismiss()
-                                        // discard the whole story
-                                        safelyDiscardCurrentStoryAndCleanUpIntent()
-                                    }
-                                }).show(supportFragmentManager, FRAGMENT_DIALOG)
+                            title = getString(R.string.dialog_discard_story_title),
+                            message = getString(R.string.dialog_discard_story_message),
+                            okButtonLabel = getString(R.string.dialog_discard_story_ok_button),
+                            listener = object : FrameSaveErrorDialogOk {
+                                override fun OnOkClicked(dialog: DialogFragment) {
+                                    dialog.dismiss()
+                                    // discard the whole story
+                                    safelyDiscardCurrentStoryAndCleanUpIntent()
+                                }
+                            }).show(supportFragmentManager, FRAGMENT_DIALOG)
                     } else {
                         // discard the whole story
                         safelyDiscardCurrentStoryAndCleanUpIntent()
@@ -868,28 +873,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         }
 
         next_button.setOnClickListener {
-            addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
-
-            // if we were in an error-handling situation but now all pages are OK, we don't need to save them again
-            if (anyOfOriginalIntentResultsIsError() && !storyViewModel.anyOfCurrentStoryFramesIsErrored()) {
-                // everything is already saved by now
-                // TODO kick the UploadService here! when in WPAndroid
-                showToast("Awesome! Upload starting...")
-                finish()
-            } else {
-                // TODO show bottom sheet
-                // then save everything if they hit PUBLISH
-                showToast("bottom sheet not implemented yet")
-
-                // fresh intent, go fully save the Story
-                if (storyViewModel.getCurrentStorySize() > 0) {
-                    // save all composed frames
-                    if (PermissionUtils.checkAndRequestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                        storyFrameIndexToRetry = StoryRepository.DEFAULT_NONE_SELECTED
-                        saveStory()
-                    }
-                }
-            }
+            prepublishingEventProvider?.onStorySaveButtonPressed()
         }
 
         retry_button.setOnClickListener {
@@ -927,6 +911,27 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     }).show(supportFragmentManager, FRAGMENT_DIALOG)
             })
             view_popup_menu.visibility = View.VISIBLE
+        }
+    }
+
+    fun processStorySaving() {
+        addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
+
+        // if we were in an error-handling situation but now all pages are OK, we don't need to save them again
+        if (anyOfOriginalIntentResultsIsError() && !storyViewModel.anyOfCurrentStoryFramesIsErrored()) {
+            // everything is already saved by now
+            // TODO kick the UploadService here! when in WPAndroid
+            showToast("Awesome! Upload starting...")
+            finish()
+        } else {
+            // fresh intent, go fully save the Story
+            if (storyViewModel.getCurrentStorySize() > 0) {
+                // save all composed frames
+                if (PermissionUtils.checkAndRequestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    storyFrameIndexToRetry = StoryRepository.DEFAULT_NONE_SELECTED
+                    saveStory()
+                }
+            }
         }
     }
 
@@ -1833,10 +1838,14 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         notificationTrackerProvider = provider
     }
 
+    fun setPrepublishingEventProvider(provider: PrepublishingEventProvider) {
+        prepublishingEventProvider = provider
+    }
+
     class ExternalMediaPickerRequestCodesAndExtraKeys {
         var PHOTO_PICKER: Int = 0 // default code, can be overriden.
-                                    // Leave this value in zero so it's evident if something is not working (will break
-                                    // if not properly initialized)
+        // Leave this value in zero so it's evident if something is not working (will break
+        // if not properly initialized)
         lateinit var EXTRA_MEDIA_URIS: String
         lateinit var EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED: String
     }

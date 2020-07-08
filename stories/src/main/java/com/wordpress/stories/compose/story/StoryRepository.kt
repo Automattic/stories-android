@@ -3,6 +3,8 @@ package com.wordpress.stories.compose.story
 import com.wordpress.stories.compose.frame.FrameIndex
 import com.wordpress.stories.compose.frame.StorySaveEvents.FrameSaveResult
 import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveResult
+import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.FileBackgroundSource
+import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.UriBackgroundSource
 import com.wordpress.stories.compose.story.StoryFrameItemType.VIDEO
 import java.util.Collections
 
@@ -33,7 +35,8 @@ object StoryRepository {
                 currentStoryFrames.clear()
                 currentStoryFrames.addAll(stories[storyIndex].frames)
                 return stories[storyIndex]
-            } else -> {
+            }
+            else -> {
                 return null
             }
         }
@@ -81,6 +84,8 @@ object StoryRepository {
         stories[currentStoryIndex].title = title
     }
 
+    fun getCurrentStoryTitle() = stories[currentStoryIndex].title
+
     fun setCurrentStorySaveResultsOnFrames(storyIndex: StoryIndex, saveResult: StorySaveResult) {
         // iterate over the StorySaveResult, check their indexes, and set the corresponding frame result
         for (index in 0..saveResult.frameSaveResult.size - 1) {
@@ -115,5 +120,14 @@ object StoryRepository {
 
     fun swapItemsInPositions(pos1: Int, pos2: Int) {
         Collections.swap(currentStoryFrames, pos1, pos2)
+    }
+
+    fun getCurrentStoryThumbnailUrl(): String {
+        val model = currentStoryFrames[0]
+        return if ((model.source is UriBackgroundSource)) {
+            model.source.contentUri.toString()
+        } else {
+            (model.source as FileBackgroundSource).file.toString()
+        }
     }
 }
