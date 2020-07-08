@@ -451,19 +451,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             storyViewModel.loadStory(
                 StorySerializerUtils.deserializeStory(savedInstanceState.getString(STATE_KEY_STORY_SAVE_STATE))
             )
-
             photoEditorView.postDelayed({
-                when {
-                    backgroundSurfaceManager.videoPlayerVisible() -> showPlayVideo(currentOriginalCapturedFile)
-                    backgroundSurfaceManager.cameraVisible() -> launchCameraPreview()
-                    else -> {
-                        Glide.with(this@ComposeLoopFrameActivity)
-                            .load(currentOriginalCapturedFile)
-                            .transform(CenterCrop())
-                            .into(photoEditorView.source)
-                        showStaticBackground()
-                    }
-                }
+                val selectedFrameIndex = savedInstanceState.getInt(STATE_KEY_STORY_SAVE_STATE_SELECTED_FRAME)
+                storyViewModel.setSelectedFrame(selectedFrameIndex)
+                updateBackgroundSurfaceUIWithStoryFrame(selectedFrameIndex, omitKeepAddedViewsForOldSelection = true)
             }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
         }
     }
@@ -660,6 +651,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         outState.putString(STATE_KEY_STORY_SAVE_STATE, StorySerializerUtils.serializeStory(
             storyViewModel.getStoryAtIndex(storyViewModel.getCurrentStoryIndex()))
         )
+        outState.putInt(STATE_KEY_STORY_SAVE_STATE_SELECTED_FRAME, storyViewModel.getSelectedFrameIndex())
         super.onSaveInstanceState(outState)
     }
 
@@ -772,8 +764,15 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             ))
     }
 
-    private fun updateBackgroundSurfaceUIWithStoryFrame(storyFrameIndex: Int) {
-        onStoryFrameSelected(storyViewModel.getSelectedFrameIndex(), storyFrameIndex)
+    private fun updateBackgroundSurfaceUIWithStoryFrame(
+        storyFrameIndex: Int,
+        omitKeepAddedViewsForOldSelection: Boolean = false
+    ) {
+        if (omitKeepAddedViewsForOldSelection) {
+            onStoryFrameSelected(-1, storyFrameIndex)
+        } else {
+            onStoryFrameSelected(storyViewModel.getSelectedFrameIndex(), storyFrameIndex)
+        }
     }
 
     private fun addClickListeners() {
@@ -1888,6 +1887,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         private const val STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE = "key_current_original_captured_file"
         private const val STATE_KEY_PREHOOK_RUN = "key_prehook_run"
         private const val STATE_KEY_STORY_SAVE_STATE = "key_story_save_state"
+        private const val STATE_KEY_STORY_SAVE_STATE_SELECTED_FRAME = "key_story_save_state_selected_frame"
         private const val VIBRATION_INDICATION_LENGTH_MS = 100L
         private const val SWIPE_MIN_DISTANCE = 120
         private const val SWIPE_MIN_DISTANCE_FROM_BOTTOM = 80
