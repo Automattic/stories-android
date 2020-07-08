@@ -13,7 +13,6 @@ typealias StoryIndex = Int
 object StoryRepository {
     const val DEFAULT_NONE_SELECTED = -1
     const val DEFAULT_FRAME_NONE_SELECTED = -1
-    private val currentStoryFrames = ArrayList<StoryFrameItem>()
     var currentStoryIndex = DEFAULT_NONE_SELECTED
         private set
     private val stories = ArrayList<Story>()
@@ -32,8 +31,6 @@ object StoryRepository {
             (stories.size > storyIndex && isStoryIndexValid(storyIndex)) -> {
                 // otherwise update the currentStoryIndex and currentStoryFrames values
                 currentStoryIndex = storyIndex
-                currentStoryFrames.clear()
-                currentStoryFrames.addAll(stories[storyIndex].frames)
                 return stories[storyIndex]
             }
             else -> {
@@ -43,7 +40,7 @@ object StoryRepository {
     }
 
     private fun isStoryIndexValid(storyIndex: Int): Boolean {
-        return storyIndex > DEFAULT_NONE_SELECTED
+        return storyIndex > DEFAULT_NONE_SELECTED && stories.size > storyIndex
     }
 
     @JvmStatic fun getStoryAtIndex(index: Int): Story {
@@ -51,7 +48,6 @@ object StoryRepository {
     }
 
     private fun createNewStory(): Int {
-        currentStoryFrames.clear()
         val story = Story(ArrayList())
         stories.add(story)
         currentStoryIndex = stories.size - 1
@@ -59,21 +55,20 @@ object StoryRepository {
     }
 
     fun addStoryFrameItemToCurrentStory(item: StoryFrameItem) {
-        currentStoryFrames.add(item)
+        if (!isStoryIndexValid(currentStoryIndex)) return
+        stories[currentStoryIndex].frames.add(item)
     }
 
     // when the user finishes a story, just add it to our repo for now and clear currentStory
     fun finishCurrentStory(title: String? = null) {
         val frameList = ArrayList<StoryFrameItem>()
-        frameList.addAll(currentStoryFrames)
+        frameList.addAll(stories[currentStoryIndex].frames)
         // override with passed title if not null, otherwise keep it from already existing current Story
         stories[currentStoryIndex] = Story(frameList, title ?: stories[currentStoryIndex].title)
-        currentStoryFrames.clear()
         currentStoryIndex = DEFAULT_NONE_SELECTED
     }
 
     fun discardCurrentStory() {
-        currentStoryFrames.clear()
         if (isStoryIndexValid(currentStoryIndex)) {
             stories.removeAt(currentStoryIndex)
         }
@@ -81,49 +76,72 @@ object StoryRepository {
     }
 
     fun setCurrentStoryTitle(title: String) {
-        stories[currentStoryIndex].title = title
+        if (isStoryIndexValid(currentStoryIndex)) {
+            stories[currentStoryIndex].title = title
+        }
     }
 
-    fun getCurrentStoryTitle() = stories[currentStoryIndex].title
+    fun getCurrentStoryTitle(): String? {
+        if (isStoryIndexValid(currentStoryIndex)) {
+            return stories[currentStoryIndex].title
+        } else {
+            return ""
+        }
+    }
 
     fun setCurrentStorySaveResultsOnFrames(storyIndex: StoryIndex, saveResult: StorySaveResult) {
         // iterate over the StorySaveResult, check their indexes, and set the corresponding frame result
-        for (index in 0..saveResult.frameSaveResult.size - 1) {
-            val frameIdxToSet = saveResult.frameSaveResult[index].frameIndex
-            stories[storyIndex].frames[frameIdxToSet].saveResultReason = saveResult.frameSaveResult[index].resultReason
+        if (isStoryIndexValid(storyIndex)) {
+            for (index in 0..saveResult.frameSaveResult.size - 1) {
+                val frameIdxToSet = saveResult.frameSaveResult[index].frameIndex
+                stories[storyIndex].frames[frameIdxToSet].saveResultReason =
+                        saveResult.frameSaveResult[index].resultReason
+            }
         }
     }
 
     fun updateCurrentStorySaveResultOnFrame(frameIndex: FrameIndex, frameSaveResult: FrameSaveResult) {
-        currentStoryFrames[frameIndex].saveResultReason = frameSaveResult.resultReason
+        if (!isStoryIndexValid(currentStoryIndex)) return
+        stories[currentStoryIndex].frames[frameIndex].saveResultReason = frameSaveResult.resultReason
     }
 
     fun updateCurrentSelectedFrameOnAudioMuted(frameIndex: FrameIndex, muteAudio: Boolean) {
-        (currentStoryFrames[frameIndex].frameItemType as? VIDEO)?.muteAudio = muteAudio
+        if (!isStoryIndexValid(currentStoryIndex)) return
+        (stories[currentStoryIndex].frames[frameIndex].frameItemType as? VIDEO)?.muteAudio = muteAudio
     }
 
     fun getCurrentStoryFrameAt(index: Int): StoryFrameItem {
-        return currentStoryFrames[index]
+        return stories[currentStoryIndex].frames[index]
     }
 
     fun getImmutableCurrentStoryFrames(): List<StoryFrameItem> {
-        return currentStoryFrames.toList()
+        if (!isStoryIndexValid(currentStoryIndex)) {
+            return emptyList()
+        }
+        return stories[currentStoryIndex].frames.toList()
     }
 
     fun getCurrentStorySize(): Int {
-        return currentStoryFrames.size
+        if (!isStoryIndexValid(currentStoryIndex)) {
+            return 0
+        }
+        return stories[currentStoryIndex].frames.size
     }
 
     fun removeFrameAt(pos: Int) {
-        currentStoryFrames.removeAt(pos)
+        if (!isStoryIndexValid(currentStoryIndex)) return
+        stories[currentStoryIndex].frames.removeAt(pos)
     }
 
     fun swapItemsInPositions(pos1: Int, pos2: Int) {
-        Collections.swap(currentStoryFrames, pos1, pos2)
+        if (!isStoryIndexValid(currentStoryIndex)) return
+        Collections.swap(stories[currentStoryIndex].frames, pos1, pos2)
     }
 
     fun getCurrentStoryThumbnailUrl(): String {
-        val model = currentStoryFrames[0]
+        if (!isStoryIndexValid(currentStoryIndex)) return ""
+
+        val model = stories[currentStoryIndex].frames[0]
         return if ((model.source is UriBackgroundSource)) {
             model.source.contentUri.toString()
         } else {

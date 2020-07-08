@@ -203,7 +203,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private var notificationTrackerProvider: NotificationTrackerProvider? = null
     private var prepublishingEventProvider: PrepublishingEventProvider? = null
     private var firstIntentLoaded: Boolean = false
-    private var permissionsRequestInProcess: Boolean = false
+    private var permissionsRequestForCameraInProgress: Boolean = false
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
@@ -213,10 +213,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
             // keep these as they're changing when we call `storyViewModel.finishCurrentStory()`
             val storyIndex = storyViewModel.getCurrentStoryIndex()
-            if (storyFrameIndexToRetry == StoryRepository.DEFAULT_NONE_SELECTED) {
-                // TODO obtain the real Story title as assigned by the user when the BOTTOM SHEET is ready, and pass it up
-                storyViewModel.setCurrentStoryTitle(getString(R.string.story_saving_untitled))
-            }
+
             // Setup notification intent for notifications triggered from the FrameSaveService.FrameSaveNotifier class
             notificationIntentLoader?.let {
                 // set the base notification Error Id. This is given on purpose so the host app can give a unique
@@ -471,7 +468,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             // if no frames in Story, finish
             // note momentarily there will be times when this LiveData is triggered while permissions are
             // being requested so, don't proceed if that is the case
-            if (storyViewModel.getCurrentStorySize() == 0 && firstIntentLoaded && !permissionsRequestInProcess) {
+            if (storyViewModel.getCurrentStorySize() == 0 &&
+                    firstIntentLoaded && !permissionsRequestForCameraInProgress) {
                 // finally, delete the captured media
                 deleteCapturedMedia()
                 finish()
@@ -583,11 +581,19 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     protected open fun onLoadFromIntent(intent: Intent) {
-        storyViewModel.loadStory(storyIndexToSelect)
-        if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
+        if (storyViewModel.getCurrentStoryIndex() == StoryRepository.DEFAULT_NONE_SELECTED) {
+            storyViewModel.loadStory(storyIndexToSelect)
+            storyIndexToSelect = storyViewModel.getCurrentStoryIndex()
+        }
+
+        if (intent.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED) ||
+                permissionsRequestForCameraInProgress) {
+            launchCameraPreview()
+            checkForLowSpaceAndShowDialog()
+        } else if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
             val storySaveResult = intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
             if (storySaveResult != null &&
-                StoryRepository.getStoryAtIndex(storySaveResult.storyIndex).frames.isNotEmpty()) {
+                    StoryRepository.getStoryAtIndex(storySaveResult.storyIndex).frames.isNotEmpty()) {
                 // dismiss the error notification
                 intent.action?.let {
                     val notificationManager = NotificationManagerCompat.from(this)
@@ -603,6 +609,12 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 showToast(getString(R.string.toast_story_page_not_found))
                 finish()
             }
+        } else if (intent.hasExtra(requestCodes.EXTRA_MEDIA_URIS)) {
+            val uriList: List<Uri> = convertStringArrayIntoUrisList(
+                    intent.getStringArrayExtra(requestCodes.EXTRA_MEDIA_URIS)
+            )
+            addFramesToStoryFromMediaUriList(uriList)
+            setDefaultSelectionAndUpdateBackgroundSurfaceUI(uriList)
         } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED) {
             if (StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.isNotEmpty()) {
                 storyViewModel.loadStory(storyIndexToSelect)
@@ -611,17 +623,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 showToast(getString(R.string.toast_story_page_not_found))
                 finish()
             }
-        } else if (intent.hasExtra(requestCodes.EXTRA_MEDIA_URIS)) {
-            // create new Story from passed media Uris
-            storyViewModel.createNewStory()
-            val uriList: List<Uri> = convertStringArrayIntoUrisList(
-                intent.getStringArrayExtra(requestCodes.EXTRA_MEDIA_URIS)
-            )
-            addFramesToStoryFromMediaUriList(uriList)
-            setDefaultSelectionAndUpdateBackgroundSurfaceUI(uriList)
-        } else if (intent.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED)) {
-            launchCameraPreview()
-            checkForLowSpaceAndShowDialog()
         }
     }
 
@@ -655,11 +656,20 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (PermissionUtils.allRequiredPermissionsGranted(this)) {
             onLoadFromIntent(intent)
-            permissionsRequestInProcess = false
+            permissionsRequestForCameraInProgress = false
+        } else if (permissions.isEmpty() || storyViewModel.getCurrentStorySize() == 0) {
+            // an empty permissions array means the user cancelled giving permissions. End the interaction.
+            // same if we are already in the midst of requesting permission for camera but user will refuse some,
+            // and there are 0 frames on the current story (just bail).
+            // On the contrary, if we already have some Story slides/frames, we will just stay where we are,
+            // and people can try adding more slides from the provided media picker.
+            finish()
         } else {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+            // if user won't give permissions but we have an ongoing Story with frames, just come back to where we were.
+            showCurrentSelectedFrame()
         }
     }
 
@@ -672,20 +682,24 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         if (!backgroundSurfaceManager.cameraVisible()) {
             close_button.performClick()
         } else if (storyViewModel.getCurrentStorySize() > 0) {
-            // get currently selected frame and check whether this is a video or an image
-            when (storyViewModel.getSelectedFrame()?.frameItemType) {
-                is VIDEO -> runOnUiThread {
-                    // now start playing the video that was selected in the frame selector
-                    showPlayVideo()
-                }
-                is IMAGE -> runOnUiThread {
-                    // switch to static background
-                    showStaticBackground()
-                }
-            }
+            showCurrentSelectedFrame()
         } else {
             storyDiscardListener?.onStoryDiscarded()
             super.onBackPressed()
+        }
+    }
+
+    private fun showCurrentSelectedFrame() {
+        // get currently selected frame and check whether this is a video or an image
+        when (storyViewModel.getSelectedFrame()?.frameItemType) {
+            is VIDEO -> runOnUiThread {
+                // now start playing the video that was selected in the frame selector
+                showPlayVideo()
+            }
+            is IMAGE -> runOnUiThread {
+                // switch to static background
+                showStaticBackground()
+            }
         }
     }
 
@@ -709,8 +723,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 } else if (data.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED)) {
                     if (!PermissionUtils.allRequiredPermissionsGranted(this)) {
                         // at this point, the user wants to launch the camera
-                        // but we need to check whether we have permissions for thatt.
-                        // after permissions are requestted, we need the original intent to be set differently
+                        // but we need to check whether we have permissions for that.
+                        // after permissions are requested, we need the original intent to be set differently
                         // so: we need to tweak the intent for when we come back after user gives us permission
                         if (intent.hasExtra(requestCodes.EXTRA_MEDIA_URIS)) {
                             intent.removeExtra(requestCodes.EXTRA_MEDIA_URIS)
@@ -957,6 +971,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             val notificationManager = NotificationManagerCompat.from(this)
             notificationManager.cancel(it.toInt())
         }
+        storyIndexToSelect = StoryRepository.DEFAULT_NONE_SELECTED
         storyViewModel.loadStory(StoryRepository.DEFAULT_NONE_SELECTED)
     }
 
@@ -1095,8 +1110,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun launchCameraPreview() {
+        hideStoryFrameSelector()
+        hideEditModeUIControls()
+
         if (!PermissionUtils.allRequiredPermissionsGranted(this)) {
-            permissionsRequestInProcess = true
+            permissionsRequestForCameraInProgress = true
             PermissionUtils.requestAllRequiredPermissions(this)
             return
         }
@@ -1104,9 +1122,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         if (backgroundSurfaceManager.cameraVisible()) {
             return
         }
-
-        hideStoryFrameSelector()
-        hideEditModeUIControls()
 
         // set the correct camera as selected by the user last time they used the app
         backgroundSurfaceManager.selectCamera(cameraSelection)
