@@ -1,6 +1,7 @@
 package com.wordpress.stories.compose.story
 
 import android.net.Uri
+import com.automattic.photoeditor.views.added.AddedView
 import com.automattic.photoeditor.views.added.AddedViewList
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
@@ -11,12 +12,14 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Transient
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Serializer
+import kotlinx.serialization.internal.ArrayListSerializer
 import java.io.File
 
 @Serializable
 data class StoryFrameItem(
     val source: BackgroundSource,
     val frameItemType: StoryFrameItemType = IMAGE,
+    @Serializable(with = AddedViewListSerializer::class)
     var addedViews: AddedViewList = AddedViewList(),
     var saveResultReason: SaveResultReason = SaveSuccess,
     @Transient
@@ -56,6 +59,19 @@ data class StoryFrameItem(
 
         override fun serialize(output: Encoder, obj: File) {
             output.encodeString(obj.toString())
+        }
+    }
+
+    @Serializer(forClass = AddedViewList::class)
+    object AddedViewListSerializer : KSerializer<AddedViewList> {
+        override fun deserialize(input: Decoder): AddedViewList {
+            val newList = AddedViewList()
+            newList.addAll(input.decodeSerializableValue(ArrayListSerializer(AddedView.serializer())))
+            return newList
+        }
+
+        override fun serialize(output: Encoder, addedViews: AddedViewList) {
+            output.encodeSerializableValue(ArrayListSerializer(AddedView.serializer()), addedViews)
         }
     }
 }
