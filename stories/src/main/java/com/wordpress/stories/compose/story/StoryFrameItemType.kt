@@ -7,6 +7,10 @@ sealed class StoryFrameItemType {
     fun isSameType(second: StoryFrameItemType): Boolean {
         return this::class == second::class
     }
+
+    @Serializable
     object IMAGE : StoryFrameItemType()
+
+    @Serializable
     data class VIDEO(var muteAudio: Boolean = false) : StoryFrameItemType()
 }

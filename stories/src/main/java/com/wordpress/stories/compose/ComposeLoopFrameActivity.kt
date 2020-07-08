@@ -91,6 +91,8 @@ import com.wordpress.stories.compose.story.StoryRepository
 import com.wordpress.stories.compose.story.StoryViewModel
 import com.wordpress.stories.compose.story.StoryViewModel.StoryFrameListItemUiState.StoryFrameListItemUiStateFrame
 import com.wordpress.stories.compose.story.StoryViewModelFactory
+import com.wordpress.stories.compose.story.deserializeStory
+import com.wordpress.stories.compose.story.serializeStory
 import com.wordpress.stories.compose.text.TextEditorDialogFragment
 import com.wordpress.stories.util.KEY_STORY_SAVE_RESULT
 import com.wordpress.stories.util.STATE_KEY_CURRENT_STORY_INDEX
@@ -427,25 +429,28 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // request the BackgroundSurfaceManager to prime the textureView so it's ready when needed.
         backgroundSurfaceManager.preTurnTextureViewOn()
 
-        if (savedInstanceState == null) {
-            // check camera selection, flash state from preferences
-            CameraSelection.valueOf(
-                getPreferences(Context.MODE_PRIVATE).getInt(getString(R.string.pref_camera_selection), 0))?.let {
-                cameraSelection = it
-            }
-            FlashIndicatorState.valueOf(
-                getPreferences(Context.MODE_PRIVATE).getInt(getString(R.string.pref_flash_mode_selection), 0))?.let {
-                flashModeSelection = it
-            }
+        // check camera selection, flash state from preferences
+        CameraSelection.valueOf(
+            getPreferences(Context.MODE_PRIVATE).getInt(getString(R.string.pref_camera_selection), 0))?.let {
+            cameraSelection = it
+        }
+        FlashIndicatorState.valueOf(
+            getPreferences(Context.MODE_PRIVATE).getInt(getString(R.string.pref_flash_mode_selection), 0))?.let {
+            flashModeSelection = it
+        }
 
-            // also, update the UI
-            updateFlashModeSelectionIcon()
+        // also, update the UI
+        updateFlashModeSelectionIcon()
 
-            setupStoryViewModelObservers()
-        } else {
+        setupStoryViewModelObservers()
+
+        if (savedInstanceState != null) {
             currentOriginalCapturedFile =
                 savedInstanceState.getSerializable(STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE) as File?
             preHookRun = savedInstanceState.getBoolean(STATE_KEY_PREHOOK_RUN)
+
+            val story = deserializeStory(savedInstanceState.getString(STATE_KEY_STORY_SAVE_STATE))
+            storyViewModel.loadStory(story)
 
             photoEditorView.postDelayed({
                 when {
@@ -649,6 +654,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         outState.putSerializable(STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE, currentOriginalCapturedFile)
         outState.putInt(STATE_KEY_CURRENT_STORY_INDEX, storyIndexToSelect)
         outState.putBoolean(STATE_KEY_PREHOOK_RUN, preHookRun)
+        outState.putString(STATE_KEY_STORY_SAVE_STATE, serializeStory(
+            storyViewModel.getStoryAtIndex(storyViewModel.getCurrentStoryIndex()))
+        )
         super.onSaveInstanceState(outState)
     }
 
@@ -1876,6 +1884,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         private const val CAMERA_STILL_PICTURE_WAIT_FOR_NEXT_CAPTURE_MS = 1000L
         private const val STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE = "key_current_original_captured_file"
         private const val STATE_KEY_PREHOOK_RUN = "key_prehook_run"
+        private const val STATE_KEY_STORY_SAVE_STATE = "key_story_save_state"
         private const val VIBRATION_INDICATION_LENGTH_MS = 100L
         private const val SWIPE_MIN_DISTANCE = 120
         private const val SWIPE_MIN_DISTANCE_FROM_BOTTOM = 80
