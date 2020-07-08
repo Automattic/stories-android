@@ -222,6 +222,11 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
         updateUiState(createUiStateFromModelState(repository.getImmutableCurrentStoryFrames()))
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        repository.clearAll()
+    }
+
     private fun updateUiState(uiState: StoryFrameListUiState) {
         _uiState.value = uiState
     }

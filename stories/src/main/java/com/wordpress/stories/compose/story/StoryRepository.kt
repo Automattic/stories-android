@@ -154,4 +154,9 @@ object StoryRepository {
             (model.source as FileBackgroundSource).file.toString()
         }
     }
+
+    fun clearAll() {
+        currentStoryIndex = DEFAULT_NONE_SELECTED
+        stories.clear()
+    }
 }
