@@ -448,6 +448,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 savedInstanceState.getSerializable(STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE) as File?
             preHookRun = savedInstanceState.getBoolean(STATE_KEY_PREHOOK_RUN)
 
+            firstIntentLoaded = savedInstanceState.getBoolean(STATE_KEY_FIRST_INTENT_LOADED)
+            permissionsRequestForCameraInProgress = savedInstanceState.getBoolean(STATE_KEY_PERMISSION_REQ_IN_PROGRESS)
+
             storyViewModel.loadStory(
                 StorySerializerUtils.deserializeStory(savedInstanceState.getString(STATE_KEY_STORY_SAVE_STATE))
             )
@@ -645,6 +648,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         outState.putSerializable(STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE, currentOriginalCapturedFile)
         outState.putInt(STATE_KEY_CURRENT_STORY_INDEX, storyIndexToSelect)
         outState.putBoolean(STATE_KEY_PREHOOK_RUN, preHookRun)
+        outState.putBoolean(STATE_KEY_FIRST_INTENT_LOADED, firstIntentLoaded)
+        outState.putBoolean(STATE_KEY_PERMISSION_REQ_IN_PROGRESS, permissionsRequestForCameraInProgress)
 
         // save Story slide (frame) state
         addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
@@ -1888,6 +1893,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         private const val STATE_KEY_PREHOOK_RUN = "key_prehook_run"
         private const val STATE_KEY_STORY_SAVE_STATE = "key_story_save_state"
         private const val STATE_KEY_STORY_SAVE_STATE_SELECTED_FRAME = "key_story_save_state_selected_frame"
+        private const val STATE_KEY_FIRST_INTENT_LOADED = "key_state_first_intent_loaded"
+        private const val STATE_KEY_PERMISSION_REQ_IN_PROGRESS = "key_state_permission_req_in_progress"
         private const val VIBRATION_INDICATION_LENGTH_MS = 100L
         private const val SWIPE_MIN_DISTANCE = 120
         private const val SWIPE_MIN_DISTANCE_FROM_BOTTOM = 80
