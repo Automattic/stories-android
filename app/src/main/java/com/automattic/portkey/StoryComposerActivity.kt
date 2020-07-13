@@ -1,6 +1,7 @@
 package com.automattic.portkey
 
 import android.app.ActivityOptions
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -42,6 +43,9 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
         setNotificationExtrasLoader(this)
         setMetadataProvider(this)
         setStoryDiscardListener(this) // optionally listen to discard events
+        setNotificationTrackerProvider(application as Portkey) // optionally set Notification Tracker.
+        // The notifiationTracker needs to be something that outlives the Activity, given the Service could be running
+        // after the user has exited ComposeLoopFrameActivity
     }
 
     override fun showProvidedSnackbar(message: String, actionLabel: String?, callback: () -> Unit) {
@@ -90,6 +94,15 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
         return notificationIntent
     }
 
+    override fun loadPendingIntentForErrorNotificationDeletion(notificationId: Int): PendingIntent? {
+        // demo app doesn't need to provide an implementation
+        return null
+    }
+
+    override fun setupErrorNotificationBaseId(): Int {
+        return BASE_FRAME_MEDIA_ERROR_NOTIFICATION_ID
+    }
+
     override fun loadMetadataForStory(index: StoryIndex): Bundle? {
         // this is optional, external metadata that will be returned to you after the FrameSaveService finishes
         val bundle = Bundle()
@@ -101,6 +114,7 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
     companion object {
         const val KEY_EXAMPLE_METADATA = "key_example_metadata"
         const val KEY_STORY_INDEX = "key_story_index"
+        const val BASE_FRAME_MEDIA_ERROR_NOTIFICATION_ID: Int = 72300
     }
 
     override fun onStoryDiscarded() {

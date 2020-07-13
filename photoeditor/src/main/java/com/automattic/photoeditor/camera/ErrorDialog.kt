@@ -21,21 +21,35 @@ import android.app.Dialog
 import android.os.Bundle
 import androidx.fragment.app.DialogFragment
 
+interface ErrorDialogOk {
+    fun OnOkClicked(dialog: DialogFragment)
+}
+
 /**
  * Shows an error message dialog.
  */
 class ErrorDialog : DialogFragment() {
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
-            AlertDialog.Builder(activity)
-                    .setMessage(arguments?.getString(ARG_MESSAGE))
-                    .setPositiveButton(android.R.string.ok) { _, _ -> activity?.finish() }
-                    .create()
+    private var okListener: ErrorDialogOk? = null
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        var builder = AlertDialog.Builder(activity)
+                .setMessage(arguments?.getString(ARG_MESSAGE))
+
+        okListener?.let {
+            builder.setPositiveButton(activity?.getString(android.R.string.ok)) {
+                    _, _ -> okListener?.OnOkClicked(this)
+            }
+        } ?: builder.setPositiveButton(activity?.getString(android.R.string.ok)) { _, _ -> activity?.finish() }
+
+        return builder.create()
+    }
 
     companion object {
         @JvmStatic private val ARG_MESSAGE = "message"
 
-        @JvmStatic fun newInstance(message: String): ErrorDialog = ErrorDialog().apply {
+        @JvmStatic
+        fun newInstance(message: String, listener: ErrorDialogOk? = null): ErrorDialog = ErrorDialog().apply {
             arguments = Bundle().apply { putString(ARG_MESSAGE, message) }
+            okListener = listener
         }
     }
 }

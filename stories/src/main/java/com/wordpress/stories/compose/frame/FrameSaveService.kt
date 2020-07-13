@@ -1,5 +1,6 @@
 package com.wordpress.stories.compose.frame
 
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -16,6 +17,7 @@ import com.wordpress.stories.compose.frame.FrameSaveManager.FrameSaveProgressLis
 import com.automattic.photoeditor.PhotoEditor
 import com.automattic.photoeditor.util.FileUtils.Companion.TEMP_FILE_NAME_PREFIX
 import com.wordpress.stories.R
+import com.wordpress.stories.compose.NotificationTrackerProvider
 import com.wordpress.stories.compose.frame.StorySaveEvents.FrameSaveResult
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveError
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
@@ -36,7 +38,10 @@ class FrameSaveService : Service() {
     private lateinit var frameSaveNotifier: FrameSaveNotifier
     private val storySaveProcessors = ArrayList<StorySaveProcessor>()
     private lateinit var notificationIntent: Intent
+    private var deleteNotificationPendingIntent: PendingIntent? = null
     private var optionalMetadata: Bundle? = null // keeps optional metadata about the Story
+    private var notificationErrorBaseId: Int = 700 // default
+    private var notificationTrackerProvider: NotificationTrackerProvider? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -75,12 +80,36 @@ class FrameSaveService : Service() {
         return notificationIntent
     }
 
+    fun setDeleteNotificationPendingIntent(pendingIntent: PendingIntent?) {
+        deleteNotificationPendingIntent = pendingIntent
+    }
+
+    fun getDeleteNotificationPendingIntent(): PendingIntent? {
+        return deleteNotificationPendingIntent
+    }
+
     fun setMetadata(bundle: Bundle?) {
         optionalMetadata = bundle
     }
 
     fun getMetadata(): Bundle? {
         return optionalMetadata
+    }
+
+    fun setNotificationErrorBaseId(baseId: Int) {
+        notificationErrorBaseId = baseId
+    }
+
+    fun getNotificationErrorBaseId(): Int {
+        return notificationErrorBaseId
+    }
+
+    fun setNotificationTrackerProvider(provider: NotificationTrackerProvider) {
+        notificationTrackerProvider = provider
+    }
+
+    fun getNotificationTrackerProvider(): NotificationTrackerProvider? {
+        return notificationTrackerProvider
     }
 
     fun saveStoryFrames(
@@ -105,7 +134,8 @@ class FrameSaveService : Service() {
             // now create a processor and run it.
             // also hold a reference to it in the storySaveProcessors list in case the Service is destroyed, so
             // we can cancel each coroutine.
-            val processor = createProcessor(storyIndex, frameIndex, photoEditor)
+            val isRetry = frameIndex > StoryRepository.DEFAULT_NONE_SELECTED
+            val processor = createProcessor(storyIndex, frameIndex, photoEditor, isRetry)
             storySaveProcessors.add(processor)
             runProcessor(
                 processor,
@@ -137,7 +167,8 @@ class FrameSaveService : Service() {
     private fun createProcessor(
         storyIndex: StoryIndex,
         frameIndex: FrameIndex,
-        photoEditor: PhotoEditor
+        photoEditor: PhotoEditor,
+        isRetry: Boolean
     ): StorySaveProcessor {
         return StorySaveProcessor(
             this,
@@ -145,6 +176,8 @@ class FrameSaveService : Service() {
             frameIndex,
             frameSaveNotifier,
             FrameSaveManager(photoEditor),
+            isRetry,
+            FrameSaveTimeTracker(),
             metadata = optionalMetadata
         )
     }
@@ -154,11 +187,14 @@ class FrameSaveService : Service() {
         storyIndex: Int,
         frames: List<StoryFrameItem>
     ) {
+        storySaveProcessor.timeTracker.start()
         val frameFileList =
             storySaveProcessor.saveStory(
                 this,
                 frames
             )
+        storySaveProcessor.timeTracker.end()
+        storySaveProcessor.updateStorySaveResultTimeElapsed()
 
         // once all frames have been saved, issue a broadcast so the system knows these frames are ready
         sendNewMediaReadyBroadcast(frameFileList)
@@ -224,6 +260,7 @@ class FrameSaveService : Service() {
         for (processor in storySaveProcessors) {
             processor.onCancel()
         }
+        notificationTrackerProvider = null
         super.onDestroy()
     }
 
@@ -237,9 +274,11 @@ class FrameSaveService : Service() {
         private val frameIndexOverride: FrameIndex = StoryRepository.DEFAULT_NONE_SELECTED,
         private val frameSaveNotifier: FrameSaveNotifier,
         private val frameSaveManager: FrameSaveManager,
+        private val isRetry: Boolean,
+        val timeTracker: FrameSaveTimeTracker,
         private val metadata: Bundle? = null
     ) : FrameSaveProgressListener {
-        val storySaveResult = StorySaveResult(metadata = metadata)
+        val storySaveResult = StorySaveResult(isRetry = isRetry, metadata = metadata)
         val title =
             StoryRepository.getStoryAtIndex(storyIndex).title ?: context.getString(R.string.story_saving_untitled)
 
@@ -302,6 +341,10 @@ class FrameSaveService : Service() {
 
         fun detachProgressListener() {
             frameSaveManager.saveProgressListener = null
+        }
+
+        fun updateStorySaveResultTimeElapsed() {
+            storySaveResult.elapsedTime = timeTracker.elapsedTime()
         }
 
         // frameIndex on listeners can be overriden if we're saving just one frame. This comes in handy

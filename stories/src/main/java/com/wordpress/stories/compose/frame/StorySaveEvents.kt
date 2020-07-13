@@ -13,6 +13,8 @@ class StorySaveEvents {
     data class StorySaveResult(
         var storyIndex: StoryIndex = 0,
         val frameSaveResult: MutableList<FrameSaveResult> = mutableListOf(),
+        val isRetry: Boolean = false,
+        var elapsedTime: Long = 0,
         val metadata: Bundle? = null
     ) : Parcelable {
         fun isSuccess(): Boolean {

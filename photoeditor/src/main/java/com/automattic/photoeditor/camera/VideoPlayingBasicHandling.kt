@@ -26,12 +26,12 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Surface
 import android.view.TextureView
-import android.webkit.URLUtil
 import androidx.fragment.app.Fragment
 import com.automattic.photoeditor.camera.interfaces.SurfaceFragmentHandler
 import com.automattic.photoeditor.camera.interfaces.VideoPlayerSoundOnOffHandler
 import com.automattic.photoeditor.state.AuthenticationHeadersInterface
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
+import com.daasuu.mp4compose.utils.DataSourceUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -40,7 +40,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
 
-interface PlayerPrepareReadyListener {
+interface PlayerPreparedListener {
     fun onPlayerPrepared()
     fun onPlayerError()
 }
@@ -51,7 +51,7 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
     var currentExternalUri: Uri? = null
     var currentExternalUriHeaders: Map<String, String>? = null
     var isMuted = false
-    var playerPreparedListener: PlayerPrepareReadyListener? = null
+    var playerPreparedListener: PlayerPreparedListener? = null
     var mAuthenticationHeadersInterface: AuthenticationHeadersInterface? = null
 
     /**
@@ -134,6 +134,10 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
         stopVideoPlay()
     }
 
+    override fun isActive(): Boolean {
+        return active
+    }
+
     private fun startUp() {
         if (textureView.isAvailable && active) {
             CoroutineScope(Dispatchers.Main).launch {
@@ -185,7 +189,7 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
                     calculateVideoSizeAndOrientation(uri)
                     mAuthenticationHeadersInterface?.let {
                         mediaPlayer?.setDataSource(requireContext(),
-                                currentExternalUri!!,
+                                uri,
                                 it.getAuthHeaders(uri.toString()))
                     } ?: mediaPlayer?.setDataSource(requireContext(), currentExternalUri!!)
                 }
@@ -202,13 +206,18 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
                     setOnPreparedListener {
                         playerPreparedListener?.onPlayerPrepared()
                         it.start()
+                        it.setLooping(true)
+                    }
+                    setOnErrorListener { mp, what, extra ->
+                        playerPreparedListener?.onPlayerError()
+                        true
+                    }
+                    setOnCompletionListener {
+                        if (it.isLooping) {
+                            it.seekTo(0)
+                        }
                     }
                     prepareAsync()
-                    // TODO check whether we want fine grained error handling by setting these listeners
-                    //                setOnBufferingUpdateListener(this)
-                    //                setOnCompletionListener(this)
-                    //                setOnPreparedListener(this)
-                    //                setOnVideoSizeChangedListener(this)
                     setVolume(if (isMuted) 0f else 1f, if (isMuted) 0f else 1f)
                 }
             }
@@ -240,14 +249,16 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
     private fun calculateVideoSizeAndOrientation(videoUri: Uri) {
         val metadataRetriever = MediaMetadataRetriever()
         try {
-            val isNetworkUrl = URLUtil.isNetworkUrl(videoUri.toString())
-            if (!isNetworkUrl) {
-                metadataRetriever.setDataSource(context, videoUri)
-            } else {
-                mAuthenticationHeadersInterface?.let {
-                    metadataRetriever.setDataSource(videoUri.toString(), it.getAuthHeaders(videoUri.toString()))
-                } ?: metadataRetriever.setDataSource(videoUri.toString(), HashMap<String, String>())
+            context?.let {
+                DataSourceUtil.setDataSource(
+                    it,
+                    videoUri,
+                    mediaExtractor = null,
+                    mediaMetadataRetriever = metadataRetriever,
+                    addedRequestHeaders = mAuthenticationHeadersInterface?.getAuthHeaders(videoUri.toString())
+                )
             }
+
             val height = metadataRetriever
             .extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)
             val width = metadataRetriever

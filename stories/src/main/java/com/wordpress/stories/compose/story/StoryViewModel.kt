@@ -43,6 +43,10 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
     private val _onUserSelectedFrame = SingleLiveEvent<Pair<Int, Int>>()
     val onUserSelectedFrame = _onUserSelectedFrame
 
+    fun createNewStory() {
+        loadStory(StoryRepository.DEFAULT_NONE_SELECTED)
+    }
+
     fun loadStory(storyIndex: StoryIndex) {
         repository.loadStory(storyIndex)?.let {
             updateUiState(createUiStateFromModelState(repository.getImmutableCurrentStoryFrames()))

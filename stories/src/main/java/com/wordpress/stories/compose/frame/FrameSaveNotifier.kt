@@ -8,6 +8,7 @@ import android.content.Intent
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.wordpress.stories.R
+import com.wordpress.stories.compose.frame.StoryNotificationType.STORY_SAVE_ERROR
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
 import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveResult
 import com.wordpress.stories.compose.story.StoryIndex
@@ -147,7 +148,7 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
             Math.ceil((getCurrentOverallProgress() * 100).toDouble()).toInt(),
             false
         )
-        doNotify(notificationData.notificationId, notificationBuilder.build())
+        doNotify(notificationData.notificationId, notificationBuilder.build(), null)
     }
 
     @Synchronized private fun setProgressForMediaItem(id: String, progress: Float) {
@@ -178,16 +179,14 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
     // TODO: uncomment these lines when migrating code to WPAndroid
     @Synchronized private fun doNotify(
         id: Int,
-        notification: Notification
-//        notificationType: NotificationType?
+        notification: Notification,
+        notificationType: StoryNotificationType?
     ) {
         try {
             notificationManager.notify(id, notification)
-            // TODO track notification when integrating in WPAndroid
-            // note: commented out code left on purpose
-//            if (notificationType != null) {
-//                mSystemNotificationsTracker.trackShownNotification(notificationType)
-//            }
+            notificationType?.let {
+                service.getNotificationTrackerProvider()?.trackShownNotification(it)
+            }
         } catch (runtimeException: RuntimeException) {
 //            CrashLoggingUtils.logException(
 //                runtimeException,
@@ -267,7 +266,7 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
             )
         } else {
             // service was already started, let's just modify the notification
-            doNotify(notificationData.notificationId, notificationBuilder.build())
+            doNotify(notificationData.notificationId, notificationBuilder.build(), null)
         }
     }
 
@@ -285,7 +284,7 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         )
 
         // val notificationId = getNotificationIdForMedia(site)
-        val notificationId = getNotificationIdForError(storySaveResult.storyIndex)
+        val notificationId = getNotificationIdForError(service.getNotificationErrorBaseId(), storySaveResult.storyIndex)
         // Tap notification intent (open the media browser)
         val notificationIntent = service.getNotificationIntent()
         notificationIntent.putExtra(KEY_STORY_SAVE_RESULT, storySaveResult)
@@ -318,14 +317,9 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         notificationBuilder.setContentIntent(pendingIntent)
         notificationBuilder.setAutoCancel(true)
         notificationBuilder.setOnlyAlertOnce(true)
-        // TODO WPANDROID add deleteIntent later when integrating with WPAndroid
-//        notificationBuilder.setDeleteIntent(
-//            NotificationsProcessingService
-//                .getPendingIntentForNotificationDismiss(
-//                    mContext, notificationId.toInt(),
-//                    notificationType
-//                )
-//        )
+        service.getDeleteNotificationPendingIntent()?.let {
+            notificationBuilder.setDeleteIntent(service.getDeleteNotificationPendingIntent())
+        }
 
         // Add MANAGE action and default action
         notificationBuilder.addAction(
@@ -333,12 +327,10 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
             pendingIntent
         ).color = context.resources.getColor(R.color.colorAccent)
 
-        doNotify(notificationId, notificationBuilder.build()) // , notificationType)
+        doNotify(notificationId, notificationBuilder.build(), STORY_SAVE_ERROR)
     }
 
     companion object {
-        private const val BASE_MEDIA_ERROR_NOTIFICATION_ID = 72300
-
         fun buildErrorMessageForMedia(context: Context, mediaItemsNotUploaded: Int) = if (mediaItemsNotUploaded == 1) {
         context.getString(R.string.story_saving_failed_message_singular)
         } else {
@@ -348,11 +340,8 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
             )
         }
 
-        @JvmStatic fun getNotificationIdForError(storyIndex: StoryIndex): Int {
-            // TODO WPANDROID we keep the base number because we'll use SiteId and PostModel id's to identify the error
-            // notification as well, and as such we are using a different base number to avoid collision of notification
-            // ids.
-            return BASE_MEDIA_ERROR_NOTIFICATION_ID + storyIndex
+        @JvmStatic fun getNotificationIdForError(baseId: Int, storyIndex: StoryIndex): Int {
+            return baseId + storyIndex
         }
 
         @JvmStatic fun buildSnackbarErrorMessage(

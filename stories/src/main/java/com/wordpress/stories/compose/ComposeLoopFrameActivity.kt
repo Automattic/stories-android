@@ -4,6 +4,7 @@ import android.Manifest
 import android.animation.LayoutTransition
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -49,6 +50,7 @@ import com.automattic.photoeditor.camera.interfaces.VideoRecorderFinished
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment.FlashSupportChangeListener
 import com.automattic.photoeditor.state.AuthenticationHeadersInterface
 import com.automattic.photoeditor.state.BackgroundSurfaceManager
+import com.automattic.photoeditor.state.BackgroundSurfaceManagerReadyListener
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.util.FileUtils.Companion.getLoopFrameFile
 import com.automattic.photoeditor.util.PermissionUtils
@@ -69,7 +71,9 @@ import com.wordpress.stories.compose.emoji.EmojiPickerFragment
 import com.wordpress.stories.compose.emoji.EmojiPickerFragment.EmojiListener
 import com.wordpress.stories.compose.frame.FrameIndex
 import com.wordpress.stories.compose.frame.FrameSaveManager
+import com.wordpress.stories.compose.frame.FrameSaveNotifier
 import com.wordpress.stories.compose.frame.FrameSaveService
+import com.wordpress.stories.compose.frame.StoryNotificationType
 import com.wordpress.stories.compose.frame.StorySaveEvents
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveError
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
@@ -133,6 +137,14 @@ interface MediaPickerProvider {
 
 interface NotificationIntentLoader {
     fun loadIntentForErrorNotification(): Intent
+    fun loadPendingIntentForErrorNotificationDeletion(notificationId: Int): PendingIntent?
+    fun setupErrorNotificationBaseId(): Int
+}
+
+interface NotificationTrackerProvider {
+    fun trackShownNotification(storyNotificationType: StoryNotificationType)
+    fun trackTappedNotification(storyNotificationType: StoryNotificationType)
+    fun trackDismissedNotification(storyNotificationType: StoryNotificationType)
 }
 
 interface AuthenticationHeadersProvider {
@@ -184,6 +196,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private var authHeadersProvider: AuthenticationHeadersProvider? = null
     private var metadataProvider: MetadataProvider? = null
     private var storyDiscardListener: StoryDiscardListener? = null
+    private var notificationTrackerProvider: NotificationTrackerProvider? = null
+    private var firstIntentLoaded: Boolean = false
+    private var permissionsRequestInProcess: Boolean = false
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
@@ -199,7 +214,28 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             }
             // Setup notification intent for notifications triggered from the FrameSaveService.FrameSaveNotifier class
             notificationIntentLoader?.let {
+                // set the base notification Error Id. This is given on purpose so the host app can give a unique
+                // set of notific   ations ID to base our error notifications from, and avoid collision with other
+                // notifications the host app may have
+                // IMPORTANT: this needs to be the first call in the methods linedup for NotificationIntentLoader
+                frameSaveService.setNotificationErrorBaseId(
+                        it.setupErrorNotificationBaseId()
+                )
+
                 frameSaveService.setNotificationIntent(it.loadIntentForErrorNotification())
+                val notificationId = FrameSaveNotifier.getNotificationIdForError(
+                    frameSaveService.getNotificationErrorBaseId(),
+                    storyIndex
+                )
+
+                frameSaveService.setDeleteNotificationPendingIntent(
+                    it.loadPendingIntentForErrorNotificationDeletion(notificationId)
+                )
+            }
+
+            // setup notification tracker if such a thing exists
+            notificationTrackerProvider?.let {
+                frameSaveService.setNotificationTrackerProvider(it)
             }
 
             metadataProvider?.let {
@@ -351,6 +387,14 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 }
             },
             BuildConfig.USE_CAMERAX,
+            object : BackgroundSurfaceManagerReadyListener {
+                override fun onBackgroundSurfaceManagerReady() {
+                    if (savedInstanceState == null && !firstIntentLoaded) {
+                        onLoadFromIntent(intent)
+                        firstIntentLoaded = true
+                    }
+                }
+            },
             authHeaderInterfaceBridge
         )
 
@@ -378,10 +422,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             StoryViewModelFactory(StoryRepository, storyIndexToSelect)
         )[StoryViewModel::class.java]
 
-        if (savedInstanceState == null) {
-            // small tweak to make sure to not show the background image for the static image background mode
-            backgroundSurfaceManager.preTurnTextureViewOn()
+        // request the BackgroundSurfaceManager to prime the textureView so it's ready when needed.
+        backgroundSurfaceManager.preTurnTextureViewOn()
 
+        if (savedInstanceState == null) {
             // check camera selection, flash state from preferences
             CameraSelection.valueOf(
                 getPreferences(Context.MODE_PRIVATE).getInt(getString(R.string.pref_camera_selection), 0))?.let {
@@ -396,8 +440,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             updateFlashModeSelectionIcon()
 
             setupStoryViewModelObservers()
-
-            onLoadFromIntent(intent)
         } else {
             currentOriginalCapturedFile =
                 savedInstanceState.getSerializable(STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE) as File?
@@ -421,13 +463,13 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     private fun setupStoryViewModelObservers() {
         storyViewModel.uiState.observe(this, Observer {
-            // if no frames in Story, launch the capture mode
-            if (storyViewModel.getCurrentStorySize() == 0) {
-                next_button.isEnabled = true
-                photoEditor.clearAllViews()
-                launchCameraPreview()
+            // if no frames in Story, finish
+            // note momentarily there will be times when this LiveData is triggered while permissions are
+            // being requested so, don't proceed if that is the case
+            if (storyViewModel.getCurrentStorySize() == 0 && firstIntentLoaded && !permissionsRequestInProcess) {
                 // finally, delete the captured media
                 deleteCapturedMedia()
+                finish()
             }
         })
 
@@ -530,53 +572,52 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        // See https://developer.android.com/reference/android/app/Activity#onNewIntent(android.content.Intent)
+        setIntent(intent)
         onLoadFromIntent(intent)
     }
 
-    private fun onLoadFromIntent(intent: Intent) {
-        photoEditorView.postDelayed({
-            storyViewModel.loadStory(storyIndexToSelect)
-            if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
-                val storySaveResult = intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
-                if (storySaveResult != null &&
-                    StoryRepository.getStoryAtIndex(storySaveResult.storyIndex).frames.isNotEmpty()) {
-                    // dismiss the error notification
-                    intent.action?.let {
-                        val notificationManager = NotificationManagerCompat.from(this)
-                        notificationManager.cancel(it.toInt())
-                    }
-
-                    if (!storySaveResult.isSuccess()) {
-                        prepareErrorScreen(storySaveResult)
-                    } else {
-                        onStoryFrameSelected(oldIndex = StoryRepository.DEFAULT_FRAME_NONE_SELECTED, newIndex = 0)
-                    }
-                } else {
-                    showToast(getString(R.string.toast_story_page_not_found))
-                    finish()
+    protected open fun onLoadFromIntent(intent: Intent) {
+        storyViewModel.loadStory(storyIndexToSelect)
+        if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
+            val storySaveResult = intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
+            if (storySaveResult != null &&
+                StoryRepository.getStoryAtIndex(storySaveResult.storyIndex).frames.isNotEmpty()) {
+                // dismiss the error notification
+                intent.action?.let {
+                    val notificationManager = NotificationManagerCompat.from(this)
+                    notificationManager.cancel(it.toInt())
                 }
-            } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED) {
-                if (StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.isNotEmpty()) {
-                    storyViewModel.loadStory(storyIndexToSelect)
-                    refreshStoryFrameSelection()
+
+                if (!storySaveResult.isSuccess()) {
+                    prepareErrorScreen(storySaveResult)
                 } else {
-                    showToast(getString(R.string.toast_story_page_not_found))
-                    finish()
+                    onStoryFrameSelected(oldIndex = StoryRepository.DEFAULT_FRAME_NONE_SELECTED, newIndex = 0)
                 }
             } else {
-                launchCameraPreview()
-                storyViewModel.uiState.observe(this, Observer {
-                    // if no frames in Story, launch the capture mode
-                    if (storyViewModel.getCurrentStorySize() == 0) {
-                        photoEditor.clearAllViews()
-                        launchCameraPreview()
-                        // finally, delete the captured media
-                        deleteCapturedMedia()
-                        checkForLowSpaceAndShowDialog()
-                    }
-                })
+                showToast(getString(R.string.toast_story_page_not_found))
+                finish()
             }
-        }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
+        } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED) {
+            if (StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.isNotEmpty()) {
+                storyViewModel.loadStory(storyIndexToSelect)
+                refreshStoryFrameSelection()
+            } else {
+                showToast(getString(R.string.toast_story_page_not_found))
+                finish()
+            }
+        } else if (intent.hasExtra(requestCodes.EXTRA_MEDIA_URIS)) {
+            // create new Story from passed media Uris
+            storyViewModel.createNewStory()
+            val uriList: List<Uri> = convertStringArrayIntoUrisList(
+                    intent.getStringArrayExtra(requestCodes.EXTRA_MEDIA_URIS)
+            )
+            addFramesToStoryFromMediaUriList(uriList)
+            setDefaultSelectionAndUpdateBackgroundSurfaceUI(uriList)
+        } else if (intent.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED)) {
+            launchCameraPreview()
+            checkForLowSpaceAndShowDialog()
+        }
     }
 
     override fun onDestroy() {
@@ -610,7 +651,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         if (PermissionUtils.allRequiredPermissionsGranted(this)) {
-            switchCameraPreviewOn()
+            onLoadFromIntent(intent)
+            permissionsRequestInProcess = false
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
@@ -658,8 +700,17 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                         data.getStringArrayExtra(requestCodes.EXTRA_MEDIA_URIS)
                     )
                     addFramesToStoryFromMediaUriList(uriList)
-                    setDefaultSelectionAndUpdateBackgroundSurfaceUI()
+                    setDefaultSelectionAndUpdateBackgroundSurfaceUI(uriList)
                 } else if (data.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED)) {
+                    if (!PermissionUtils.allRequiredPermissionsGranted(this)) {
+                        // at this point, the user wants to launch the camera
+                        // but we need to check whether we have permissions for thatt.
+                        // after permissions are requestted, we need the original intent to be set differently
+                        // so: we need to tweak the intent for when we come back after user gives us permission
+                        if (intent.hasExtra(requestCodes.EXTRA_MEDIA_URIS)) {
+                            intent.removeExtra(requestCodes.EXTRA_MEDIA_URIS)
+                        }
+                    }
                     launchCameraPreview()
                 }
             }
@@ -674,8 +725,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         return uris
     }
 
-    protected fun setDefaultSelectionAndUpdateBackgroundSurfaceUI() {
-        val defaultSelectedFrameIndex = storyViewModel.getLastFrameIndexInCurrentStory()
+    protected fun setDefaultSelectionAndUpdateBackgroundSurfaceUI(uriList: List<Uri>) {
+        val defaultSelectedFrameIndex = storyViewModel.getCurrentStorySize() - uriList.size
         storyViewModel.setSelectedFrame(defaultSelectedFrameIndex)
         updateBackgroundSurfaceUIWithStoryFrame(defaultSelectedFrameIndex)
     }
@@ -689,7 +740,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     protected fun addFrameToStoryFromMediaUri(mediaUri: Uri) {
         storyViewModel
             .addStoryFrameItemToCurrentStory(StoryFrameItem(
-                UriBackgroundSource(contentUri = Uri.parse(mediaUri.toString())),
+                UriBackgroundSource(contentUri = mediaUri),
                 frameItemType = if (isVideo(mediaUri.toString())) VIDEO() else IMAGE
             ))
     }
@@ -774,25 +825,32 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
 
         close_button.setOnClickListener {
-            addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
+            when {
+                backgroundSurfaceManager.cameraVisible() -> {
+                    onBackPressed()
+                }
+                !backgroundSurfaceManager.cameraVisible() -> {
+                    addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
 
-            // add discard dialog
-            if (storyViewModel.anyOfCurrentStoryFramesHasViews()) {
-                // show dialog
-                FrameSaveErrorDialog.newInstance(
-                    title = getString(R.string.dialog_discard_story_title),
-                    message = getString(R.string.dialog_discard_story_message),
-                    okButtonLabel = getString(R.string.dialog_discard_story_ok_button),
-                    listener = object : FrameSaveErrorDialogOk {
-                        override fun OnOkClicked(dialog: DialogFragment) {
-                            dialog.dismiss()
-                            // discard the whole story
-                            safelyDiscardCurrentStoryAndCleanUpIntent()
-                        }
-                    }).show(supportFragmentManager, FRAGMENT_DIALOG)
-            } else {
-                // discard the whole story
-                safelyDiscardCurrentStoryAndCleanUpIntent()
+                    // add discard dialog
+                    if (storyViewModel.anyOfCurrentStoryFramesHasViews()) {
+                        // show dialog
+                        FrameSaveErrorDialog.newInstance(
+                                title = getString(R.string.dialog_discard_story_title),
+                                message = getString(R.string.dialog_discard_story_message),
+                                okButtonLabel = getString(R.string.dialog_discard_story_ok_button),
+                                listener = object : FrameSaveErrorDialogOk {
+                                    override fun OnOkClicked(dialog: DialogFragment) {
+                                        dialog.dismiss()
+                                        // discard the whole story
+                                        safelyDiscardCurrentStoryAndCleanUpIntent()
+                                    }
+                                }).show(supportFragmentManager, FRAGMENT_DIALOG)
+                    } else {
+                        // discard the whole story
+                        safelyDiscardCurrentStoryAndCleanUpIntent()
+                    }
+                }
             }
         }
 
@@ -996,6 +1054,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun switchCameraPreviewOn() {
+        cameraOperationInCourse = false
         hideStoryFrameSelector()
         backgroundSurfaceManager.switchCameraPreviewOn()
     }
@@ -1031,15 +1090,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun launchCameraPreview() {
-        if (!PermissionUtils.checkPermission(this, Manifest.permission.RECORD_AUDIO) ||
-            !PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) ||
-            !PermissionUtils.checkPermission(this, Manifest.permission.CAMERA)) {
-            val permissions = arrayOf(
-                Manifest.permission.RECORD_AUDIO,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.CAMERA
-            )
-            PermissionUtils.requestPermissions(this, permissions)
+        if (!PermissionUtils.allRequiredPermissionsGranted(this)) {
+            permissionsRequestInProcess = true
+            PermissionUtils.requestAllRequiredPermissions(this)
             return
         }
 
@@ -1058,18 +1111,21 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun showPlayVideo(videoFile: File? = null) {
+        cameraOperationInCourse = false
         showStoryFrameSelector()
         showEditModeUIControls()
         backgroundSurfaceManager.switchVideoPlayerOnFromFile(videoFile)
     }
 
     private fun showPlayVideo(videoUri: Uri) {
+        cameraOperationInCourse = false
         showStoryFrameSelector()
         showEditModeUIControls()
         backgroundSurfaceManager.switchVideoPlayerOnFromUri(videoUri)
     }
 
     private fun showStaticBackground() {
+        cameraOperationInCourse = false
         showStoryFrameSelector()
         showEditModeUIControls()
         backgroundSurfaceManager.switchStaticImageBackgroundModeOn()
@@ -1350,7 +1406,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         camera_capture_button.visibility = View.INVISIBLE
 
         // show proper edit mode controls
-        close_button.visibility = View.VISIBLE
         updateEditMode()
         more_button.visibility = View.VISIBLE
         next_button.visibility = View.VISIBLE
@@ -1368,7 +1423,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         camera_capture_button.visibility = View.VISIBLE
 
         // hide proper edit mode controls
-        close_button.visibility = View.INVISIBLE
         edit_mode_controls.visibility = View.INVISIBLE
         more_button.visibility = View.INVISIBLE
         sound_button.visibility = View.INVISIBLE
@@ -1380,7 +1434,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     private fun editModeHideAllUIControls(hideNextButton: Boolean, hideFrameSelector: Boolean = true) {
         // momentarily hide proper edit mode controls
-        close_button.visibility = View.INVISIBLE
         edit_mode_controls.visibility = View.INVISIBLE
         more_button.visibility = View.INVISIBLE
         sound_button.visibility = View.INVISIBLE
@@ -1441,7 +1494,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     private fun editModeRestoreAllUIControls() {
         // show all edit mode controls
-        close_button.visibility = View.VISIBLE
         updateEditMode()
         more_button.visibility = View.VISIBLE
         next_button.visibility = View.VISIBLE
@@ -1775,6 +1827,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     fun setStoryDiscardListener(listener: StoryDiscardListener) {
         storyDiscardListener = listener
+    }
+
+    fun setNotificationTrackerProvider(provider: NotificationTrackerProvider) {
+        notificationTrackerProvider = provider
     }
 
     class ExternalMediaPickerRequestCodesAndExtraKeys {
