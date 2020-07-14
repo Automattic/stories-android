@@ -162,7 +162,6 @@ class PhotoEditor private constructor(builder: Builder) :
             return MultiTouchListener(
                 mainView,
                 deleteView,
-                workAreaRect,
                 parentView,
                 imageView,
                 isTextPinchZoomable,

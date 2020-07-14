@@ -169,6 +169,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private lateinit var photoEditor: PhotoEditor
     private lateinit var backgroundSurfaceManager: BackgroundSurfaceManager
     private var currentOriginalCapturedFile: File? = null
+    private lateinit var workingAreaRect: Rect
 
     private val timesUpRunnable = Runnable {
         stopRecordingVideo(false) // time's up, it's not a cancellation
@@ -278,7 +279,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             xCoord,
             yCoord + topAreaHeight,
             xCoord + width,
-            yCoord + height - bottomAreaHeight)
+            yCoord + height - bottomAreaHeight
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -304,10 +306,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             }
         }
 
+        workingAreaRect = calculateWorkingArea()
         photoEditor = PhotoEditor.Builder(this, photoEditorView)
             .setPinchTextScalable(true) // set flag to make text scalable when pinch
             .setDeleteView(delete_view)
-            .setWorkAreaRect(calculateWorkingArea())
+            .setWorkAreaRect(workingAreaRect)
             .setAuthenticatitonHeaderInterface(authHeaderInterfaceBridge)
             .build() // build photo editor sdk
 
@@ -370,6 +373,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
             override fun onRemoveViewReadyListener(removedView: View, ready: Boolean) {
                 delete_view.setReadyForDelete(ready)
+            }
+
+            override fun getWorkingAreaRect(): Rect? {
+                return workingAreaRect
             }
         })
 
@@ -639,7 +646,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // be trying to set app to immersive mode before it's ready and the flags do not stick
         photoEditorView.postDelayed({
             hideStatusBar(window)
-            photoEditor.updateWorkAreaRect(calculateWorkingArea())
+            workingAreaRect = calculateWorkingArea()
+            photoEditor.updateWorkAreaRect(workingAreaRect)
         }, IMMERSIVE_FLAG_TIMEOUT)
     }
 
