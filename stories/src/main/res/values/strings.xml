@@ -16,7 +16,7 @@
     <string name="label_snackbar_share">SHARE</string>
     <string name="label_share_to">Share to</string>
     <string name="label_done">Done</string>
-    <string name="label_control_publish">Publish</string>
+    <string name="label_control_publish">Next</string>
 
     <!-- content description labels   -->
     <string name="label_close_button">Close</string>
