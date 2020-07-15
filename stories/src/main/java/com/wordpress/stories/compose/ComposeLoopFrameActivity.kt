@@ -176,6 +176,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
     private val timesUpHandler = Handler()
     private val prepareSurfaceHandler = Handler()
+    private var prepareSurfaceSafePeriodElapsed = false
     private var cameraOperationInCourse = false
 
     private var cameraSelection = CameraSelection.BACK
@@ -466,6 +467,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 val selectedFrameIndex = savedInstanceState.getInt(STATE_KEY_STORY_SAVE_STATE_SELECTED_FRAME)
                 storyViewModel.setSelectedFrame(selectedFrameIndex)
                 updateBackgroundSurfaceUIWithStoryFrame(selectedFrameIndex)
+                prepareSurfaceSafePeriodElapsed = true
             }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
         }
     }
@@ -595,7 +597,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
         if (intent.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED) ||
                 permissionsRequestForCameraInProgress) {
-            launchCameraPreview()
+            launchCameraPreviewWithSafeWait()
             checkForLowSpaceAndShowDialog()
         } else if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
             val storySaveResult = intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
@@ -633,6 +635,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     override fun onDestroy() {
         doUnbindService()
         EventBus.getDefault().unregister(this)
+        prepareSurfaceHandler.removeCallbacksAndMessages(null)
         super.onDestroy()
     }
 
@@ -744,7 +747,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                             intent.removeExtra(requestCodes.EXTRA_MEDIA_URIS)
                         }
                     }
-                    launchCameraPreview()
+                    launchCameraPreviewWithSafeWait()
                 }
             }
         }
@@ -1131,9 +1134,21 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         photoEditor.addNewImageView(true, Uri.parse("https://i.giphy.com/Ok4HaWlYrewuY.gif"))
     }
 
+    private fun launchCameraPreviewWithSafeWait() {
+        // securely switch camera preview on
+        if (prepareSurfaceSafePeriodElapsed) {
+            launchCameraPreview()
+        } else {
+            prepareSurfaceHandler.postDelayed({
+                launchCameraPreview()
+            }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
+        }
+    }
+
     private fun launchCameraPreview() {
         hideStoryFrameSelector()
         hideEditModeUIControls()
+        photoEditor.clearAllViews()
 
         if (!PermissionUtils.allRequiredPermissionsGranted(this)) {
             permissionsRequestForCameraInProgress = true
