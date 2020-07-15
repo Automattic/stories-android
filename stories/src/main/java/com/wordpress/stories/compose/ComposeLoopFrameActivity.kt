@@ -760,7 +760,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     protected fun setDefaultSelectionAndUpdateBackgroundSurfaceUI(uriList: List<Uri>) {
         val defaultSelectedFrameIndex = storyViewModel.getCurrentStorySize() - uriList.size
         storyViewModel.setSelectedFrame(defaultSelectedFrameIndex)
-        updateBackgroundSurfaceUIWithStoryFrame(defaultSelectedFrameIndex)
+        updateBackgroundSurfaceUIWithStoryFrame(defaultSelectedFrameIndex, true)
     }
 
     protected fun addFramesToStoryFromMediaUriList(uriList: List<Uri>) {
@@ -778,14 +778,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun updateBackgroundSurfaceUIWithStoryFrame(
-        storyFrameIndex: Int,
-        omitKeepAddedViewsForOldSelection: Boolean = false
+        storyFrameIndex: Int
     ) {
-        if (omitKeepAddedViewsForOldSelection) {
-            onStoryFrameSelected(-1, storyFrameIndex)
-        } else {
-            onStoryFrameSelected(storyViewModel.getSelectedFrameIndex(), storyFrameIndex)
-        }
+        // omit keeping AddedViews for old selection by passing -1 given these were saved elsewhere
+        onStoryFrameSelected(-1, storyFrameIndex)
     }
 
     private fun addClickListeners() {
@@ -1796,8 +1792,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     override fun onStoryFrameAddTapped() {
         addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
-        // now clear addedViews so we don't leak View.Context
-        photoEditor.clearAllViews()
         showMediaPicker()
     }
 
