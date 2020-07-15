@@ -464,7 +464,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             photoEditorView.postDelayed({
                 val selectedFrameIndex = savedInstanceState.getInt(STATE_KEY_STORY_SAVE_STATE_SELECTED_FRAME)
                 storyViewModel.setSelectedFrame(selectedFrameIndex)
-                updateBackgroundSurfaceUIWithStoryFrame(selectedFrameIndex, omitKeepAddedViewsForOldSelection = true)
+                updateBackgroundSurfaceUIWithStoryFrame(selectedFrameIndex)
             }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
         }
     }
@@ -760,7 +760,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     protected fun setDefaultSelectionAndUpdateBackgroundSurfaceUI(uriList: List<Uri>) {
         val defaultSelectedFrameIndex = storyViewModel.getCurrentStorySize() - uriList.size
         storyViewModel.setSelectedFrame(defaultSelectedFrameIndex)
-        updateBackgroundSurfaceUIWithStoryFrame(defaultSelectedFrameIndex, true)
+        updateBackgroundSurfaceUIWithStoryFrame(defaultSelectedFrameIndex)
     }
 
     protected fun addFramesToStoryFromMediaUriList(uriList: List<Uri>) {
