@@ -175,6 +175,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         stopRecordingVideo(false) // time's up, it's not a cancellation
     }
     private val timesUpHandler = Handler()
+    private val prepareSurfaceHandler = Handler()
     private var cameraOperationInCourse = false
 
     private var cameraSelection = CameraSelection.BACK
@@ -461,7 +462,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             storyViewModel.loadStory(
                 StorySerializerUtils.deserializeStory(savedInstanceState.getString(STATE_KEY_STORY_SAVE_STATE))
             )
-            photoEditorView.postDelayed({
+            prepareSurfaceHandler.postDelayed({
                 val selectedFrameIndex = savedInstanceState.getInt(STATE_KEY_STORY_SAVE_STATE_SELECTED_FRAME)
                 storyViewModel.setSelectedFrame(selectedFrameIndex)
                 updateBackgroundSurfaceUIWithStoryFrame(selectedFrameIndex)
@@ -758,6 +759,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     protected fun setDefaultSelectionAndUpdateBackgroundSurfaceUI(uriList: List<Uri>) {
+        prepareSurfaceHandler.removeCallbacksAndMessages(null)
         val defaultSelectedFrameIndex = storyViewModel.getCurrentStorySize() - uriList.size
         storyViewModel.setSelectedFrame(defaultSelectedFrameIndex)
         updateBackgroundSurfaceUIWithStoryFrame(defaultSelectedFrameIndex)
@@ -851,7 +853,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         }
 
         // attach listener a bit delayed as we need to have cameraBasicHandling created first
-        photoEditorView.postDelayed({
+        prepareSurfaceHandler.postDelayed({
             camera_flash_group.setAllOnClickListener(OnClickListener {
                 flashModeSelection = backgroundSurfaceManager.switchFlashState()
                 updateFlashModeSelectionIcon()
