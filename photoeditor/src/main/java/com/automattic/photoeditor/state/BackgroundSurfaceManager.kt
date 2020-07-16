@@ -169,8 +169,10 @@ class BackgroundSurfaceManager(
             stopRecordingVideo()
         }
         isCameraVisible = false
-        isVideoPlayerVisible = false
-        videoPlayerHandling.deactivate()
+        if (isVideoPlayerVisible) {
+            isVideoPlayerVisible = false
+            videoPlayerHandling.deactivate()
+        }
         photoEditorView.hideLoading()
         photoEditorView.turnTextureViewOff()
     }
@@ -181,10 +183,12 @@ class BackgroundSurfaceManager(
 
     fun switchCameraPreviewOn() {
         isCameraVisible = true
-        isVideoPlayerVisible = false
         // now, start showing camera preview
         photoEditorView.turnTextureViewOn()
-        videoPlayerHandling.deactivate()
+        if (isVideoPlayerVisible) {
+            isVideoPlayerVisible = false
+            videoPlayerHandling.deactivate()
+        }
         photoEditorView.hideLoading()
         cameraBasicHandler.activate()
     }
@@ -271,11 +275,15 @@ class BackgroundSurfaceManager(
     }
 
     fun videoPlayerMute() {
-        videoPlayerHandling.mute()
+        if (isVideoPlayerVisible) {
+            videoPlayerHandling.mute()
+        }
     }
 
     fun videoPlayerUnmute() {
-        videoPlayerHandling.unmute()
+        if (isVideoPlayerVisible) {
+            videoPlayerHandling.unmute()
+        }
     }
 
     private fun cameraXAwareSurfaceDeactivate() {
