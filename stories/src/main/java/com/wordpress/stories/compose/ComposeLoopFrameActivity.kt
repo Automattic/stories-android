@@ -80,6 +80,7 @@ import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.Save
 import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveResult
 import com.wordpress.stories.compose.story.OnStoryFrameSelectorTappedListener
 import com.wordpress.stories.compose.story.StoryFrameItem
+import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource
 import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.FileBackgroundSource
 import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.UriBackgroundSource
 import com.wordpress.stories.compose.story.StoryFrameItemType
@@ -176,7 +177,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
     private val timesUpHandler = Handler()
     private val prepareSurfaceHandler = Handler()
-    private var prepareSurfaceSafePeriodElapsed = false
+    private var surfaceReady = false
+    private var launchCameraRequestPending = false
+    private var launchVideoPlayerRequestPending = false
+    private lateinit var launchVideoPlayerRequestPendingSource: BackgroundSource
     private var cameraOperationInCourse = false
 
     private var cameraSelection = CameraSelection.BACK
@@ -401,9 +405,18 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             BuildConfig.USE_CAMERAX,
             object : BackgroundSurfaceManagerReadyListener {
                 override fun onBackgroundSurfaceManagerReady() {
+                    surfaceReady = true
                     if (savedInstanceState == null && !firstIntentLoaded) {
                         onLoadFromIntent(intent)
                         firstIntentLoaded = true
+                    }
+
+                    if (launchCameraRequestPending) {
+                        launchCameraRequestPending = false
+                        launchCameraPreviewWithSurfaceSafeguard()
+                    } else if (launchVideoPlayerRequestPending) {
+                        launchVideoPlayerRequestPending = false
+                        showPlayVideoWithSurfaceSafeguard(launchVideoPlayerRequestPendingSource)
                     }
                 }
             },
@@ -463,12 +476,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             storyViewModel.loadStory(
                 StorySerializerUtils.deserializeStory(savedInstanceState.getString(STATE_KEY_STORY_SAVE_STATE))
             )
-            prepareSurfaceHandler.postDelayed({
-                val selectedFrameIndex = savedInstanceState.getInt(STATE_KEY_STORY_SAVE_STATE_SELECTED_FRAME)
-                storyViewModel.setSelectedFrame(selectedFrameIndex)
-                updateBackgroundSurfaceUIWithStoryFrame(selectedFrameIndex)
-                prepareSurfaceSafePeriodElapsed = true
-            }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
+
+            val selectedFrameIndex = savedInstanceState.getInt(STATE_KEY_STORY_SAVE_STATE_SELECTED_FRAME)
+            storyViewModel.setSelectedFrame(selectedFrameIndex)
+            updateBackgroundSurfaceUIWithStoryFrame(selectedFrameIndex)
         }
     }
 
@@ -597,7 +608,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
         if (intent.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED) ||
                 permissionsRequestForCameraInProgress) {
-            launchCameraPreviewWithSafeWait()
+            launchCameraPreviewWithSurfaceSafeguard()
             checkForLowSpaceAndShowDialog()
         } else if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
             val storySaveResult = intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
@@ -747,7 +758,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                             intent.removeExtra(requestCodes.EXTRA_MEDIA_URIS)
                         }
                     }
-                    launchCameraPreviewWithSafeWait()
+                    launchCameraPreviewWithSurfaceSafeguard()
                 }
             }
         }
@@ -1134,17 +1145,21 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         photoEditor.addNewImageView(true, Uri.parse("https://i.giphy.com/Ok4HaWlYrewuY.gif"))
     }
 
-    private fun launchCameraPreviewWithSafeWait() {
+    private fun launchCameraPreviewWithSurfaceSafeguard() {
         // securely switch camera preview on
-        if (prepareSurfaceSafePeriodElapsed) {
-            launchCameraPreview()
-        } else {
-            prepareSurfaceHandler.postDelayed({
+        if (surfaceReady) {
+            CoroutineScope(Dispatchers.Main).launch {
                 launchCameraPreview()
-            }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
+            }
+        } else {
+            // prep the surface and wait for BackgroundSurfaceManagerReadyListener
+            launchCameraRequestPending = true
+            backgroundSurfaceManager.preTurnTextureViewOn()
         }
     }
 
+    // IMPORTANT: don't call this method from any thread / CoroutineScope. Given we need the TextureSurface
+    // to be ready, use launchCameraPreviewWithSafeWait() instead.
     private fun launchCameraPreview() {
         hideStoryFrameSelector()
         hideEditModeUIControls()
@@ -1167,6 +1182,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         switchCameraPreviewOn()
     }
 
+    // IMPORTANT: don't call this method from any thread / CoroutineScope. Given we need the TextureSurface
+    // to be ready, use showPlayVideoWithSurfaceSafeguard() instead.
     private fun showPlayVideo(videoFile: File? = null) {
         cameraOperationInCourse = false
         showStoryFrameSelector()
@@ -1174,6 +1191,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         backgroundSurfaceManager.switchVideoPlayerOnFromFile(videoFile)
     }
 
+    // IMPORTANT: don't call this method from any thread / CoroutineScope. Given we need the TextureSurface
+    // to be ready, use showPlayVideoWithSurfaceSafeguard() instead.
     private fun showPlayVideo(videoUri: Uri) {
         cameraOperationInCourse = false
         showStoryFrameSelector()
@@ -1773,16 +1792,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // 3. image/uri source
         // 4. image/file source
         if (newSelectedFrame.frameItemType is VIDEO) {
-            CoroutineScope(Dispatchers.Main).launch {
-                source.apply {
-                    if (this is FileBackgroundSource) {
-                        showPlayVideo(file)
-                    } else (source as UriBackgroundSource).contentUri?.let {
-                        showPlayVideo(it)
-                    }
-                }
-                updateSoundControl()
-            }
+            showPlayVideoWithSurfaceSafeguard(source)
         } else {
             val model = (source as? FileBackgroundSource)?.file ?: (source as UriBackgroundSource).contentUri
             Glide.with(this@ComposeLoopFrameActivity)
@@ -1810,6 +1820,26 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     override fun onStoryFrameAddTapped() {
         addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
         showMediaPicker()
+    }
+
+    private fun showPlayVideoWithSurfaceSafeguard(source: BackgroundSource) {
+        if (surfaceReady) {
+            CoroutineScope(Dispatchers.Main).launch {
+                source.apply {
+                    if (this is FileBackgroundSource) {
+                        showPlayVideo(file)
+                    } else (source as UriBackgroundSource).contentUri?.let {
+                        showPlayVideo(it)
+                    }
+                }
+                updateSoundControl()
+            }
+        } else {
+            // prep the surface and wait for BackgroundSurfaceManagerReadyListener
+            launchVideoPlayerRequestPendingSource = source
+            launchVideoPlayerRequestPending = true
+            backgroundSurfaceManager.preTurnTextureViewOn()
+        }
     }
 
     private inner class FlingGestureListener : GestureDetector.SimpleOnGestureListener() {
