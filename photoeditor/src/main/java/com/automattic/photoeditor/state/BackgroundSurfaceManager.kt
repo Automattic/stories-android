@@ -181,6 +181,13 @@ class BackgroundSurfaceManager(
         photoEditorView.turnTextureViewOn()
     }
 
+    fun isTextureViewAvailable(): Boolean {
+        if (lifeCycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+            return videoPlayerHandling.textureView.isAvailable && cameraBasicHandler.textureView.isAvailable
+        }
+        return false
+    }
+
     fun switchCameraPreviewOn() {
         isCameraVisible = true
         // now, start showing camera preview

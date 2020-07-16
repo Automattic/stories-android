@@ -176,7 +176,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         stopRecordingVideo(false) // time's up, it's not a cancellation
     }
     private val timesUpHandler = Handler()
-    private var surfaceReady = false
     private var launchCameraRequestPending = false
     private var launchVideoPlayerRequestPending = false
     private lateinit var launchVideoPlayerRequestPendingSource: BackgroundSource
@@ -404,7 +403,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             BuildConfig.USE_CAMERAX,
             object : BackgroundSurfaceManagerReadyListener {
                 override fun onBackgroundSurfaceManagerReady() {
-                    surfaceReady = true
                     if (savedInstanceState == null && !firstIntentLoaded) {
                         onLoadFromIntent(intent)
                         firstIntentLoaded = true
@@ -479,8 +477,15 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             val selectedFrameIndex = savedInstanceState.getInt(STATE_KEY_STORY_SAVE_STATE_SELECTED_FRAME)
             if (selectedFrameIndex < storyViewModel.getCurrentStorySize()) {
                 storyViewModel.setSelectedFrame(selectedFrameIndex)
-                updateBackgroundSurfaceUIWithStoryFrame(selectedFrameIndex)
             }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val selectedFrameIndex = storyViewModel.getSelectedFrameIndex()
+        if (selectedFrameIndex < storyViewModel.getCurrentStorySize()) {
+            updateBackgroundSurfaceUIWithStoryFrame(selectedFrameIndex)
         }
     }
 
@@ -1147,7 +1152,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     private fun launchCameraPreviewWithSurfaceSafeguard() {
         // securely switch camera preview on
-        if (surfaceReady) {
+        if (backgroundSurfaceManager.isTextureViewAvailable()) {
             CoroutineScope(Dispatchers.Main).launch {
                 launchCameraPreview()
             }
@@ -1159,7 +1164,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     // IMPORTANT: don't call this method from any thread / CoroutineScope. Given we need the TextureSurface
-    // to be ready, use launchCameraPreviewWithSafeWait() instead.
+    // to be ready, use launchCameraPreviewWithSurfaceSafeguard() instead.
     private fun launchCameraPreview() {
         hideStoryFrameSelector()
         hideEditModeUIControls()
@@ -1823,7 +1828,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun showPlayVideoWithSurfaceSafeguard(source: BackgroundSource) {
-        if (surfaceReady) {
+        if (backgroundSurfaceManager.isTextureViewAvailable()) {
             CoroutineScope(Dispatchers.Main).launch {
                 source.apply {
                     if (this is FileBackgroundSource) {
