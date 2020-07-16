@@ -401,6 +401,7 @@ class PhotoEditor private constructor(builder: Builder) :
         } ?: buildViewFromAddedViewInfo(addedView.viewInfo, addedView.viewType)
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun buildViewFromAddedViewInfo(addedViewInfo: AddedViewInfo, viewType: ViewType): View? {
         var view: View? = null
         when (viewType) {
