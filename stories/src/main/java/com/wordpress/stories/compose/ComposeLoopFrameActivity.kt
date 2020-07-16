@@ -477,8 +477,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             )
 
             val selectedFrameIndex = savedInstanceState.getInt(STATE_KEY_STORY_SAVE_STATE_SELECTED_FRAME)
-            storyViewModel.setSelectedFrame(selectedFrameIndex)
-            updateBackgroundSurfaceUIWithStoryFrame(selectedFrameIndex)
+            if (selectedFrameIndex < storyViewModel.getCurrentStorySize()) {
+                storyViewModel.setSelectedFrame(selectedFrameIndex)
+                updateBackgroundSurfaceUIWithStoryFrame(selectedFrameIndex)
+            }
         }
     }
 
@@ -675,7 +677,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // save Story slide (frame) state
         addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
         outState.putString(STATE_KEY_STORY_SAVE_STATE, StorySerializerUtils.serializeStory(
-            storyViewModel.getStoryAtIndex(storyViewModel.getCurrentStoryIndex()))
+                storyViewModel.getStoryAtIndex(storyViewModel.getCurrentStoryIndex())
+            )
         )
         outState.putInt(STATE_KEY_STORY_SAVE_STATE_SELECTED_FRAME, storyViewModel.getSelectedFrameIndex())
         super.onSaveInstanceState(outState)
