@@ -40,17 +40,16 @@ class AddedView(
         }
 
         fun getTextInfoFromActualView(view: View, viewType: ViewType): AddedViewTextInfo {
-            val txtView: TextView
-            when (viewType) {
+            val txtView: TextView = when (viewType) {
                 EMOJI -> {
-                    txtView = view.findViewById(R.id.tvPhotoEditorEmoji)
+                    view.findViewById(R.id.tvPhotoEditorEmoji)
                 }
                 TEXT -> {
-                    txtView = view.findViewById(R.id.tvPhotoEditorText)
+                    view.findViewById(R.id.tvPhotoEditorText)
                 }
                 else -> {
                     // default text
-                    txtView = view.findViewById(R.id.tvPhotoEditorText)
+                    view.findViewById(R.id.tvPhotoEditorText)
                 }
             }
             return AddedViewTextInfo(txtView.text.toString(), txtView.textSize, txtView.currentTextColor)
