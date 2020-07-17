@@ -15,8 +15,8 @@ class AddedViewList : ArrayList<AddedView>() {
     }
 
     fun containsView(element: View): Boolean {
-        for (n in this) {
-            n.view?.let {
+        for (oneView in this) {
+            oneView.view?.let {
                 if (it == element) {
                     return true
                 }
@@ -25,21 +25,21 @@ class AddedViewList : ArrayList<AddedView>() {
         return false
     }
     fun removeView(element: View): AddedView? {
-        for (n in this) {
-            n.view?.let {
+        for (oneView in this) {
+            oneView.view?.let {
                 if (it == element) {
-                    this.remove(n)
-                    return n
+                    this.remove(oneView)
+                    return oneView
                 }
             }
         }
         return null
     }
     fun indexOfView(element: View): Int {
-        for (n in this) {
-            n.view?.let {
+        for (oneView in this) {
+            oneView.view?.let {
                 if (it == element) {
-                    return this.indexOf(n)
+                    return this.indexOf(oneView)
                 }
             }
         }
@@ -47,8 +47,8 @@ class AddedViewList : ArrayList<AddedView>() {
     }
 
     fun containsAnyAddedViewsOfType(type: ViewType): Boolean {
-        for (v: AddedView in this) {
-            if (v.viewType == type) {
+        for (oneView: AddedView in this) {
+            if (oneView.viewType == type) {
                 return true
             }
         }
