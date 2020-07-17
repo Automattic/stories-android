@@ -20,29 +20,20 @@ class StorySerializerUtils {
         }
         private val json = Json(context = saveResultModule)
 
-        fun serializeStory(story: Story): String {
-            return json.stringify(Story.serializer(), story)
-        }
+        fun serializeStory(story: Story) = json.stringify(Story.serializer(), story)
 
-        fun serializeStoryFrameItem(storyFrameItem: StoryFrameItem): String {
-            return json.stringify(StoryFrameItem.serializer(), storyFrameItem)
-        }
+        fun serializeStoryFrameItem(storyFrameItem: StoryFrameItem)
+                = json.stringify(StoryFrameItem.serializer(), storyFrameItem)
 
-        fun deserializeStory(story: String): Story {
-            return json.parse(Story.serializer(), story)
-        }
+        fun deserializeStory(story: String) = json.parse(Story.serializer(), story)
 
-        fun deserializeStoryFrameItem(storyFrameItem: String): StoryFrameItem {
-            return json.parse(StoryFrameItem.serializer(), storyFrameItem)
-        }
+        fun deserializeStoryFrameItem(storyFrameItem: String) =
+            json.parse(StoryFrameItem.serializer(), storyFrameItem)
 
-        fun serializeAddedViews(addedViews: AddedViewList): String {
-            return Json.stringify(ArrayListSerializer(AddedView.serializer()), addedViews)
-        }
+        fun serializeAddedViews(addedViews: AddedViewList) =
+            Json.stringify(ArrayListSerializer(AddedView.serializer()), addedViews)
 
-        fun serializeAddedView(addedView: AddedView): String {
-            return Json.stringify(AddedView.serializer(), addedView)
-        }
+        fun serializeAddedView(addedView: AddedView) = Json.stringify(AddedView.serializer(), addedView)
 
         fun deserializeAddedViews(addedViews: String): AddedViewList {
             val newList = AddedViewList()
