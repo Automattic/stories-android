@@ -12,10 +12,10 @@ import kotlinx.serialization.modules.SerializersModule
 
 class StorySerializerUtils {
     companion object {
-        private val saveResultModule = SerializersModule { // 1
-            polymorphic(Parcelable::class, SaveResultReason::class) { // 2
-                SaveSuccess::class with SaveSuccess.serializer() // 3
-                SaveError::class with SaveError.serializer() // 4
+        private val saveResultModule = SerializersModule {
+            polymorphic(Parcelable::class, SaveResultReason::class) {
+                SaveSuccess::class with SaveSuccess.serializer()
+                SaveError::class with SaveError.serializer()
             }
         }
         private val json = Json(context = saveResultModule)
