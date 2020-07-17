@@ -5,29 +5,19 @@ import com.automattic.photoeditor.views.added.AddedViewList
 import kotlinx.serialization.internal.ArrayListSerializer
 import kotlinx.serialization.json.Json
 
-fun serializeStory(story: Story): String {
-    return Json.stringify(Story.serializer(), story)
-}
+fun serializeStory(story: Story): String = Json.stringify(Story.serializer(), story)
 
-fun serializeStoryFrameItem(storyFrameItem: StoryFrameItem): String {
-    return Json.stringify(StoryFrameItem.serializer(), storyFrameItem)
-}
+fun serializeStoryFrameItem(storyFrameItem: StoryFrameItem) =
+    Json.stringify(StoryFrameItem.serializer(), storyFrameItem)
 
-fun deserializeStory(story: String): Story {
-    return Json.parse(Story.serializer(), story)
-}
+fun deserializeStory(story: String) = Json.parse(Story.serializer(), story)
 
-fun deserializeStoryFrameItem(storyFrameItem: String): StoryFrameItem {
-    return Json.parse(StoryFrameItem.serializer(), storyFrameItem)
-}
+fun deserializeStoryFrameItem(storyFrameItem: String) = Json.parse(StoryFrameItem.serializer(), storyFrameItem)
 
-fun serializeAddedViews(addedViews: AddedViewList): String {
-    return Json.stringify(ArrayListSerializer(AddedView.serializer()), addedViews)
-}
+fun serializeAddedViews(addedViews: AddedViewList) =
+    Json.stringify(ArrayListSerializer(AddedView.serializer()), addedViews)
 
-fun serializeAddedView(addedView: AddedView): String {
-    return Json.stringify(AddedView.serializer(), addedView)
-}
+fun serializeAddedView(addedView: AddedView) = Json.stringify(AddedView.serializer(), addedView)
 
 fun deserializeAddedViews(addedViews: String): AddedViewList {
     val newList = AddedViewList()
