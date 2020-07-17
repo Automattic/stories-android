@@ -948,17 +948,17 @@ class PhotoEditor private constructor(builder: Builder) :
 
         // get the images currently on top of the screen, and add them as Filters to the mp4composer
         val filterCollection = ArrayList<GlFilter>()
-        for (v in addedViews) {
+        for (oneView in addedViews) {
             val viewPositionInfo = ViewPositionInfo(
                 widthParent,
                 heightParent,
-                requireNotNull(v.view).width,
-                requireNotNull(v.view).height,
-                requireNotNull(v.view).matrix
+                requireNotNull(oneView.view).width,
+                requireNotNull(oneView.view).height,
+                requireNotNull(oneView.view).matrix
             )
-            when (v.viewType) {
+            when (oneView.viewType) {
                 ViewType.STICKER_ANIMATED -> {
-                    v.uri?.path?.let { path ->
+                    oneView.uri?.path?.let { path ->
                         val file = File(path)
                         val fileInputStream = FileInputStream(file)
                         filterCollection.add(GlGifWatermarkFilter(context, fileInputStream, viewPositionInfo))
@@ -966,7 +966,9 @@ class PhotoEditor private constructor(builder: Builder) :
                 }
                 else -> {
                     clearHelperBox()
-                    filterCollection.add(GlWatermarkFilter(BitmapUtil.createBitmapFromView(v.view), viewPositionInfo))
+                    filterCollection.add(
+                        GlWatermarkFilter(BitmapUtil.createBitmapFromView(oneView.view), viewPositionInfo)
+                    )
                 }
             }
         }
