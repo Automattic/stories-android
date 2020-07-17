@@ -22,8 +22,8 @@ class StorySerializerUtils {
 
         fun serializeStory(story: Story) = json.stringify(Story.serializer(), story)
 
-        fun serializeStoryFrameItem(storyFrameItem: StoryFrameItem)
-                = json.stringify(StoryFrameItem.serializer(), storyFrameItem)
+        fun serializeStoryFrameItem(storyFrameItem: StoryFrameItem) =
+            json.stringify(StoryFrameItem.serializer(), storyFrameItem)
 
         fun deserializeStory(story: String) = json.parse(Story.serializer(), story)
 
