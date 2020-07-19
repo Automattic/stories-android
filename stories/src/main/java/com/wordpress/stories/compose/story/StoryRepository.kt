@@ -39,15 +39,21 @@ object StoryRepository {
         }
     }
 
-    private fun isStoryIndexValid(storyIndex: Int): Boolean {
+    fun loadStory(story: Story): StoryIndex {
+        stories.add(story)
+        currentStoryIndex = stories.size - 1
+        return currentStoryIndex
+    }
+
+    private fun isStoryIndexValid(storyIndex: StoryIndex): Boolean {
         return storyIndex > DEFAULT_NONE_SELECTED && stories.size > storyIndex
     }
 
-    @JvmStatic fun getStoryAtIndex(index: Int): Story {
+    @JvmStatic fun getStoryAtIndex(index: StoryIndex): Story {
         return stories[index]
     }
 
-    private fun createNewStory(): Int {
+    private fun createNewStory(): StoryIndex {
         val story = Story(ArrayList())
         stories.add(story)
         currentStoryIndex = stories.size - 1
@@ -147,5 +153,10 @@ object StoryRepository {
         } else {
             (model.source as FileBackgroundSource).file.toString()
         }
+    }
+
+    fun clearAll() {
+        currentStoryIndex = DEFAULT_NONE_SELECTED
+        stories.clear()
     }
 }

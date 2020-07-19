@@ -55,6 +55,14 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
         }
     }
 
+    fun loadStory(story: Story) {
+        repository.loadStory(story).let {
+            updateUiState(createUiStateFromModelState(repository.getImmutableCurrentStoryFrames()))
+            // default selected frame when loading a new Story
+            _onSelectedFrameIndex.value = Pair(DEFAULT_SELECTION, DEFAULT_SELECTION)
+        }
+    }
+
     fun addStoryFrameItemToCurrentStory(item: StoryFrameItem) {
         repository.addStoryFrameItemToCurrentStory(item)
         updateUiState(createUiStateFromModelState(repository.getImmutableCurrentStoryFrames()))
@@ -212,6 +220,11 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
 
     fun onSwapActionEnded() {
         updateUiState(createUiStateFromModelState(repository.getImmutableCurrentStoryFrames()))
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        repository.clearAll()
     }
 
     private fun updateUiState(uiState: StoryFrameListUiState) {

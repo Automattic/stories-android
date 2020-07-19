@@ -162,7 +162,6 @@ class PhotoEditor private constructor(builder: Builder) :
             return MultiTouchListener(
                 mainView,
                 deleteView,
-                workAreaRect,
                 parentView,
                 imageView,
                 isTextPinchZoomable,
@@ -402,6 +401,7 @@ class PhotoEditor private constructor(builder: Builder) :
         } ?: buildViewFromAddedViewInfo(addedView.viewInfo, addedView.viewType)
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun buildViewFromAddedViewInfo(addedViewInfo: AddedViewInfo, viewType: ViewType): View? {
         var view: View? = null
         when (viewType) {
@@ -412,6 +412,9 @@ class PhotoEditor private constructor(builder: Builder) :
                 val emojiTextView = view?.findViewById<TextView>(R.id.tvPhotoEditorEmoji)
                 // the actual calculated text size as obtained from the view is expressed in px.
                 emojiTextView?.setTextSize(TypedValue.COMPLEX_UNIT_PX, addedViewInfo.addedViewTextInfo.fontSizePx)
+
+                val multiTouchListenerInstance = getNewMultitouchListener(view) // newMultiTouchListener
+                view?.touchableArea?.setOnTouchListener(multiTouchListenerInstance)
             }
             TEXT -> {
                 // create TEXT view layout
@@ -425,6 +428,9 @@ class PhotoEditor private constructor(builder: Builder) :
                 // the actual calculated text size as obtained from the view is expressed in px.
                 normalTextView?.setTextSize(TypedValue.COMPLEX_UNIT_PX, addedViewInfo.addedViewTextInfo.fontSizePx)
                 normalTextView?.setTextColor(addedViewInfo.addedViewTextInfo.textColor)
+
+                val multiTouchListenerInstance = getNewMultitouchListener(view) // newMultiTouchListener
+                view?.setOnTouchListener(multiTouchListenerInstance)
             }
         }
 

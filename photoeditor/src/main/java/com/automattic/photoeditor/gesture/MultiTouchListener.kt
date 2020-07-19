@@ -22,7 +22,6 @@ import com.automattic.photoeditor.views.ViewType
 internal class MultiTouchListener(
     private val mainView: View?,
     private val deleteView: View?,
-    private val workingAreaRect: Rect?,
     private val parentView: RelativeLayout,
     private val photoEditImageView: ImageView,
     private val mIsTextPinchZoomable: Boolean,
@@ -94,7 +93,7 @@ internal class MultiTouchListener(
                     val currY = event.getY(pointerIndexMove)
                     if (!mScaleGestureDetector.isInProgress) {
                         // if workingAreaRect is set, verify movement is within the area
-                        workingAreaRect?.let {
+                        mOnPhotoEditorListener?.getWorkingAreaRect()?.let {
                             if (isViewCenterInWorkingAreaBounds(view, currX - mPrevX, currY - mPrevY)) {
                                 adjustTranslation(
                                     view,
@@ -207,7 +206,7 @@ internal class MultiTouchListener(
         val deltaVector = getWouldBeTranslation(view, deltaX, deltaY)
         val wouldBeY = deltaVector[1] + view.y
 
-        workingAreaRect?.let {
+        mOnPhotoEditorListener?.getWorkingAreaRect()?.let {
             val distanceToCenter = view.height / 2
             return ((wouldBeY - distanceToCenter) > it.top) && ((wouldBeY + distanceToCenter) < it.bottom)
         } ?: return true
