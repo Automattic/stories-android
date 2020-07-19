@@ -24,6 +24,7 @@ class StorySaveEvents {
     @Parcelize
     data class FrameSaveResult(val frameIndex: FrameIndex, val resultReason: SaveResultReason) : Parcelable
 
+    @kotlinx.serialization.Serializable
     sealed class SaveResultReason : Parcelable {
         @Parcelize
         object SaveSuccess : SaveResultReason()

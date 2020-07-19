@@ -1052,11 +1052,15 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // purge multitouch listeners
         val addedViews = photoEditor.getViewsAdded()
         for (addedView in addedViews) {
-            addedView.view.setOnTouchListener(null)
+            addedView.view?.let {
+                // while iterating, also update the ViewInfo for each view
+                addedView.update()
+                addedView.view?.setOnTouchListener(null)
+            }
         }
 
         // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
-        currentStoryFrameItem?.addedViews = AddedViewList(photoEditor.getViewsAdded())
+        currentStoryFrameItem?.addedViews = AddedViewList().copyOf(photoEditor.getViewsAdded())
     }
 
     private fun showMediaPicker() {
@@ -1757,7 +1761,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // now call addViewToParent the addedViews remembered by this frame
         newSelectedFrame.addedViews.let {
             for (oneView in it) {
-                photoEditor.addViewToParentWithTouchListener(oneView.view, oneView.viewType)
+                photoEditor.addViewToParentWithTouchListener(oneView)
             }
         }
 
