@@ -3,6 +3,7 @@ package com.wordpress.stories.compose.frame
 import android.content.Context
 import android.graphics.Color
 import android.net.Uri
+import android.view.View
 import android.view.ViewGroup.LayoutParams
 import android.widget.RelativeLayout
 import com.automattic.photoeditor.PhotoEditor
@@ -279,6 +280,10 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
             for (oneView in frame.addedViews) {
                 oneView.view?.let {
                     removeViewFromParent(it)
+                    // this is needed, otherwise some vector graphics such as emoji in text will not render
+                    // correctly when a hardware display is not in place (such is the case of FrameSaveManager,
+                    // as we're laying out the views on an off-screen view).
+                    it.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
                     ghostPhotoEditorView.addView(it, getViewLayoutParams())
                 }
             }
