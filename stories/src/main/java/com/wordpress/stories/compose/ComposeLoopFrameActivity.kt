@@ -38,8 +38,7 @@ import androidx.core.content.FileProvider
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.Lifecycle.State
-import androidx.lifecycle.Lifecycle.State.STARTED
+import androidx.lifecycle.Lifecycle.State.DESTROYED
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.automattic.photoeditor.OnPhotoEditorListener
@@ -340,7 +339,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                         // fixes https://github.com/Automattic/portkey-android/issues/453
                         // when don't keep activities is ON, the onDismiss override gets called only through
                         // Activity.onDestroy() -> Fragment.onDestroy() (see stacktrace)
-                        if (lifecycle.currentState == State.DESTROYED) {
+                        if (lifecycle.currentState == DESTROYED) {
                             return
                         }
                         isEditingText = false
