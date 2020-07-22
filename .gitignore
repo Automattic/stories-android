@@ -36,16 +36,25 @@ proguard/
 # Android Studio captures folder
 captures/
 
-# IntelliJ
+# Intellij project files
 *.iml
-.idea/workspace.xml
-.idea/tasks.xml
-.idea/gradle.xml
-.idea/assetWizardSettings.xml
-.idea/dictionaries
-.idea/libraries
-.idea/caches
-.idea/render.experimental.xml
+*.ipr
+*.iws
+/.idea/*
+
+# IntelliJ/Android Studio exceptions
+!/.idea/codeStyles/
+!/.idea/fileTemplates/
+!/.idea/inspectionProfiles/
+!/.idea/scopes/
+!/.idea/codeStyleSettings.xml
+!/.idea/encodings.xml
+!/.idea/copyright/
+!/.idea/compiler.xml
+# Enforce plugins
+!/.idea/externalDependencies.xml
+# Checkstyle configuration
+!/.idea/checkstyle-idea.xml
 
 # VS Code
 .project
