@@ -38,7 +38,6 @@ import androidx.core.content.FileProvider
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle.State.DESTROYED
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
