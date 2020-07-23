@@ -254,18 +254,7 @@ class PhotoEditor private constructor(builder: Builder) :
             }
 
             val multiTouchListenerInstance = getNewMultitouchListener() // newMultiTouchListener
-            multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
-                override fun onClick() {
-                    val textInput = textInputTv.text.toString()
-                    val currentTextColor = textInputTv.currentTextColor
-                    mOnPhotoEditorListener?.onEditTextChangeListener(this@apply, textInput, currentTextColor, false)
-                }
-
-                override fun onLongClick() {
-                    // no op
-                }
-            })
-
+            setGestureControlOnMultiTouchListener(this, ViewType.TEXT, multiTouchListenerInstance)
             setOnTouchListener(multiTouchListenerInstance)
             addViewToParent(this, ViewType.TEXT)
 
@@ -365,14 +354,7 @@ class PhotoEditor private constructor(builder: Builder) :
             }
 
             val multiTouchListenerInstance = getNewMultitouchListener(this) // newMultiTouchListener
-            multiTouchListenerInstance.setOnGestureControl(object : MultiTouchListener.OnGestureControl {
-                override fun onClick() {
-                }
-
-                override fun onLongClick() {
-                    // no op
-                }
-            })
+            setGestureControlOnMultiTouchListener(this, ViewType.EMOJI, multiTouchListenerInstance)
             touchableArea.setOnTouchListener(multiTouchListenerInstance)
             // setOnTouchListener(multiTouchListenerInstance)
             addViewToParent(this, ViewType.EMOJI)
