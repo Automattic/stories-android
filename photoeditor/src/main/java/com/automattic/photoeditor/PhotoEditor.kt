@@ -408,13 +408,16 @@ class PhotoEditor private constructor(builder: Builder) :
             EMOJI -> {
                 // create emoji view layout
                 view = addEmoji(addedViewInfo.addedViewTextInfo.text)
-                // apply specific TextView parameters for emoji (fontsize)
-                val emojiTextView = view?.findViewById<TextView>(R.id.tvPhotoEditorEmoji)
-                // the actual calculated text size as obtained from the view is expressed in px.
-                emojiTextView?.setTextSize(TypedValue.COMPLEX_UNIT_PX, addedViewInfo.addedViewTextInfo.fontSizePx)
+                view?.let {
+                    // apply specific TextView parameters for emoji (fontsize)
+                    val emojiTextView = it.findViewById<TextView>(R.id.tvPhotoEditorEmoji)
+                    // the actual calculated text size as obtained from the view is expressed in px.
+                    emojiTextView?.setTextSize(TypedValue.COMPLEX_UNIT_PX, addedViewInfo.addedViewTextInfo.fontSizePx)
 
-                val multiTouchListenerInstance = getNewMultitouchListener(view) // newMultiTouchListener
-                view?.touchableArea?.setOnTouchListener(multiTouchListenerInstance)
+                    val multiTouchListenerInstance = getNewMultitouchListener(it) // newMultiTouchListener
+                    setGestureControlOnMultiTouchListener(it, viewType, multiTouchListenerInstance)
+                    it.touchableArea?.setOnTouchListener(multiTouchListenerInstance)
+                }
             }
             TEXT -> {
                 // create TEXT view layout
@@ -423,14 +426,17 @@ class PhotoEditor private constructor(builder: Builder) :
                     colorCodeTextView = addedViewInfo.addedViewTextInfo.textColor,
                     isViewBeingReadded = true
                 )
-                // apply specific TextView parameters for text (fontsize, text color)
-                val normalTextView = view?.findViewById<TextView>(R.id.tvPhotoEditorText)
-                // the actual calculated text size as obtained from the view is expressed in px.
-                normalTextView?.setTextSize(TypedValue.COMPLEX_UNIT_PX, addedViewInfo.addedViewTextInfo.fontSizePx)
-                normalTextView?.setTextColor(addedViewInfo.addedViewTextInfo.textColor)
+                view?.let {
+                    // apply specific TextView parameters for text (fontsize, text color)
+                    val normalTextView = it.findViewById<TextView>(R.id.tvPhotoEditorText)
+                    // the actual calculated text size as obtained from the view is expressed in px.
+                    normalTextView?.setTextSize(TypedValue.COMPLEX_UNIT_PX, addedViewInfo.addedViewTextInfo.fontSizePx)
+                    normalTextView?.setTextColor(addedViewInfo.addedViewTextInfo.textColor)
 
-                val multiTouchListenerInstance = getNewMultitouchListener(view) // newMultiTouchListener
-                view?.setOnTouchListener(multiTouchListenerInstance)
+                    val multiTouchListenerInstance = getNewMultitouchListener(it) // newMultiTouchListener
+                    setGestureControlOnMultiTouchListener(it, viewType, multiTouchListenerInstance)
+                    it.setOnTouchListener(multiTouchListenerInstance)
+                }
             }
         }
 
@@ -448,10 +454,19 @@ class PhotoEditor private constructor(builder: Builder) :
 
     private fun addViewToParentWithTouchListener(rootView: View, viewType: ViewType, sourceUri: Uri? = null) {
         val multiTouchListenerInstance = getNewMultitouchListener(rootView) // newMultiTouchListener
+        setGestureControlOnMultiTouchListener(rootView, viewType, multiTouchListenerInstance)
+        addViewToParent(rootView, viewType, sourceUri)
+    }
+
+    private fun setGestureControlOnMultiTouchListener(
+        rootView: View,
+        viewType: ViewType,
+        multiTouchListener: MultiTouchListener
+    ) {
         when {
             viewType == EMOJI -> {
-                multiTouchListenerInstance.setOnGestureControl(object :
-                    MultiTouchListener.OnGestureControl {
+                multiTouchListener.setOnGestureControl(object :
+                        MultiTouchListener.OnGestureControl {
                     override fun onClick() {
                         // TODO implement emoji linking
                     }
@@ -460,21 +475,20 @@ class PhotoEditor private constructor(builder: Builder) :
                         // no op
                     }
                 })
-                rootView.touchableArea.setOnTouchListener(multiTouchListenerInstance)
             }
 
             viewType == TEXT -> {
                 val textInputTv = rootView.tvPhotoEditorText
-                multiTouchListenerInstance.setOnGestureControl(object :
-                    MultiTouchListener.OnGestureControl {
+                multiTouchListener.setOnGestureControl(object :
+                        MultiTouchListener.OnGestureControl {
                     override fun onClick() {
                         val textInput = textInputTv.text.toString()
                         val currentTextColor = textInputTv.currentTextColor
                         mOnPhotoEditorListener?.onEditTextChangeListener(
-                            rootView,
-                            textInput,
-                            currentTextColor,
-                            false
+                                rootView,
+                                textInput,
+                                currentTextColor,
+                                false
                         )
                     }
 
@@ -482,10 +496,9 @@ class PhotoEditor private constructor(builder: Builder) :
                         // no op
                     }
                 })
-                rootView.setOnTouchListener(multiTouchListenerInstance)
+                rootView.setOnTouchListener(multiTouchListener)
             }
         }
-        addViewToParent(rootView, viewType, sourceUri)
     }
 
     /**
