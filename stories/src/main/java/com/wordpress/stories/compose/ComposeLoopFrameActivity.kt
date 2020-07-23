@@ -38,6 +38,7 @@ import androidx.core.content.FileProvider
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle.State.DESTROYED
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -922,7 +923,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         }
 
         stickers_add_button.setOnClickListener {
-            emojiPickerFragment.show(supportFragmentManager, emojiPickerFragment.tag)
+            // avoid multiple clicks when the one click is already being processed, fixes
+            // https://github.com/Automattic/portkey-android/issues/455
+            if (!emojiPickerFragment.isAdded && !emojiPickerFragment.isVisible) {
+                emojiPickerFragment.show(supportFragmentManager, emojiPickerFragment.tag)
+            }
         }
 
         next_button.setOnClickListener {
