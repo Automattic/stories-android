@@ -65,6 +65,7 @@
         android:layout_margin="@dimen/color_picker_item_margin"
         android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
+        android:layout_toStartOf="@id/color_picker_button"
         android:orientation="horizontal"
         android:visibility="gone"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"

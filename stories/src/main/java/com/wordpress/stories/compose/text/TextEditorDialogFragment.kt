@@ -59,6 +59,16 @@ class TextEditorDialogFragment : DialogFragment() {
             addTextColorPickerRecyclerView.adapter = colorPickerAdapter
         }
 
+        color_picker_button.setOnClickListener {
+            if (add_text_color_picker_recycler_view.visibility == View.VISIBLE) {
+                add_text_color_picker_recycler_view.visibility = View.GONE
+                text_alignment_button.visibility = View.VISIBLE
+            } else {
+                add_text_color_picker_recycler_view.visibility = View.VISIBLE
+                text_alignment_button.visibility = View.GONE
+            }
+        }
+
         arguments?.let {
             add_text_edit_text?.setText(it.getString(EXTRA_INPUT_TEXT))
             colorCode = it.getInt(EXTRA_COLOR_CODE)
