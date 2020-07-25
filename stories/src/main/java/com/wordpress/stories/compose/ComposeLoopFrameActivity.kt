@@ -319,7 +319,13 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             .build() // build photo editor sdk
 
         photoEditor.setOnPhotoEditorListener(object : OnPhotoEditorListener {
-            override fun onEditTextChangeListener(rootView: View, text: String, colorCode: Int, isJustAdded: Boolean) {
+            override fun onEditTextChangeListener(
+                rootView: View,
+                text: String,
+                colorCode: Int,
+                textAlignment: Int,
+                isJustAdded: Boolean
+            ) {
                 if (isEditingText) {
                     return
                 }
@@ -333,9 +339,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 val textEditorDialogFragment = TextEditorDialogFragment.show(
                     this@ComposeLoopFrameActivity,
                     text,
-                    colorCode)
+                    colorCode,
+                    textAlignment)
                 textEditorDialogFragment.setOnTextEditorListener(object : TextEditorDialogFragment.TextEditor {
-                    override fun onDone(inputText: String, colorCode: Int) {
+                    override fun onDone(inputText: String, colorCode: Int, textAlignment: Int) {
                         // fixes https://github.com/Automattic/portkey-android/issues/453
                         // when don't keep activities is ON, the onDismiss override gets called only through
                         // Activity.onDestroy() -> Fragment.onDestroy() (see stacktrace)
@@ -350,7 +357,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                             // just remove the view here, we don't need it - also don't  add to the `redo` stack
                             photoEditor.viewUndo(rootView, TEXT, false)
                         } else {
-                            photoEditor.editText(rootView, inputText, colorCode)
+                            photoEditor.editText(rootView, inputText, colorCode, textAlignment)
                         }
                         editModeRestoreAllUIControls()
                     }

@@ -27,7 +27,7 @@ class TextEditorDialogFragment : DialogFragment() {
     private var textEditor: TextEditor? = null
 
     interface TextEditor {
-        fun onDone(inputText: String, colorCode: Int)
+        fun onDone(inputText: String, colorCode: Int, textAlignment: Int)
     }
 
     override fun onStart() {
@@ -91,13 +91,13 @@ class TextEditorDialogFragment : DialogFragment() {
             dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
             dismiss()
             val inputText = add_text_edit_text?.text.toString()
-            textEditor?.onDone(inputText, colorCode)
+            textEditor?.onDone(inputText, colorCode, textAlignment.value)
         }
     }
 
     override fun onDismiss(dialog: DialogInterface) {
         val inputText = add_text_edit_text?.text.toString()
-        textEditor?.onDone(inputText, colorCode)
+        textEditor?.onDone(inputText, colorCode, textAlignment.value)
         super.onDismiss(dialog)
     }
 
@@ -107,6 +107,11 @@ class TextEditorDialogFragment : DialogFragment() {
     }
 
     private fun updateTextAlignment(textAlignment: TextAlignment) {
+        // Externally, we track text alignment as one of the allowed values for View#setTextAlignment.
+        // However text alignment doesn't seem to work well for modifying EditTexts after they're already
+        // drawn, so we're relying on view gravity to change alignment in the EditText on the fly.
+        // (Conversely, using gravity for the resulting TextView added to the canvas does not work as
+        // intended, so this gravity/text alignment dichotomy seems necessary.)
         add_text_edit_text.gravity = when (textAlignment) {
             TextAlignment.LEFT -> Gravity.START or Gravity.CENTER_VERTICAL
             TextAlignment.CENTER -> Gravity.CENTER_HORIZONTAL or Gravity.CENTER_VERTICAL
