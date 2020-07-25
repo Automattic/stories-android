@@ -43,6 +43,7 @@
         android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
         android:orientation="horizontal"
+        android:visibility="gone"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:background="@android:color/black"
         tools:listitem="@layout/color_picker_list_item" />
