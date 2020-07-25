@@ -146,4 +146,4 @@ class TextEditorDialogFragment : DialogFragment() {
             }
         }
     }
-} // Show dialog with default text input as empty and text color white
+}
