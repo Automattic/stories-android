@@ -300,7 +300,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
 
     private fun createGhostPhotoEditor(context: Context, originalPhotoEditorView: PhotoEditorView): PhotoEditorView {
         val ghostPhotoView = PhotoEditorView(context)
-        cloneViewSpecs(originalPhotoEditorView, ghostPhotoView)
+        cloneViewSpecs(originalPhotoEditorView, ghostPhotoView, doNormalizeTo9_16 = true)
         ghostPhotoView.setBackgroundColor(Color.BLACK)
         return ghostPhotoView
     }
