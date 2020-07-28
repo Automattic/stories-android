@@ -1,5 +1,6 @@
 package com.automattic.photoeditor
 
+import android.graphics.Rect
 import android.view.View
 import com.automattic.photoeditor.views.ViewType
 
@@ -70,4 +71,6 @@ interface OnPhotoEditorListener {
     fun onStopViewChangeListener(viewType: ViewType)
 
     fun onRemoveViewReadyListener(removedView: View, ready: Boolean)
+
+    fun getWorkingAreaRect(): Rect?
 }

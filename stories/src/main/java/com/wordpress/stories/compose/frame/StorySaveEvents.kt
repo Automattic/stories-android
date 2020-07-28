@@ -6,7 +6,7 @@ import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.Save
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
 import com.wordpress.stories.compose.story.StoryIndex
 import kotlinx.android.parcel.Parcelize
-import java.io.Serializable
+import kotlinx.serialization.Serializable
 
 class StorySaveEvents {
     @Parcelize
@@ -24,10 +24,13 @@ class StorySaveEvents {
     @Parcelize
     data class FrameSaveResult(val frameIndex: FrameIndex, val resultReason: SaveResultReason) : Parcelable
 
+    @Serializable
     sealed class SaveResultReason : Parcelable {
+        @Serializable
         @Parcelize
         object SaveSuccess : SaveResultReason()
 
+        @Serializable
         @Parcelize
         data class SaveError(
             var reason: String? = null
@@ -36,7 +39,7 @@ class StorySaveEvents {
 
     data class StorySaveProcessStart(
         var storyIndex: StoryIndex
-    ) : Serializable
+    )
 
     companion object {
         @JvmStatic fun allErrorsInResult(frameSaveResult: List<FrameSaveResult>): List<FrameSaveResult> {

@@ -38,6 +38,7 @@ import androidx.core.content.FileProvider
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.Lifecycle.State.DESTROYED
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.automattic.photoeditor.OnPhotoEditorListener
@@ -59,7 +60,6 @@ import com.automattic.photoeditor.views.ViewType.TEXT
 import com.automattic.photoeditor.views.added.AddedViewList
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.wordpress.stories.BuildConfig
 import com.wordpress.stories.R
 import com.wordpress.stories.compose.ComposeLoopFrameActivity.ExternalMediaPickerRequestCodesAndExtraKeys
@@ -80,6 +80,7 @@ import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.Save
 import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveResult
 import com.wordpress.stories.compose.story.OnStoryFrameSelectorTappedListener
 import com.wordpress.stories.compose.story.StoryFrameItem
+import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource
 import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.FileBackgroundSource
 import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.UriBackgroundSource
 import com.wordpress.stories.compose.story.StoryFrameItemType
@@ -88,6 +89,7 @@ import com.wordpress.stories.compose.story.StoryFrameItemType.VIDEO
 import com.wordpress.stories.compose.story.StoryFrameSelectorFragment
 import com.wordpress.stories.compose.story.StoryIndex
 import com.wordpress.stories.compose.story.StoryRepository
+import com.wordpress.stories.compose.story.StorySerializerUtils
 import com.wordpress.stories.compose.story.StoryViewModel
 import com.wordpress.stories.compose.story.StoryViewModel.StoryFrameListItemUiState.StoryFrameListItemUiStateFrame
 import com.wordpress.stories.compose.story.StoryViewModelFactory
@@ -168,11 +170,15 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private lateinit var photoEditor: PhotoEditor
     private lateinit var backgroundSurfaceManager: BackgroundSurfaceManager
     private var currentOriginalCapturedFile: File? = null
+    private lateinit var workingAreaRect: Rect
 
     private val timesUpRunnable = Runnable {
         stopRecordingVideo(false) // time's up, it's not a cancellation
     }
     private val timesUpHandler = Handler()
+    private var launchCameraRequestPending = false
+    private var launchVideoPlayerRequestPending = false
+    private lateinit var launchVideoPlayerRequestPendingSource: BackgroundSource
     private var cameraOperationInCourse = false
 
     private var cameraSelection = CameraSelection.BACK
@@ -277,7 +283,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             xCoord,
             yCoord + topAreaHeight,
             xCoord + width,
-            yCoord + height - bottomAreaHeight)
+            yCoord + height - bottomAreaHeight
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -303,10 +310,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             }
         }
 
+        workingAreaRect = calculateWorkingArea()
         photoEditor = PhotoEditor.Builder(this, photoEditorView)
             .setPinchTextScalable(true) // set flag to make text scalable when pinch
             .setDeleteView(delete_view)
-            .setWorkAreaRect(calculateWorkingArea())
+            .setWorkAreaRect(workingAreaRect)
             .setAuthenticatitonHeaderInterface(authHeaderInterfaceBridge)
             .build() // build photo editor sdk
 
@@ -328,6 +336,12 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     colorCode)
                 textEditorDialogFragment.setOnTextEditorListener(object : TextEditorDialogFragment.TextEditor {
                     override fun onDone(inputText: String, colorCode: Int) {
+                        // fixes https://github.com/Automattic/portkey-android/issues/453
+                        // when don't keep activities is ON, the onDismiss override gets called only through
+                        // Activity.onDestroy() -> Fragment.onDestroy() (see stacktrace)
+                        if (lifecycle.currentState == DESTROYED) {
+                            return
+                        }
                         isEditingText = false
                         // make sure to set it to visible, as newly added views are originally hidden until
                         // proper text is set
@@ -370,6 +384,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             override fun onRemoveViewReadyListener(removedView: View, ready: Boolean) {
                 delete_view.setReadyForDelete(ready)
             }
+
+            override fun getWorkingAreaRect(): Rect? {
+                return workingAreaRect
+            }
         })
 
         backgroundSurfaceManager = BackgroundSurfaceManager(
@@ -394,6 +412,14 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     if (savedInstanceState == null && !firstIntentLoaded) {
                         onLoadFromIntent(intent)
                         firstIntentLoaded = true
+                    }
+
+                    if (launchCameraRequestPending) {
+                        launchCameraRequestPending = false
+                        launchCameraPreviewWithSurfaceSafeguard()
+                    } else if (launchVideoPlayerRequestPending) {
+                        launchVideoPlayerRequestPending = false
+                        showPlayVideoWithSurfaceSafeguard(launchVideoPlayerRequestPendingSource)
                     }
                 }
             },
@@ -427,39 +453,45 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // request the BackgroundSurfaceManager to prime the textureView so it's ready when needed.
         backgroundSurfaceManager.preTurnTextureViewOn()
 
-        if (savedInstanceState == null) {
-            // check camera selection, flash state from preferences
-            CameraSelection.valueOf(
-                getPreferences(Context.MODE_PRIVATE).getInt(getString(R.string.pref_camera_selection), 0))?.let {
-                cameraSelection = it
-            }
-            FlashIndicatorState.valueOf(
-                getPreferences(Context.MODE_PRIVATE).getInt(getString(R.string.pref_flash_mode_selection), 0))?.let {
-                flashModeSelection = it
-            }
+        // check camera selection, flash state from preferences
+        CameraSelection.valueOf(
+            getPreferences(Context.MODE_PRIVATE).getInt(getString(R.string.pref_camera_selection), 0))?.let {
+            cameraSelection = it
+        }
+        FlashIndicatorState.valueOf(
+            getPreferences(Context.MODE_PRIVATE).getInt(getString(R.string.pref_flash_mode_selection), 0))?.let {
+            flashModeSelection = it
+        }
 
-            // also, update the UI
-            updateFlashModeSelectionIcon()
+        // also, update the UI
+        updateFlashModeSelectionIcon()
 
-            setupStoryViewModelObservers()
-        } else {
+        setupStoryViewModelObservers()
+
+        if (savedInstanceState != null) {
             currentOriginalCapturedFile =
                 savedInstanceState.getSerializable(STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE) as File?
             preHookRun = savedInstanceState.getBoolean(STATE_KEY_PREHOOK_RUN)
 
-            photoEditorView.postDelayed({
-                when {
-                    backgroundSurfaceManager.videoPlayerVisible() -> showPlayVideo(currentOriginalCapturedFile)
-                    backgroundSurfaceManager.cameraVisible() -> launchCameraPreview()
-                    else -> {
-                        Glide.with(this@ComposeLoopFrameActivity)
-                            .load(currentOriginalCapturedFile)
-                            .transform(CenterCrop())
-                            .into(photoEditorView.source)
-                        showStaticBackground()
-                    }
-                }
-            }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
+            firstIntentLoaded = savedInstanceState.getBoolean(STATE_KEY_FIRST_INTENT_LOADED)
+            permissionsRequestForCameraInProgress = savedInstanceState.getBoolean(STATE_KEY_PERMISSION_REQ_IN_PROGRESS)
+
+            storyViewModel.loadStory(
+                StorySerializerUtils.deserializeStory(savedInstanceState.getString(STATE_KEY_STORY_SAVE_STATE))
+            )
+
+            val selectedFrameIndex = savedInstanceState.getInt(STATE_KEY_STORY_SAVE_STATE_SELECTED_FRAME)
+            if (selectedFrameIndex < storyViewModel.getCurrentStorySize()) {
+                storyViewModel.setSelectedFrame(selectedFrameIndex)
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val selectedFrameIndex = storyViewModel.getSelectedFrameIndex()
+        if (selectedFrameIndex < storyViewModel.getCurrentStorySize()) {
+            updateBackgroundSurfaceUIWithStoryFrame(selectedFrameIndex)
         }
     }
 
@@ -588,7 +620,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
         if (intent.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED) ||
                 permissionsRequestForCameraInProgress) {
-            launchCameraPreview()
+            launchCameraPreviewWithSurfaceSafeguard()
             checkForLowSpaceAndShowDialog()
         } else if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
             val storySaveResult = intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
@@ -619,9 +651,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             if (StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.isNotEmpty()) {
                 storyViewModel.loadStory(storyIndexToSelect)
                 refreshStoryFrameSelection()
-            } else {
-                showToast(getString(R.string.toast_story_page_not_found))
-                finish()
             }
         }
     }
@@ -643,7 +672,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // be trying to set app to immersive mode before it's ready and the flags do not stick
         photoEditorView.postDelayed({
             hideStatusBar(window)
-            photoEditor.updateWorkAreaRect(calculateWorkingArea())
+            workingAreaRect = calculateWorkingArea()
+            photoEditor.updateWorkAreaRect(workingAreaRect)
         }, IMMERSIVE_FLAG_TIMEOUT)
     }
 
@@ -652,6 +682,16 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         outState.putSerializable(STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE, currentOriginalCapturedFile)
         outState.putInt(STATE_KEY_CURRENT_STORY_INDEX, storyIndexToSelect)
         outState.putBoolean(STATE_KEY_PREHOOK_RUN, preHookRun)
+        outState.putBoolean(STATE_KEY_FIRST_INTENT_LOADED, firstIntentLoaded)
+        outState.putBoolean(STATE_KEY_PERMISSION_REQ_IN_PROGRESS, permissionsRequestForCameraInProgress)
+
+        // save Story slide (frame) state
+        addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
+        outState.putString(STATE_KEY_STORY_SAVE_STATE, StorySerializerUtils.serializeStory(
+                storyViewModel.getStoryAtIndex(storyViewModel.getCurrentStoryIndex())
+            )
+        )
+        outState.putInt(STATE_KEY_STORY_SAVE_STATE_SELECTED_FRAME, storyViewModel.getSelectedFrameIndex())
         super.onSaveInstanceState(outState)
     }
 
@@ -730,7 +770,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                             intent.removeExtra(requestCodes.EXTRA_MEDIA_URIS)
                         }
                     }
-                    launchCameraPreview()
+                    launchCameraPreviewWithSurfaceSafeguard()
                 }
             }
         }
@@ -764,8 +804,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             ))
     }
 
-    private fun updateBackgroundSurfaceUIWithStoryFrame(storyFrameIndex: Int) {
-        onStoryFrameSelected(storyViewModel.getSelectedFrameIndex(), storyFrameIndex)
+    private fun updateBackgroundSurfaceUIWithStoryFrame(
+        storyFrameIndex: Int
+    ) {
+        // omit keeping AddedViews for old selection by passing -1 given these were saved elsewhere
+        onStoryFrameSelected(-1, storyFrameIndex)
     }
 
     private fun addClickListeners() {
@@ -825,10 +868,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     })
             )
 
-        container_gallery_upload.setOnClickListener {
-            showMediaPicker()
-        }
-
         camera_flip_group.setOnClickListener {
             cameraSelection = backgroundSurfaceManager.flipCamera()
             saveCameraSelectionPref()
@@ -883,7 +922,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         }
 
         stickers_add_button.setOnClickListener {
-            emojiPickerFragment.show(supportFragmentManager, emojiPickerFragment.tag)
+            // avoid multiple clicks when the one click is already being processed, fixes
+            // https://github.com/Automattic/portkey-android/issues/455
+            if (!emojiPickerFragment.isAdded && !emojiPickerFragment.isVisible) {
+                emojiPickerFragment.show(supportFragmentManager, emojiPickerFragment.tag)
+            }
         }
 
         next_button.setOnClickListener {
@@ -1055,11 +1098,15 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // purge multitouch listeners
         val addedViews = photoEditor.getViewsAdded()
         for (addedView in addedViews) {
-            addedView.view.setOnTouchListener(null)
+            addedView.view?.let {
+                // while iterating, also update the ViewInfo for each view
+                addedView.update()
+                addedView.view?.setOnTouchListener(null)
+            }
         }
 
         // set addedViews on the current frame (copy array so we don't share the same one with PhotoEditor)
-        currentStoryFrameItem?.addedViews = AddedViewList(photoEditor.getViewsAdded())
+        currentStoryFrameItem?.addedViews = AddedViewList().copyOf(photoEditor.getViewsAdded())
     }
 
     private fun showMediaPicker() {
@@ -1109,9 +1156,25 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         photoEditor.addNewImageView(true, Uri.parse("https://i.giphy.com/Ok4HaWlYrewuY.gif"))
     }
 
+    private fun launchCameraPreviewWithSurfaceSafeguard() {
+        // securely switch camera preview on
+        if (backgroundSurfaceManager.isTextureViewAvailable()) {
+            CoroutineScope(Dispatchers.Main).launch {
+                launchCameraPreview()
+            }
+        } else {
+            // prep the surface and wait for BackgroundSurfaceManagerReadyListener
+            launchCameraRequestPending = true
+            backgroundSurfaceManager.preTurnTextureViewOn()
+        }
+    }
+
+    // IMPORTANT: don't call this method from any thread / CoroutineScope. Given we need the TextureSurface
+    // to be ready, use launchCameraPreviewWithSurfaceSafeguard() instead.
     private fun launchCameraPreview() {
         hideStoryFrameSelector()
         hideEditModeUIControls()
+        photoEditor.clearAllViews()
 
         if (!PermissionUtils.allRequiredPermissionsGranted(this)) {
             permissionsRequestForCameraInProgress = true
@@ -1130,6 +1193,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         switchCameraPreviewOn()
     }
 
+    // IMPORTANT: don't call this method from any thread / CoroutineScope. Given we need the TextureSurface
+    // to be ready, use showPlayVideoWithSurfaceSafeguard() instead.
     private fun showPlayVideo(videoFile: File? = null) {
         cameraOperationInCourse = false
         showStoryFrameSelector()
@@ -1137,6 +1202,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         backgroundSurfaceManager.switchVideoPlayerOnFromFile(videoFile)
     }
 
+    // IMPORTANT: don't call this method from any thread / CoroutineScope. Given we need the TextureSurface
+    // to be ready, use showPlayVideoWithSurfaceSafeguard() instead.
     private fun showPlayVideo(videoUri: Uri) {
         cameraOperationInCourse = false
         showStoryFrameSelector()
@@ -1161,10 +1228,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         backgroundSurfaceManager.takePicture(object : ImageCaptureListener {
             override fun onImageSaved(file: File) {
                 runOnUiThread {
-                    Glide.with(this@ComposeLoopFrameActivity)
-                        .load(file)
-                        .transform(CenterCrop(), RoundedCorners(16))
-                        .into(gallery_upload_img)
                     Glide.with(this@ComposeLoopFrameActivity)
                         .load(file)
                         .transform(CenterCrop())
@@ -1407,8 +1470,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         label_flash.visibility = View.INVISIBLE
 
         camera_flip_group.visibility = View.INVISIBLE
-
-        container_gallery_upload.visibility = View.INVISIBLE
     }
 
     private fun showVideoUIControls() {
@@ -1416,8 +1477,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         label_flash.visibility = View.VISIBLE
 
         camera_flip_group.visibility = View.VISIBLE
-
-        container_gallery_upload.visibility = View.VISIBLE
     }
 
     private fun showEditModeUIControls() {
@@ -1736,16 +1795,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // 3. image/uri source
         // 4. image/file source
         if (newSelectedFrame.frameItemType is VIDEO) {
-            CoroutineScope(Dispatchers.Main).launch {
-                source.apply {
-                    if (this is FileBackgroundSource) {
-                        showPlayVideo(file)
-                    } else (source as UriBackgroundSource).contentUri?.let {
-                        showPlayVideo(it)
-                    }
-                }
-                updateSoundControl()
-            }
+            showPlayVideoWithSurfaceSafeguard(source)
         } else {
             val model = (source as? FileBackgroundSource)?.file ?: (source as UriBackgroundSource).contentUri
             Glide.with(this@ComposeLoopFrameActivity)
@@ -1760,7 +1810,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // now call addViewToParent the addedViews remembered by this frame
         newSelectedFrame.addedViews.let {
             for (oneView in it) {
-                photoEditor.addViewToParentWithTouchListener(oneView.view, oneView.viewType)
+                photoEditor.addViewToParentWithTouchListener(oneView)
             }
         }
 
@@ -1772,9 +1822,27 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     override fun onStoryFrameAddTapped() {
         addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
-        // now clear addedViews so we don't leak View.Context
-        photoEditor.clearAllViews()
         showMediaPicker()
+    }
+
+    private fun showPlayVideoWithSurfaceSafeguard(source: BackgroundSource) {
+        if (backgroundSurfaceManager.isTextureViewAvailable()) {
+            CoroutineScope(Dispatchers.Main).launch {
+                source.apply {
+                    if (this is FileBackgroundSource) {
+                        showPlayVideo(file)
+                    } else (source as UriBackgroundSource).contentUri?.let {
+                        showPlayVideo(it)
+                    }
+                }
+                updateSoundControl()
+            }
+        } else {
+            // prep the surface and wait for BackgroundSurfaceManagerReadyListener
+            launchVideoPlayerRequestPendingSource = source
+            launchVideoPlayerRequestPending = true
+            backgroundSurfaceManager.preTurnTextureViewOn()
+        }
     }
 
     private inner class FlingGestureListener : GestureDetector.SimpleOnGestureListener() {
@@ -1875,6 +1943,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         private const val CAMERA_STILL_PICTURE_WAIT_FOR_NEXT_CAPTURE_MS = 1000L
         private const val STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE = "key_current_original_captured_file"
         private const val STATE_KEY_PREHOOK_RUN = "key_prehook_run"
+        private const val STATE_KEY_STORY_SAVE_STATE = "key_story_save_state"
+        private const val STATE_KEY_STORY_SAVE_STATE_SELECTED_FRAME = "key_story_save_state_selected_frame"
+        private const val STATE_KEY_FIRST_INTENT_LOADED = "key_state_first_intent_loaded"
+        private const val STATE_KEY_PERMISSION_REQ_IN_PROGRESS = "key_state_permission_req_in_progress"
         private const val VIBRATION_INDICATION_LENGTH_MS = 100L
         private const val SWIPE_MIN_DISTANCE = 120
         private const val SWIPE_MIN_DISTANCE_FROM_BOTTOM = 80
