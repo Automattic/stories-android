@@ -3,43 +3,52 @@ package com.automattic.photoeditor.views.added
 import android.view.View
 import com.automattic.photoeditor.views.ViewType
 import java.util.ArrayList
+import kotlinx.serialization.Serializable
 
-class AddedViewList(addedViewList: AddedViewList? = null) : ArrayList<AddedView>() {
-    init {
-        addedViewList?.let {
+@Serializable
+class AddedViewList : ArrayList<AddedView>() {
+    fun copyOf(addedViewList: AddedViewList): AddedViewList {
+        addedViewList.let {
             addAll(it)
         }
+        return this
     }
 
     fun containsView(element: View): Boolean {
-        for (n in this) {
-            if (n.view == element) {
-                return true
+        for (oneView in this) {
+            oneView.view?.let {
+                if (it == element) {
+                    return true
+                }
             }
         }
         return false
     }
     fun removeView(element: View): AddedView? {
-        for (n in this) {
-            if (n.view == element) {
-                this.remove(n)
-                return n
+        for (oneView in this) {
+            oneView.view?.let {
+                if (it == element) {
+                    this.remove(oneView)
+                    return oneView
+                }
             }
         }
         return null
     }
     fun indexOfView(element: View): Int {
-        for (n in this) {
-            if (n.view == element) {
-                return this.indexOf(n)
+        for (oneView in this) {
+            oneView.view?.let {
+                if (it == element) {
+                    return this.indexOf(oneView)
+                }
             }
         }
         return -1
     }
 
     fun containsAnyAddedViewsOfType(type: ViewType): Boolean {
-        for (v: AddedView in this) {
-            if (v.viewType == type) {
+        for (oneView: AddedView in this) {
+            if (oneView.viewType == type) {
                 return true
             }
         }

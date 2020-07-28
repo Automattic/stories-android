@@ -12,6 +12,7 @@ import com.daasuu.mp4compose.FillModeCustomItem
 import com.daasuu.mp4compose.Rotation
 import com.daasuu.mp4compose.composer.Mp4ComposerEngine.ProgressCallback
 import com.daasuu.mp4compose.filter.GlFilter
+import com.daasuu.mp4compose.utils.DataSourceUtil
 
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -37,6 +38,7 @@ class Mp4Composer {
     private var isStaticImageBkgSource = false
     private var bkgBitmap: Bitmap? = null
     private var context: Context? = null
+    private var addedRequestHeaders: Map<String, String>? = null
 
     private var executorService: ExecutorService? = null
 
@@ -61,7 +63,12 @@ class Mp4Composer {
         return this
     }
 
-    fun filter(filter: GlFilter): Mp4Composer {
+    fun addedHeaders(headers: Map<String, String>?): Mp4Composer {
+        this.addedRequestHeaders = headers
+        return this
+    }
+
+    fun filter(filter: GlFilter?): Mp4Composer {
         this.filter = filter
         return this
     }
@@ -145,10 +152,6 @@ class Mp4Composer {
                 filter = GlFilter()
             }
 
-            if (fillMode == null) {
-                fillMode = FillMode.PRESERVE_ASPECT_FIT
-            }
-
             if (fillModeCustomItem != null) {
                 fillMode = FillMode.CUSTOM
             }
@@ -159,7 +162,7 @@ class Mp4Composer {
             if (!isStaticImageBkgSource) {
                 initializeUriDataSource(engine)
                 val videoRotate = getVideoRotation(srcUri!!)
-                val srcVideoResolution = getVideoResolution(srcUri!!, videoRotate)
+                val srcVideoResolution = getVideoResolution(srcUri)
 
                 if (outputResolution == null) {
                     if (fillMode == FillMode.CUSTOM) {
@@ -187,7 +190,7 @@ class Mp4Composer {
                     TAG,
                     "outputResolution width = " + outputResolution!!.width + " height = " + outputResolution!!.height
                 )
-                Log.d(TAG, "fillMode = " + fillMode!!)
+                Log.d(TAG, "fillMode = " + fillMode)
 
                 try {
                     if (bitrate < 0) {
@@ -284,14 +287,24 @@ class Mp4Composer {
     }
 
     private fun initializeUriDataSource(engine: Mp4ComposerEngine) {
-        engine.setDataSource(srcUri)
+        engine.setDataSource(srcUri, addedRequestHeaders)
     }
 
     private fun getVideoRotation(videoUri: Uri): Int {
         var mediaMetadataRetriever: MediaMetadataRetriever? = null
         try {
             mediaMetadataRetriever = MediaMetadataRetriever()
-            mediaMetadataRetriever.setDataSource(context, videoUri)
+            videoUri?.let { uri ->
+                context?.let {
+                    DataSourceUtil.setDataSource(
+                        it,
+                        uri,
+                        mediaExtractor = null,
+                        mediaMetadataRetriever = mediaMetadataRetriever,
+                        addedRequestHeaders = addedRequestHeaders
+                    )
+                }
+            }
             val orientation = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)
             return Integer.valueOf(orientation)
         } catch (e: IllegalArgumentException) {
@@ -318,11 +331,20 @@ class Mp4Composer {
         return bitrate
     }
 
-    private fun getVideoResolution(videoUri: Uri, rotation: Int): Size {
+    private fun getVideoResolution(videoUri: Uri): Size {
         var retriever: MediaMetadataRetriever? = null
         try {
             retriever = MediaMetadataRetriever()
-            retriever.setDataSource(context, videoUri)
+            context?.let {
+                DataSourceUtil.setDataSource(
+                    it,
+                    videoUri,
+                    mediaExtractor = null,
+                    mediaMetadataRetriever = retriever,
+                    addedRequestHeaders = addedRequestHeaders
+                )
+            }
+
             val width = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH))
             val height = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT))
 

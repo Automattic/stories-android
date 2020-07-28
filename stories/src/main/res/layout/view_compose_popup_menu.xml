@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/view_popup_menu_screen"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black_translucent_50"
+    >
+    <LinearLayout
+        android:id="@+id/view_popup_menu_actual_menu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_margin="@dimen/custom_menu_margin"
+        android:orientation="vertical"
+        android:background="@drawable/custom_menu_background"
+        android:elevation="@dimen/custom_menu_elevation">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/delete_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="@dimen/custom_menu_button_width"
+            android:text="@string/menu_delete_page"
+            android:backgroundTint="@color/white"
+            android:background="?android:attr/selectableItemBackground"
+            android:drawableStart="@drawable/ic_delete_black_24dp"
+            android:textAllCaps="false"
+            android:textAlignment="textStart"
+            android:paddingRight="@dimen/custom_menu_padding"
+            android:paddingLeft="@dimen/custom_menu_padding"
+            />
+
+    </LinearLayout>
+</FrameLayout>

@@ -85,10 +85,8 @@ abstract class GlOverlayFilter : GlFilter(GlFilter.DEFAULT_VERTEX_SHADER, FRAGME
                 "}\n"
 
         fun releaseBitmap(bitmap: Bitmap?) {
-            var bitmap = bitmap
             if (bitmap != null && !bitmap.isRecycled) {
                 bitmap.recycle()
-                bitmap = null
             }
         }
     }

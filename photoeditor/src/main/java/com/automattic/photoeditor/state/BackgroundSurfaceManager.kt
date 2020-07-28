@@ -1,8 +1,11 @@
 package com.automattic.photoeditor.state
 
+import android.graphics.SurfaceTexture
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
+import android.view.TextureView
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.Event.ON_CREATE
@@ -14,8 +17,12 @@ import androidx.lifecycle.Lifecycle.Event.ON_PAUSE
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
+import com.automattic.photoeditor.R
 import com.automattic.photoeditor.camera.Camera2BasicHandling
 import com.automattic.photoeditor.camera.CameraXBasicHandling
+import com.automattic.photoeditor.camera.ErrorDialog
+import com.automattic.photoeditor.camera.ErrorDialogOk
+import com.automattic.photoeditor.camera.PlayerPreparedListener
 import com.automattic.photoeditor.camera.VideoPlayingBasicHandling
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
 import com.automattic.photoeditor.camera.interfaces.CameraSelection.BACK
@@ -30,13 +37,23 @@ import com.automattic.photoeditor.state.BackgroundSurfaceManager.SurfaceHandlerT
 import com.automattic.photoeditor.views.PhotoEditorView
 import java.io.File
 
+interface AuthenticationHeadersInterface {
+    fun getAuthHeaders(url: String): Map<String, String>?
+}
+
+interface BackgroundSurfaceManagerReadyListener {
+    fun onBackgroundSurfaceManagerReady()
+}
+
 class BackgroundSurfaceManager(
     private val savedInstanceState: Bundle?,
     private val lifeCycle: Lifecycle,
     private val photoEditorView: PhotoEditorView,
     private val supportFragmentManager: FragmentManager,
     private val flashSupportChangeListener: FlashSupportChangeListener,
-    private val useCameraX: Boolean
+    private val useCameraX: Boolean,
+    private val managerReadyListener: BackgroundSurfaceManagerReadyListener? = null,
+    private val authenticationHeadersInterface: AuthenticationHeadersInterface? = null
 ) : LifecycleObserver {
     private lateinit var cameraBasicHandler: VideoRecorderFragment
     private lateinit var videoPlayerHandling: VideoPlayingBasicHandling
@@ -50,12 +67,14 @@ class BackgroundSurfaceManager(
     private var isVideoPlayerVisible: Boolean = false
     private var isCameraRecording: Boolean = false
 
+    @Suppress("unused")
     @OnLifecycleEvent(ON_CREATE)
     fun onCreate(source: LifecycleOwner) {
         // clear surfaceTexture listeners
         photoEditorView.listeners.clear()
 
-        // add fragments
+        // add f
+        // ragments
         if (useCameraX) {
             addHandlerFragmentOrFindByTag(CAMERAX)
         } else {
@@ -66,14 +85,32 @@ class BackgroundSurfaceManager(
         // important: only retrieve state after having restored fragments with addHandlerFragmentOrFindByTag as above
         getStateFromBundle()
 
+        // add general BackgroundSurfaceManager's surfaceTextureListener
+        managerReadyListener?.let {
+            photoEditorView.listeners.add(
+                    object : TextureView.SurfaceTextureListener {
+                        override fun onSurfaceTextureAvailable(texture: SurfaceTexture, width: Int, height: Int) {
+                            it.onBackgroundSurfaceManagerReady()
+                        }
+                        override
+                        fun onSurfaceTextureSizeChanged(texture: SurfaceTexture, width: Int, height: Int) = Unit
+
+                        override fun onSurfaceTextureDestroyed(texture: SurfaceTexture) = true
+
+                        override fun onSurfaceTextureUpdated(texture: SurfaceTexture) = Unit
+                    }
+            )
+        }
         if (isCameraVisible || isVideoPlayerVisible) { photoEditorView.toggleTextureView() }
     }
 
+    @Suppress("unused")
     @OnLifecycleEvent(ON_DESTROY)
     fun onDestroy(source: LifecycleOwner) {
         if (lifeCycle.currentState.isAtLeast(Lifecycle.State.DESTROYED)) {
             cameraBasicHandler.deactivate()
             videoPlayerHandling.deactivate()
+            photoEditorView.hideLoading()
             // clear surfaceTexture listeners
             photoEditorView.listeners.clear()
         }
@@ -83,20 +120,25 @@ class BackgroundSurfaceManager(
         lifeCycle.removeObserver(this)
     }
 
+    @Suppress("unused")
     @OnLifecycleEvent(ON_START)
     fun onStart(source: LifecycleOwner) {
         // TODO: get state and restart fragments / camera preview?
     }
+
+    @Suppress("unused")
     @OnLifecycleEvent(ON_STOP)
     fun onStop(source: LifecycleOwner) {
         // TODO: save state and pause fragments / camera preview?
     }
 
+    @Suppress("unused")
     @OnLifecycleEvent(ON_RESUME)
     fun onResume(source: LifecycleOwner) {
         // TODO: get state and restart fragments / camera preview?
     }
 
+    @Suppress("unused")
     @OnLifecycleEvent(ON_PAUSE)
     fun onPause(source: LifecycleOwner) {
         // TODO: save state and pause fragments / camera preview?
@@ -127,9 +169,11 @@ class BackgroundSurfaceManager(
             stopRecordingVideo()
         }
         isCameraVisible = false
-        isVideoPlayerVisible = false
-        cameraXAwareSurfaceDeactivator()
-        videoPlayerHandling.deactivate()
+        if (isVideoPlayerVisible) {
+            isVideoPlayerVisible = false
+            videoPlayerHandling.deactivate()
+        }
+        photoEditorView.hideLoading()
         photoEditorView.turnTextureViewOff()
     }
 
@@ -137,12 +181,22 @@ class BackgroundSurfaceManager(
         photoEditorView.turnTextureViewOn()
     }
 
+    fun isTextureViewAvailable(): Boolean {
+        if (lifeCycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+            return videoPlayerHandling.textureView.isAvailable && cameraBasicHandler.textureView.isAvailable
+        }
+        return false
+    }
+
     fun switchCameraPreviewOn() {
         isCameraVisible = true
-        isVideoPlayerVisible = false
         // now, start showing camera preview
         photoEditorView.turnTextureViewOn()
-        videoPlayerHandling.deactivate()
+        if (isVideoPlayerVisible) {
+            isVideoPlayerVisible = false
+            videoPlayerHandling.deactivate()
+        }
+        photoEditorView.hideLoading()
         cameraBasicHandler.activate()
     }
 
@@ -188,6 +242,8 @@ class BackgroundSurfaceManager(
     fun switchVideoPlayerOnFromUri(videoUri: Uri) {
         // if coming from Activity restart, use the passed parameter
         videoPlayerHandling.currentExternalUri = videoUri
+        videoPlayerHandling.currentExternalUriHeaders =
+                authenticationHeadersInterface?.getAuthHeaders(videoUri.toString())
         videoPlayerHandling.currentFile = null
         cameraBasicHandler.currentFile = null
         switchVideoPlayerOn()
@@ -196,43 +252,52 @@ class BackgroundSurfaceManager(
     private fun switchVideoPlayerOn() {
         // in case the Camera was being visible, set if off
         isVideoPlayerVisible = true
+        photoEditorView.showLoading()
         if (isCameraVisible) {
             isCameraVisible = false
             if (isCameraRecording) {
                 stopRecordingVideo()
-
-                // we need to give a bit of time before changing the surface as the video stops recording,
-                // saves to file and so on.
-                // TODO: implement this in the saveFile listener so we're sure to only change to the option
-                // wanted (video player) once we're sure video has been successfully saved
-                val handler = Handler()
-                handler.postDelayed({
-                        cameraXAwareSurfaceDeactivator()
-                        videoPlayerHandling.currentFile = cameraBasicHandler.currentFile
-                        photoEditorView.turnTextureViewOn()
-                        videoPlayerHandling.activate()
-                    }, 500
-                )
-                return
-            } else {
-                cameraXAwareSurfaceDeactivator() // keep visible as we're going to render video from player
-                videoPlayerHandling.currentFile = cameraBasicHandler.currentFile
             }
+
+            // if the camera was visible (either for preview or recording) before switching to video player,
+            // we need to give a bit of time before changing the surface as the video stops recording,
+            // saves to file and the surface gets deactivated and activated again.
+            // This is to circumvent an issue in CameraX that should be solved in the beta version.
+            // TODO: implement this in the saveFile listener so we're sure to only change to the option
+            // wanted (video player) once we're sure video has been successfully saved
+            val handler = Handler()
+            handler.postDelayed({
+                videoPlayerHandling.currentFile = cameraBasicHandler.currentFile
+                doDeactivateReactivateSurfaceAndPlay()
+            }, 500)
+            return
         }
+        doDeactivateReactivateSurfaceAndPlay()
+    }
+
+    private fun doDeactivateReactivateSurfaceAndPlay() {
+        cameraXAwareSurfaceDeactivate()
         photoEditorView.turnTextureViewOn()
         videoPlayerHandling.activate()
     }
 
     fun videoPlayerMute() {
-        videoPlayerHandling.mute()
+        if (isVideoPlayerVisible) {
+            videoPlayerHandling.mute()
+        }
     }
 
     fun videoPlayerUnmute() {
-        videoPlayerHandling.unmute()
+        if (isVideoPlayerVisible) {
+            videoPlayerHandling.unmute()
+        }
     }
 
-    private fun cameraXAwareSurfaceDeactivator() {
-        cameraBasicHandler.deactivate()
+    private fun cameraXAwareSurfaceDeactivate() {
+        if (cameraBasicHandler.isActive()) {
+            cameraBasicHandler.deactivate()
+        }
+
         if (useCameraX) {
             // IMPORTANT: remove and add the TextureView back again to the view hierarchy so the SurfaceTexture
             // is available for reuse by other fragments (i.e. VideoPlayingBasicHandler)
@@ -336,6 +401,29 @@ class BackgroundSurfaceManager(
                     videoPlayerHandling.textureView = photoEditorView.textureView
                     videoPlayerHandling.originalMatrix = photoEditorView.textureView.getTransform(null)
                 }
+
+                videoPlayerHandling.playerPreparedListener = object : PlayerPreparedListener {
+                    override fun onPlayerPrepared() {
+                        photoEditorView.hideLoading()
+                    }
+
+                    override fun onPlayerError() {
+                        photoEditorView.hideLoading()
+                        ErrorDialog.newInstance(requireNotNull(videoPlayerHandling.context)
+                                .getString(R.string.toast_error_playing_video),
+                                    object : ErrorDialogOk {
+                                        override fun OnOkClicked(dialog: DialogFragment) {
+                                            dialog.dismiss()
+                                        }
+                                    }
+                                ).show(supportFragmentManager,
+                                        FRAGMENT_DIALOG
+                                )
+                    }
+                }
+
+                videoPlayerHandling.mAuthenticationHeadersInterface = authenticationHeadersInterface
+
                 // add video player texture listener
                 photoEditorView.listeners.add(videoPlayerHandling.surfaceTextureListener)
             }
@@ -350,5 +438,6 @@ class BackgroundSurfaceManager(
         private const val KEY_IS_CAMERA_RECORDING = "key_is_camera_recording"
         private const val KEY_CAMERA_SELECTION = "key_camera_selection"
         private const val KEY_FLASH_MODE_SELECTION = "key_flash_mode_selection"
+        private const val FRAGMENT_DIALOG = "fragment_dialog"
     }
 }

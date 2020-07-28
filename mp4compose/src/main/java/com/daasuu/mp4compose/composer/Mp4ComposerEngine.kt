@@ -20,6 +20,7 @@ import java.io.IOException
 import android.media.MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar
 import android.media.MediaFormat.MIMETYPE_VIDEO_AVC
 import android.net.Uri
+import com.daasuu.mp4compose.utils.DataSourceUtil
 
 // Refer: https://github.com/ypresto/android-transcoder/blob/master/lib/src/main/java/net/ypresto/androidtranscoder/engine/MediaTranscoderEngine.java
 
@@ -28,6 +29,7 @@ import android.net.Uri
  */
 internal class Mp4ComposerEngine {
     private var sourceUri: Uri? = null
+    private var addedRequestHeaders: Map<String, String>? = null
     private var videoComposer: VideoComposer? = null
     private var audioComposer: IAudioComposer? = null
     private var mediaExtractor: MediaExtractor? = null
@@ -40,8 +42,9 @@ internal class Mp4ComposerEngine {
     private var bkgBitmap: Bitmap? = null
     private var context: Context? = null
 
-    fun setDataSource(uri: Uri?) {
+    fun setDataSource(uri: Uri?, addedRequestHeaders: Map<String, String>?) {
         this.sourceUri = uri
+        this.addedRequestHeaders = addedRequestHeaders
     }
 
     fun setProgressCallback(progressCallback: ProgressCallback) {
@@ -120,9 +123,17 @@ internal class Mp4ComposerEngine {
             if (!useStaticBkg) {
                 mediaExtractor = MediaExtractor()
                 mediaMetadataRetriever = MediaMetadataRetriever()
-                if (sourceUri != null && context != null) {
-                    mediaExtractor!!.setDataSource(context!!, sourceUri!!, null)
-                    mediaMetadataRetriever!!.setDataSource(context!!, sourceUri!!)
+
+                sourceUri?.let { uri ->
+                    context?.let {
+                        DataSourceUtil.setDataSource(
+                            it,
+                            uri,
+                            mediaExtractor = mediaExtractor,
+                            mediaMetadataRetriever = mediaMetadataRetriever,
+                            addedRequestHeaders = addedRequestHeaders
+                        )
+                    }
                 }
 
                 try {

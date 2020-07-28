@@ -10,6 +10,11 @@ class GlSurfaceTexture(texName: Int) : SurfaceTexture.OnFrameAvailableListener {
         get() = GlPreview.GL_TEXTURE_EXTERNAL_OES
 
     init {
+        // SupressWarnings explanation:
+        // Many resources, such as TypedArrays, VelocityTrackers, etc., should be recycled (with a recycle() call) after
+        // use. This lint check looks for missing recycle() calls.
+        // Note from editor: it is being released in fun release() so, should be OK.
+        @SuppressWarnings("Recycle")
         surfaceTexture = SurfaceTexture(texName)
         surfaceTexture.setOnFrameAvailableListener(this)
     }

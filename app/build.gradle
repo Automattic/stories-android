@@ -5,17 +5,19 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'io.sentry.android.gradle'
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion rootProject.compileSdkVersion
+    buildToolsVersion rootProject.buildToolVersion
+
     defaultConfig {
         applicationId "com.automattic.portkey"
-        minSdkVersion 21
-        targetSdkVersion 29
-        versionCode 11
+        minSdkVersion rootProject.minSdkVersion
+        targetSdkVersion rootProject.targetSdkVersion
+        versionCode 12
         // Allow versionName to be overridden with property. e.g. -PversionName=1234
         if (project.hasProperty("versionName")) {
             versionName project.property("versionName")
         } else {
-            versionName "1.0.0.11-camerax"
+            versionName "1.0.0.14-prealpha"
         }
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -39,21 +41,24 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
 
-    implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'androidx.core:core-ktx:1.1.0'
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.1.0'
-    implementation 'androidx.navigation:navigation-ui-ktx:2.1.0'
+    implementation "androidx.appcompat:appcompat:$appCompatVersion"
+    implementation "androidx.constraintlayout:constraintlayout:$constraintLayoutVersion"
+    implementation "androidx.core:core-ktx:$coreVersion"
+    implementation "androidx.navigation:navigation-fragment-ktx:$navComponentVersion"
+    implementation "androidx.navigation:navigation-ui-ktx:$navComponentVersion"
     implementation 'androidx.emoji:emoji:1.0.0'
-    implementation "androidx.preference:preference-ktx:1.1.0"
+    implementation "androidx.preference:preference-ktx:1.1.1"
     implementation "androidx.recyclerview:recyclerview:1.1.0"
+    implementation "androidx.preference:preference-ktx:1.1.1"
 
-    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'com.google.android.material:material:1.1.0'
 
-    implementation 'com.github.bumptech.glide:glide:4.9.0'
-    kapt 'com.github.bumptech.glide:compiler:4.9.0'
+    implementation 'com.github.bumptech.glide:glide:4.10.0'
+    kapt 'com.github.bumptech.glide:compiler:4.10.0'
+
+    implementation 'org.greenrobot:eventbus:3.1.1'
 
     implementation 'io.sentry:sentry-android:1.7.27'
     // this dependency is not required if you are already using your own
@@ -61,10 +66,11 @@ dependencies {
     implementation 'org.slf4j:slf4j-nop:1.7.25'
 
     implementation project(path: ':photoeditor')
+    implementation project(path: ':stories')
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    implementation 'androidx.lifecycle:lifecycle-extensions:2.1.0'
 }
 
 android.buildTypes.all { buildType ->
@@ -72,11 +78,7 @@ android.buildTypes.all { buildType ->
     def inputFile = checkGradlePropertiesFile()
     def properties = loadPropertiesFromFile(inputFile)
     properties.any { property ->
-        if (property.key.toLowerCase().startsWith("portkey.use.")) {
-            buildType.buildConfigField "boolean", property.key.replace("portkey.", "").replace(".", "_").toUpperCase(),
-                    "${property.value}"
-        }
-        else if (property.key.toLowerCase().startsWith("portkey.")) {
+    if (property.key.toLowerCase().startsWith("portkey.")) {
             buildType.buildConfigField "String", property.key.replace("portkey.", "").replace(".", "_").toUpperCase(),
                     "\"${property.value}\""
         }

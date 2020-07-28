@@ -1,5 +1,6 @@
 package com.automattic.photoeditor.gesture
 
+import android.annotation.SuppressLint
 import android.graphics.Rect
 import android.view.GestureDetector
 import android.view.MotionEvent
@@ -59,6 +60,7 @@ internal class MultiTouchListener(
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouch(viewTouched: View, event: MotionEvent): Boolean {
         val view = mainView ?: viewTouched
 
@@ -70,9 +72,6 @@ internal class MultiTouchListener(
         }
 
         val action = event.action
-
-        val x = event.rawX.toInt()
-        val y = event.rawY.toInt()
 
         when (action and event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
@@ -93,17 +92,28 @@ internal class MultiTouchListener(
                     val currX = event.getX(pointerIndexMove)
                     val currY = event.getY(pointerIndexMove)
                     if (!mScaleGestureDetector.isInProgress) {
-                        adjustTranslation(
-                            view,
+                        // if workingAreaRect is set, verify movement is within the area
+                        mOnPhotoEditorListener?.getWorkingAreaRect()?.let {
+                            if (isViewCenterInWorkingAreaBounds(view, currX - mPrevX, currY - mPrevY)) {
+                                adjustTranslation(
+                                    view,
+                                    currX - mPrevX,
+                                    currY - mPrevY
+                                )
+                            }
+                        } ?: adjustTranslation(view,
                             currX - mPrevX,
                             currY - mPrevY
                         )
                     }
-                    if (onMultiTouchListener != null && deleteView != null) {
-                        val readyForDelete = isViewInBounds(deleteView, x, y)
-                        // fade the view a bit to indicate it's going bye bye
-                        setAlphaOnView(view, readyForDelete)
-                        onMultiTouchListener?.onRemoveViewReadyListener(view, readyForDelete)
+
+                    onMultiTouchListener?.let { touchListener ->
+                        deleteView?.let {
+                            val readyForDelete = isAnyCornerOfViewAOverlappingViewB(it, view)
+                            // fade the view a bit to indicate it's going bye bye
+                            setAlphaOnView(view, readyForDelete)
+                            touchListener.onRemoveViewReadyListener(view, readyForDelete)
+                        }
                     }
                 }
             }
@@ -111,7 +121,7 @@ internal class MultiTouchListener(
                 INVALID_POINTER_ID
             MotionEvent.ACTION_UP -> {
                 mActivePointerId = INVALID_POINTER_ID
-                if (deleteView != null && isViewInBounds(deleteView, x, y)) {
+                if (deleteView != null && isAnyCornerOfViewAOverlappingViewB(deleteView, view)) {
                     onMultiTouchListener?.onRemoveViewListener(view)
                 }
 //                else if (!isViewInBounds(photoEditImageView, x, y)) {
@@ -160,6 +170,46 @@ internal class MultiTouchListener(
         view.getLocationOnScreen(location)
         outRect?.offset(location[0], location[1])
         return outRect?.contains(x, y) ?: false
+    }
+
+    private fun isAnyCornerOfViewAOverlappingViewB(viewA: View, viewB: View, percentage: Float = 0.08f): Boolean {
+        val firstPosition = IntArray(2)
+        val secondPosition = IntArray(2)
+
+        viewA.getLocationOnScreen(firstPosition)
+        viewB.getLocationOnScreen(secondPosition)
+
+        // Rect constructor parameters: left, top, right, bottom
+        val rectViewA = Rect(
+            firstPosition[0],
+            firstPosition[1],
+            firstPosition[0] + viewA.measuredWidth,
+            firstPosition[1] + viewA.measuredHeight
+        )
+        // adjust the second view to make it slightly smaller
+        // (the area near its borders do not have meaningful information) - otherwise it feels like they "overlap"
+        // but visually they don't look like so
+        val adjustedWidth = (viewB.measuredWidth * (1 - percentage)).toInt()
+        val adjustedHeight = (viewB.measuredHeight * (1 - percentage)).toInt()
+        val adjustedXPos = (secondPosition[0] * (1 + percentage)).toInt()
+        val adjustedYPos = (secondPosition[1] * (1 + percentage)).toInt()
+        val rectViewB = Rect(
+            adjustedXPos,
+            adjustedYPos,
+            secondPosition[0] + adjustedWidth,
+            secondPosition[1] + adjustedHeight
+        )
+        return rectViewA.intersect(rectViewB)
+    }
+
+    private fun isViewCenterInWorkingAreaBounds(view: View, deltaX: Float, deltaY: Float): Boolean {
+        val deltaVector = getWouldBeTranslation(view, deltaX, deltaY)
+        val wouldBeY = deltaVector[1] + view.y
+
+        mOnPhotoEditorListener?.getWorkingAreaRect()?.let {
+            val distanceToCenter = view.height / 2
+            return ((wouldBeY - distanceToCenter) > it.top) && ((wouldBeY + distanceToCenter) < it.bottom)
+        } ?: return true
     }
 
     fun setOnMultiTouchListener(onMultiTouchListener: OnMultiTouchListener) {
@@ -274,10 +324,15 @@ internal class MultiTouchListener(
         }
 
         private fun adjustTranslation(view: View, deltaX: Float, deltaY: Float) {
-            val deltaVector = floatArrayOf(deltaX, deltaY)
-            view.matrix.mapVectors(deltaVector)
+            val deltaVector = getWouldBeTranslation(view, deltaX, deltaY)
             view.translationX = view.translationX + deltaVector[0]
             view.translationY = view.translationY + deltaVector[1]
+        }
+
+        private fun getWouldBeTranslation(view: View, deltaX: Float, deltaY: Float): FloatArray {
+            val deltaVector = floatArrayOf(deltaX, deltaY)
+            view.matrix.mapVectors(deltaVector)
+            return deltaVector
         }
 
         private fun computeRenderOffset(view: View, pivotX: Float, pivotY: Float) {

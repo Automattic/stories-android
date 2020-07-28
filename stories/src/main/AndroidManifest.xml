@@ -1,0 +1,19 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.wordpress.stories" >
+
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <application>
+        <activity
+            android:name="com.wordpress.stories.compose.ComposeLoopFrameActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.Immersive">
+        </activity>
+
+        <!-- Services -->
+        <service
+            android:name="com.wordpress.stories.compose.frame.FrameSaveService"
+            android:label="Frame Save Service" />
+    </application>
+</manifest>

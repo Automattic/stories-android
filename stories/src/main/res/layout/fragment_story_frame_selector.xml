@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/story_frame_selector_control"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/bottom_strip_height"
+    android:paddingRight="@dimen/story_frame_selector_padding"
+    android:paddingLeft="@dimen/story_frame_selector_padding"
+    android:background="@color/black_transp_story_frame_selector">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/story_frames_view"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        />
+
+    <include layout="@layout/fragment_story_frame_item_plus"
+        android:id="@+id/plus_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        />
+
+</LinearLayout>

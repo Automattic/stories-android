@@ -290,6 +290,10 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
         windDown()
     }
 
+    override fun isActive(): Boolean {
+        return active
+    }
+
     private fun startUp() {
         // When the screen is turned off and turned back on, the SurfaceTexture is already
         // available, and "onSurfaceTextureAvailable" will not be called. In that case, we can open
@@ -716,7 +720,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
             /**
              * create video output file
              */
-            currentFile = FileUtils.getLoopFrameFile(activity, true, "orig_")
+            currentFile = FileUtils.getTempCaptureFile(activity, true)
             currentFile?.createNewFile()
 
             /**
@@ -836,7 +840,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
     override fun takePicture(onImageCapturedListener: ImageCaptureListener) {
         // Create output file to hold the image
         activity?.let {
-            currentFile = FileUtils.getCaptureFile(it, false, "orig_")
+            currentFile = FileUtils.getTempCaptureFile(it, false)
         }
         currentFile?.createNewFile()
 

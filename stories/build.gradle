@@ -1,0 +1,111 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'kotlinx-serialization'
+
+android {
+    compileSdkVersion rootProject.compileSdkVersion
+    buildToolsVersion rootProject.buildToolVersion
+
+
+    defaultConfig {
+        minSdkVersion rootProject.minSdkVersion
+        targetSdkVersion rootProject.targetSdkVersion
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles 'consumer-rules.pro'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serializationVersion"
+
+    implementation "androidx.appcompat:appcompat:$appCompatVersion"
+    implementation "androidx.constraintlayout:constraintlayout:$constraintLayoutVersion"
+    implementation "androidx.core:core-ktx:$coreVersion"
+
+    implementation "androidx.navigation:navigation-fragment-ktx:$navComponentVersion"
+    implementation "androidx.navigation:navigation-ui-ktx:$navComponentVersion"
+    implementation 'androidx.emoji:emoji:1.0.0'
+    implementation "androidx.recyclerview:recyclerview:1.1.0"
+
+    implementation 'com.google.android.material:material:1.1.0'
+
+    implementation 'com.github.bumptech.glide:glide:4.10.0'
+    kapt 'com.github.bumptech.glide:compiler:4.10.0'
+
+    implementation 'org.greenrobot:eventbus:3.1.1'
+
+    implementation project(path: ':photoeditor')
+
+    // ViewModel and LiveData
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion"
+    // LiveData
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion"
+
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
+
+    lintChecks 'org.wordpress:lint:1.0.1'
+
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+}
+
+android.buildTypes.all { buildType ->
+    // Add properties named "portkey.xxx" to our BuildConfig
+    def inputFile = checkGradlePropertiesFile()
+    def properties = loadPropertiesFromFile(inputFile)
+    properties.any { property ->
+        if (property.key.toLowerCase().startsWith("wp.stories.use.")) {
+            buildType.buildConfigField "boolean", property.key.replace("wp.stories.", "").replace(".", "_").toUpperCase(),
+                    "${property.value}"
+        }
+        else if (property.key.toLowerCase().startsWith("wp.stories.")) {
+            buildType.buildConfigField "String", property.key.replace("wp.stories.", "").replace(".", "_").toUpperCase(),
+                    "\"${property.value}\""
+        }
+        else if (property.key.toLowerCase().startsWith("wp.stories.res.")) {
+            buildType.resValue "string", property.key.replace("wp.stories.res.", "").replace(".", "_").toLowerCase(),
+                    "${property.value}"
+        }
+    }
+
+    if (properties.getProperty("wp.stories.use.cameraX") == null) {
+        // use cameraX implementation by default if no gradle.properties set
+        buildType.buildConfigField "boolean", "USE_CAMERAX", "true"
+    }
+}
+
+def checkGradlePropertiesFile() {
+    def inputFile = file("${rootDir}/gradle.properties")
+    if (!inputFile.exists()) {
+        throw new StopActionException("Build configuration file gradle.properties doesn't exist, follow README instructions")
+    }
+    return inputFile
+}
+
+static def loadPropertiesFromFile(inputFile) {
+    def properties = new Properties()
+    inputFile.withInputStream { stream ->
+        properties.load(stream)
+    }
+    return properties
+}
