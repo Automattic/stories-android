@@ -1,5 +1,7 @@
 package com.automattic.photoeditor.views
 
+import kotlinx.serialization.Serializable
+
 /**
  *
  *
@@ -10,6 +12,7 @@ package com.automattic.photoeditor.views
  * @version 0.1.1
  * @since 18/01/2017.
  */
+@Serializable
 enum class ViewType {
     BRUSH_DRAWING,
     TEXT,

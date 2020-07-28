@@ -3,6 +3,7 @@ package com.wordpress.stories.compose.frame
 import android.content.Context
 import android.graphics.Color
 import android.net.Uri
+import android.view.View
 import android.view.ViewGroup.LayoutParams
 import android.widget.RelativeLayout
 import com.automattic.photoeditor.PhotoEditor
@@ -277,8 +278,14 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         withContext(Dispatchers.Main) {
             // now call addViewToParent the addedViews remembered by this frame
             for (oneView in frame.addedViews) {
-                removeViewFromParent(oneView.view)
-                ghostPhotoEditorView.addView(oneView.view, getViewLayoutParams())
+                oneView.view?.let {
+                    removeViewFromParent(it)
+                    // this is needed, otherwise some vector graphics such as emoji in text will not render
+                    // correctly when a hardware display is not in place (such is the case of FrameSaveManager,
+                    // as we're laying out the views on an off-screen view).
+                    it.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+                    ghostPhotoEditorView.addView(it, getViewLayoutParams())
+                }
             }
         }
     }
@@ -315,7 +322,9 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         fun releaseAddedViews(frame: StoryFrameItem) {
             // don't forget to remove these views from ghost offscreen view before exiting
             for (oneView in frame.addedViews) {
-                removeViewFromParent(oneView.view)
+                oneView.view?.let {
+                    removeViewFromParent(it)
+                }
             }
         }
     }

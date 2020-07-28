@@ -169,9 +169,10 @@ class BackgroundSurfaceManager(
             stopRecordingVideo()
         }
         isCameraVisible = false
-        isVideoPlayerVisible = false
-        cameraXAwareSurfaceDeactivator()
-        videoPlayerHandling.deactivate()
+        if (isVideoPlayerVisible) {
+            isVideoPlayerVisible = false
+            videoPlayerHandling.deactivate()
+        }
         photoEditorView.hideLoading()
         photoEditorView.turnTextureViewOff()
     }
@@ -180,12 +181,21 @@ class BackgroundSurfaceManager(
         photoEditorView.turnTextureViewOn()
     }
 
+    fun isTextureViewAvailable(): Boolean {
+        if (lifeCycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+            return videoPlayerHandling.textureView.isAvailable && cameraBasicHandler.textureView.isAvailable
+        }
+        return false
+    }
+
     fun switchCameraPreviewOn() {
         isCameraVisible = true
-        isVideoPlayerVisible = false
         // now, start showing camera preview
         photoEditorView.turnTextureViewOn()
-        videoPlayerHandling.deactivate()
+        if (isVideoPlayerVisible) {
+            isVideoPlayerVisible = false
+            videoPlayerHandling.deactivate()
+        }
         photoEditorView.hideLoading()
         cameraBasicHandler.activate()
     }
@@ -257,33 +267,41 @@ class BackgroundSurfaceManager(
             // wanted (video player) once we're sure video has been successfully saved
             val handler = Handler()
             handler.postDelayed({
-                cameraXAwareSurfaceDeactivator()
                 videoPlayerHandling.currentFile = cameraBasicHandler.currentFile
-                photoEditorView.turnTextureViewOn()
-                videoPlayerHandling.activate()
+                doDeactivateReactivateSurfaceAndPlay()
             }, 500)
             return
         }
+        doDeactivateReactivateSurfaceAndPlay()
+    }
+
+    private fun doDeactivateReactivateSurfaceAndPlay() {
+        cameraXAwareSurfaceDeactivate()
         photoEditorView.turnTextureViewOn()
         videoPlayerHandling.activate()
     }
 
     fun videoPlayerMute() {
-        videoPlayerHandling.mute()
+        if (isVideoPlayerVisible) {
+            videoPlayerHandling.mute()
+        }
     }
 
     fun videoPlayerUnmute() {
-        videoPlayerHandling.unmute()
+        if (isVideoPlayerVisible) {
+            videoPlayerHandling.unmute()
+        }
     }
 
-    private fun cameraXAwareSurfaceDeactivator() {
+    private fun cameraXAwareSurfaceDeactivate() {
         if (cameraBasicHandler.isActive()) {
             cameraBasicHandler.deactivate()
-            if (useCameraX) {
-                // IMPORTANT: remove and add the TextureView back again to the view hierarchy so the SurfaceTexture
-                // is available for reuse by other fragments (i.e. VideoPlayingBasicHandler)
-                photoEditorView.removeAndAddTextureViewBack()
-            }
+        }
+
+        if (useCameraX) {
+            // IMPORTANT: remove and add the TextureView back again to the view hierarchy so the SurfaceTexture
+            // is available for reuse by other fragments (i.e. VideoPlayingBasicHandler)
+            photoEditorView.removeAndAddTextureViewBack()
         }
     }
 
