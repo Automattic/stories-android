@@ -1,5 +1,5 @@
-# portkey-android
-Portkey concept app
+# stories-android
+Stories concept app
 
 WordPress stories library
 
@@ -32,7 +32,7 @@ Once installed, you can configure the plugin here:
 
 `Android Studio > Preferences... > Other Settings > Checkstyle`
 
-From there, add and enable the custom configuration file, located at [config/checkstyle.xml](https://github.com/automattic/portkey-android/blob/develop/config/checkstyle.xml).
+From there, add and enable the custom configuration file, located at [config/checkstyle.xml](https://github.com/automattic/stories-android/blob/develop/config/checkstyle.xml).
 
 ## ktlint
 
@@ -48,18 +48,18 @@ In order to integrate the stories library, you must include the following in you
 
 Implement these:
 - SnackbarProvider
-- call `setSnackbarProvider()` as in the example Portkey demo app.
+- call `setSnackbarProvider()` as in the example Stories demo app.
 
 - MediaPickerProvider
-- call `setMediaPickerProvider()` as in the example Portkey demo app.
+- call `setMediaPickerProvider()` as in the example Stories demo app.
 - remember to override `setupRequestCodes()` and set the right request codes as per the host app so it works seamlessly and media can be fed into the Composer by the externally provided MediaPicker.
 
 ## Build Instructions ##
 
 1. Make sure you've installed [Android Studio](https://developer.android.com/studio/index.html).
-1. `git clone git@github.com:Automattic/portkey-android.git` in the folder of your preference.
-1. `cd portkey-android` to enter the working directory.
-1. `cp gradle.properties-example gradle.properties` to set up the sample app properties file. Specifically, you can use `portkey.use.cameraX = true` to use the CameraX underlying implementation, or `false` to use the Camera2 implementation
+1. `git clone git@github.com:Automattic/stories-android.git` in the folder of your preference.
+1. `cd stories-android` to enter the working directory.
+1. `cp gradle.properties-example gradle.properties` to set up the sample app properties file. Specifically, you can use `stories.use.cameraX = true` to use the CameraX underlying implementation, or `false` to use the Camera2 implementation
 1. In Android Studio, open the project from the local repository. This will auto-generate `local.properties` with the SDK location.
 1. Go to Tools → AVD Manager and create an emulated device.
 1. Run.
