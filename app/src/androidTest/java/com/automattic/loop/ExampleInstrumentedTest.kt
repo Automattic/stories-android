@@ -18,6 +18,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getTargetContext()
-        assertEquals("com.automattic.portkey", appContext.packageName)
+        assertEquals("com.automattic.loop", appContext.packageName)
     }
 }

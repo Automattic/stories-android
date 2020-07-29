@@ -15,7 +15,7 @@ import com.automattic.loop.util.CrashLoggingUtils
 import com.wordpress.stories.compose.NotificationTrackerProvider
 import com.wordpress.stories.compose.frame.StoryNotificationType
 
-class Portkey : Application(), NotificationTrackerProvider {
+class Loop : Application(), NotificationTrackerProvider {
     private var statusBarHeight: Int = 0
 
     override fun onCreate() {
@@ -111,7 +111,7 @@ class Portkey : Application(), NotificationTrackerProvider {
     }
 
     companion object {
-        const val TAG = "Portkey"
+        const val TAG = "Loop"
     }
 
     fun setStatusBarHeight(newHeight: Int) {

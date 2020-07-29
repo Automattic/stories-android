@@ -9,7 +9,7 @@ public enum MediaBrowserType {
     SITE_ICON_PICKER, // select a single image as a site icon
     GUTENBERG_IMAGE_PICKER, // select image from Gutenberg editor
     GUTENBERG_VIDEO_PICKER, // select video from Gutenberg editor
-    PORTKEY_PICKER; // select one image or video to use as a background for Portkey Loop frame composing
+    LOOP_PICKER; // select one image or video to use as a background for Loop frame composing
 
     public boolean isPicker() {
         return this != BROWSER;
@@ -34,7 +34,7 @@ public enum MediaBrowserType {
                || this == AZTEC_EDITOR_PICKER
                || this == GUTENBERG_IMAGE_PICKER
                || this == GUTENBERG_VIDEO_PICKER
-               || this == PORTKEY_PICKER;
+               || this == LOOP_PICKER;
     }
 
     public boolean canFilter() {

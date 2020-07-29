@@ -215,7 +215,7 @@ public class PhotoPickerFragment extends Fragment {
 //
 //        return true;
 
-        // Portkey: we're always portrait ;)
+        // Loop: we're always portrait ;)
         return false;
     }
 

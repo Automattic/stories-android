@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
         activity_main.setOnApplyWindowInsetsListener { view, insets ->
             // remember the insetTop as margin to all controls appearing at the top of the screen for full screen
             // screens (i.e. ComposeLoopFrameActivity)
-            (application as Portkey).setStatusBarHeight(insets.systemWindowInsetTop)
+            (application as Loop).setStatusBarHeight(insets.systemWindowInsetTop)
             view.onApplyWindowInsets(insets)
         }
 

@@ -45,7 +45,7 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
         setMetadataProvider(this)
         setStoryDiscardListener(this) // optionally listen to discard events
         setPrepublishingEventProvider(this)
-        setNotificationTrackerProvider(application as Portkey) // optionally set Notification Tracker.
+        setNotificationTrackerProvider(application as Loop) // optionally set Notification Tracker.
         // The notifiationTracker needs to be something that outlives the Activity, given the Service could be running
         // after the user has exited ComposeLoopFrameActivity
     }
@@ -77,7 +77,7 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
 
     override fun showProvidedMediaPicker() {
         val intent = Intent(this, PhotoPickerActivity::class.java)
-        intent.putExtra(PhotoPickerFragment.ARG_BROWSER_TYPE, MediaBrowserType.PORTKEY_PICKER)
+        intent.putExtra(PhotoPickerFragment.ARG_BROWSER_TYPE, MediaBrowserType.LOOP_PICKER)
 
         startActivityForResult(
             intent,
