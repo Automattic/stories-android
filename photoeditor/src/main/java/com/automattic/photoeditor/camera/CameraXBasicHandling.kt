@@ -25,9 +25,9 @@ import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFinished
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
-import com.automattic.photoeditor.camera.interfaces.cameraXLensFacingFromPortkeyCameraSelection
-import com.automattic.photoeditor.camera.interfaces.cameraXflashModeFromPortkeyFlashState
-import com.automattic.photoeditor.camera.interfaces.portkeyCameraSelectionFromCameraXLensFacing
+import com.automattic.photoeditor.camera.interfaces.cameraXLensFacingFromStoriesCameraSelection
+import com.automattic.photoeditor.camera.interfaces.cameraXflashModeFromStoriesFlashState
+import com.automattic.photoeditor.camera.interfaces.storiesCameraSelectionFromCameraXLensFacing
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.io.File
@@ -116,7 +116,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         // Set up the capture use case to allow users to take photos
         val imageCaptureConfig = ImageCaptureConfig.Builder().apply {
             setLensFacing(lensFacing)
-            setFlashMode(cameraXflashModeFromPortkeyFlashState(currentFlashState.currentFlashState()))
+            setFlashMode(cameraXflashModeFromStoriesFlashState(currentFlashState.currentFlashState()))
             setCaptureMode(CaptureMode.MIN_LATENCY)
             // We request aspect ratio but no resolution to match preview config but letting
             // CameraX optimize for whatever specific resolution best fits requested capture mode
@@ -153,7 +153,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         }
 
         // we used to bind all use cases to lifecycle on start
-        // DON'T do this, may end up with this: https://github.com/Automattic/portkey-android/issues/50
+        // DON'T do this, may end up with this: https://github.com/Automattic/stories-android/issues/50
         // CameraX.bindToLifecycle(activity, videoPreview, videoCapture, imageCapture)
 
         // image capture only
@@ -279,26 +279,26 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                 // no op - they can most probably just tap the flip switch again and it'll work
             }
         }
-        return portkeyCameraSelectionFromCameraXLensFacing(lensFacing)
+        return storiesCameraSelectionFromCameraXLensFacing(lensFacing)
     }
 
     override fun selectCamera(camera: CameraSelection) {
-        lensFacing = cameraXLensFacingFromPortkeyCameraSelection(camera)
+        lensFacing = cameraXLensFacingFromStoriesCameraSelection(camera)
     }
 
     override fun currentCamera(): CameraSelection {
-        return portkeyCameraSelectionFromCameraXLensFacing(lensFacing)
+        return storiesCameraSelectionFromCameraXLensFacing(lensFacing)
     }
 
     override fun advanceFlashState() {
         super.advanceFlashState()
-        imageCapture?.flashMode = cameraXflashModeFromPortkeyFlashState(currentFlashState.currentFlashState())
+        imageCapture?.flashMode = cameraXflashModeFromStoriesFlashState(currentFlashState.currentFlashState())
     }
 
     override fun setFlashState(flashIndicatorState: FlashIndicatorState) {
         super.setFlashState(flashIndicatorState)
         if (active) {
-            imageCapture?.flashMode = cameraXflashModeFromPortkeyFlashState(currentFlashState.currentFlashState())
+            imageCapture?.flashMode = cameraXflashModeFromStoriesFlashState(currentFlashState.currentFlashState())
         }
     }
 

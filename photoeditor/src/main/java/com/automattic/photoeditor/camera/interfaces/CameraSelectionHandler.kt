@@ -19,32 +19,32 @@ enum class CameraSelection(val id: Int) {
     }
 }
 
-// helper method to get CameraX lens facing from portkey's CameraSelection
-fun cameraXLensFacingFromPortkeyCameraSelection(cameraSelection: CameraSelection): LensFacing {
+// helper method to get CameraX lens facing from stories' CameraSelection
+fun cameraXLensFacingFromStoriesCameraSelection(cameraSelection: CameraSelection): LensFacing {
     return when (cameraSelection) {
         CameraSelection.BACK -> LensFacing.BACK
         CameraSelection.FRONT -> LensFacing.FRONT
     }
 }
 
-// helper method to get portkey's CameraSelection from CameraX lens facing
-fun portkeyCameraSelectionFromCameraXLensFacing(lensFacing: LensFacing): CameraSelection {
+// helper method to get stories' CameraSelection from CameraX lens facing
+fun storiesCameraSelectionFromCameraXLensFacing(lensFacing: LensFacing): CameraSelection {
     return when (lensFacing) {
         LensFacing.BACK -> CameraSelection.BACK
         LensFacing.FRONT -> CameraSelection.FRONT
     }
 }
 
-// helper method to get Camera2 lens facing from portkey's CameraSelection
-fun camera2LensFacingFromPortkeyCameraSelection(cameraSelection: CameraSelection): Int {
+// helper method to get Camera2 lens facing from stories' CameraSelection
+fun camera2LensFacingFromStoriesCameraSelection(cameraSelection: CameraSelection): Int {
     return when (cameraSelection) {
         CameraSelection.BACK -> CameraMetadata.LENS_FACING_BACK
         CameraSelection.FRONT -> CameraMetadata.LENS_FACING_FRONT
     }
 }
 
-// helper method to get portkey's CameraSelection from Camera2 lens facing
-fun portkeyCameraSelectionFromCamera2LensFacing(lensfacing: Int): CameraSelection {
+// helper method to get stories' CameraSelection from Camera2 lens facing
+fun storiesCameraSelectionFromCamera2LensFacing(lensfacing: Int): CameraSelection {
     return when (lensfacing) {
         CameraMetadata.LENS_FACING_BACK -> CameraSelection.BACK
         CameraMetadata.LENS_FACING_FRONT -> CameraSelection.FRONT
