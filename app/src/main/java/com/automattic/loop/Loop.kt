@@ -15,7 +15,7 @@ import com.automattic.loop.util.CrashLoggingUtils
 import com.wordpress.stories.compose.NotificationTrackerProvider
 import com.wordpress.stories.compose.frame.StoryNotificationType
 
-class Loop : Application(), NotificationTrackerProvider {
+open class Loop : Application(), NotificationTrackerProvider {
     private var statusBarHeight: Int = 0
 
     override fun onCreate() {
