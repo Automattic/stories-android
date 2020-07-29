@@ -13,6 +13,7 @@ import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.Save
 import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveResult
 import com.wordpress.stories.compose.story.StoryIndex
 import com.wordpress.stories.util.KEY_STORY_SAVE_RESULT
+import com.wordpress.stories.util.LOG_TAG
 import java.util.Random
 
 class FrameSaveNotifier(private val context: Context, private val service: FrameSaveService) {
@@ -197,7 +198,7 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
 //                AppLog.T.POSTS,
 //                "See issue #2858 / #3966; notify failed with:$runtimeException"
 //            )
-            Log.d("Portkey", "See issue #2858 / #3966; notify failed with:$runtimeException")
+            Log.d(LOG_TAG, "See issue #2858 / #3966; notify failed with:$runtimeException")
         }
     }
 
