@@ -46,7 +46,7 @@ class CameraFlashStateKeeper : CameraFlashStateHandler {
 }
 
 // helper method to get CameraX flash mode from CameraFlashStateHandler.FlashIndicatorState enum
-fun cameraXflashModeFromPortkeyFlashState(flashIndicatorState: FlashIndicatorState): FlashMode {
+fun cameraXflashModeFromStoriesFlashState(flashIndicatorState: FlashIndicatorState): FlashMode {
     return when (flashIndicatorState) {
         AUTO -> FlashMode.AUTO
         ON -> FlashMode.ON
@@ -55,7 +55,7 @@ fun cameraXflashModeFromPortkeyFlashState(flashIndicatorState: FlashIndicatorSta
 }
 
 // helper method to get Camera2 flash mode from CameraFlashStateHandler.FlashIndicatorState enum
-fun camera2flashModeFromPortkeyFlashState(flashIndicatorState: FlashIndicatorState): FlashMode {
+fun camera2flashModeFromStoriesFlashState(flashIndicatorState: FlashIndicatorState): FlashMode {
     return when (flashIndicatorState) {
         AUTO -> FlashMode.AUTO
         ON -> FlashMode.ON
