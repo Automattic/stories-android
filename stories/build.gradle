@@ -70,7 +70,7 @@ dependencies {
 }
 
 android.buildTypes.all { buildType ->
-    // Add properties named "portkey.xxx" to our BuildConfig
+    // Add properties named "loop.xxx" to our BuildConfig
     def inputFile = checkGradlePropertiesFile()
     def properties = loadPropertiesFromFile(inputFile)
     properties.any { property ->

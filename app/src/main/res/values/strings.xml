@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">portkey</string>
+    <string name="app_name">loop</string>
 
     <string name="main_placeholder">Still working on this! Tap the + to continue.</string>
 
@@ -17,7 +17,7 @@
     <string name="permissions_turn_on">Turn On</string>
 
     <!-- Photo picker    -->
-    <string name="photo_picker_title">Portkey Photo Picker</string>
+    <string name="photo_picker_title">Loop Photo Picker</string>
 
     <string name="photo_picker_thumbnail_desc">Play video</string>
     <string name="pick_photo">Select photo</string>
@@ -36,7 +36,7 @@
     <string name="photo_picker_wpmedia_desc">pick from WordPress media</string>
     <string name="content_description_person_reading_device_notification">Person reading device with notifications</string>
 
-    <!-- Photo picker - Portkey   -->
+    <!-- Photo picker - Loop   -->
     <string name="photo_picker_add_photos_to_story">Choose the photos and videos you\'d like to add to your story</string>
     <!-- SD Card errors -->
     <string name="sdcard_title">SD Card Required</string>

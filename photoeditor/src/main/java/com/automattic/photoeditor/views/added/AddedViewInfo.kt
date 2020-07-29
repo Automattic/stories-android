@@ -12,4 +12,4 @@ data class AddedViewInfo(
 )
 
 @Serializable
-data class AddedViewTextInfo(val text: String, val fontSizePx: Float, val textColor: Int)
+data class AddedViewTextInfo(val text: String, val fontSizePx: Float, val textColor: Int, val textAlignment: Int)

@@ -22,18 +22,43 @@
         android:textAllCaps="true"
         android:textColor="@color/white" />
 
-    <com.wordpress.stories.compose.text.PortkeyEditText
+    <com.wordpress.stories.compose.text.StoriesEditText
         android:id="@+id/add_text_edit_text"
         style="@style/EditText"
         android:textColor="@color/white"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/add_text_done_tv"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
         android:textCursorDrawable="@null"
         android:background="@null"
         android:gravity="center"
         android:inputType="textMultiLine"
         android:textSize="@dimen/editor_initial_text_size" />
+
+    <ImageButton
+        android:id="@+id/text_alignment_button"
+        android:contentDescription="@string/label_text_alignment_button"
+        android:layout_width="@dimen/normal_button_medium"
+        android:layout_height="@dimen/normal_button_medium"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_margin="16dp"
+        android:background="@android:color/transparent"
+        android:tint="@android:color/white"
+        android:src="@drawable/ic_gridicons_align_left_32" />
+
+    <ImageButton
+        android:id="@+id/color_picker_button"
+        android:contentDescription="@string/label_text_color_button"
+        android:layout_width="@dimen/normal_button_medium"
+        android:layout_height="@dimen/normal_button_medium"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="16dp"
+        android:background="@android:color/transparent"
+        android:src="@drawable/ic_textcolor_replaceme" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/add_text_color_picker_recycler_view"
@@ -42,7 +67,9 @@
         android:layout_margin="@dimen/color_picker_item_margin"
         android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
+        android:layout_toStartOf="@id/color_picker_button"
         android:orientation="horizontal"
+        android:visibility="gone"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:background="@android:color/black"
         tools:listitem="@layout/color_picker_list_item" />
