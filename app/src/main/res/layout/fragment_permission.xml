@@ -29,7 +29,7 @@
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/turn_on_permissions_button"
-        android:theme="@style/Portkey.Button.Intro"
+        android:theme="@style/Loop.Button.Intro"
         android:layout_width="0dp"
         android:layout_height="@dimen/button_height"
         android:textAllCaps="false"

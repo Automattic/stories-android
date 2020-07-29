@@ -58,8 +58,8 @@ import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.ON
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFinished
 import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
-import com.automattic.photoeditor.camera.interfaces.camera2LensFacingFromPortkeyCameraSelection
-import com.automattic.photoeditor.camera.interfaces.portkeyCameraSelectionFromCamera2LensFacing
+import com.automattic.photoeditor.camera.interfaces.camera2LensFacingFromStoriesCameraSelection
+import com.automattic.photoeditor.camera.interfaces.storiesCameraSelectionFromCamera2LensFacing
 import com.automattic.photoeditor.util.CameraUtils
 import com.automattic.photoeditor.util.CameraUtils.Companion.areDimensionsSwapped
 import com.automattic.photoeditor.util.CameraUtils.Companion.chooseOptimalSize
@@ -507,7 +507,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
                                 previewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
                                     CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
                                 // set flash mode
-                                setCamera2FlashModeFromPortkeyRequestedFlashMode(previewRequestBuilder)
+                                setCamera2FlashModeFromStoriesRequestedFlashMode(previewRequestBuilder)
 
                                 // Finally, we start displaying the camera preview.
                                 previewRequest = previewRequestBuilder.build()
@@ -589,7 +589,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
             // This is how to tell the camera to trigger.
             previewRequestBuilder.set(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER,
                     CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER_START)
-            setCamera2FlashModeFromPortkeyRequestedFlashMode(previewRequestBuilder)
+            setCamera2FlashModeFromStoriesRequestedFlashMode(previewRequestBuilder)
             // Tell #captureCallback to wait for the precapture sequence to be set.
             state = STATE_WAITING_PRECAPTURE
             captureSession?.capture(previewRequestBuilder.build(), captureCallback,
@@ -624,7 +624,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
                     // Use the same AE and AF modes as the preview.
                     set(CaptureRequest.CONTROL_AF_MODE,
                         CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
-                }.also { setCamera2FlashModeFromPortkeyRequestedFlashMode(it) }
+                }.also { setCamera2FlashModeFromStoriesRequestedFlashMode(it) }
 
                 val captureCallback = object : CameraCaptureSession.CaptureCallback() {
                     override fun onCaptureCompleted(
@@ -668,7 +668,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
             previewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
                     CameraMetadata.CONTROL_AF_TRIGGER_CANCEL)
             // set flash mode
-            setCamera2FlashModeFromPortkeyRequestedFlashMode(previewRequestBuilder)
+            setCamera2FlashModeFromStoriesRequestedFlashMode(previewRequestBuilder)
             captureSession?.capture(previewRequestBuilder.build(), captureCallback,
                     backgroundHandler)
             // After this, the camera will go back to the normal state of preview.
@@ -694,7 +694,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
 //        }
     }
 
-    private fun setCamera2FlashModeFromPortkeyRequestedFlashMode(requestBuilder: CaptureRequest.Builder) {
+    private fun setCamera2FlashModeFromStoriesRequestedFlashMode(requestBuilder: CaptureRequest.Builder) {
         if (flashSupported) {
             when (currentFlashState.currentFlashState()) {
                 AUTO -> requestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
@@ -794,7 +794,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
                                 previewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
                                     CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
                                 // set flash mode
-                                setCamera2FlashModeFromPortkeyRequestedFlashMode(previewRequestBuilder)
+                                setCamera2FlashModeFromStoriesRequestedFlashMode(previewRequestBuilder)
 
                                 // Finally, we start displaying the camera preview.
                                 previewRequest = previewRequestBuilder.build()
@@ -856,15 +856,15 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
         }
         windDown()
         startUp()
-        return portkeyCameraSelectionFromCamera2LensFacing(lensFacing)
+        return storiesCameraSelectionFromCamera2LensFacing(lensFacing)
     }
 
     override fun selectCamera(camera: CameraSelection) {
-        lensFacing = camera2LensFacingFromPortkeyCameraSelection(camera)
+        lensFacing = camera2LensFacingFromStoriesCameraSelection(camera)
     }
 
     override fun currentCamera(): CameraSelection {
-        return portkeyCameraSelectionFromCamera2LensFacing(lensFacing)
+        return storiesCameraSelectionFromCamera2LensFacing(lensFacing)
     }
 
     override fun isFlashAvailable(): Boolean {

@@ -39,7 +39,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@android:color/white">
-            <com.automattic.portkey.photopicker.EmptyViewRecyclerView
+            <com.automattic.loop.photopicker.EmptyViewRecyclerView
                 android:id="@+id/recycler"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -47,7 +47,7 @@
                 android:fadeScrollbars="true"
                 android:scrollbars="vertical"/>
 
-            <com.automattic.portkey.photopicker.ActionableEmptyView
+            <com.automattic.loop.photopicker.ActionableEmptyView
                 android:id="@+id/actionable_empty_view"
                 android:layout_above="@+id/bottom_bar"
                 android:layout_height="match_parent"
@@ -56,9 +56,9 @@
                 app:aevImage="@drawable/img_illustration_media_105dp"
                 app:aevTitle="@string/media_empty_list"
                 tools:visibility="visible" >
-            </com.automattic.portkey.photopicker.ActionableEmptyView>
+            </com.automattic.loop.photopicker.ActionableEmptyView>
 
-            <com.automattic.portkey.photopicker.ActionableEmptyView
+            <com.automattic.loop.photopicker.ActionableEmptyView
                 android:id="@+id/soft_ask_view"
                 android:layout_height="match_parent"
                 android:layout_width="match_parent"
@@ -67,7 +67,7 @@
                 app:aevImage="@drawable/img_illustration_media_105dp"
                 app:aevTitle="@string/photo_picker_soft_ask_label"
                 tools:visibility="visible" >
-            </com.automattic.portkey.photopicker.ActionableEmptyView>
+            </com.automattic.loop.photopicker.ActionableEmptyView>
 
             <LinearLayout
                 android:id="@+id/bottom_bar"

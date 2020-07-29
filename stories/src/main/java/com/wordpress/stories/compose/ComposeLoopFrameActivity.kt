@@ -343,7 +343,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     textAlignment)
                 textEditorDialogFragment.setOnTextEditorListener(object : TextEditorDialogFragment.TextEditor {
                     override fun onDone(inputText: String, colorCode: Int, textAlignment: Int) {
-                        // fixes https://github.com/Automattic/portkey-android/issues/453
+                        // fixes https://github.com/Automattic/stories-android/issues/453
                         // when don't keep activities is ON, the onDismiss override gets called only through
                         // Activity.onDestroy() -> Fragment.onDestroy() (see stacktrace)
                         if (lifecycle.currentState == DESTROYED) {
@@ -930,7 +930,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
         stickers_add_button.setOnClickListener {
             // avoid multiple clicks when the one click is already being processed, fixes
-            // https://github.com/Automattic/portkey-android/issues/455
+            // https://github.com/Automattic/stories-android/issues/455
             if (!emojiPickerFragment.isAdded && !emojiPickerFragment.isVisible) {
                 emojiPickerFragment.show(supportFragmentManager, emojiPickerFragment.tag)
             }

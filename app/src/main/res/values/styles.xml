@@ -38,7 +38,7 @@
     </style>
 
     <!-- Intro -->
-    <style name="Portkey.Button.Intro" parent="Widget.AppCompat.Button.Colored">
+    <style name="Loop.Button.Intro" parent="Widget.AppCompat.Button.Colored">
         <item name="colorButtonNormal">@color/loop_magenta</item>
         <item name="android:textColor">@android:color/white</item>
     </style>

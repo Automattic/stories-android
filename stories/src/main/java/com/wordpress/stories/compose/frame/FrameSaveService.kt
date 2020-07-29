@@ -27,6 +27,7 @@ import com.wordpress.stories.compose.story.StoryFrameItem
 import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.FileBackgroundSource
 import com.wordpress.stories.compose.story.StoryIndex
 import com.wordpress.stories.compose.story.StoryRepository
+import com.wordpress.stories.util.LOG_TAG
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -284,7 +285,7 @@ class FrameSaveService : Service() {
 
         // FrameSaveProgressListener overrides
         override fun onFrameSaveStart(frameIndex: FrameIndex) {
-            Log.d("PORTKEY", "START save frame idx: " + applyFrameIndexOverride(frameIndex))
+            Log.d(LOG_TAG, "START save frame idx: " + applyFrameIndexOverride(frameIndex))
             frameSaveNotifier.addStoryPageInfoToForegroundNotification(
                 storyIndex,
                 mediaIdFromStoryAndFrameIndex(storyIndex, applyFrameIndexOverride(frameIndex)),
@@ -293,13 +294,13 @@ class FrameSaveService : Service() {
         }
 
         override fun onFrameSaveProgress(frameIndex: FrameIndex, progress: Double) {
-            Log.d("PORTKEY", "PROGRESS save frame idx: " + applyFrameIndexOverride(frameIndex) + " %: " + progress)
+            Log.d(LOG_TAG, "PROGRESS save frame idx: " + applyFrameIndexOverride(frameIndex) + " %: " + progress)
             frameSaveNotifier.updateNotificationProgressForMedia(
                 mediaIdFromStoryAndFrameIndex(storyIndex, applyFrameIndexOverride(frameIndex)), progress.toFloat())
         }
 
         override fun onFrameSaveCompleted(frameIndex: FrameIndex) {
-            Log.d("PORTKEY", "END save frame idx: " + applyFrameIndexOverride(frameIndex))
+            Log.d(LOG_TAG, "END save frame idx: " + applyFrameIndexOverride(frameIndex))
             frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(
                 storyIndex,
                 title,
@@ -311,7 +312,7 @@ class FrameSaveService : Service() {
         }
 
         override fun onFrameSaveCanceled(frameIndex: FrameIndex) {
-            Log.d("PORTKEY", "CANCELED save frame idx: " + applyFrameIndexOverride(frameIndex))
+            Log.d(LOG_TAG, "CANCELED save frame idx: " + applyFrameIndexOverride(frameIndex))
             // remove one from the count
             frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(
                 storyIndex,
@@ -324,7 +325,7 @@ class FrameSaveService : Service() {
         }
 
         override fun onFrameSaveFailed(frameIndex: FrameIndex, reason: String?) {
-            Log.d("PORTKEY", "FAILED save frame idx: " + applyFrameIndexOverride(frameIndex))
+            Log.d(LOG_TAG, "FAILED save frame idx: " + applyFrameIndexOverride(frameIndex))
             // remove one from the count
             frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(
                 storyIndex,
