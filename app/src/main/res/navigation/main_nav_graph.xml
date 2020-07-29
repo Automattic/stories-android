@@ -3,13 +3,13 @@
             xmlns:app="http://schemas.android.com/apk/res-auto"
             xmlns:tools="http://schemas.android.com/tools" android:id="@+id/main_nav_graph"
             app:startDestination="@id/mainFragment">
-    <fragment android:id="@+id/mainFragment" android:name="com.automattic.portkey.MainFragment"
+    <fragment android:id="@+id/mainFragment" android:name="com.automattic.loop.MainFragment"
               android:label="fragment_main" tools:layout="@layout/fragment_main">
         <action android:id="@+id/action_mainFragment_to_composeLoopFrameActivity"
                 app:destination="@id/storyComposerActivity"
                 app:enterAnim="@anim/nav_default_enter_anim" app:exitAnim="@anim/nav_default_exit_anim"
         />
     </fragment>
-    <activity android:id="@+id/storyComposerActivity" android:name="com.automattic.portkey.StoryComposerActivity"
+    <activity android:id="@+id/storyComposerActivity" android:name="com.automattic.loop.StoryComposerActivity"
               android:label="StoryComposerActivity"/>
 </navigation>
