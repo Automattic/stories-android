@@ -64,4 +64,7 @@ Implement these:
 1. Go to Tools → AVD Manager and create an emulated device.
 1. Run.
 
+## License ##
 
+The stories module and the Loop concept app are Open Source projects covered by the
+[GNU General Public License version 2](LICENSE.md). Note: code in the mp4compose and photoeditor directories are covered by the MIT license.
