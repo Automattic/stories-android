@@ -25,6 +25,8 @@
     <string name="label_frame_unselected_border">unselected</string>
     <string name="label_frame_selected_border">selected</string>
     <string name="label_frame_errored">errored</string>
+    <string name="label_text_alignment_button">Change text alignment</string>
+    <string name="label_text_color_button">Change text color</string>
 
     <string name="menu_delete_page">Delete slide</string>
 

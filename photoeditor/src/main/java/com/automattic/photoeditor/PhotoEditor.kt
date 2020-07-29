@@ -236,6 +236,7 @@ class PhotoEditor private constructor(builder: Builder) :
     fun addText(
         text: String,
         colorCodeTextView: Int,
+        textAlignment: Int? = null,
         textTypeface: Typeface? = null,
         fontSizeSp: Float = 18f,
         isViewBeingReadded: Boolean = false
@@ -247,6 +248,7 @@ class PhotoEditor private constructor(builder: Builder) :
 
             textInputTv.text = text
             textInputTv.setTextColor(colorCodeTextView)
+            textAlignment?.let { textInputTv.textAlignment = it }
             textInputTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSizeSp)
 //            textInputTv.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
             if (textTypeface != null) {
@@ -262,7 +264,8 @@ class PhotoEditor private constructor(builder: Builder) :
             if (mOnPhotoEditorListener != null && !isViewBeingReadded) {
                 val textInput = textInputTv.text.toString()
                 val currentTextColor = textInputTv.currentTextColor
-                mOnPhotoEditorListener?.onEditTextChangeListener(this, textInput, currentTextColor, true)
+                mOnPhotoEditorListener?.onEditTextChangeListener(
+                    this, textInput, currentTextColor, textInputTv.textAlignment, true)
             }
         }
         return view
@@ -275,8 +278,8 @@ class PhotoEditor private constructor(builder: Builder) :
      * @param inputText text to update [TextView]
      * @param colorCode color to update on [TextView]
      */
-    fun editText(view: View, inputText: String, colorCode: Int) {
-        editText(view, null, inputText, colorCode)
+    fun editText(view: View, inputText: String, colorCode: Int, textAlignment: Int) {
+        editText(view, null, inputText, colorCode, textAlignment)
     }
 
     /**
@@ -287,7 +290,7 @@ class PhotoEditor private constructor(builder: Builder) :
      * @param inputText text to update [TextView]
      * @param colorCode color to update on [TextView]
      */
-    fun editText(view: View, textTypeface: Typeface?, inputText: String, colorCode: Int) {
+    fun editText(view: View, textTypeface: Typeface?, inputText: String, colorCode: Int, textAlignment: Int) {
         val inputTextView = view.findViewById<TextView>(R.id.tvPhotoEditorText)
         if (inputTextView != null && addedViews.containsView(view) && !TextUtils.isEmpty(inputText)) {
             inputTextView.text = inputText
@@ -295,6 +298,7 @@ class PhotoEditor private constructor(builder: Builder) :
                 inputTextView.typeface = textTypeface
             }
             inputTextView.setTextColor(colorCode)
+            inputTextView.textAlignment = textAlignment
             parentView.updateViewLayout(view, view.layoutParams)
             val i = addedViews.indexOfView(view)
             if (i > -1) {
@@ -406,6 +410,7 @@ class PhotoEditor private constructor(builder: Builder) :
                 view = addText(
                     text = addedViewInfo.addedViewTextInfo.text,
                     colorCodeTextView = addedViewInfo.addedViewTextInfo.textColor,
+                    textAlignment = addedViewInfo.addedViewTextInfo.textAlignment,
                     isViewBeingReadded = true
                 )
                 view?.let {
@@ -414,6 +419,7 @@ class PhotoEditor private constructor(builder: Builder) :
                     // the actual calculated text size as obtained from the view is expressed in px.
                     normalTextView?.setTextSize(TypedValue.COMPLEX_UNIT_PX, addedViewInfo.addedViewTextInfo.fontSizePx)
                     normalTextView?.setTextColor(addedViewInfo.addedViewTextInfo.textColor)
+                    normalTextView?.textAlignment = addedViewInfo.addedViewTextInfo.textAlignment
 
                     val multiTouchListenerInstance = getNewMultitouchListener(it) // newMultiTouchListener
                     setGestureControlOnMultiTouchListener(it, viewType, multiTouchListenerInstance)
@@ -466,11 +472,13 @@ class PhotoEditor private constructor(builder: Builder) :
                     override fun onClick() {
                         val textInput = textInputTv.text.toString()
                         val currentTextColor = textInputTv.currentTextColor
+                        val textAlignment = textInputTv.textAlignment
                         mOnPhotoEditorListener?.onEditTextChangeListener(
-                                rootView,
-                                textInput,
-                                currentTextColor,
-                                false
+                            rootView,
+                            textInput,
+                            currentTextColor,
+                            textAlignment,
+                            false
                         )
                     }
 

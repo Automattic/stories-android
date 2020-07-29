@@ -52,7 +52,8 @@ class AddedView(
                     view.findViewById(R.id.tvPhotoEditorText)
                 }
             }
-            return AddedViewTextInfo(txtView.text.toString(), txtView.textSize, txtView.currentTextColor)
+            return AddedViewTextInfo(
+                    txtView.text.toString(), txtView.textSize, txtView.currentTextColor, txtView.textAlignment)
         }
 
         fun buildViewInfoFromView(view: View, addedViewText: AddedViewTextInfo): AddedViewInfo {
