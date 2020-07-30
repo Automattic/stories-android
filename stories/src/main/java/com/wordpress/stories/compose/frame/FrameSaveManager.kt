@@ -20,6 +20,7 @@ import com.wordpress.stories.util.cloneViewSpecs
 import com.wordpress.stories.util.removeViewFromParent
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.wordpress.stories.util.isSizeRatio916
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -136,8 +137,8 @@ class FrameSaveManager(
                 } else {
                     try {
                         // create ghost PhotoEditorView to be used for saving off-screen
-                        val ghostPhotoEditorView = createGhostPhotoEditor(context, photoEditor.composedCanvas)
-                        frameFile = saveImageFrame(context, frame, ghostPhotoEditorView, frameIndex)
+                        val ghostPhotoEditorViewClone = createGhostPhotoEditor(context, photoEditor.composedCanvas)
+                        frameFile = saveImageFrame(context, frame, ghostPhotoEditorViewClone, frameIndex)
                         saveProgressListener?.onFrameSaveCompleted(frameIndex)
                     } catch (ex: Exception) {
                         saveProgressListener?.onFrameSaveFailed(frameIndex, ex.message)
@@ -160,14 +161,17 @@ class FrameSaveManager(
     private suspend fun saveImageFrame(
         context: Context,
         frame: StoryFrameItem,
-        ghostPhotoEditorView: PhotoEditorView,
+        ghostPhotoEditorViewClone: GhostPhotoEditorViewClone,
         frameIndex: FrameIndex
     ): File {
         // prepare the ghostview with its background image and the AddedViews on top of it
-        preparePhotoEditorViewForSnapshot(context, frame, ghostPhotoEditorView)
+        preparePhotoEditorViewForSnapshot(context, frame, ghostPhotoEditorViewClone)
 
         val file = withContext(Dispatchers.IO) {
-            return@withContext photoEditor.saveImageFromPhotoEditorViewAsLoopFrameFile(frameIndex, ghostPhotoEditorView)
+            return@withContext photoEditor.saveImageFromPhotoEditorViewAsLoopFrameFile(
+                frameIndex,
+                ghostPhotoEditorViewClone.ghostPhotoView
+            )
         }
 
         releaseAddedViewsAfterSnapshot(frame)
@@ -257,12 +261,13 @@ class FrameSaveManager(
     private suspend fun preparePhotoEditorViewForSnapshot(
         context: Context,
         frame: StoryFrameItem,
-        ghostPhotoEditorView: PhotoEditorView
+        ghostPhotoEditorViewClone: GhostPhotoEditorViewClone
     ) {
         // prepare background
         val uri = (frame.source as? UriBackgroundSource)?.contentUri
             ?: (frame.source as FileBackgroundSource).file
 
+        val ghostPhotoEditorView = ghostPhotoEditorViewClone.ghostPhotoView
         // making use of Glide to decode bitmap and get the right orientation automatically
         // http://bumptech.github.io/glide/doc/getting-started.html#background-threads
         val futureTarget = Glide.with(context)
@@ -303,12 +308,20 @@ class FrameSaveManager(
     private suspend fun createGhostPhotoEditor(
         context: Context,
         originalPhotoEditorView: PhotoEditorView
-    ) = withContext(Dispatchers.Main) {
+    ) : GhostPhotoEditorViewClone = withContext(Dispatchers.Main) {
             val ghostPhotoView = PhotoEditorView(context)
+            var originalIsGood = true
+            if (normalizeTo916 && !isSizeRatio916(originalPhotoEditorView.width, originalPhotoEditorView.height)) {
+                originalIsGood = false
+            }
+
             cloneViewSpecs(originalPhotoEditorView, ghostPhotoView, doNormalizeTo9_16 = normalizeTo916)
             ghostPhotoView.setBackgroundColor(Color.BLACK)
-            return@withContext ghostPhotoView
+
+            return@withContext GhostPhotoEditorViewClone(ghostPhotoView, originalIsGood)
         }
+
+    data class GhostPhotoEditorViewClone(val ghostPhotoView: PhotoEditorView, val isRatioAdjusted: Boolean)
 
     interface FrameSaveProgressListener {
         // only one Story gets saved at a time, frameIndex is the frame's position within the Story array
