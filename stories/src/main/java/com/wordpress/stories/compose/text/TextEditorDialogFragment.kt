@@ -1,5 +1,6 @@
 package com.wordpress.stories.compose.text
 
+import android.content.Context
 import android.content.DialogInterface
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -24,10 +25,19 @@ import kotlinx.android.synthetic.main.add_text_dialog.view.*
 class TextEditorDialogFragment : DialogFragment() {
     private var colorCode: Int = 0
     private lateinit var textAlignment: TextAlignment
+    private var typefaceId: Int = 0
     private var textEditor: TextEditor? = null
+
+    private lateinit var textStyleGroupManager: TextStyleGroupManager
 
     interface TextEditor {
         fun onDone(inputText: String, colorCode: Int, textAlignment: Int)
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+
+        textStyleGroupManager = TextStyleGroupManager(context)
     }
 
     override fun onStart() {
@@ -66,6 +76,14 @@ class TextEditorDialogFragment : DialogFragment() {
             updateTextAlignment(textAlignment)
         }
 
+        activity?.let {
+            text_style_toggle_button?.setOnClickListener { _ ->
+                typefaceId = textStyleGroupManager.getNextTypeface(typefaceId)
+                textStyleGroupManager.styleTextView(typefaceId, add_text_edit_text)
+                textStyleGroupManager.styleAndLabelTextView(typefaceId, text_style_toggle_button)
+            }
+        }
+
         color_picker_button.setOnClickListener {
             if (add_text_color_picker_recycler_view.visibility == View.VISIBLE) {
                 add_text_color_picker_recycler_view.visibility = View.GONE
@@ -85,6 +103,10 @@ class TextEditorDialogFragment : DialogFragment() {
 
             textAlignment = TextAlignment.valueOf(it.getInt(EXTRA_TEXT_ALIGNMENT))
             updateTextAlignment(textAlignment)
+
+            typefaceId = it.getInt(EXTRA_TYPEFACE)
+            textStyleGroupManager.styleTextView(typefaceId, add_text_edit_text)
+            textStyleGroupManager.styleAndLabelTextView(typefaceId, text_style_toggle_button)
         }
         add_text_edit_text?.requestFocus()
 
@@ -132,6 +154,7 @@ class TextEditorDialogFragment : DialogFragment() {
         const val EXTRA_INPUT_TEXT = "extra_input_text"
         const val EXTRA_COLOR_CODE = "extra_color_code"
         const val EXTRA_TEXT_ALIGNMENT = "extra_text_alignment"
+        const val EXTRA_TYPEFACE = "extra_typeface"
 
         // Show dialog with provide text and text color
         @JvmOverloads
@@ -139,13 +162,15 @@ class TextEditorDialogFragment : DialogFragment() {
             appCompatActivity: AppCompatActivity,
             inputText: String = "",
             @ColorInt colorCode: Int = ContextCompat.getColor(appCompatActivity, R.color.white),
-            textAlignment: Int = TextAlignment.default()
+            textAlignment: Int = TextAlignment.default(),
+            typefaceId: Int = TextStyleGroupManager.TYPEFACE_ID_NUNITO
         ): TextEditorDialogFragment {
             return TextEditorDialogFragment().apply {
                 arguments = Bundle().apply {
                     putString(EXTRA_INPUT_TEXT, inputText)
                     putInt(EXTRA_COLOR_CODE, colorCode)
                     putInt(EXTRA_TEXT_ALIGNMENT, textAlignment)
+                    putInt(EXTRA_TYPEFACE, typefaceId)
                 }
                 show(appCompatActivity.supportFragmentManager,
                     TAG
