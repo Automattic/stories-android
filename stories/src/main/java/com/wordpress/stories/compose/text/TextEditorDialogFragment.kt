@@ -70,9 +70,11 @@ class TextEditorDialogFragment : DialogFragment() {
             if (add_text_color_picker_recycler_view.visibility == View.VISIBLE) {
                 add_text_color_picker_recycler_view.visibility = View.GONE
                 text_alignment_button.visibility = View.VISIBLE
+                text_style_toggle_button.visibility = View.VISIBLE
             } else {
                 add_text_color_picker_recycler_view.visibility = View.VISIBLE
                 text_alignment_button.visibility = View.GONE
+                text_style_toggle_button.visibility = View.GONE
             }
         }
 
