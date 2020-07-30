@@ -33,7 +33,7 @@ class TextStyleGroupManager(val context: Context) {
 
         supportedTypefaces[TYPEFACE_ID_OSWALD] = TextStyleRule(
                 id = TYPEFACE_ID_OSWALD,
-                typeface = getFont(R.font.oswald),
+                typeface = getFont(R.font.oswald_upper),
                 label = getString(R.string.typeface_label_oswald)
         )
     }
@@ -76,7 +76,7 @@ class TextStyleGroupManager(val context: Context) {
             return when (typefaceId) {
                 TYPEFACE_ID_NUNITO -> R.font.nunito_bold
                 TYPEFACE_ID_LIBRE_BASKERVILLE -> R.font.libre_baskerville
-                TYPEFACE_ID_OSWALD -> R.font.oswald
+                TYPEFACE_ID_OSWALD -> R.font.oswald_upper
                 else -> 0
             }
         }

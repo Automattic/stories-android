@@ -3,6 +3,5 @@
     <array name="preloaded_fonts" translatable="false">
         <item>@font/libre_baskerville</item>
         <item>@font/nunito_bold</item>
-        <item>@font/oswald</item>
     </array>
 </resources>
