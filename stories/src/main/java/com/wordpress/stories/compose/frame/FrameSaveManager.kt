@@ -137,8 +137,11 @@ class FrameSaveManager(
                 } else {
                     try {
                         // create ghost PhotoEditorView to be used for saving off-screen
-                        val ghostPhotoEditorViewClone = createGhostPhotoEditor(context, photoEditor.composedCanvas)
-                        frameFile = saveImageFrame(context, frame, ghostPhotoEditorViewClone, frameIndex)
+                        val ghostPhotoEditorViewWrapper= createGhostPhotoEditor(
+                            context,
+                            photoEditor.composedCanvas
+                        )
+                        frameFile = saveImageFrame(context, frame, ghostPhotoEditorViewWrapper, frameIndex)
                         saveProgressListener?.onFrameSaveCompleted(frameIndex)
                     } catch (ex: Exception) {
                         saveProgressListener?.onFrameSaveFailed(frameIndex, ex.message)
@@ -161,16 +164,16 @@ class FrameSaveManager(
     private suspend fun saveImageFrame(
         context: Context,
         frame: StoryFrameItem,
-        ghostPhotoEditorViewClone: GhostPhotoEditorViewClone,
+        ghostPhotoEditorViewWrapper: GhostPhotoEditorViewWrapper,
         frameIndex: FrameIndex
     ): File {
         // prepare the ghostview with its background image and the AddedViews on top of it
-        preparePhotoEditorViewForSnapshot(context, frame, ghostPhotoEditorViewClone)
+        preparePhotoEditorViewForSnapshot(context, frame, ghostPhotoEditorViewWrapper)
 
         val file = withContext(Dispatchers.IO) {
             return@withContext photoEditor.saveImageFromPhotoEditorViewAsLoopFrameFile(
                 frameIndex,
-                ghostPhotoEditorViewClone.ghostPhotoView
+                ghostPhotoEditorViewWrapper.ghostPhotoView
             )
         }
 
@@ -261,13 +264,13 @@ class FrameSaveManager(
     private suspend fun preparePhotoEditorViewForSnapshot(
         context: Context,
         frame: StoryFrameItem,
-        ghostPhotoEditorViewClone: GhostPhotoEditorViewClone
+        ghostPhotoEditorViewWrapper: GhostPhotoEditorViewWrapper
     ) {
         // prepare background
         val uri = (frame.source as? UriBackgroundSource)?.contentUri
             ?: (frame.source as FileBackgroundSource).file
 
-        val ghostPhotoEditorView = ghostPhotoEditorViewClone.ghostPhotoView
+        val ghostPhotoEditorView = ghostPhotoEditorViewWrapper.ghostPhotoView
         // making use of Glide to decode bitmap and get the right orientation automatically
         // http://bumptech.github.io/glide/doc/getting-started.html#background-threads
         val futureTarget = Glide.with(context)
@@ -308,7 +311,7 @@ class FrameSaveManager(
     private suspend fun createGhostPhotoEditor(
         context: Context,
         originalPhotoEditorView: PhotoEditorView
-    ) : GhostPhotoEditorViewClone = withContext(Dispatchers.Main) {
+    ) : GhostPhotoEditorViewWrapper = withContext(Dispatchers.Main) {
             val ghostPhotoView = PhotoEditorView(context)
             var originalIsGood = true
             if (normalizeTo916 && !isSizeRatio916(originalPhotoEditorView.width, originalPhotoEditorView.height)) {
@@ -318,10 +321,10 @@ class FrameSaveManager(
             cloneViewSpecs(originalPhotoEditorView, ghostPhotoView, doNormalizeTo9_16 = normalizeTo916)
             ghostPhotoView.setBackgroundColor(Color.BLACK)
 
-            return@withContext GhostPhotoEditorViewClone(ghostPhotoView, originalIsGood)
+            return@withContext GhostPhotoEditorViewWrapper(ghostPhotoView, originalIsGood)
         }
 
-    data class GhostPhotoEditorViewClone(val ghostPhotoView: PhotoEditorView, val isRatioAdjusted: Boolean)
+    data class GhostPhotoEditorViewWrapper(val ghostPhotoView: PhotoEditorView, val isRatioAdjusted: Boolean)
 
     interface FrameSaveProgressListener {
         // only one Story gets saved at a time, frameIndex is the frame's position within the Story array
