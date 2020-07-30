@@ -298,12 +298,15 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         return params
     }
 
-    private fun createGhostPhotoEditor(context: Context, originalPhotoEditorView: PhotoEditorView): PhotoEditorView {
-        val ghostPhotoView = PhotoEditorView(context)
-        cloneViewSpecs(originalPhotoEditorView, ghostPhotoView, doNormalizeTo9_16 = true)
-        ghostPhotoView.setBackgroundColor(Color.BLACK)
-        return ghostPhotoView
-    }
+    private suspend fun createGhostPhotoEditor(
+        context: Context,
+        originalPhotoEditorView: PhotoEditorView
+    ) = withContext(Dispatchers.Main) {
+            val ghostPhotoView = PhotoEditorView(context)
+            cloneViewSpecs(originalPhotoEditorView, ghostPhotoView)
+            ghostPhotoView.setBackgroundColor(Color.BLACK)
+            return@withContext ghostPhotoView
+        }
 
     interface FrameSaveProgressListener {
         // only one Story gets saved at a time, frameIndex is the frame's position within the Story array
