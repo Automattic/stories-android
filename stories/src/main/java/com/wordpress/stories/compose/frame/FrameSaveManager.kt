@@ -35,7 +35,9 @@ import kotlin.coroutines.CoroutineContext
 
 typealias FrameIndex = Int
 
-class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
+class FrameSaveManager(
+    private val photoEditor: PhotoEditor,
+    private val normalizeTo916: Boolean = true) : CoroutineScope {
     // we're using SupervisorJob as the topmost job, so some children async{}
     // calls can fail without affecting the parent (and thus, all of its children) while we wait for each frame to get
     // saved
@@ -303,7 +305,7 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         originalPhotoEditorView: PhotoEditorView
     ) = withContext(Dispatchers.Main) {
             val ghostPhotoView = PhotoEditorView(context)
-            cloneViewSpecs(originalPhotoEditorView, ghostPhotoView)
+            cloneViewSpecs(originalPhotoEditorView, ghostPhotoView, doNormalizeTo9_16 = normalizeTo916)
             ghostPhotoView.setBackgroundColor(Color.BLACK)
             return@withContext ghostPhotoView
         }
