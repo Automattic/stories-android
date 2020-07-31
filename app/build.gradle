@@ -39,6 +39,10 @@ android {
     useLibrary 'android.test.runner'
 }
 
+ext {
+    flipperVersion = '0.50.0'
+}
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
@@ -68,6 +72,10 @@ dependencies {
     implementation project(path: ':photoeditor')
     implementation project(path: ':stories')
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
+
+    debugImplementation "com.facebook.flipper:flipper:$flipperVersion"
+    debugImplementation 'com.facebook.soloader:soloader:0.9.0'
+    debugImplementation "com.facebook.flipper:flipper-network-plugin:$flipperVersion"
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
