@@ -4,10 +4,13 @@ import android.content.Context
 import android.graphics.Typeface
 import android.util.TypedValue
 import android.widget.TextView
+import androidx.annotation.ColorInt
+import androidx.annotation.ColorRes
 import androidx.annotation.Dimension
 import androidx.annotation.Dimension.SP
 import androidx.annotation.FontRes
 import androidx.annotation.StringRes
+import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import com.wordpress.stories.R
 import java.util.TreeMap
@@ -23,7 +26,14 @@ class TextStyleGroupManager(val context: Context) {
         val label: String,
         @Dimension(unit = SP) val defaultFontSize: Float,
         val lineSpacingMultiplier: Float = 1F,
-        val letterSpacing: Float = 0F)
+        val letterSpacing: Float = 0F,
+        val shadowLayer: ShadowLayer? = null)
+
+    data class ShadowLayer(
+        @Dimension(unit = SP) val radius: Float,
+        @Dimension(unit = SP) val dx: Float,
+        @Dimension(unit = SP) val dy: Float,
+        @ColorInt val color: Int)
 
     private var supportedTypefaces = TreeMap<Int, TextStyleRule>()
 
@@ -33,7 +43,8 @@ class TextStyleGroupManager(val context: Context) {
                 typeface = getFont(R.font.nunito_bold),
                 label = getString(R.string.typeface_label_nunito),
                 defaultFontSize = 22F,
-                lineSpacingMultiplier = 1.07F
+                lineSpacingMultiplier = 1.07F,
+                shadowLayer = ShadowLayer(1F, 0F, 2F, getColor(R.color.black_25_transparent))
         )
 
         supportedTypefaces[TYPEFACE_ID_LIBRE_BASKERVILLE] = TextStyleRule(
@@ -58,11 +69,14 @@ class TextStyleGroupManager(val context: Context) {
 
     private fun getString(@StringRes stringRes: Int) = context.resources.getString(stringRes)
 
+    @ColorInt private fun getColor(@ColorRes colorRes: Int) = ContextCompat.getColor(context, colorRes)
+
     fun styleTextView(typefaceId: Int, textView: TextView) {
         val textStyleRule = supportedTypefaces[typefaceId] ?: return
 
         with (textStyleRule) {
             textView.typeface = typeface
+            textView.setShadowLayer(shadowLayer)
 
             textView.setLineSpacing(0F, lineSpacingMultiplier)
             textView.letterSpacing = letterSpacing
@@ -75,6 +89,7 @@ class TextStyleGroupManager(val context: Context) {
         val textStyleRule = supportedTypefaces[typefaceId] ?: return
 
         textView.typeface = textStyleRule.typeface
+        textView.setShadowLayer(textStyleRule.shadowLayer)
 
         textView.text = textStyleRule.label
     }
@@ -84,6 +99,19 @@ class TextStyleGroupManager(val context: Context) {
      */
     fun getNextTypeface(typefaceId: Int): Int {
         return supportedTypefaces.higherKey(typefaceId) ?: supportedTypefaces.firstKey()
+    }
+
+    private fun TextView.setShadowLayer(shadowLayer: ShadowLayer?) {
+        shadowLayer?.run {
+            setShadowLayer(radius.toPx(), dx.toPx(), dy.toPx(), color)
+        } ?: run {
+            setShadowLayer(0F, 0F, 0F, 0)
+        }
+    }
+
+    private fun Float.toPx() : Float {
+        return TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_SP, this, context.resources.displayMetrics)
     }
 
     companion object {

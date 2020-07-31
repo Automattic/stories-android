@@ -37,6 +37,8 @@
 
     <color name="loop_magenta">#C9356E</color>
 
+    <color name="black_25_transparent">#40000000</color>
+
     <color name="lighter_gray">#E3DFE2</color>
 
     <!-- WordPress colors-->
