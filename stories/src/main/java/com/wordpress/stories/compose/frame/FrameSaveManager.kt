@@ -3,6 +3,7 @@ package com.wordpress.stories.compose.frame
 import android.content.Context
 import android.graphics.Color
 import android.net.Uri
+import android.util.Size
 import android.view.View
 import android.view.ViewGroup.LayoutParams
 import android.widget.RelativeLayout
@@ -20,6 +21,7 @@ import com.wordpress.stories.util.cloneViewSpecs
 import com.wordpress.stories.util.removeViewFromParent
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.wordpress.stories.util.adjustAddedViewCoordinatesToNormalizedExportedSize
 import com.wordpress.stories.util.isSizeRatio916
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -38,7 +40,8 @@ typealias FrameIndex = Int
 
 class FrameSaveManager(
     private val photoEditor: PhotoEditor,
-    private val normalizeTo916: Boolean = true) : CoroutineScope {
+    private val normalizeTo916: Boolean = true
+) : CoroutineScope {
     // we're using SupervisorJob as the topmost job, so some children async{}
     // calls can fail without affecting the parent (and thus, all of its children) while we wait for each frame to get
     // saved
@@ -137,7 +140,7 @@ class FrameSaveManager(
                 } else {
                     try {
                         // create ghost PhotoEditorView to be used for saving off-screen
-                        val ghostPhotoEditorViewWrapper= createGhostPhotoEditor(
+                        val ghostPhotoEditorViewWrapper = createGhostPhotoEditor(
                             context,
                             photoEditor.composedCanvas
                         )
@@ -287,7 +290,18 @@ class FrameSaveManager(
         // Only the original thread that created a view hierarchy can touch its views.
         withContext(Dispatchers.Main) {
             // now call addViewToParent the addedViews remembered by this frame
-            for (oneView in frame.addedViews) {
+
+            var addedViewList = frame.addedViews
+            // but first, let's adjust the coordinates if needed
+            if (ghostPhotoEditorViewWrapper.isRatioAdjusted) {
+                addedViewList = adjustAddedViewCoordinatesToNormalizedExportedSize(
+                    frame.addedViews,
+                    ghostPhotoEditorViewWrapper.originalCanvasSize,
+                    ghostPhotoEditorViewWrapper.adjustedCanvasSize
+                )
+            }
+
+            for (oneView in addedViewList) {
                 oneView.view?.let {
                     removeViewFromParent(it)
                     // this is needed, otherwise some vector graphics such as emoji in text will not render
@@ -311,20 +325,30 @@ class FrameSaveManager(
     private suspend fun createGhostPhotoEditor(
         context: Context,
         originalPhotoEditorView: PhotoEditorView
-    ) : GhostPhotoEditorViewWrapper = withContext(Dispatchers.Main) {
+    ): GhostPhotoEditorViewWrapper = withContext(Dispatchers.Main) {
             val ghostPhotoView = PhotoEditorView(context)
-            var originalIsGood = true
+            var isRatioAdjusted = false
             if (normalizeTo916 && !isSizeRatio916(originalPhotoEditorView.width, originalPhotoEditorView.height)) {
-                originalIsGood = false
+                isRatioAdjusted = true
             }
 
             cloneViewSpecs(originalPhotoEditorView, ghostPhotoView, doNormalizeTo9_16 = normalizeTo916)
             ghostPhotoView.setBackgroundColor(Color.BLACK)
 
-            return@withContext GhostPhotoEditorViewWrapper(ghostPhotoView, originalIsGood)
+            return@withContext GhostPhotoEditorViewWrapper(
+                ghostPhotoView,
+                Size(originalPhotoEditorView.width, originalPhotoEditorView.height),
+                Size(ghostPhotoView.width, ghostPhotoView.height),
+                isRatioAdjusted
+            )
         }
 
-    data class GhostPhotoEditorViewWrapper(val ghostPhotoView: PhotoEditorView, val isRatioAdjusted: Boolean)
+    data class GhostPhotoEditorViewWrapper(
+        val ghostPhotoView: PhotoEditorView,
+        val originalCanvasSize: Size,
+        val adjustedCanvasSize: Size,
+        val isRatioAdjusted: Boolean
+    )
 
     interface FrameSaveProgressListener {
         // only one Story gets saved at a time, frameIndex is the frame's position within the Story array

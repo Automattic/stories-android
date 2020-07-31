@@ -4,6 +4,7 @@ import android.util.Size
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.children
+import com.automattic.photoeditor.views.added.AddedViewList
 
 const val TARGET_RATIO_9_16 = 0.5625f // 9:16
 
@@ -62,4 +63,48 @@ fun normalizeSizeExportTo916(originalWidth: Int, originalHeight: Int): Size {
             return Size(normalizedWidthShouldBe.toInt(), originalHeight)
         }
     }
+}
+
+fun adjustAddedViewCoordinatesToNormalizedExportedSize(
+    addedViews: AddedViewList,
+    originalCanvasSize: Size,
+    normalizedCanvasSize: Size
+): AddedViewList {
+    val adjustedAddedViewList = AddedViewList()
+    var adjustedWidthRatio = 1.0f
+    var adjustedHeightRatio = 1.0f
+
+    // 1. first find the relation between originalCanvasSize.width and normalizedCanvasSize.width.
+    if (normalizedCanvasSize.width < originalCanvasSize.width) {
+        // adjust the view's width ratio
+        adjustedWidthRatio = normalizedCanvasSize.width.toFloat() / originalCanvasSize.width
+    }
+    if (normalizedCanvasSize.height < originalCanvasSize.height) {
+        // adjust the view's height ratio
+        adjustedHeightRatio = normalizedCanvasSize.height.toFloat() / originalCanvasSize.height
+    }
+
+    val scaleAdjustedRadio = Math.min(adjustedHeightRatio, adjustedWidthRatio)
+
+    // now go through the passed AddedViewList and re-create / modify each view
+    for (addedView in addedViews) {
+        // make an AddedView clone
+//        val addedViewClone = AddedView.buildAddedViewFromView(requireNotNull(addedView.view), addedView.viewType)
+        // now adjust the clone as necessary
+        // TODO remove this and make an actual clone
+        val addedViewClone = addedView
+        addedViewClone.view?.apply {
+            translationX = translationX * adjustedWidthRatio
+            translationY = translationY * adjustedHeightRatio
+            scaleX = scaleX * scaleAdjustedRadio
+            scaleY = scaleY * scaleAdjustedRadio
+        }
+
+        // append it to our new list
+        adjustedAddedViewList.add(addedViewClone)
+    }
+
+    // we need to keep a new copy of the AddedViews because in case these are serialized and re-presented on
+    // the screen we can't show a modified copy that has been normalized to fit 9:16
+    return adjustedAddedViewList
 }
