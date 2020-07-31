@@ -2,7 +2,10 @@ package com.wordpress.stories.compose.text
 
 import android.content.Context
 import android.graphics.Typeface
+import android.util.TypedValue
 import android.widget.TextView
+import androidx.annotation.Dimension
+import androidx.annotation.Dimension.SP
 import androidx.annotation.FontRes
 import androidx.annotation.StringRes
 import androidx.core.content.res.ResourcesCompat
@@ -14,7 +17,13 @@ import java.util.TreeMap
  * formatting [TextView]s.
  */
 class TextStyleGroupManager(val context: Context) {
-    private data class TextStyleRule(val id: Int, val typeface: Typeface?, val label: String)
+    private data class TextStyleRule(
+        val id: Int,
+        val typeface: Typeface?,
+        val label: String,
+        @Dimension(unit = SP) val defaultFontSize: Float,
+        val lineSpacingMultiplier: Float = 1F,
+        val letterSpacing: Float = 0F)
 
     private var supportedTypefaces = TreeMap<Int, TextStyleRule>()
 
@@ -22,19 +31,26 @@ class TextStyleGroupManager(val context: Context) {
         supportedTypefaces[TYPEFACE_ID_NUNITO] = TextStyleRule(
                 id = TYPEFACE_ID_NUNITO,
                 typeface = getFont(R.font.nunito_bold),
-                label = getString(R.string.typeface_label_nunito)
+                label = getString(R.string.typeface_label_nunito),
+                defaultFontSize = 22F,
+                lineSpacingMultiplier = 1.07F
         )
 
         supportedTypefaces[TYPEFACE_ID_LIBRE_BASKERVILLE] = TextStyleRule(
                 id = TYPEFACE_ID_LIBRE_BASKERVILLE,
                 typeface = getFont(R.font.libre_baskerville),
-                label = getString(R.string.typeface_label_libre_baskerville)
+                label = getString(R.string.typeface_label_libre_baskerville),
+                defaultFontSize = 18F,
+                lineSpacingMultiplier = 1.35F
         )
 
         supportedTypefaces[TYPEFACE_ID_OSWALD] = TextStyleRule(
                 id = TYPEFACE_ID_OSWALD,
                 typeface = getFont(R.font.oswald_upper),
-                label = getString(R.string.typeface_label_oswald)
+                label = getString(R.string.typeface_label_oswald),
+                defaultFontSize = 20F,
+                lineSpacingMultiplier = 1.21F,
+                letterSpacing = 0.06F
         )
     }
 
@@ -43,21 +59,24 @@ class TextStyleGroupManager(val context: Context) {
     private fun getString(@StringRes stringRes: Int) = context.resources.getString(stringRes)
 
     fun styleTextView(typefaceId: Int, textView: TextView) {
-        val typefaceRule = supportedTypefaces[typefaceId] ?: return
+        val textStyleRule = supportedTypefaces[typefaceId] ?: return
 
-        applyStyleRulesToTextView(typefaceRule, textView)
+        with (textStyleRule) {
+            textView.typeface = typeface
+
+            textView.setLineSpacing(0F, lineSpacingMultiplier)
+            textView.letterSpacing = letterSpacing
+
+            textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, defaultFontSize)
+        }
     }
 
     fun styleAndLabelTextView(typefaceId: Int, textView: TextView) {
-        val typefaceRule = supportedTypefaces[typefaceId] ?: return
+        val textStyleRule = supportedTypefaces[typefaceId] ?: return
 
-        applyStyleRulesToTextView(typefaceRule, textView)
-
-        textView.text = typefaceRule.label
-    }
-
-    private fun applyStyleRulesToTextView(textStyleRule: TextStyleRule, textView: TextView) {
         textView.typeface = textStyleRule.typeface
+
+        textView.text = textStyleRule.label
     }
 
     /**
