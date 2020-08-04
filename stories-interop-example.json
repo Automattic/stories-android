@@ -1,4 +1,15 @@
 {
+  "metadata": {
+    "revision": "1.0",
+    "device": {
+      "screen": {
+        "width": 1080,
+        "height": 1280
+      },
+      "platform": "android|ios",
+      "model": "iphone10"
+    }
+  },
   "frames": [
     {
       "source": {
