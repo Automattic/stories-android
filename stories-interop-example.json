@@ -25,10 +25,7 @@
           },
           "uri": null
         }
-      ],
-      "saveResultReason": {
-        "type": "com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess"
-      }
+      ]
     },
     {
       "source": {
@@ -72,10 +69,7 @@
           },
           "uri": null
         }
-      ],
-      "saveResultReason": {
-        "type": "com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess"
-      }
+      ]
     },
     {
       "source": {
@@ -150,10 +144,7 @@
           },
           "uri": null
         }
-      ],
-      "saveResultReason": {
-        "type": "com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess"
-      }
+      ]
     }
   ],
   "title": null
