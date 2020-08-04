@@ -1,4 +1,15 @@
 {
+  "metadata": {
+    "revision": "1.0",
+    "device": {
+      "screen": {
+        "width": 1080,
+        "height": 1280
+      },
+      "platform": "android|ios",
+      "model": "iphone10"
+    }
+  },
   "frames": [
     {
       "source": {
@@ -18,17 +29,14 @@
             "scale": 1,
             "addedViewTextInfo": {
               "text": "this is some text",
-              "fontSizePx": 140,
-              "textColor": -1,
-              "textAlignment": 2
+              "fontSize": 14,
+              "textColor": "#00000000",
+              "textAlignment": "left|center|right"
             }
           },
           "uri": null
         }
-      ],
-      "saveResultReason": {
-        "type": "com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess"
-      }
+      ]
     },
     {
       "source": {
@@ -49,9 +57,9 @@
             "scale": 1,
             "addedViewTextInfo": {
               "text": "this is some text, on a video background",
-              "fontSizePx": 140,
-              "textColor": -1,
-              "textAlignment": 4
+              "fontSize": 14,
+              "textColor": "#ffffffff",
+              "textAlignment": "left|center|right"
             }
           },
           "uri": null
@@ -65,17 +73,14 @@
             "scale": 1,
             "addedViewTextInfo": {
               "text": "😁",
-              "fontSizePx": 284,
-              "textColor": -16777216,
-              "textAlignment": 4
+              "fontSize": 28,
+              "textColor": "#ffffffff",
+              "textAlignment": "left|center|right"
             }
           },
           "uri": null
         }
-      ],
-      "saveResultReason": {
-        "type": "com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess"
-      }
+      ]
     },
     {
       "source": {
@@ -95,9 +100,9 @@
             "scale": 1,
             "addedViewTextInfo": {
               "text": "one text view",
-              "fontSizePx": 140,
-              "textColor": -1,
-              "textAlignment": 2
+              "fontSize": 14,
+              "textColor": "#ffffffff",
+              "textAlignment": "center"
             }
           },
           "uri": null
@@ -111,9 +116,9 @@
             "scale": 1,
             "addedViewTextInfo": {
               "text": "another text view",
-              "fontSizePx": 140,
-              "textColor": -1,
-              "textAlignment": 2
+              "fontSize": 14,
+              "textColor": "#ffffffff",
+              "textAlignment": "center"
             }
           },
           "uri": null
@@ -127,9 +132,9 @@
             "scale": 1,
             "addedViewTextInfo": {
               "text": "third text view",
-              "fontSizePx": 140,
-              "textColor": -1,
-              "textAlignment": 2
+              "fontSize": 14,
+              "textColor": "#ffffffff",
+              "textAlignment": "center"
             }
           },
           "uri": null
@@ -143,17 +148,14 @@
             "scale": 1,
             "addedViewTextInfo": {
               "text": "😬",
-              "fontSizePx": 284,
-              "textColor": -16777216,
-              "textAlignment": 4
+              "fontSize": 28,
+              "textColor": "#ff55ff",
+              "textAlignment": "right"
             }
           },
           "uri": null
         }
-      ],
-      "saveResultReason": {
-        "type": "com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess"
-      }
+      ]
     }
   ],
   "title": null
