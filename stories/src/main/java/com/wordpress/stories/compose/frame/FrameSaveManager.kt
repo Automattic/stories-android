@@ -20,6 +20,8 @@ import com.wordpress.stories.util.cloneViewSpecs
 import com.wordpress.stories.util.removeViewFromParent
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.wordpress.stories.util.isSizeRatio916
+import com.wordpress.stories.util.normalizeSizeExportTo916
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -35,7 +37,10 @@ import kotlin.coroutines.CoroutineContext
 
 typealias FrameIndex = Int
 
-class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
+class FrameSaveManager(
+    private val photoEditor: PhotoEditor,
+    private val normalizeTo916: Boolean = true
+) : CoroutineScope {
     // we're using SupervisorJob as the topmost job, so some children async{}
     // calls can fail without affecting the parent (and thus, all of its children) while we wait for each frame to get
     // saved
@@ -165,7 +170,18 @@ class FrameSaveManager(private val photoEditor: PhotoEditor) : CoroutineScope {
         preparePhotoEditorViewForSnapshot(context, frame, ghostPhotoEditorView)
 
         val file = withContext(Dispatchers.IO) {
-            return@withContext photoEditor.saveImageFromPhotoEditorViewAsLoopFrameFile(frameIndex, ghostPhotoEditorView)
+            if (normalizeTo916 && !isSizeRatio916(ghostPhotoEditorView.width, ghostPhotoEditorView.height)) {
+                return@withContext photoEditor.saveImageFromPhotoEditorViewAsLoopFrameFile(
+                        frameIndex,
+                        ghostPhotoEditorView,
+                        normalizeSizeExportTo916(ghostPhotoEditorView.width, ghostPhotoEditorView.height)
+                )
+            } else {
+                return@withContext photoEditor.saveImageFromPhotoEditorViewAsLoopFrameFile(
+                        frameIndex,
+                        ghostPhotoEditorView
+                )
+            }
         }
 
         releaseAddedViewsAfterSnapshot(frame)

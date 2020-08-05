@@ -120,4 +120,15 @@ internal object BitmapUtil {
         v.draw(c)
         return bitmap
     }
+
+    fun createCroppedBitmapFromView(v: View, cropX: Int, cropY: Int, cropWidth: Int, cropHeight: Int): Bitmap {
+        val originalBitmap = createBitmapFromView(v)
+        return Bitmap.createBitmap(
+                originalBitmap,
+                cropX,
+                cropY,
+                cropWidth,
+                cropHeight
+        )
+    }
 }
