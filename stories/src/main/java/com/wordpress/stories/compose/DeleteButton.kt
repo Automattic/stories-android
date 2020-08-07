@@ -6,6 +6,7 @@ import android.util.AttributeSet
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageButton
+import android.widget.RelativeLayout
 import androidx.core.content.ContextCompat.getDrawable
 import com.wordpress.stories.R
 
@@ -49,5 +50,10 @@ class DeleteButton @JvmOverloads constructor(
         if (!readyForDeleteState) {
             deleteButtonClickListener?.onClick(view)
         }
+    }
+
+    fun addBottomOffset(offset: Int) {
+        val params = layoutParams as RelativeLayout.LayoutParams
+        params.bottomMargin = resources.getDimensionPixelSize(R.dimen.delete_button_margin_bottom) + offset
     }
 }
