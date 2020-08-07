@@ -192,6 +192,10 @@ class StoryFrameSelectorFragment : Fragment() {
 
     fun setBottomOffset(offset: Int) {
         val params = view?.layoutParams as ConstraintLayout.LayoutParams
-        params.bottomMargin = offset
+        val hasChanged = params.bottomMargin != offset
+        if (hasChanged) {
+            params.bottomMargin = offset
+            view?.requestLayout()
+        }
     }
 }

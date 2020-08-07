@@ -54,6 +54,11 @@ class DeleteButton @JvmOverloads constructor(
 
     fun addBottomOffset(offset: Int) {
         val params = layoutParams as RelativeLayout.LayoutParams
-        params.bottomMargin = resources.getDimensionPixelSize(R.dimen.delete_button_margin_bottom) + offset
+        val hasChanged = params.bottomMargin !=
+                (resources.getDimensionPixelSize(R.dimen.delete_button_margin_bottom) + offset)
+        if (hasChanged) {
+            params.bottomMargin = resources.getDimensionPixelSize(R.dimen.delete_button_margin_bottom) + offset
+            requestLayout()
+        }
     }
 }
