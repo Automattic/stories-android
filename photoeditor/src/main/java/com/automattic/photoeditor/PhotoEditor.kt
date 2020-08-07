@@ -752,14 +752,18 @@ class PhotoEditor private constructor(builder: Builder) :
         fun onProgress(progress: Double)
     }
 
-    fun saveImageFromPhotoEditorViewAsLoopFrameFile(sequenceId: Int, photoEditorView: PhotoEditorView): File {
+    fun saveImageFromPhotoEditorViewAsLoopFrameFile(
+        sequenceId: Int,
+        photoEditorView: PhotoEditorView,
+        cropSize: Size? = null
+    ): File {
         val localFile = FileUtils.getLoopFrameFile(context, false, sequenceId.toString())
         localFile.createNewFile()
         val saveSettings = SaveSettings.Builder()
             .setClearViewsEnabled(true)
             .setTransparencyEnabled(false)
             .build()
-        FileUtils.saveViewToFile(localFile.absolutePath, saveSettings, photoEditorView)
+        FileUtils.saveViewToFile(localFile.absolutePath, saveSettings, photoEditorView, cropSize)
         return localFile
     }
 

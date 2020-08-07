@@ -2,6 +2,7 @@ package com.automattic.photoeditor.util
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.util.Size
 import android.view.View
 import com.automattic.photoeditor.R
 import com.automattic.photoeditor.SaveSettings
@@ -50,14 +51,21 @@ class FileUtils {
         fun saveViewToFile(
             imagePath: String,
             saveSettings: SaveSettings,
-            view: View
+            view: View,
+            cropSize: Size? = null // we center-crop on the X axis, but we crop the bottom on the Y axis
         ) {
             val file = File(imagePath)
             val out = FileOutputStream(file, false)
             val wholeBitmap = if (saveSettings.isTransparencyEnabled)
                 BitmapUtil.removeTransparency(BitmapUtil.createBitmapFromView(view))
-            else
-                BitmapUtil.createBitmapFromView(view)
+            else if (cropSize == null)
+                    BitmapUtil.createBitmapFromView(view)
+                else {
+                    // we center-crop on the X axis, but we crop the bottom on the Y axis, so Y starts at 0 (top).
+                    val x = (view.width - cropSize.width) / 2
+                    BitmapUtil.createCroppedBitmapFromView(view, x, 0, cropSize.width, cropSize.height)
+                }
+
             wholeBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
             out.flush()
             out.close()
