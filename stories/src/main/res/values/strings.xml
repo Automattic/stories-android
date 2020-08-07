@@ -83,6 +83,11 @@
     <string name="toast_error_saving_image">Error saving image</string>
     <string name="toast_error_saving_video">Video could not be saved</string>
 
+    <!-- PhotoEditor strings - overrides for user-facing strings so these can be translated at the app level and applied
+     by resource merging -->
+    <string name="camera_error">This device doesn\'t support Camera2 API.</string>
+    <string name="toast_error_playing_video">An error occurred while playing your video</string>
+
     <!-- WordPress Android strings - matching in case of future integration -->
     <!-- Android O notification channels, these show in the Android app settings -->
     <string name="notification_channel_general_title">General</string>
