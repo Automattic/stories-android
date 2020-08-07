@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -187,5 +188,10 @@ class StoryFrameSelectorFragment : Fragment() {
 
     fun showAddFrameControl() {
         view?.plus_icon?.visibility = View.VISIBLE
+    }
+
+    fun setBottomOffset(offset: Int) {
+        val params = view?.layoutParams as ConstraintLayout.LayoutParams
+        params.bottomMargin = offset
     }
 }

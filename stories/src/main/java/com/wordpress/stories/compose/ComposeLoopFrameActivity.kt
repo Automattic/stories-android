@@ -101,6 +101,7 @@ import com.wordpress.stories.util.getStoryIndexFromIntentOrBundle
 import com.wordpress.stories.util.isVideo
 import kotlinx.android.synthetic.main.activity_composer.*
 import kotlinx.android.synthetic.main.content_composer.*
+import kotlinx.android.synthetic.main.fragment_story_frame_selector.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -299,6 +300,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             addInsetTopMargin(next_button.layoutParams, nextButtonBaseTopMargin, insets.systemWindowInsetTop)
             addInsetTopMargin(close_button.layoutParams, topControlsBaseTopMargin, insets.systemWindowInsetTop)
             addInsetTopMargin(control_flash_group.layoutParams, topControlsBaseTopMargin, insets.systemWindowInsetTop)
+            (bottom_strip_view as StoryFrameSelectorFragment).setBottomOffset(insets.systemWindowInsetBottom)
             view_popup_menu.setTopOffset(
                 next_button.measuredHeight + (nextButtonBaseTopMargin * 2) + insets.systemWindowInsetTop)
             insets
