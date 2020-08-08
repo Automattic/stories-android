@@ -174,7 +174,7 @@ class FrameSaveManager(
                 return@withContext photoEditor.saveImageFromPhotoEditorViewAsLoopFrameFile(
                         frameIndex,
                         ghostPhotoEditorView,
-                        normalizeSizeExportTo916(ghostPhotoEditorView.width, ghostPhotoEditorView.height)
+                        normalizeSizeExportTo916(ghostPhotoEditorView.width, ghostPhotoEditorView.height).toSize()
                 )
             } else {
                 return@withContext photoEditor.saveImageFromPhotoEditorViewAsLoopFrameFile(
