@@ -17,6 +17,7 @@ class ViewUtilsTest {
     @Test
     fun `size ratio other than 9x16 is correctly identified`() {
         assertFalse(isSizeRatio916(720, 1440))
+        assertEquals(1, 0)
     }
 
     @Test
