@@ -25,14 +25,14 @@ fun removeViewFromParent(view: View) {
 }
 
 fun cloneViewSpecs(originalView: View, targetView: View) {
-    val originalWidth = originalView.getWidth()
-    val originalHeight = originalView.getHeight()
+    val originalWidth = originalView.width
+    val originalHeight = originalView.height
 
     val measuredWidth = View.MeasureSpec.makeMeasureSpec(originalWidth, View.MeasureSpec.EXACTLY)
     val measuredHeight = View.MeasureSpec.makeMeasureSpec(originalHeight, View.MeasureSpec.EXACTLY)
 
     targetView.measure(measuredWidth, measuredHeight)
-    targetView.layout(0, 0, targetView.getMeasuredWidth(), targetView.getMeasuredHeight())
+    targetView.layout(0, 0, targetView.measuredWidth, targetView.measuredHeight)
 }
 
 fun isSizeRatio916(originalWidth: Int, originalHeight: Int): Boolean {
@@ -53,15 +53,15 @@ fun normalizeSizeExportTo916(originalWidth: Int, originalHeight: Int): ScreenSiz
     } else {
         // 2. if not, resolve what the height should be for the screen's given width.
         val normalizedHeightShouldBe = originalWidth / TARGET_RATIO_9_16
-        if (normalizedHeightShouldBe <= originalHeight) {
+        return if (normalizedHeightShouldBe <= originalHeight) {
             // 3. if the result of (2) is less than actual height, set the new target height for the cloned
             // view to the number calculated as of (2) (cropping on height)
-            return ScreenSize(originalWidth, normalizedHeightShouldBe.toInt())
+            ScreenSize(originalWidth, normalizedHeightShouldBe.toInt())
         } else {
             // 4. if the result of (2) is greater than actual height --> crop the width to match the ratio needed
             // for the given original height (cropping on width)
             val normalizedWidthShouldBe = originalHeight * TARGET_RATIO_9_16
-            return ScreenSize(normalizedWidthShouldBe.toInt(), originalHeight)
+            ScreenSize(normalizedWidthShouldBe.toInt(), originalHeight)
         }
     }
 }
