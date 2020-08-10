@@ -101,6 +101,7 @@ import com.wordpress.stories.util.getStoryIndexFromIntentOrBundle
 import com.wordpress.stories.util.isVideo
 import kotlinx.android.synthetic.main.activity_composer.*
 import kotlinx.android.synthetic.main.content_composer.*
+import kotlinx.android.synthetic.main.fragment_story_frame_selector.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -190,6 +191,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private var screenSizeY: Int = 0
     private var topControlsBaseTopMargin: Int = 0
     private var nextButtonBaseTopMargin: Int = 0
+    private var bottomNavigationBarMargin: Int = 0
     private var isEditingText: Boolean = false
 
     private lateinit var storyViewModel: StoryViewModel
@@ -276,7 +278,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         val width = photoEditorView.measuredWidth
         val height = photoEditorView.measuredHeight
 
-        val bottomAreaHeight = resources.getDimensionPixelSize(R.dimen.bottom_strip_height)
+        val bottomAreaHeight = resources.getDimensionPixelSize(R.dimen.bottom_strip_height) + bottomNavigationBarMargin
         val topAreaHeight = resources.getDimensionPixelSize(R.dimen.next_button_total_height)
 
         return Rect(
@@ -299,6 +301,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             addInsetTopMargin(next_button.layoutParams, nextButtonBaseTopMargin, insets.systemWindowInsetTop)
             addInsetTopMargin(close_button.layoutParams, topControlsBaseTopMargin, insets.systemWindowInsetTop)
             addInsetTopMargin(control_flash_group.layoutParams, topControlsBaseTopMargin, insets.systemWindowInsetTop)
+            bottomNavigationBarMargin = insets.systemWindowInsetBottom
+            workingAreaRect = calculateWorkingArea()
+            photoEditor.updateWorkAreaRect(workingAreaRect)
+            delete_view.addBottomOffset(bottomNavigationBarMargin)
+            (bottom_strip_view as StoryFrameSelectorFragment).setBottomOffset(bottomNavigationBarMargin)
             view_popup_menu.setTopOffset(
                 next_button.measuredHeight + (nextButtonBaseTopMargin * 2) + insets.systemWindowInsetTop)
             insets
