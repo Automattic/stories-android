@@ -124,6 +124,9 @@ class BackgroundSurfaceManager(
     @OnLifecycleEvent(ON_START)
     fun onStart(source: LifecycleOwner) {
         // TODO: get state and restart fragments / camera preview?
+        if (isTextureViewAvailable()) {
+            managerReadyListener?.onBackgroundSurfaceManagerReady()
+        }
     }
 
     @Suppress("unused")
