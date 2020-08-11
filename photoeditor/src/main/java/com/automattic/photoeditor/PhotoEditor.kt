@@ -417,18 +417,6 @@ class PhotoEditor private constructor(builder: Builder) :
                     textAlignment = addedViewInfo.addedViewTextInfo.textAlignment,
                     isViewBeingReadded = true
                 )
-                view?.let {
-                    // apply specific TextView parameters for text (fontsize, text color)
-                    val normalTextView = it.findViewById<PhotoEditorTextView>(R.id.tvPhotoEditorText)
-                    // the actual calculated text size as obtained from the view is expressed in px.
-                    normalTextView?.setTextSize(TypedValue.COMPLEX_UNIT_PX, addedViewInfo.addedViewTextInfo.fontSizePx)
-                    normalTextView?.setTextColor(addedViewInfo.addedViewTextInfo.textColor)
-                    normalTextView?.textAlignment = addedViewInfo.addedViewTextInfo.textAlignment
-
-                    val multiTouchListenerInstance = getNewMultitouchListener(it) // newMultiTouchListener
-                    setGestureControlOnMultiTouchListener(it, viewType, multiTouchListenerInstance)
-                    it.setOnTouchListener(multiTouchListenerInstance)
-                }
             }
         }
 
