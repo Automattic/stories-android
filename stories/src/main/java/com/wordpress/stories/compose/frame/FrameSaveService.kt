@@ -326,7 +326,7 @@ class FrameSaveService : Service() {
 
         override fun onFrameSaveFailed(frameIndex: FrameIndex, reason: String?) {
             val reasonString = if (reason != null) reason else ""
-            Log.d(LOG_TAG, "FAILED save frame idx: " + applyFrameIndexOverride(frameIndex)+
+            Log.d(LOG_TAG, "FAILED save frame idx: " + applyFrameIndexOverride(frameIndex) +
                     " - error: " + reasonString)
             // remove one from the count
             frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(
