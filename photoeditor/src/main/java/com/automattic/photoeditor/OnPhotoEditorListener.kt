@@ -2,6 +2,7 @@ package com.automattic.photoeditor
 
 import android.graphics.Rect
 import android.view.View
+import com.automattic.photoeditor.text.TextStyler
 import com.automattic.photoeditor.views.ViewType
 
 /**
@@ -21,15 +22,13 @@ interface OnPhotoEditorListener {
      *
      * @param rootView view on which the long press occurs
      * @param text current text set on the view
-     * @param colorCode current color value set on view
-     * @param textAlignment the text alignment of the view ([android.view.View.getTextAlignment])
+     * @param textStyler the [TextStyler] containing style rules for the view
      * @param isJustAdded true if this view has just been added to the parentView
      */
     fun onEditTextChangeListener(
         rootView: View,
         text: String,
-        colorCode: Int,
-        textAlignment: Int,
+        textStyler: TextStyler,
         isJustAdded: Boolean = false
     )
 

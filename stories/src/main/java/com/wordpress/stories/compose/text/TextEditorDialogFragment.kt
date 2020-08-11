@@ -9,11 +9,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.automattic.photoeditor.text.IdentifiableTypeface.TypefaceId
+import com.automattic.photoeditor.text.TextStyler
 import com.wordpress.stories.R
 import kotlinx.android.synthetic.main.add_text_dialog.*
 import kotlinx.android.synthetic.main.add_text_dialog.view.*
@@ -25,13 +26,13 @@ import kotlinx.android.synthetic.main.add_text_dialog.view.*
 class TextEditorDialogFragment : DialogFragment() {
     private var colorCode: Int = 0
     private lateinit var textAlignment: TextAlignment
-    private var typefaceId: Int = 0
+    @TypefaceId private var typefaceId: Int = 0
     private var textEditor: TextEditor? = null
 
     private lateinit var textStyleGroupManager: TextStyleGroupManager
 
     interface TextEditor {
-        fun onDone(inputText: String, colorCode: Int, textAlignment: Int)
+        fun onDone(inputText: String, textStyler: TextStyler)
     }
 
     override fun onAttach(context: Context) {
@@ -115,13 +116,13 @@ class TextEditorDialogFragment : DialogFragment() {
             dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
             dismiss()
             val inputText = add_text_edit_text?.text.toString()
-            textEditor?.onDone(inputText, colorCode, textAlignment.value)
+            textEditor?.onDone(inputText, TextStyler.from(add_text_edit_text, typefaceId))
         }
     }
 
     override fun onDismiss(dialog: DialogInterface) {
         val inputText = add_text_edit_text?.text.toString()
-        textEditor?.onDone(inputText, colorCode, textAlignment.value)
+        textEditor?.onDone(inputText, TextStyler.from(add_text_edit_text, typefaceId))
         super.onDismiss(dialog)
     }
 
@@ -161,16 +162,17 @@ class TextEditorDialogFragment : DialogFragment() {
         fun show(
             appCompatActivity: AppCompatActivity,
             inputText: String = "",
-            @ColorInt colorCode: Int = ContextCompat.getColor(appCompatActivity, R.color.white),
-            textAlignment: Int = TextAlignment.default(),
-            typefaceId: Int = TextStyleGroupManager.TYPEFACE_ID_NUNITO
+            textStyler: TextStyler
         ): TextEditorDialogFragment {
             return TextEditorDialogFragment().apply {
                 arguments = Bundle().apply {
                     putString(EXTRA_INPUT_TEXT, inputText)
-                    putInt(EXTRA_COLOR_CODE, colorCode)
-                    putInt(EXTRA_TEXT_ALIGNMENT, textAlignment)
-                    putInt(EXTRA_TYPEFACE, typefaceId)
+
+                    with (textStyler) {
+                        putInt(EXTRA_COLOR_CODE, textColor ?: ContextCompat.getColor(appCompatActivity, R.color.white))
+                        putInt(EXTRA_TEXT_ALIGNMENT, textAlignment ?: TextAlignment.default())
+                        putInt(EXTRA_TYPEFACE, typefaceId ?: TextStyleGroupManager.TYPEFACE_ID_NUNITO)
+                    }
                 }
                 show(appCompatActivity.supportFragmentManager,
                     TAG

@@ -35,6 +35,7 @@ import androidx.constraintlayout.widget.Group
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.DialogFragment
@@ -45,6 +46,7 @@ import com.automattic.photoeditor.text.FontResolver
 import com.automattic.photoeditor.OnPhotoEditorListener
 import com.automattic.photoeditor.PhotoEditor
 import com.automattic.photoeditor.SaveSettings
+import com.automattic.photoeditor.text.TextStyler
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
@@ -55,6 +57,8 @@ import com.automattic.photoeditor.state.BackgroundSurfaceManager
 import com.automattic.photoeditor.state.BackgroundSurfaceManagerReadyListener
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.util.FileUtils.Companion.getLoopFrameFile
+import com.automattic.photoeditor.text.IdentifiableTypeface
+import com.automattic.photoeditor.text.IdentifiableTypeface.TypefaceId
 import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.photoeditor.views.ViewType
 import com.automattic.photoeditor.views.ViewType.TEXT
@@ -95,6 +99,7 @@ import com.wordpress.stories.compose.story.StoryViewModel
 import com.wordpress.stories.compose.story.StoryViewModel.StoryFrameListItemUiState.StoryFrameListItemUiStateFrame
 import com.wordpress.stories.compose.story.StoryViewModelFactory
 import com.wordpress.stories.compose.text.TextEditorDialogFragment
+import com.wordpress.stories.compose.text.TextStyleGroupManager
 import com.wordpress.stories.util.KEY_STORY_SAVE_RESULT
 import com.wordpress.stories.util.STATE_KEY_CURRENT_STORY_INDEX
 import com.wordpress.stories.util.getDisplayPixelSize
@@ -330,8 +335,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             override fun onEditTextChangeListener(
                 rootView: View,
                 text: String,
-                colorCode: Int,
-                textAlignment: Int,
+                textStyler: TextStyler,
                 isJustAdded: Boolean
             ) {
                 if (isEditingText) {
@@ -347,10 +351,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 val textEditorDialogFragment = TextEditorDialogFragment.show(
                     this@ComposeLoopFrameActivity,
                     text,
-                    colorCode,
-                    textAlignment)
+                    textStyler)
                 textEditorDialogFragment.setOnTextEditorListener(object : TextEditorDialogFragment.TextEditor {
-                    override fun onDone(inputText: String, colorCode: Int, textAlignment: Int) {
+                    override fun onDone(inputText: String, textStyler: TextStyler) {
                         // fixes https://github.com/Automattic/stories-android/issues/453
                         // when don't keep activities is ON, the onDismiss override gets called only through
                         // Activity.onDestroy() -> Fragment.onDestroy() (see stacktrace)
@@ -365,7 +368,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                             // just remove the view here, we don't need it - also don't  add to the `redo` stack
                             photoEditor.viewUndo(rootView, TEXT, false)
                         } else {
-                            photoEditor.editText(rootView, inputText, colorCode, textAlignment)
+                            photoEditor.editText(rootView, inputText, textStyler)
                         }
                         editModeRestoreAllUIControls()
                     }
@@ -1152,12 +1155,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun addNewText() {
-        val dp = resources.getDimension(R.dimen.editor_initial_text_size) / resources.displayMetrics.density
-        photoEditor.addText(
-            "",
-            colorCodeTextView = ContextCompat.getColor(baseContext, R.color.text_color_white),
-            fontSizeSp = dp
-        )
+        photoEditor.addText("", TextStyler())
     }
 
     private fun testEmoji() {
