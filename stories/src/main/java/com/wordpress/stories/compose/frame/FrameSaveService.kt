@@ -146,7 +146,7 @@ class FrameSaveService : Service() {
             // remove the processor from the list once it's done processing this Story's frames
             storySaveProcessors.remove(processor)
 
-            cleanUpTempStoryFrameFiles(storyFrames)
+            cleanUpTempStoryFrameFiles(storyFrames.filter { it.saveResultReason == SaveSuccess })
 
             // also if more than one processor is running, let's not stop the Service just now.
             if (storySaveProcessors.isEmpty()) {
