@@ -28,6 +28,7 @@ import androidx.emoji.text.EmojiCompat
 import com.automattic.photoeditor.gesture.MultiTouchListener
 import com.automattic.photoeditor.gesture.MultiTouchListener.OnMultiTouchListener
 import com.automattic.photoeditor.state.AuthenticationHeadersInterface
+import com.automattic.photoeditor.text.PhotoEditorTextView
 import com.automattic.photoeditor.util.BitmapUtil
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.PhotoEditorView
@@ -244,7 +245,7 @@ class PhotoEditor private constructor(builder: Builder) :
         brushDrawingView.brushDrawingMode = false
         val view: View?
         view = getLayout(ViewType.TEXT)?.apply {
-            val textInputTv = findViewById<TextView>(R.id.tvPhotoEditorText)
+            val textInputTv = findViewById<PhotoEditorTextView>(R.id.tvPhotoEditorText)
 
             textInputTv.text = text
             textInputTv.setTextColor(colorCodeTextView)
@@ -291,7 +292,7 @@ class PhotoEditor private constructor(builder: Builder) :
      * @param colorCode color to update on [TextView]
      */
     fun editText(view: View, textTypeface: Typeface?, inputText: String, colorCode: Int, textAlignment: Int) {
-        val inputTextView = view.findViewById<TextView>(R.id.tvPhotoEditorText)
+        val inputTextView = view.findViewById<PhotoEditorTextView>(R.id.tvPhotoEditorText)
         if (inputTextView != null && addedViews.containsView(view) && !TextUtils.isEmpty(inputText)) {
             inputTextView.text = inputText
             if (textTypeface != null) {
@@ -415,7 +416,7 @@ class PhotoEditor private constructor(builder: Builder) :
                 )
                 view?.let {
                     // apply specific TextView parameters for text (fontsize, text color)
-                    val normalTextView = it.findViewById<TextView>(R.id.tvPhotoEditorText)
+                    val normalTextView = it.findViewById<PhotoEditorTextView>(R.id.tvPhotoEditorText)
                     // the actual calculated text size as obtained from the view is expressed in px.
                     normalTextView?.setTextSize(TypedValue.COMPLEX_UNIT_PX, addedViewInfo.addedViewTextInfo.fontSizePx)
                     normalTextView?.setTextColor(addedViewInfo.addedViewTextInfo.textColor)
