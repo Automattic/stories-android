@@ -1,6 +1,7 @@
 package com.wordpress.stories.compose.frame
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
 import android.view.View
@@ -20,6 +21,7 @@ import com.wordpress.stories.util.cloneViewSpecs
 import com.wordpress.stories.util.removeViewFromParent
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.request.FutureTarget
 import com.wordpress.stories.util.isSizeRatio916
 import com.wordpress.stories.util.normalizeSizeExportTo916
 import kotlinx.coroutines.CoroutineScope
@@ -167,7 +169,7 @@ class FrameSaveManager(
         frameIndex: FrameIndex
     ): File {
         // prepare the ghostview with its background image and the AddedViews on top of it
-        preparePhotoEditorViewForSnapshot(context, frame, ghostPhotoEditorView)
+        val futureTarget = preparePhotoEditorViewForSnapshot(context, frame, ghostPhotoEditorView)
 
         val file = withContext(Dispatchers.IO) {
             if (normalizeTo916 && !isSizeRatio916(ghostPhotoEditorView.width, ghostPhotoEditorView.height)) {
@@ -185,6 +187,7 @@ class FrameSaveManager(
         }
 
         releaseAddedViewsAfterSnapshot(frame)
+        Glide.with(context).clear(futureTarget)
 
         return file
     }
@@ -272,7 +275,7 @@ class FrameSaveManager(
         context: Context,
         frame: StoryFrameItem,
         ghostPhotoEditorView: PhotoEditorView
-    ) {
+    ): FutureTarget<Bitmap> {
         // prepare background
         val uri = (frame.source as? UriBackgroundSource)?.contentUri
             ?: (frame.source as FileBackgroundSource).file
@@ -286,7 +289,6 @@ class FrameSaveManager(
             .submit(ghostPhotoEditorView.source.measuredWidth, ghostPhotoEditorView.source.measuredHeight)
         val bitmap = futureTarget.get()
         ghostPhotoEditorView.source.setImageBitmap(bitmap)
-        Glide.with(context).clear(futureTarget)
 
         // removeViewFromParent for views that were added in the UI thread need to also run on the main thread
         // otherwise we'd get a android.view.ViewRootImpl$CalledFromWrongThreadException:
@@ -304,6 +306,7 @@ class FrameSaveManager(
                 }
             }
         }
+        return futureTarget
     }
 
     private fun getViewLayoutParams(): LayoutParams {
