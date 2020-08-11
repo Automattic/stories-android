@@ -745,16 +745,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     private fun showCurrentSelectedFrame() {
         // get currently selected frame and check whether this is a video or an image
-        when (storyViewModel.getSelectedFrame()?.frameItemType) {
-            is VIDEO -> runOnUiThread {
-                // now start playing the video that was selected in the frame selector
-                showPlayVideo()
-            }
-            is IMAGE -> runOnUiThread {
-                // switch to static background
-                showStaticBackground()
-            }
-        }
+        updateBackgroundSurfaceUIWithStoryFrame(storyViewModel.getSelectedFrameIndex())
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
