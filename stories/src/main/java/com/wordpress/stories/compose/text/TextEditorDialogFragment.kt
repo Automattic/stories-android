@@ -137,6 +137,9 @@ class TextEditorDialogFragment : DialogFragment() {
         // drawn, so we're relying on view gravity to change alignment in the EditText on the fly.
         // (Conversely, using gravity for the resulting TextView added to the canvas does not work as
         // intended, so this gravity/text alignment dichotomy seems necessary.)
+        // We should still set the textAlignment value though to make it easier to extract style values from the
+        // EditText when the fragment is dismissed.
+        add_text_edit_text.textAlignment = textAlignment.value
         add_text_edit_text.gravity = when (textAlignment) {
             TextAlignment.LEFT -> Gravity.START or Gravity.CENTER_VERTICAL
             TextAlignment.CENTER -> Gravity.CENTER_HORIZONTAL or Gravity.CENTER_VERTICAL
