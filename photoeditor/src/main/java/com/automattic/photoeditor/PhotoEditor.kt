@@ -30,6 +30,7 @@ import com.automattic.photoeditor.gesture.MultiTouchListener.OnMultiTouchListene
 import com.automattic.photoeditor.state.AuthenticationHeadersInterface
 import com.automattic.photoeditor.text.PhotoEditorTextView
 import com.automattic.photoeditor.text.FontResolver
+import com.automattic.photoeditor.text.IdentifiableTypeface
 import com.automattic.photoeditor.util.BitmapUtil
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.PhotoEditorView
@@ -84,7 +85,7 @@ class PhotoEditor private constructor(builder: Builder) :
     private var mOnPhotoEditorListener: OnPhotoEditorListener? = null
     private var fontResolver: FontResolver? = null
     private val isTextPinchZoomable: Boolean
-    private val mDefaultTextTypeface: Typeface?
+    private val mDefaultTextTypeface: IdentifiableTypeface?
     private val mDefaultEmojiTypeface: Typeface?
     private val authenticationHeadersInterface: AuthenticationHeadersInterface?
 
@@ -508,7 +509,7 @@ class PhotoEditor private constructor(builder: Builder) :
                 if (rootView.tvPhotoEditorText != null) {
                     rootView.tvPhotoEditorText.gravity = Gravity.CENTER
                     if (mDefaultTextTypeface != null) {
-                        rootView.tvPhotoEditorText.typeface = mDefaultTextTypeface
+                        rootView.tvPhotoEditorText.identifiableTypeface = mDefaultTextTypeface
                     }
                 }
             }
@@ -1106,7 +1107,7 @@ class PhotoEditor private constructor(builder: Builder) :
         var deleteView: View? = null
         var workAreaRect: Rect? = null
         val brushDrawingView: BrushDrawingView = parentView.brush
-        var textTypeface: Typeface? = null
+        var textTypeface: IdentifiableTypeface? = null
         var emojiTypeface: Typeface? = null
         // By Default pinch zoom on text is enabled
         var isTextPinchZoomable = true
@@ -1133,7 +1134,7 @@ class PhotoEditor private constructor(builder: Builder) :
          * @param textTypeface typeface for custom font
          * @return [Builder] instant to build [PhotoEditor]
          */
-        fun setDefaultTextTypeface(textTypeface: Typeface): Builder {
+        fun setDefaultTextTypeface(textTypeface: IdentifiableTypeface): Builder {
             this.textTypeface = textTypeface
             return this
         }
