@@ -41,6 +41,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Lifecycle.State.DESTROYED
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import com.automattic.photoeditor.text.FontResolver
 import com.automattic.photoeditor.OnPhotoEditorListener
 import com.automattic.photoeditor.PhotoEditor
 import com.automattic.photoeditor.SaveSettings
@@ -401,6 +402,13 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
             override fun getWorkingAreaRect(): Rect? {
                 return workingAreaRect
+            }
+        })
+
+        photoEditor.setFontResolver(object : FontResolver {
+            override fun resolve(@TypefaceId typefaceId: Int): IdentifiableTypeface {
+                return IdentifiableTypeface(typefaceId, ResourcesCompat.getFont(
+                        this@ComposeLoopFrameActivity, TextStyleGroupManager.getTypefaceResForId(typefaceId)))
             }
         })
 

@@ -29,6 +29,7 @@ import com.automattic.photoeditor.gesture.MultiTouchListener
 import com.automattic.photoeditor.gesture.MultiTouchListener.OnMultiTouchListener
 import com.automattic.photoeditor.state.AuthenticationHeadersInterface
 import com.automattic.photoeditor.text.PhotoEditorTextView
+import com.automattic.photoeditor.text.FontResolver
 import com.automattic.photoeditor.util.BitmapUtil
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.PhotoEditorView
@@ -81,6 +82,7 @@ class PhotoEditor private constructor(builder: Builder) :
     private val addedViews: AddedViewList
     private val redoViews: AddedViewList
     private var mOnPhotoEditorListener: OnPhotoEditorListener? = null
+    private var fontResolver: FontResolver? = null
     private val isTextPinchZoomable: Boolean
     private val mDefaultTextTypeface: Typeface?
     private val mDefaultEmojiTypeface: Typeface?
@@ -1044,6 +1046,10 @@ class PhotoEditor private constructor(builder: Builder) :
      */
     fun setOnPhotoEditorListener(onPhotoEditorListener: OnPhotoEditorListener) {
         this.mOnPhotoEditorListener = onPhotoEditorListener
+    }
+
+    fun setFontResolver(fontResolver: FontResolver) {
+        this.fontResolver = fontResolver
     }
 
     override fun onViewAdd(brushDrawingView: BrushDrawingView) {
