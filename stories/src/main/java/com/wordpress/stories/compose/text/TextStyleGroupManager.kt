@@ -75,7 +75,7 @@ class TextStyleGroupManager(val context: Context) {
 
     @ColorInt private fun getColor(@ColorRes colorRes: Int) = ContextCompat.getColor(context, colorRes)
 
-    fun styleTextView(typefaceId: Int, textView: TextView) {
+    fun styleTextView(@TypefaceId typefaceId: Int, textView: TextView) {
         val textStyleRule = supportedTypefaces[typefaceId] ?: return
 
         with(textStyleRule) {
@@ -89,7 +89,7 @@ class TextStyleGroupManager(val context: Context) {
         }
     }
 
-    fun styleAndLabelTextView(typefaceId: Int, textView: TextView) {
+    fun styleAndLabelTextView(@TypefaceId typefaceId: Int, textView: TextView) {
         val textStyleRule = supportedTypefaces[typefaceId] ?: return
 
         textView.typeface = textStyleRule.typeface
@@ -101,7 +101,7 @@ class TextStyleGroupManager(val context: Context) {
     /**
      * Returns the next typeface in the pre-defined order.
      */
-    fun getNextTypeface(typefaceId: Int): Int {
+    fun getNextTypeface(@TypefaceId typefaceId: Int): Int {
         return supportedTypefaces.higherKey(typefaceId) ?: supportedTypefaces.firstKey()
     }
 
