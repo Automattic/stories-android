@@ -12,6 +12,8 @@ import androidx.annotation.FontRes
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
+import com.automattic.photoeditor.text.IdentifiableTypeface
+import com.automattic.photoeditor.text.IdentifiableTypeface.TypefaceId
 import com.wordpress.stories.R
 import java.util.TreeMap
 
@@ -119,13 +121,14 @@ class TextStyleGroupManager(val context: Context) {
         const val TYPEFACE_ID_LIBRE_BASKERVILLE = 1002
         const val TYPEFACE_ID_OSWALD = 1003
 
-        fun getTypefaceResForId(typefaceId: Int) : Int {
-            return when (typefaceId) {
+        fun getIdentifiableTypefaceForId(@TypefaceId typefaceId: Int, context: Context) : IdentifiableTypeface {
+            @FontRes val fontRes = when (typefaceId) {
                 TYPEFACE_ID_NUNITO -> R.font.nunito_bold
                 TYPEFACE_ID_LIBRE_BASKERVILLE -> R.font.libre_baskerville
                 TYPEFACE_ID_OSWALD -> R.font.oswald_upper
                 else -> 0
             }
+            return IdentifiableTypeface(typefaceId, ResourcesCompat.getFont(context, fontRes))
         }
     }
 }

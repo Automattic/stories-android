@@ -35,7 +35,6 @@ import androidx.constraintlayout.widget.Group
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.GestureDetectorCompat
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.DialogFragment
@@ -410,8 +409,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
         photoEditor.setFontResolver(object : FontResolver {
             override fun resolve(@TypefaceId typefaceId: Int): IdentifiableTypeface {
-                return IdentifiableTypeface(typefaceId, ResourcesCompat.getFont(
-                        this@ComposeLoopFrameActivity, TextStyleGroupManager.getTypefaceResForId(typefaceId)))
+                return TextStyleGroupManager.getIdentifiableTypefaceForId(typefaceId, this@ComposeLoopFrameActivity)
             }
         })
 
