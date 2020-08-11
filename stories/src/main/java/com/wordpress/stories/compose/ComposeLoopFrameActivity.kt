@@ -106,7 +106,6 @@ import com.wordpress.stories.util.getStoryIndexFromIntentOrBundle
 import com.wordpress.stories.util.isVideo
 import kotlinx.android.synthetic.main.activity_composer.*
 import kotlinx.android.synthetic.main.content_composer.*
-import kotlinx.android.synthetic.main.fragment_story_frame_selector.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

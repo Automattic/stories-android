@@ -29,13 +29,15 @@ class TextStyleGroupManager(val context: Context) {
         @Dimension(unit = SP) val defaultFontSize: Float,
         val lineSpacingMultiplier: Float = 1F,
         val letterSpacing: Float = 0F,
-        val shadowLayer: ShadowLayer? = null)
+        val shadowLayer: ShadowLayer? = null
+    )
 
     data class ShadowLayer(
         @Dimension(unit = SP) val radius: Float,
         @Dimension(unit = SP) val dx: Float,
         @Dimension(unit = SP) val dy: Float,
-        @ColorInt val color: Int)
+        @ColorInt val color: Int
+    )
 
     private var supportedTypefaces = TreeMap<Int, TextStyleRule>()
 
@@ -76,7 +78,7 @@ class TextStyleGroupManager(val context: Context) {
     fun styleTextView(typefaceId: Int, textView: TextView) {
         val textStyleRule = supportedTypefaces[typefaceId] ?: return
 
-        with (textStyleRule) {
+        with(textStyleRule) {
             textView.typeface = typeface
             textView.setShadowLayer(shadowLayer)
 
@@ -111,7 +113,7 @@ class TextStyleGroupManager(val context: Context) {
         }
     }
 
-    private fun Float.toPx() : Float {
+    private fun Float.toPx(): Float {
         return TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_SP, this, context.resources.displayMetrics)
     }
@@ -121,7 +123,7 @@ class TextStyleGroupManager(val context: Context) {
         const val TYPEFACE_ID_LIBRE_BASKERVILLE = 1002
         const val TYPEFACE_ID_OSWALD = 1003
 
-        fun getIdentifiableTypefaceForId(@TypefaceId typefaceId: Int, context: Context) : IdentifiableTypeface {
+        fun getIdentifiableTypefaceForId(@TypefaceId typefaceId: Int, context: Context): IdentifiableTypeface {
             @FontRes val fontRes = when (typefaceId) {
                 TYPEFACE_ID_NUNITO -> R.font.nunito_bold
                 TYPEFACE_ID_LIBRE_BASKERVILLE -> R.font.libre_baskerville

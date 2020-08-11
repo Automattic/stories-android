@@ -98,9 +98,9 @@ class TextEditorDialogFragment : DialogFragment() {
         }
 
         arguments?.let {
-            add_text_edit_text?.setText(it.getString(EXTRA_INPUT_TEXT))
+            add_text_edit_text.setText(it.getString(EXTRA_INPUT_TEXT))
             colorCode = it.getInt(EXTRA_COLOR_CODE)
-            add_text_edit_text?.setTextColor(colorCode)
+            add_text_edit_text.setTextColor(colorCode)
 
             textAlignment = TextAlignment.valueOf(it.getInt(EXTRA_TEXT_ALIGNMENT))
             updateTextAlignment(textAlignment)
@@ -109,13 +109,13 @@ class TextEditorDialogFragment : DialogFragment() {
             textStyleGroupManager.styleTextView(typefaceId, add_text_edit_text)
             textStyleGroupManager.styleAndLabelTextView(typefaceId, text_style_toggle_button)
         }
-        add_text_edit_text?.requestFocus()
+        add_text_edit_text.requestFocus()
 
         // Make a callback on activity when user is done with text editing
         add_text_done_tv?.setOnClickListener { _ ->
             dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
             dismiss()
-            val inputText = add_text_edit_text?.text.toString()
+            val inputText = add_text_edit_text.text.toString()
             textEditor?.onDone(inputText, TextStyler.from(add_text_edit_text, typefaceId))
         }
     }
@@ -168,15 +168,13 @@ class TextEditorDialogFragment : DialogFragment() {
                 arguments = Bundle().apply {
                     putString(EXTRA_INPUT_TEXT, inputText)
 
-                    with (textStyler) {
+                    with(textStyler) {
                         putInt(EXTRA_COLOR_CODE, textColor ?: ContextCompat.getColor(appCompatActivity, R.color.white))
                         putInt(EXTRA_TEXT_ALIGNMENT, textAlignment ?: TextAlignment.default())
                         putInt(EXTRA_TYPEFACE, typefaceId ?: TextStyleGroupManager.TYPEFACE_ID_NUNITO)
                     }
                 }
-                show(appCompatActivity.supportFragmentManager,
-                    TAG
-                )
+                show(appCompatActivity.supportFragmentManager, TAG)
             }
         }
     }
