@@ -325,7 +325,8 @@ class FrameSaveService : Service() {
         }
 
         override fun onFrameSaveFailed(frameIndex: FrameIndex, reason: String?) {
-            Log.d(LOG_TAG, "FAILED save frame idx: " + applyFrameIndexOverride(frameIndex))
+            Log.d(LOG_TAG, "FAILED save frame idx: " + applyFrameIndexOverride(frameIndex) +
+                    " - error: " + reason.orEmpty())
             // remove one from the count
             frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(
                 storyIndex,
