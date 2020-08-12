@@ -333,7 +333,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             override fun onEditTextChangeListener(
                 rootView: View,
                 text: String,
-                textStyler: TextStyler,
+                textStyler: TextStyler?,
                 isJustAdded: Boolean
             ) {
                 if (isEditingText) {
@@ -1152,7 +1152,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun addNewText() {
-        photoEditor.addText("", TextStyler())
+        photoEditor.addText("")
     }
 
     private fun testEmoji() {

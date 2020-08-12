@@ -233,14 +233,14 @@ class PhotoEditor private constructor(builder: Builder) :
      * This add the text on the [PhotoEditorView] with provided parameters
      * by default [TextView.setText] will be 18sp
      *
-     * @param textTypeface typeface for custom font in the text
      * @param text text to display
-     * @param colorCodeTextView text color to be displayed
+     * @param textStyler the [TextStyler] with rules for updating the [TextView]'s style
+     * @param isViewBeingReadded whether the view is being readded
      */
     @SuppressLint("ClickableViewAccessibility")
     fun addText(
         text: String,
-        textStyler: TextStyler,
+        textStyler: TextStyler? = null,
         isViewBeingReadded: Boolean = false
     ): View? {
         brushDrawingView.brushDrawingMode = false
@@ -249,7 +249,7 @@ class PhotoEditor private constructor(builder: Builder) :
             val textInputTv = findViewById<PhotoEditorTextView>(R.id.tvPhotoEditorText)
 
             textInputTv.text = text
-            textStyler.styleText(textInputTv, fontResolver)
+            textStyler?.styleText(textInputTv, fontResolver)
 
 //            textInputTv.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
 

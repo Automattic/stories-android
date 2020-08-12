@@ -28,7 +28,7 @@ interface OnPhotoEditorListener {
     fun onEditTextChangeListener(
         rootView: View,
         text: String,
-        textStyler: TextStyler,
+        textStyler: TextStyler?,
         isJustAdded: Boolean = false
     )
 

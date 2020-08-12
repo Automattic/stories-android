@@ -165,17 +165,16 @@ class TextEditorDialogFragment : DialogFragment() {
         fun show(
             appCompatActivity: AppCompatActivity,
             inputText: String = "",
-            textStyler: TextStyler
+            textStyler: TextStyler?
         ): TextEditorDialogFragment {
             return TextEditorDialogFragment().apply {
                 arguments = Bundle().apply {
                     putString(EXTRA_INPUT_TEXT, inputText)
 
-                    with(textStyler) {
-                        putInt(EXTRA_COLOR_CODE, textColor ?: ContextCompat.getColor(appCompatActivity, R.color.white))
-                        putInt(EXTRA_TEXT_ALIGNMENT, textAlignment ?: TextAlignment.default())
-                        putInt(EXTRA_TYPEFACE, typefaceId ?: TextStyleGroupManager.TYPEFACE_ID_NUNITO)
-                    }
+                    putInt(EXTRA_COLOR_CODE, textStyler?.textColor
+                                ?: ContextCompat.getColor(appCompatActivity, android.R.color.white))
+                    putInt(EXTRA_TEXT_ALIGNMENT, textStyler?.textAlignment ?: TextAlignment.default())
+                    putInt(EXTRA_TYPEFACE, textStyler?.typefaceId ?: TextStyleGroupManager.TYPEFACE_ID_NUNITO)
                 }
                 show(appCompatActivity.supportFragmentManager, TAG)
             }
