@@ -46,7 +46,7 @@ class TextStyleGroupManager(val context: Context) {
                 id = TYPEFACE_ID_NUNITO,
                 typeface = getFont(R.font.nunito_bold),
                 label = getString(R.string.typeface_label_nunito),
-                defaultFontSize = 22F,
+                defaultFontSize = 24F,
                 lineSpacingMultiplier = 1.07F,
                 shadowLayer = ShadowLayer(1F, 0F, 2F, getColor(R.color.black_25_transparent))
         )
@@ -55,7 +55,7 @@ class TextStyleGroupManager(val context: Context) {
                 id = TYPEFACE_ID_LIBRE_BASKERVILLE,
                 typeface = getFont(R.font.libre_baskerville),
                 label = getString(R.string.typeface_label_libre_baskerville),
-                defaultFontSize = 18F,
+                defaultFontSize = 20F,
                 lineSpacingMultiplier = 1.35F
         )
 
@@ -63,7 +63,7 @@ class TextStyleGroupManager(val context: Context) {
                 id = TYPEFACE_ID_OSWALD,
                 typeface = getFont(R.font.oswald_upper),
                 label = getString(R.string.typeface_label_oswald),
-                defaultFontSize = 20F,
+                defaultFontSize = 22F,
                 lineSpacingMultiplier = 1.21F,
                 letterSpacing = 0.06F
         )
