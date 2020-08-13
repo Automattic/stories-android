@@ -34,7 +34,7 @@
         android:textCursorDrawable="@null"
         android:background="@null"
         android:gravity="center"
-        android:inputType="textMultiLine"
+        android:inputType="textCapSentences|textMultiLine"
         android:textSize="@dimen/editor_initial_text_size" />
 
     <ImageButton
