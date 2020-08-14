@@ -67,6 +67,34 @@ class TextStyleGroupManager(val context: Context) {
                 lineSpacingMultiplier = 1.21F,
                 letterSpacing = 0.06F
         )
+
+        supportedTypefaces[TYPEFACE_ID_PACIFICO] = TextStyleRule(
+                id = TYPEFACE_ID_PACIFICO,
+                typeface = getFont(R.font.pacifico),
+                label = getString(R.string.typeface_label_pacifico),
+                defaultFontSize = 24F,
+                lineSpacingMultiplier = 0.99F,
+                letterSpacing = 0.05F,
+                shadowLayer = ShadowLayer(5F, 0F, 0F, getColor(R.color.white_50_transparent))
+        )
+
+        supportedTypefaces[TYPEFACE_ID_SPACE_MONO] = TextStyleRule(
+                id = TYPEFACE_ID_SPACE_MONO,
+                typeface = getFont(R.font.space_mono_bold),
+                label = getString(R.string.typeface_label_space_mono),
+                defaultFontSize = 20F,
+                lineSpacingMultiplier = 1.20F,
+                letterSpacing = -0.0138F
+        )
+
+        supportedTypefaces[TYPEFACE_ID_SHRIKHAND] = TextStyleRule(
+                id = TYPEFACE_ID_SHRIKHAND,
+                typeface = getFont(R.font.shrikhand),
+                label = getString(R.string.typeface_label_shrikhand),
+                defaultFontSize = 22F,
+                lineSpacingMultiplier = 1.16F,
+                shadowLayer = ShadowLayer(1F, 2F, 4F, getColor(R.color.black_25_transparent))
+        )
     }
 
     private fun getFont(@FontRes fontRes: Int) = ResourcesCompat.getFont(context, fontRes)
@@ -122,12 +150,18 @@ class TextStyleGroupManager(val context: Context) {
         const val TYPEFACE_ID_NUNITO = 1001
         const val TYPEFACE_ID_LIBRE_BASKERVILLE = 1002
         const val TYPEFACE_ID_OSWALD = 1003
+        const val TYPEFACE_ID_PACIFICO = 1004
+        const val TYPEFACE_ID_SPACE_MONO = 1005
+        const val TYPEFACE_ID_SHRIKHAND = 1006
 
         fun getIdentifiableTypefaceForId(@TypefaceId typefaceId: Int, context: Context): IdentifiableTypeface {
             @FontRes val fontRes = when (typefaceId) {
                 TYPEFACE_ID_NUNITO -> R.font.nunito_bold
                 TYPEFACE_ID_LIBRE_BASKERVILLE -> R.font.libre_baskerville
                 TYPEFACE_ID_OSWALD -> R.font.oswald_upper
+                TYPEFACE_ID_PACIFICO -> R.font.pacifico
+                TYPEFACE_ID_SPACE_MONO -> R.font.space_mono_bold
+                TYPEFACE_ID_SHRIKHAND -> R.font.shrikhand
                 else -> 0
             }
             return IdentifiableTypeface(typefaceId, ResourcesCompat.getFont(context, fontRes))
