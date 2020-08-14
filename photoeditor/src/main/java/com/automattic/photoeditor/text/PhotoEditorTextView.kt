@@ -3,7 +3,7 @@ package com.automattic.photoeditor.text
 import android.content.Context
 import android.graphics.Typeface
 import android.util.AttributeSet
-import android.widget.TextView
+import androidx.appcompat.widget.AppCompatTextView
 
 /**
  * Custom TextView which deprecates usual typeface settings/getters in favor of [identifiableTypeface],
@@ -13,7 +13,7 @@ class PhotoEditorTextView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
-) : TextView(context, attrs, defStyleAttr) {
+) : AppCompatTextView(context, attrs, defStyleAttr) {
     var identifiableTypeface: IdentifiableTypeface? = null
         set(value) {
             super.setTypeface(value?.typeface)
