@@ -907,11 +907,13 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                                     dialog.dismiss()
                                     // discard the whole story
                                     safelyDiscardCurrentStoryAndCleanUpIntent()
+                                    storyDiscardListener?.onStoryDiscarded()
                                 }
                             }).show(supportFragmentManager, FRAGMENT_DIALOG)
                     } else {
                         // discard the whole story
                         safelyDiscardCurrentStoryAndCleanUpIntent()
+                        storyDiscardListener?.onStoryDiscarded()
                     }
                 }
             }
