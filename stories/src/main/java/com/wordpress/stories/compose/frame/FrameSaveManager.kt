@@ -253,7 +253,7 @@ class FrameSaveManager(
     ): Boolean {
         var callMade = false
         val uri: Uri? = (frame.source as? UriBackgroundSource)?.contentUri
-            ?: Uri.parse((frame.source as FileBackgroundSource).file?.absolutePath)
+                ?: Uri.fromFile(requireNotNull((frame.source as FileBackgroundSource).file))
         // we only need the width and height of a model canvas, not creating a canvas clone in the case of videos
         // as these are all processed in the background
         uri?.let {
