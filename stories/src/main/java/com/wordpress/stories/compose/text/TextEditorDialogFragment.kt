@@ -43,10 +43,12 @@ class TextEditorDialogFragment : DialogFragment() {
 
     override fun onStart() {
         super.onStart()
-        dialog?.apply {
-            window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-            window?.setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
-            window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
+        dialog?.window?.apply {
+            setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
+            setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
+
+            attributes = attributes.apply { dimAmount = 0.5f } // The default dimAmount is 0.6
         }
     }
 
