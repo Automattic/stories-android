@@ -44,7 +44,7 @@
         android:layout_height="@dimen/normal_button_medium"
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
-        android:layout_margin="16dp"
+        android:layout_margin="@dimen/normal_button_margin"
         android:background="@android:color/transparent"
         android:tint="@android:color/white"
         android:src="@drawable/ic_gridicons_align_left_32" />
@@ -52,14 +52,14 @@
     <Button
         android:id="@+id/text_style_toggle_button"
         android:layout_width="wrap_content"
-        android:layout_height="36dp"
+        android:layout_height="@dimen/normal_button_medium"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_margin="12dp"
+        android:layout_margin="@dimen/normal_button_margin"
         android:background="@drawable/transparent_text_button_selector"
         android:backgroundTint="@android:color/white"
         android:textColor="@android:color/white"
-        android:textSize="18sp"
+        android:textSize="17sp"
         android:textAllCaps="false"
         android:text="@string/typeface_label_nunito"
         tools:text="@string/typeface_label_nunito" />
@@ -71,7 +71,7 @@
         android:layout_height="@dimen/normal_button_medium"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        android:layout_margin="16dp"
+        android:layout_margin="@dimen/normal_button_margin"
         android:background="@android:color/transparent"
         android:src="@drawable/ic_textcolor_replaceme" />
 
