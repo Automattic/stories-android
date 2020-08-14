@@ -389,13 +389,12 @@ class PhotoEditor private constructor(builder: Builder) :
             }
             TEXT -> {
                 // create TEXT view layout
-                // TODO Replace
-//                view = addText(
-//                    text = addedViewInfo.addedViewTextInfo.text,
-//                    colorCodeTextView = addedViewInfo.addedViewTextInfo.textColor,
-//                    textAlignment = addedViewInfo.addedViewTextInfo.textAlignment,
-//                    isViewBeingReadded = true
-//                )
+                val textStyler = TextStyler.from(addedViewInfo.addedViewTextInfo)
+                view = addText(
+                    text = addedViewInfo.addedViewTextInfo.text,
+                    textStyler = textStyler,
+                    isViewBeingReadded = true
+                )
             }
         }
 

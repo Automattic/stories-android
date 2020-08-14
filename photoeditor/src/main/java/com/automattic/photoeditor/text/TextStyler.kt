@@ -6,6 +6,7 @@ import androidx.annotation.ColorInt
 import androidx.annotation.Dimension
 import androidx.annotation.Dimension.PX
 import com.automattic.photoeditor.text.IdentifiableTypeface.TypefaceId
+import com.automattic.photoeditor.views.added.AddedViewTextInfo
 
 class TextStyler(
     val textAlignment: Int? = null,
@@ -52,6 +53,21 @@ class TextStyler(
                     shadowDx = textView.shadowDx,
                     shadowDy = textView.shadowDy,
                     shadowColor = textView.shadowColor
+            )
+        }
+
+        fun from(addedViewTextInfo: AddedViewTextInfo): TextStyler {
+            return TextStyler(
+                    textAlignment = addedViewTextInfo.textAlignment,
+                    typefaceId = addedViewTextInfo.typefaceId,
+                    fontSize = addedViewTextInfo.fontSizePx,
+                    lineSpacingMultiplier = addedViewTextInfo.lineSpacingMultiplier,
+                    letterSpacing = addedViewTextInfo.letterSpacing,
+                    textColor = addedViewTextInfo.textColor,
+                    shadowRadius = addedViewTextInfo.shadowRadius,
+                    shadowDx = addedViewTextInfo.shadowDx,
+                    shadowDy = addedViewTextInfo.shadowDy,
+                    shadowColor = addedViewTextInfo.shadowColor
             )
         }
     }
