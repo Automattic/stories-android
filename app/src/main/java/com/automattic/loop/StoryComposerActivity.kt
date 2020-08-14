@@ -1,9 +1,11 @@
 package com.automattic.loop
 
+import android.app.Activity
 import android.app.ActivityOptions
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +15,7 @@ import com.automattic.loop.photopicker.MediaBrowserType
 import com.automattic.loop.photopicker.PhotoPickerActivity
 import com.automattic.loop.photopicker.PhotoPickerFragment
 import com.automattic.loop.photopicker.RequestCodes
+import com.automattic.loop.util.CopyExternalUrisLocallyUseCase
 import com.google.android.material.snackbar.Snackbar
 import com.wordpress.stories.compose.ComposeLoopFrameActivity
 import com.wordpress.stories.compose.MediaPickerProvider
@@ -22,6 +25,11 @@ import com.wordpress.stories.compose.PrepublishingEventProvider
 import com.wordpress.stories.compose.SnackbarProvider
 import com.wordpress.stories.compose.StoryDiscardListener
 import com.wordpress.stories.compose.story.StoryIndex
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlin.coroutines.CoroutineContext
 
 fun Snackbar.config(context: Context) {
     this.view.background = context.getDrawable(R.drawable.snackbar_background)
@@ -36,7 +44,14 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
     MediaPickerProvider,
     NotificationIntentLoader,
     MetadataProvider,
-    StoryDiscardListener, PrepublishingEventProvider {
+    StoryDiscardListener,
+    PrepublishingEventProvider,
+    CoroutineScope {
+    private var job: Job = Job()
+
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main + job
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setSnackbarProvider(this)
@@ -48,6 +63,30 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
         setNotificationTrackerProvider(application as Loop) // optionally set Notification Tracker.
         // The notifiationTracker needs to be something that outlives the Activity, given the Service could be running
         // after the user has exited ComposeLoopFrameActivity
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == Activity.RESULT_OK && data != null) {
+            if (data.hasExtra(PhotoPickerActivity.EXTRA_MEDIA_URIS)) {
+                val uriList: List<Uri> = convertStringArrayIntoUrisList(
+                        data.getStringArrayExtra(PhotoPickerActivity.EXTRA_MEDIA_URIS)
+                )
+                // if there are any external Uris in this list, copy them locally before trying to use them
+                processExternalUris(uriList)
+            }
+        }
+    }
+
+    private fun processExternalUris(uriList: List<Uri>) {
+        launch {
+            val copyUrisLocallyUseCase = CopyExternalUrisLocallyUseCase()
+            // Copy files to apps storage to make sure they are permanently accessible.
+            val copyFilesResult =
+                    copyUrisLocallyUseCase.copyFilesToAppStorageIfNecessary(this@StoryComposerActivity, uriList)
+            addFramesToStoryFromMediaUriList(copyFilesResult.permanentlyAccessibleUris)
+            setDefaultSelectionAndUpdateBackgroundSurfaceUI(copyFilesResult.permanentlyAccessibleUris)
+        }
     }
 
     override fun showProvidedSnackbar(message: String, actionLabel: String?, callback: () -> Unit) {
@@ -86,7 +125,7 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
     }
 
     override fun providerHandlesOnActivityResult(): Boolean {
-        return false
+        return true
     }
 
     override fun loadIntentForErrorNotification(): Intent {
