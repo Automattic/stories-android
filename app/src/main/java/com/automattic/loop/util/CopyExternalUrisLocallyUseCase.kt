@@ -5,6 +5,8 @@ import android.net.Uri
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.wordpress.android.util.MediaUtils.downloadExternalMedia
+import org.wordpress.android.util.MediaUtils.isInMediaStore
 
 class CopyExternalUrisLocallyUseCase {
     /*
@@ -16,7 +18,7 @@ class CopyExternalUrisLocallyUseCase {
         return withContext(Dispatchers.Main) {
             uriList
                     .map { mediaUri ->
-                        if (!MediaUtils.isInMediaStore(mediaUri)) {
+                        if (!isInMediaStore(mediaUri)) {
                             copyToAppStorage(context, mediaUri)
                         } else {
                             mediaUri
@@ -34,7 +36,7 @@ class CopyExternalUrisLocallyUseCase {
 
     private fun copyToAppStorage(context: Context, mediaUri: Uri): Uri? {
         return try {
-            MediaUtils.downloadExternalMedia(context, mediaUri)
+            downloadExternalMedia(context, mediaUri)
         } catch (e: IllegalStateException) {
             // Ref: https://github.com/wordpress-mobile/WordPress-Android/issues/5823
             val errorMessage = "Can't download the image at: $mediaUri See issue #5823"
