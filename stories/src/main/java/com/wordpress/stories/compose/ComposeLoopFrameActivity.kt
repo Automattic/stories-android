@@ -211,7 +211,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private var notificationTrackerProvider: NotificationTrackerProvider? = null
     private var prepublishingEventProvider: PrepublishingEventProvider? = null
     private var firstIntentLoaded: Boolean = false
-    private var permissionsRequestForCameraInProgress: Boolean = false
+    protected var permissionsRequestForCameraInProgress: Boolean = false
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
