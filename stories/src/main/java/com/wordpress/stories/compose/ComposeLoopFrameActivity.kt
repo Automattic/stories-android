@@ -333,8 +333,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             override fun onEditTextChangeListener(
                 rootView: View,
                 text: String,
-                textStyler: TextStyler?,
-                isJustAdded: Boolean
+                textStyler: TextStyler?
             ) {
                 if (isEditingText) {
                     return
@@ -342,10 +341,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
                 isEditingText = true
                 editModeHideAllUIControls(true)
-                if (isJustAdded) {
-                    // hide new text views
-                    rootView.visibility = View.GONE
-                }
+                // Hide the text in the background while it's being edited
+                rootView.visibility = View.INVISIBLE
+
                 val textEditorDialogFragment = TextEditorDialogFragment.show(
                     this@ComposeLoopFrameActivity,
                     text,

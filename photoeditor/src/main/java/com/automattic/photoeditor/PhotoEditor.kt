@@ -261,8 +261,7 @@ class PhotoEditor private constructor(builder: Builder) :
             // now open TextEditor right away if this is new text being added
             if (mOnPhotoEditorListener != null && !isViewBeingReadded) {
                 val textInput = textInputTv.text.toString()
-                mOnPhotoEditorListener?.onEditTextChangeListener(
-                    this, textInput, textStyler, true)
+                mOnPhotoEditorListener?.onEditTextChangeListener(this, textInput, textStyler)
             }
         }
         return view
@@ -442,9 +441,7 @@ class PhotoEditor private constructor(builder: Builder) :
                     override fun onClick() {
                         val textInput = textInputTv.text.toString()
                         val textStyler = TextStyler.from(textInputTv)
-                        mOnPhotoEditorListener?.onEditTextChangeListener(
-                            rootView, textInput, textStyler, false
-                        )
+                        mOnPhotoEditorListener?.onEditTextChangeListener(rootView, textInput, textStyler)
                     }
 
                     override fun onLongClick() {

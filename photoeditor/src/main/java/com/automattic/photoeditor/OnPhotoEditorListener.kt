@@ -23,14 +23,8 @@ interface OnPhotoEditorListener {
      * @param rootView view on which the long press occurs
      * @param text current text set on the view
      * @param textStyler the [TextStyler] containing style rules for the view
-     * @param isJustAdded true if this view has just been added to the parentView
      */
-    fun onEditTextChangeListener(
-        rootView: View,
-        text: String,
-        textStyler: TextStyler?,
-        isJustAdded: Boolean = false
-    )
+    fun onEditTextChangeListener(rootView: View, text: String, textStyler: TextStyler?)
 
     /**
      * This is a callback when user adds any view on the [PhotoEditorView] it can be
