@@ -1,6 +1,7 @@
 package com.wordpress.stories.compose.text
 
 import android.content.Context
+import android.content.res.Resources.NotFoundException
 import android.graphics.Typeface
 import android.util.TypedValue
 import android.widget.TextView
@@ -44,7 +45,7 @@ class TextStyleGroupManager(val context: Context) {
     init {
         supportedTypefaces[TYPEFACE_ID_NUNITO] = TextStyleRule(
                 id = TYPEFACE_ID_NUNITO,
-                typeface = getFont(R.font.nunito_bold),
+                typeface = getFont(TYPEFACE_ID_NUNITO),
                 label = getString(R.string.typeface_label_nunito),
                 defaultFontSize = 24F,
                 lineSpacingMultiplier = 1.07F,
@@ -53,7 +54,7 @@ class TextStyleGroupManager(val context: Context) {
 
         supportedTypefaces[TYPEFACE_ID_LIBRE_BASKERVILLE] = TextStyleRule(
                 id = TYPEFACE_ID_LIBRE_BASKERVILLE,
-                typeface = getFont(R.font.libre_baskerville),
+                typeface = getFont(TYPEFACE_ID_LIBRE_BASKERVILLE),
                 label = getString(R.string.typeface_label_libre_baskerville),
                 defaultFontSize = 20F,
                 lineSpacingMultiplier = 1.35F
@@ -61,7 +62,7 @@ class TextStyleGroupManager(val context: Context) {
 
         supportedTypefaces[TYPEFACE_ID_OSWALD] = TextStyleRule(
                 id = TYPEFACE_ID_OSWALD,
-                typeface = getFont(R.font.oswald_upper),
+                typeface = getFont(TYPEFACE_ID_OSWALD),
                 label = getString(R.string.typeface_label_oswald),
                 defaultFontSize = 22F,
                 lineSpacingMultiplier = 1.21F,
@@ -70,7 +71,7 @@ class TextStyleGroupManager(val context: Context) {
 
         supportedTypefaces[TYPEFACE_ID_PACIFICO] = TextStyleRule(
                 id = TYPEFACE_ID_PACIFICO,
-                typeface = getFont(R.font.pacifico),
+                typeface = getFont(TYPEFACE_ID_PACIFICO),
                 label = getString(R.string.typeface_label_pacifico),
                 defaultFontSize = 24F,
                 lineSpacingMultiplier = 0.99F,
@@ -80,7 +81,7 @@ class TextStyleGroupManager(val context: Context) {
 
         supportedTypefaces[TYPEFACE_ID_SPACE_MONO] = TextStyleRule(
                 id = TYPEFACE_ID_SPACE_MONO,
-                typeface = getFont(R.font.space_mono_bold),
+                typeface = getFont(TYPEFACE_ID_SPACE_MONO),
                 label = getString(R.string.typeface_label_space_mono),
                 defaultFontSize = 20F,
                 lineSpacingMultiplier = 1.20F,
@@ -89,7 +90,7 @@ class TextStyleGroupManager(val context: Context) {
 
         supportedTypefaces[TYPEFACE_ID_SHRIKHAND] = TextStyleRule(
                 id = TYPEFACE_ID_SHRIKHAND,
-                typeface = getFont(R.font.shrikhand),
+                typeface = getFont(TYPEFACE_ID_SHRIKHAND),
                 label = getString(R.string.typeface_label_shrikhand),
                 defaultFontSize = 22F,
                 lineSpacingMultiplier = 1.16F,
@@ -97,7 +98,7 @@ class TextStyleGroupManager(val context: Context) {
         )
     }
 
-    private fun getFont(@FontRes fontRes: Int) = ResourcesCompat.getFont(context, fontRes)
+    private fun getFont(@TypefaceId typefaceId: Int) = resolveTypeface(typefaceId, context)
 
     private fun getString(@StringRes stringRes: Int) = context.resources.getString(stringRes)
 
@@ -155,16 +156,27 @@ class TextStyleGroupManager(val context: Context) {
         const val TYPEFACE_ID_SHRIKHAND = 1006
 
         fun getIdentifiableTypefaceForId(@TypefaceId typefaceId: Int, context: Context): IdentifiableTypeface {
-            @FontRes val fontRes = when (typefaceId) {
-                TYPEFACE_ID_NUNITO -> R.font.nunito_bold
-                TYPEFACE_ID_LIBRE_BASKERVILLE -> R.font.libre_baskerville
-                TYPEFACE_ID_OSWALD -> R.font.oswald_upper
-                TYPEFACE_ID_PACIFICO -> R.font.pacifico
-                TYPEFACE_ID_SPACE_MONO -> R.font.space_mono_bold
-                TYPEFACE_ID_SHRIKHAND -> R.font.shrikhand
-                else -> 0
+            return IdentifiableTypeface(typefaceId, resolveTypeface(typefaceId, context))
+        }
+
+        private fun resolveTypeface(@TypefaceId typefaceId: Int, context: Context): Typeface? {
+            return when (typefaceId) {
+                TYPEFACE_ID_NUNITO -> getFontWithFallback(context, R.font.nunito_bold, Typeface.SANS_SERIF)
+                TYPEFACE_ID_LIBRE_BASKERVILLE -> getFontWithFallback(context, R.font.libre_baskerville, Typeface.SERIF)
+                TYPEFACE_ID_OSWALD -> getFontWithFallback(context, R.font.oswald_upper, Typeface.SANS_SERIF)
+                TYPEFACE_ID_PACIFICO -> getFontWithFallback(context, R.font.pacifico, Typeface.SERIF)
+                TYPEFACE_ID_SPACE_MONO -> getFontWithFallback(context, R.font.space_mono_bold, Typeface.MONOSPACE)
+                TYPEFACE_ID_SHRIKHAND -> getFontWithFallback(context, R.font.shrikhand, Typeface.DEFAULT_BOLD)
+                else -> null
             }
-            return IdentifiableTypeface(typefaceId, ResourcesCompat.getFont(context, fontRes))
+        }
+
+        private fun getFontWithFallback(context: Context, @FontRes fontRes: Int, fallback: Typeface?): Typeface? {
+            return try {
+                ResourcesCompat.getFont(context, fontRes)
+            } catch (e: NotFoundException) {
+                fallback
+            }
         }
     }
 }
