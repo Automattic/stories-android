@@ -216,6 +216,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private var authHeadersProvider: AuthenticationHeadersProvider? = null
     private var metadataProvider: MetadataProvider? = null
     private var storyDiscardListener: StoryDiscardListener? = null
+    private var analyticsListener: StoriesAnalyticsListener? = null
     private var notificationTrackerProvider: NotificationTrackerProvider? = null
     private var prepublishingEventProvider: PrepublishingEventProvider? = null
     private var firstIntentLoaded: Boolean = false
@@ -1950,6 +1951,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     fun setStoryDiscardListener(listener: StoryDiscardListener) {
         storyDiscardListener = listener
+    }
+
+    fun setStoriesAnalyticsListener(listener: StoriesAnalyticsListener) {
+        analyticsListener = listener
     }
 
     fun setNotificationTrackerProvider(provider: NotificationTrackerProvider) {
