@@ -16,9 +16,9 @@
 
 package com.automattic.photoeditor.camera
 
-import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.fragment.app.DialogFragment
 
 interface ErrorDialogOk {
@@ -31,7 +31,7 @@ interface ErrorDialogOk {
 class ErrorDialog : DialogFragment() {
     private var okListener: ErrorDialogOk? = null
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        var builder = AlertDialog.Builder(activity)
+        var builder = MaterialAlertDialogBuilder(activity)
                 .setMessage(arguments?.getString(ARG_MESSAGE))
 
         okListener?.let {

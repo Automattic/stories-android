@@ -18,7 +18,7 @@
 <!--        <item name="colorAccent">?attr/colorPrimary</item>-->
     </style>
 
-    <style name="AlertDialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
+    <style name="AlertDialogTheme" parent="Theme.MaterialComponents.DayNight.Dialog.Alert">
         <item name="colorAccent">@color/colorPrimary</item>
     </style>
 
