@@ -4,7 +4,7 @@
     <style name="AppTheme.Immersive" parent="Theme.MaterialComponents.DayNight.NoActionBar.Bridge">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorAccent">?attr/colorPrimary</item>
 
         <item name="android:colorBackground">@color/background_dark</item>
         <item name="colorSurface">@color/background_dark</item>
