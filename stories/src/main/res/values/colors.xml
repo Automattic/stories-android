@@ -42,5 +42,9 @@
     <!-- WordPress colors-->
     <color name="wordpress_blue_50">#006088</color>
     <color name="primary_50">@color/wordpress_blue_50</color>
+    <color name="red_50">#d63638</color>
+    <color name="red_30">#f86368</color>
+    <color name="background_dark">#121212</color>
+    <color name="background_dark_elevated">#2e2e2e</color>
 
 </resources>
