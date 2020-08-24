@@ -90,7 +90,7 @@ public class CameraIntentUtils {
     }
 
     private static void showSDCardRequiredDialog(Context context) {
-        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(context, R.style.AlertDialogTheme);
+        MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(context);
         dialogBuilder.setTitle(context.getResources().getText(R.string.sdcard_title));
         dialogBuilder.setMessage(context.getResources().getText(R.string.sdcard_message));
         dialogBuilder.setPositiveButton(context.getString(android.R.string.ok), new DialogInterface.OnClickListener() {

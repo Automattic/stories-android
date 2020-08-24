@@ -17,10 +17,6 @@
 <!--        <item name="colorAccent">?attr/colorPrimary</item>-->
     </style>
 
-    <style name="AlertDialogTheme" parent="Theme.MaterialComponents.Light.Dialog.Alert">
-        <item name="colorAccent">@color/colorPrimary</item>
-    </style>
-
     <style name="EditText">
         <item name="android:singleLine">true</item>
         <item name="colorControlNormal">#FFFFFF</item>

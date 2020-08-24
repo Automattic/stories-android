@@ -18,13 +18,4 @@
 <!--        <item name="colorAccent">?attr/colorPrimary</item>-->
     </style>
 
-    <style name="AlertDialogTheme" parent="Theme.MaterialComponents.DayNight.Dialog.Alert">
-        <item name="colorAccent">@color/colorPrimary</item>
-    </style>
-
-    <style name="Stories.Delete.Button" parent="Widget.MaterialComponents.Button">
-        <item name="backgroundTint">?attr/colorOnBackground</item>
-        <item name="android:textColor">?attr/colorOnSurface</item>
-    </style>
-
 </resources>
