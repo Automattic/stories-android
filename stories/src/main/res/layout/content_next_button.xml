@@ -15,6 +15,6 @@
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
         android:textAllCaps="true"
-        android:textColor="@color/text_color_blue"
+        android:textColor="?attr/colorOnSurface"
         />
 </RelativeLayout>
