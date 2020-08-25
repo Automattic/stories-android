@@ -1,14 +1,19 @@
 <resources>
 
     <!-- core creation experience style -->
-    <style name="AppTheme.Immersive" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="AppTheme.Immersive" parent="Theme.MaterialComponents.Light.NoActionBar.Bridge">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
-    </style>
+        <item name="colorAccent">?attr/colorPrimary</item>
 
-    <style name="AlertDialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
-        <item name="colorAccent">@color/colorPrimary</item>
+        <item name="android:colorBackground">@android:color/white</item>
+        <item name="colorSurface">@android:color/white</item>
+        <item name="colorError">@color/red_50</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+        <item name="colorOnSecondary">@android:color/white</item>
+        <item name="colorOnBackground">@android:color/black</item>
+        <item name="colorOnSurface">@android:color/black</item>
+        <item name="colorOnError">@android:color/white</item>
     </style>
 
     <style name="EditText">
@@ -25,6 +30,11 @@
 
     <style name="TransparentBottomSheet" parent="Widget.Design.BottomSheet.Modal">
         <item name="android:background">@android:color/transparent</item>
+    </style>
+
+    <style name="Stories.Delete.Button" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="backgroundTint">?attr/colorOnBackground</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 
 </resources>

@@ -19,14 +19,10 @@
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
 
     <!-- core creation experience style -->
-    <style name="AppTheme.Immersive" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="AppTheme.Immersive" parent="Theme.MaterialComponents.Light.NoActionBar.Bridge">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
-    </style>
-
-    <style name="AlertDialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
-        <item name="colorAccent">@color/colorPrimary</item>
+        <item name="colorAccent">?attr/colorPrimary</item>
     </style>
 
     <style name="EditText">

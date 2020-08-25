@@ -1,10 +1,9 @@
 package com.wordpress.stories.compose
 
-import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
 import androidx.fragment.app.DialogFragment
-import com.wordpress.stories.R
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 interface FrameSaveErrorDialogOk {
     fun OnOkClicked(dialog: DialogFragment)
@@ -13,7 +12,7 @@ interface FrameSaveErrorDialogOk {
 class FrameSaveErrorDialog : DialogFragment() {
     private var okListener: FrameSaveErrorDialogOk? = null
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val builder = AlertDialog.Builder(activity, R.style.AlertDialogTheme)
+        val builder = MaterialAlertDialogBuilder(activity)
             .setTitle(arguments?.getString(ARG_TITLE))
             .setMessage(arguments?.getString(ARG_MESSAGE))
 
