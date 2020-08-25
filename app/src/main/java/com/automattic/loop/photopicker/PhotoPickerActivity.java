@@ -175,6 +175,7 @@ public class PhotoPickerActivity extends AppCompatActivity
         switch (requestCode) {
             // user chose a photo from the device library
             case RequestCodes.PICTURE_LIBRARY:
+            case RequestCodes.VIDEO_LIBRARY:
                 if (data != null) {
                     if (data != null) {
                         doMediaUrisSelected(WPMediaUtils.retrieveMediaUris(data),
@@ -233,13 +234,28 @@ public class PhotoPickerActivity extends AppCompatActivity
     private void launchPictureLibrary() {
 //        WPMediaUtils.launchPictureLibrary(this, false);
         startActivityForResult(
-                preparePictureLibraryIntent(getString(R.string.pick_photo), false),
+                preparePictureLibraryIntent(getString(R.string.pick_photo), true),
                 RequestCodes.PICTURE_LIBRARY);
     }
+
+    private void launchVideoLibrary() {
+        startActivityForResult(prepareVideoLibraryIntent(getString(R.string.pick_video), true),
+                RequestCodes.VIDEO_LIBRARY);
+    }
+
 
     private static Intent preparePictureLibraryIntent(String title, boolean multiSelect) {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("image/*");
+        if (multiSelect) {
+            intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        }
+        return Intent.createChooser(intent, title);
+    }
+
+    private static Intent prepareVideoLibraryIntent(String title, boolean multiSelect) {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("video/*");
         if (multiSelect) {
             intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         }
@@ -377,6 +393,7 @@ public class PhotoPickerActivity extends AppCompatActivity
 //                launchStockMediaPicker();
                 break;
             case ANDROID_CHOOSE_VIDEO:
+                launchVideoLibrary();
                 break;
             case ANDROID_CAPTURE_VIDEO:
                 break;

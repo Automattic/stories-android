@@ -54,6 +54,13 @@ Implement these:
 - call `setMediaPickerProvider()` as in the example Stories demo app.
 - remember to override `setupRequestCodes()` and set the right request codes as per the host app so it works seamlessly and media can be fed into the Composer by the externally provided MediaPicker.
 
+### Entry points
+The ComposeLoopFrameActivity super class will attempt to capture different Activity entry points such as `onCreate()` (which is handled in the `onLoadFromIntent()` override) or `onActivityResult()`. As such, you'll be able to use the behavior by passing requestCode `requestCodes.PHOTO_PICKER` and a combination of one of the following extras to trigger each of the modes the composer can be presented in:
+- EXTRA_MEDIA_URIS: if `providerHandlesMediaPickerResult()`  returns false, these extra will consist of a list of media Uris that will be added each one as a new Story slide to the composer.
+- EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED: if the previous extra is not present and this extra is passed, then the camera capture mode will be presented, and the user will then have the ability to capture a still image or a video, which will be added to their Story as a new slide.
+
+In the Loop demo app, we initially trigger the camera capture mode for a new Story (you can try this by tapping on the FAB), and then rely on the PhotoPicker implementation to allow the user to keep adding pictures (note they can also trigger the capture mode from there as well). For an example of a using a different entry point for its initial state, you can check WordPress Android's [StoryComposerActivity](https://github.com/wordpress-mobile/WordPress-Android/blob/develop/WordPress/src/main/java/org/wordpress/android/ui/stories/StoryComposerActivity.kt)'s `handleMediaPickerIntentData()` method, given in this case the Media picker is presented first, and the Story composer is initialized later with the selected background media constituting one Story slide each.
+
 ## Build Instructions ##
 
 1. Make sure you've installed [Android Studio](https://developer.android.com/studio/index.html).
