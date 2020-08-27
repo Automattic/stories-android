@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.automattic.photoeditor.text.IdentifiableTypeface.TypefaceId
 import com.automattic.photoeditor.text.TextStyler
 import com.wordpress.stories.R
+import com.wordpress.stories.compose.StoriesAnalyticsListener
 import kotlinx.android.synthetic.main.add_text_dialog.*
 import kotlinx.android.synthetic.main.add_text_dialog.view.*
 
@@ -30,6 +31,8 @@ class TextEditorDialogFragment : DialogFragment() {
     private var textEditor: TextEditor? = null
 
     private lateinit var textStyleGroupManager: TextStyleGroupManager
+
+    private var analyticsListener: StoriesAnalyticsListener? = null
 
     interface TextEditor {
         fun onDone(inputText: String, textStyler: TextStyler)
@@ -131,6 +134,10 @@ class TextEditorDialogFragment : DialogFragment() {
     // Callback to listener if user is done with text editing
     fun setOnTextEditorListener(textEditor: TextEditor) {
         this.textEditor = textEditor
+    }
+
+    fun setAnalyticsEventListener(listener: StoriesAnalyticsListener?) {
+        analyticsListener = listener
     }
 
     private fun updateTextAlignment(textAlignment: TextAlignment) {

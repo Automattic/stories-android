@@ -375,6 +375,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                         editModeRestoreAllUIControls()
                     }
                 })
+                textEditorDialogFragment.setAnalyticsEventListener(analyticsListener)
             }
 
             override fun onAddViewListener(viewType: ViewType, numberOfAddedViews: Int) {
