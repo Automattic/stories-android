@@ -33,6 +33,7 @@ class TextEditorDialogFragment : DialogFragment() {
     private lateinit var textStyleGroupManager: TextStyleGroupManager
 
     private var analyticsListener: StoriesAnalyticsListener? = null
+    private var textEditorAnalyticsHandler: TextEditorAnalyticsHandler? = null
 
     interface TextEditor {
         fun onDone(inputText: String, textStyler: TextStyler)
@@ -122,12 +123,14 @@ class TextEditorDialogFragment : DialogFragment() {
             dismiss()
             val inputText = add_text_edit_text.text.toString()
             textEditor?.onDone(inputText, TextStyler.from(add_text_edit_text, typefaceId))
+            textEditorAnalyticsHandler?.report()
         }
     }
 
     override fun onDismiss(dialog: DialogInterface) {
         val inputText = add_text_edit_text?.text.toString()
         textEditor?.onDone(inputText, TextStyler.from(add_text_edit_text, typefaceId))
+        textEditorAnalyticsHandler?.report()
         super.onDismiss(dialog)
     }
 
@@ -138,6 +141,7 @@ class TextEditorDialogFragment : DialogFragment() {
 
     fun setAnalyticsEventListener(listener: StoriesAnalyticsListener?) {
         analyticsListener = listener
+        textEditorAnalyticsHandler = TextEditorAnalyticsHandler { analyticsListener?.trackStoryTextChanged(it) }
     }
 
     private fun updateTextAlignment(textAlignment: TextAlignment) {
