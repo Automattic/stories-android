@@ -88,6 +88,7 @@ class TextEditorDialogFragment : DialogFragment() {
                 typefaceId = textStyleGroupManager.getNextTypeface(typefaceId)
                 textStyleGroupManager.styleTextView(typefaceId, add_text_edit_text)
                 textStyleGroupManager.styleAndLabelTextView(typefaceId, text_style_toggle_button)
+                trackTextStyleToggled()
             }
         }
 
@@ -164,6 +165,10 @@ class TextEditorDialogFragment : DialogFragment() {
             TextAlignment.CENTER -> R.drawable.ic_gridicons_align_center_32
             TextAlignment.RIGHT -> R.drawable.ic_gridicons_align_right_32
         })
+    }
+
+    private fun trackTextStyleToggled() {
+        textEditorAnalyticsHandler?.trackTextStyleToggled(textStyleGroupManager.getAnalyticsLabelFor(typefaceId))
     }
 
     companion object {

@@ -16,6 +16,7 @@ import androidx.core.content.res.ResourcesCompat
 import com.automattic.photoeditor.text.IdentifiableTypeface
 import com.automattic.photoeditor.text.IdentifiableTypeface.TypefaceId
 import com.wordpress.stories.R
+import java.util.Locale
 import java.util.TreeMap
 
 /**
@@ -133,6 +134,10 @@ class TextStyleGroupManager(val context: Context) {
      */
     fun getNextTypeface(@TypefaceId typefaceId: Int): Int {
         return supportedTypefaces.higherKey(typefaceId) ?: supportedTypefaces.firstKey()
+    }
+
+    fun getAnalyticsLabelFor(@TypefaceId typefaceId: Int): String {
+        return supportedTypefaces[typefaceId]?.label?.toLowerCase(Locale.ROOT).orEmpty()
     }
 
     private fun TextView.setShadowLayer(shadowLayer: ShadowLayer?) {
