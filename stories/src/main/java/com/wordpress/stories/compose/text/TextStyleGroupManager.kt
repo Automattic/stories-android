@@ -84,7 +84,7 @@ class TextStyleGroupManager(val context: Context) {
                 typeface = getFont(TYPEFACE_ID_SPACE_MONO),
                 label = getString(R.string.typeface_label_space_mono),
                 defaultFontSize = 20F,
-                lineSpacingMultiplier = 1.20F,
+                lineSpacingMultiplier = 1.15F,
                 letterSpacing = -0.0138F
         )
 
@@ -93,8 +93,9 @@ class TextStyleGroupManager(val context: Context) {
                 typeface = getFont(TYPEFACE_ID_SHRIKHAND),
                 label = getString(R.string.typeface_label_shrikhand),
                 defaultFontSize = 22F,
-                lineSpacingMultiplier = 1.16F,
-                shadowLayer = ShadowLayer(1F, 2F, 4F, getColor(R.color.black_25_transparent))
+                lineSpacingMultiplier = 1.11F,
+                letterSpacing = 0.03F,
+                shadowLayer = ShadowLayer(1F, 1F, 2F, getColor(R.color.black_25_transparent))
         )
     }
 
