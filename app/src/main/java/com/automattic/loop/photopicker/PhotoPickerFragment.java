@@ -215,8 +215,8 @@ public class PhotoPickerFragment extends Fragment {
 //
 //        return true;
 
-        // Loop: we're always portrait ;)
-        return false;
+        // we now want to allow picking items from the native media picker
+        return true;
     }
 
     @Override

@@ -17,13 +17,13 @@
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/delete_button"
+            style="@style/Stories.Delete.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:minWidth="@dimen/custom_menu_button_width"
             android:text="@string/menu_delete_page"
-            android:backgroundTint="@color/white"
             android:background="?android:attr/selectableItemBackground"
-            android:drawableStart="@drawable/ic_delete_black_24dp"
+            android:textAppearance="?textAppearanceSmallPopupMenu"
             android:textAllCaps="false"
             android:textAlignment="textStart"
             android:paddingRight="@dimen/custom_menu_padding"

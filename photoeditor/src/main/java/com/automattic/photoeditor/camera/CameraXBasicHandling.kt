@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
 import android.util.Rational
+import android.util.Size
 import android.view.ViewGroup
 import androidx.camera.core.CameraX
 import androidx.camera.core.ImageCapture
@@ -185,9 +186,11 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                 videoCapture?.clear()
             }
 
+            val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
+
             val videoCaptureConfig = VideoCaptureConfig.Builder().apply {
                 setLensFacing(lensFacing)
-                setTargetAspectRatioCustom(screenAspectRatio)
+                setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
                 setTargetRotation(textureView.display.rotation)
             }.build()
             videoCapture = VideoCapture(videoCaptureConfig)

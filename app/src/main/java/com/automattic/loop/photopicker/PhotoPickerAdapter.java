@@ -504,7 +504,7 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
             String[] projection = {ID_COL};
             Cursor cursor = null;
             try {
-                cursor = mContext.getContentResolver().query(
+                 cursor = mContext.getContentResolver().query(
                         baseUri,
                         projection,
                         null,
