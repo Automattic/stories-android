@@ -28,6 +28,10 @@ import androidx.emoji.text.EmojiCompat
 import com.automattic.photoeditor.gesture.MultiTouchListener
 import com.automattic.photoeditor.gesture.MultiTouchListener.OnMultiTouchListener
 import com.automattic.photoeditor.state.AuthenticationHeadersInterface
+import com.automattic.photoeditor.text.PhotoEditorTextView
+import com.automattic.photoeditor.text.FontResolver
+import com.automattic.photoeditor.text.IdentifiableTypeface
+import com.automattic.photoeditor.text.TextStyler
 import com.automattic.photoeditor.util.BitmapUtil
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.PhotoEditorView
@@ -80,8 +84,9 @@ class PhotoEditor private constructor(builder: Builder) :
     private val addedViews: AddedViewList
     private val redoViews: AddedViewList
     private var mOnPhotoEditorListener: OnPhotoEditorListener? = null
+    private var fontResolver: FontResolver? = null
     private val isTextPinchZoomable: Boolean
-    private val mDefaultTextTypeface: Typeface?
+    private val mDefaultTextTypeface: IdentifiableTypeface?
     private val mDefaultEmojiTypeface: Typeface?
     private val authenticationHeadersInterface: AuthenticationHeadersInterface?
 
@@ -228,32 +233,25 @@ class PhotoEditor private constructor(builder: Builder) :
      * This add the text on the [PhotoEditorView] with provided parameters
      * by default [TextView.setText] will be 18sp
      *
-     * @param textTypeface typeface for custom font in the text
      * @param text text to display
-     * @param colorCodeTextView text color to be displayed
+     * @param textStyler the [TextStyler] with rules for updating the [TextView]'s style
+     * @param isViewBeingReadded whether the view is being readded
      */
     @SuppressLint("ClickableViewAccessibility")
     fun addText(
         text: String,
-        colorCodeTextView: Int,
-        textAlignment: Int? = null,
-        textTypeface: Typeface? = null,
-        fontSizeSp: Float = 18f,
+        textStyler: TextStyler? = null,
         isViewBeingReadded: Boolean = false
     ): View? {
         brushDrawingView.brushDrawingMode = false
         val view: View?
         view = getLayout(ViewType.TEXT)?.apply {
-            val textInputTv = findViewById<TextView>(R.id.tvPhotoEditorText)
+            val textInputTv = findViewById<PhotoEditorTextView>(R.id.tvPhotoEditorText)
 
             textInputTv.text = text
-            textInputTv.setTextColor(colorCodeTextView)
-            textAlignment?.let { textInputTv.textAlignment = it }
-            textInputTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSizeSp)
+            textStyler?.styleText(textInputTv, fontResolver)
+
 //            textInputTv.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
-            if (textTypeface != null) {
-                textInputTv.typeface = textTypeface
-            }
 
             val multiTouchListenerInstance = getNewMultitouchListener() // newMultiTouchListener
             setGestureControlOnMultiTouchListener(this, ViewType.TEXT, multiTouchListenerInstance)
@@ -263,42 +261,25 @@ class PhotoEditor private constructor(builder: Builder) :
             // now open TextEditor right away if this is new text being added
             if (mOnPhotoEditorListener != null && !isViewBeingReadded) {
                 val textInput = textInputTv.text.toString()
-                val currentTextColor = textInputTv.currentTextColor
-                mOnPhotoEditorListener?.onEditTextChangeListener(
-                    this, textInput, currentTextColor, textInputTv.textAlignment, true)
+                mOnPhotoEditorListener?.onEditTextChangeListener(this, textInput, textStyler)
             }
         }
         return view
     }
 
     /**
-     * This will update text and color on provided view
-     *
-     * @param view view on which you want update
-     * @param inputText text to update [TextView]
-     * @param colorCode color to update on [TextView]
-     */
-    fun editText(view: View, inputText: String, colorCode: Int, textAlignment: Int) {
-        editText(view, null, inputText, colorCode, textAlignment)
-    }
-
-    /**
-     * This will update the text and color on provided view
+     * This will update the text and style on provided view
      *
      * @param view root view where text view is a child
-     * @param textTypeface update typeface for custom font in the text
-     * @param inputText text to update [TextView]
-     * @param colorCode color to update on [TextView]
+     * @param inputText the text to use in the [TextView]
+     * @param textStyler the [TextStyler] with rules for updating the [TextView]'s style
      */
-    fun editText(view: View, textTypeface: Typeface?, inputText: String, colorCode: Int, textAlignment: Int) {
-        val inputTextView = view.findViewById<TextView>(R.id.tvPhotoEditorText)
+    fun editText(view: View, inputText: String, textStyler: TextStyler) {
+        val inputTextView = view.findViewById<PhotoEditorTextView>(R.id.tvPhotoEditorText)
         if (inputTextView != null && addedViews.containsView(view) && !TextUtils.isEmpty(inputText)) {
             inputTextView.text = inputText
-            if (textTypeface != null) {
-                inputTextView.typeface = textTypeface
-            }
-            inputTextView.setTextColor(colorCode)
-            inputTextView.textAlignment = textAlignment
+            textStyler.styleText(inputTextView, fontResolver)
+
             parentView.updateViewLayout(view, view.layoutParams)
             val i = addedViews.indexOfView(view)
             if (i > -1) {
@@ -407,24 +388,12 @@ class PhotoEditor private constructor(builder: Builder) :
             }
             TEXT -> {
                 // create TEXT view layout
+                val textStyler = TextStyler.from(addedViewInfo.addedViewTextInfo)
                 view = addText(
                     text = addedViewInfo.addedViewTextInfo.text,
-                    colorCodeTextView = addedViewInfo.addedViewTextInfo.textColor,
-                    textAlignment = addedViewInfo.addedViewTextInfo.textAlignment,
+                    textStyler = textStyler,
                     isViewBeingReadded = true
                 )
-                view?.let {
-                    // apply specific TextView parameters for text (fontsize, text color)
-                    val normalTextView = it.findViewById<TextView>(R.id.tvPhotoEditorText)
-                    // the actual calculated text size as obtained from the view is expressed in px.
-                    normalTextView?.setTextSize(TypedValue.COMPLEX_UNIT_PX, addedViewInfo.addedViewTextInfo.fontSizePx)
-                    normalTextView?.setTextColor(addedViewInfo.addedViewTextInfo.textColor)
-                    normalTextView?.textAlignment = addedViewInfo.addedViewTextInfo.textAlignment
-
-                    val multiTouchListenerInstance = getNewMultitouchListener(it) // newMultiTouchListener
-                    setGestureControlOnMultiTouchListener(it, viewType, multiTouchListenerInstance)
-                    it.setOnTouchListener(multiTouchListenerInstance)
-                }
             }
         }
 
@@ -471,15 +440,8 @@ class PhotoEditor private constructor(builder: Builder) :
                         MultiTouchListener.OnGestureControl {
                     override fun onClick() {
                         val textInput = textInputTv.text.toString()
-                        val currentTextColor = textInputTv.currentTextColor
-                        val textAlignment = textInputTv.textAlignment
-                        mOnPhotoEditorListener?.onEditTextChangeListener(
-                            rootView,
-                            textInput,
-                            currentTextColor,
-                            textAlignment,
-                            false
-                        )
+                        val textStyler = TextStyler.from(textInputTv)
+                        mOnPhotoEditorListener?.onEditTextChangeListener(rootView, textInput, textStyler)
                     }
 
                     override fun onLongClick() {
@@ -505,7 +467,7 @@ class PhotoEditor private constructor(builder: Builder) :
                 if (rootView.tvPhotoEditorText != null) {
                     rootView.tvPhotoEditorText.gravity = Gravity.CENTER
                     if (mDefaultTextTypeface != null) {
-                        rootView.tvPhotoEditorText.typeface = mDefaultTextTypeface
+                        rootView.tvPhotoEditorText.identifiableTypeface = mDefaultTextTypeface
                     }
                 }
             }
@@ -1045,6 +1007,10 @@ class PhotoEditor private constructor(builder: Builder) :
         this.mOnPhotoEditorListener = onPhotoEditorListener
     }
 
+    fun setFontResolver(fontResolver: FontResolver) {
+        this.fontResolver = fontResolver
+    }
+
     override fun onViewAdd(brushDrawingView: BrushDrawingView) {
         if (redoViews.size > 0) {
             redoViews.removeAt(redoViews.size - 1)
@@ -1099,7 +1065,7 @@ class PhotoEditor private constructor(builder: Builder) :
         var deleteView: View? = null
         var workAreaRect: Rect? = null
         val brushDrawingView: BrushDrawingView = parentView.brush
-        var textTypeface: Typeface? = null
+        var textTypeface: IdentifiableTypeface? = null
         var emojiTypeface: Typeface? = null
         // By Default pinch zoom on text is enabled
         var isTextPinchZoomable = true
@@ -1126,7 +1092,7 @@ class PhotoEditor private constructor(builder: Builder) :
          * @param textTypeface typeface for custom font
          * @return [Builder] instant to build [PhotoEditor]
          */
-        fun setDefaultTextTypeface(textTypeface: Typeface): Builder {
+        fun setDefaultTextTypeface(textTypeface: IdentifiableTypeface): Builder {
             this.textTypeface = textTypeface
             return this
         }

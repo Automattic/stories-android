@@ -82,6 +82,14 @@
     <string name="toast_error_saving_image">Error saving image</string>
     <string name="toast_error_saving_video">Video could not be saved</string>
 
+    <!-- Typeface labels -->
+    <string name="typeface_label_nunito">Casual</string>
+    <string name="typeface_label_libre_baskerville">Classic</string>
+    <string name="typeface_label_oswald">Strong</string>
+    <string name="typeface_label_pacifico">Playful</string>
+    <string name="typeface_label_space_mono">Modern</string>
+    <string name="typeface_label_shrikhand">Bold</string>
+
     <!-- PhotoEditor strings - overrides for user-facing strings so these can be translated at the app level and applied
      by resource merging -->
     <string name="camera_error">This device doesn\'t support Camera2 API.</string>

@@ -7,8 +7,9 @@
     <dimen name="round_button_circle_stroke">4dp</dimen>
 
     <dimen name="normal_button_medium">32dp</dimen>
+    <dimen name="normal_button_margin">16dp</dimen>
     <dimen name="normal_button_font_size">13sp</dimen>
-    <dimen name="top_button_group_margin">16dp</dimen>
+    <dimen name="top_button_group_margin">@dimen/normal_button_margin</dimen>
     <dimen name="main_button_elevation">2dp</dimen>
     <dimen name="color_picker_touchable_area_size">40dp</dimen>
     <dimen name="color_picker_background_size">24dp</dimen>
