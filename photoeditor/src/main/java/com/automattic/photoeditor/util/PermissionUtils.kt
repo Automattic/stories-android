@@ -80,6 +80,15 @@ class PermissionUtils {
             }
         }
 
+        fun allRequestedPermissionsGranted(grantResults: IntArray): Boolean {
+            for (result in grantResults) {
+                if (result != PackageManager.PERMISSION_GRANTED) {
+                    return false
+                }
+            }
+            return true
+        }
+
         fun allRequiredPermissionsGranted(context: Context): Boolean {
             return checkPermissionsForArray(context, REQUIRED_PERMISSIONS)
         }
