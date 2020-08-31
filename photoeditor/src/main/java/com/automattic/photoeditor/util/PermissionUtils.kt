@@ -15,8 +15,13 @@ class PermissionUtils {
         val PERMISSION_REQUEST_CODE = 5200
         val REQUIRED_PERMISSIONS = arrayOf(
             Manifest.permission.CAMERA,
-            Manifest.permission.RECORD_AUDIO,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
+
+        val REQUIRED_PERMISSIONS_WITH_AUDIO = arrayOf(
+                Manifest.permission.CAMERA,
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
         )
 
         fun checkPermission(context: Context, permission: String) =
@@ -69,9 +74,17 @@ class PermissionUtils {
         }
 
         fun allRequiredPermissionsGranted(context: Context): Boolean {
-            for (permission in REQUIRED_PERMISSIONS) {
+            return checkPermissionsForArray(context, REQUIRED_PERMISSIONS)
+        }
+
+        fun allVideoPermissionsGranted(context: Context): Boolean {
+            return checkPermissionsForArray(context, REQUIRED_PERMISSIONS_WITH_AUDIO)
+        }
+
+        private fun checkPermissionsForArray(context: Context, permissions: Array<String>): Boolean {
+            for (permission in permissions) {
                 if (ContextCompat.checkSelfPermission(
-                        context, permission) != PackageManager.PERMISSION_GRANTED) {
+                                context, permission) != PackageManager.PERMISSION_GRANTED) {
                     return false
                 }
             }
