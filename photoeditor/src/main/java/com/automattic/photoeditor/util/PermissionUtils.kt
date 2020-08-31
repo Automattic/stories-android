@@ -98,19 +98,19 @@ class PermissionUtils {
             return true
         }
 
-        fun anyVideoNeededPermissionPermanentlyDenied(activity: Activity): Boolean {
-            return checkPermanentDenyForPermission(activity, REQUIRED_PERMISSIONS_WITH_AUDIO)
+        fun anyVideoNeededPermissionPermanentlyDenied(activity: Activity): String? {
+            return checkPermanentDenyForPermissions(activity, REQUIRED_PERMISSIONS_WITH_AUDIO)
         }
 
-        private fun checkPermanentDenyForPermission(activity: Activity, permissions: Array<String>): Boolean {
+        private fun checkPermanentDenyForPermissions(activity: Activity, permissions: Array<String>): String? {
             for (permission in permissions) {
                 if (ContextCompat.checkSelfPermission(
                                 activity, permission) == PackageManager.PERMISSION_DENIED &&
                         !ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)) {
-                    return true
+                    return permission
                 }
             }
-            return false
+            return null
         }
     }
 }
