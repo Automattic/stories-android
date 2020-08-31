@@ -18,6 +18,7 @@ class PermissionUtils {
             Manifest.permission.WRITE_EXTERNAL_STORAGE
         )
 
+        // Video requires access to recording audio (microphone).
         val REQUIRED_PERMISSIONS_WITH_AUDIO = arrayOf(
                 Manifest.permission.CAMERA,
                 Manifest.permission.RECORD_AUDIO,
@@ -45,6 +46,12 @@ class PermissionUtils {
             )
         }
 
+        fun requestAllRequiredPermissionsIncludingAudioForVideo(activity: Activity) {
+            ActivityCompat.requestPermissions(activity, REQUIRED_PERMISSIONS_WITH_AUDIO,
+                    PERMISSION_REQUEST_CODE
+            )
+        }
+        
         fun checkAndRequestPermission(activity: Activity, permission: String): Boolean {
             val isGranted = ContextCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_GRANTED
             if (!isGranted) {
@@ -89,6 +96,21 @@ class PermissionUtils {
                 }
             }
             return true
+        }
+
+        fun anyVideoNeededPermissionPermanentlyDenied(activity: Activity): Boolean {
+            return checkPermanentDenyForPermission(activity, REQUIRED_PERMISSIONS_WITH_AUDIO)
+        }
+
+        private fun checkPermanentDenyForPermission(activity: Activity, permissions: Array<String>): Boolean {
+            for (permission in permissions) {
+                if (ContextCompat.checkSelfPermission(
+                                activity, permission) == PackageManager.PERMISSION_DENIED &&
+                        !ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)) {
+                    return true
+                }
+            }
+            return false
         }
     }
 }

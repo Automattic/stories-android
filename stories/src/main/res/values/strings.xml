@@ -81,6 +81,7 @@
     <string name="toast_capture_operation_in_progress">Operation in progress, try again</string>
     <string name="toast_error_saving_image">Error saving image</string>
     <string name="toast_error_saving_video">Video could not be saved</string>
+    <string name="toast_capture_operation_permission_needed">You need to grant the app audio recording permission in order to record video</string>
 
     <!-- Typeface labels -->
     <string name="typeface_label_nunito">Casual</string>

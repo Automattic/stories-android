@@ -838,7 +838,22 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                         }
                         override fun onHoldingGestureStart() {
                             timesUpHandler.removeCallbacksAndMessages(null)
-                            startRecordingVideoAfterVibrationIndication()
+                            if (PermissionUtils.allVideoPermissionsGranted(this@ComposeLoopFrameActivity)) {
+                                // if we at least have
+                                startRecordingVideoAfterVibrationIndication()
+                            } else {
+                                // request permissions including audio for video
+                                if (PermissionUtils.anyVideoNeededPermissionPermanentlyDenied(
+                                                this@ComposeLoopFrameActivity
+                                        )
+                                ) {
+                                    showToast(getString(R.string.toast_capture_operation_permission_needed))
+                                } else {
+                                    PermissionUtils.requestAllRequiredPermissionsIncludingAudioForVideo(
+                                            this@ComposeLoopFrameActivity
+                                    )
+                                }
+                            }
                         }
 
                         override fun onHoldingGestureEnd() {
