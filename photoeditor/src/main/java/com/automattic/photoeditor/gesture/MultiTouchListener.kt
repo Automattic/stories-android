@@ -1,6 +1,8 @@
 package com.automattic.photoeditor.gesture
 
 import android.annotation.SuppressLint
+import android.graphics.Matrix
+import android.graphics.Point
 import android.graphics.Rect
 import android.view.GestureDetector
 import android.view.MotionEvent
@@ -121,7 +123,8 @@ internal class MultiTouchListener(
                 INVALID_POINTER_ID
             MotionEvent.ACTION_UP -> {
                 mActivePointerId = INVALID_POINTER_ID
-                if (deleteView != null && isAnyCornerOfViewAOverlappingViewB(deleteView, view)) {
+                 if (deleteView != null && isAnyCornerOfViewAOverlappingViewB(deleteView, view)) {
+//                if (deleteView != null && isViewInBounds(deleteView, x, y)) {
                     onMultiTouchListener?.onRemoveViewListener(view)
                 }
 //                else if (!isViewInBounds(photoEditImageView, x, y)) {
@@ -172,34 +175,22 @@ internal class MultiTouchListener(
         return outRect?.contains(x, y) ?: false
     }
 
-    private fun isAnyCornerOfViewAOverlappingViewB(viewA: View, viewB: View, percentage: Float = 0.08f): Boolean {
+    private fun isAnyCornerOfViewAOverlappingViewB(viewA: View, viewB: View): Boolean {
         val firstPosition = IntArray(2)
-        val secondPosition = IntArray(2)
-
         viewA.getLocationOnScreen(firstPosition)
-        viewB.getLocationOnScreen(secondPosition)
 
         // Rect constructor parameters: left, top, right, bottom
         val rectViewA = Rect(
-            firstPosition[0],
-            firstPosition[1],
-            firstPosition[0] + viewA.measuredWidth,
-            firstPosition[1] + viewA.measuredHeight
+                firstPosition[0],
+                firstPosition[1],
+                firstPosition[0] + viewA.measuredWidth,
+                firstPosition[1] + viewA.measuredHeight
         )
-        // adjust the second view to make it slightly smaller
-        // (the area near its borders do not have meaningful information) - otherwise it feels like they "overlap"
-        // but visually they don't look like so
-        val adjustedWidth = (viewB.measuredWidth * (1 - percentage)).toInt()
-        val adjustedHeight = (viewB.measuredHeight * (1 - percentage)).toInt()
-        val adjustedXPos = (secondPosition[0] * (1 + percentage)).toInt()
-        val adjustedYPos = (secondPosition[1] * (1 + percentage)).toInt()
-        val rectViewB = Rect(
-            adjustedXPos,
-            adjustedYPos,
-            secondPosition[0] + adjustedWidth,
-            secondPosition[1] + adjustedHeight
-        )
-        return rectViewA.intersect(rectViewB)
+
+        val globalVisibleRectB = Rect()
+        viewB.getGlobalVisibleRect(globalVisibleRectB)
+
+        return rectViewA.intersect(globalVisibleRectB)
     }
 
     private fun isViewCenterInWorkingAreaBounds(view: View, deltaX: Float, deltaY: Float): Boolean {
@@ -214,6 +205,14 @@ internal class MultiTouchListener(
 
     fun setOnMultiTouchListener(onMultiTouchListener: OnMultiTouchListener) {
         this.onMultiTouchListener = onMultiTouchListener
+    }
+
+    class RectanglePoints {
+        var points = ArrayList<Point>()
+        constructor(rect: Rect) {
+            points.add(Point(rect.left, rect.top))
+            points.add(Point(rect.right, rect.bottom))
+        }
     }
 
     private inner class ScaleGestureListener : SimpleOnScaleGestureListener() {
