@@ -5,7 +5,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.view.TextureView
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Lifecycle.Event.ON_CREATE
@@ -17,11 +16,8 @@ import androidx.lifecycle.Lifecycle.Event.ON_PAUSE
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.OnLifecycleEvent
-import com.automattic.photoeditor.R
 import com.automattic.photoeditor.camera.Camera2BasicHandling
 import com.automattic.photoeditor.camera.CameraXBasicHandling
-import com.automattic.photoeditor.camera.ErrorDialog
-import com.automattic.photoeditor.camera.ErrorDialogOk
 import com.automattic.photoeditor.camera.PlayerPreparedListener
 import com.automattic.photoeditor.camera.VideoPlayingBasicHandling
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
@@ -45,6 +41,12 @@ interface BackgroundSurfaceManagerReadyListener {
     fun onBackgroundSurfaceManagerReady()
 }
 
+interface VideoPlayerErrorListener {
+    // onPlayerError takes what and extra from MediaPlayer's OnErrorListener.onError() method signature
+    // https://developer.android.com/reference/android/media/MediaPlayer.OnErrorListener
+    fun onPlayerError(uri: Uri, what: Int? = 0, extra: Int? = 0, exception: Exception? = null)
+}
+
 class BackgroundSurfaceManager(
     private val savedInstanceState: Bundle?,
     private val lifeCycle: Lifecycle,
@@ -53,6 +55,7 @@ class BackgroundSurfaceManager(
     private val flashSupportChangeListener: FlashSupportChangeListener,
     private val useCameraX: Boolean,
     private val managerReadyListener: BackgroundSurfaceManagerReadyListener? = null,
+    private val videoPlayerErrorListener: VideoPlayerErrorListener? = null,
     private val authenticationHeadersInterface: AuthenticationHeadersInterface? = null
 ) : LifecycleObserver {
     private lateinit var cameraBasicHandler: VideoRecorderFragment
@@ -410,18 +413,9 @@ class BackgroundSurfaceManager(
                         photoEditorView.hideLoading()
                     }
 
-                    override fun onPlayerError() {
+                    override fun onPlayerError(uri: Uri, what: Int?, extra: Int?, exception: Exception?) {
                         photoEditorView.hideLoading()
-                        ErrorDialog.newInstance(requireNotNull(videoPlayerHandling.context)
-                                .getString(R.string.toast_error_playing_video),
-                                    object : ErrorDialogOk {
-                                        override fun OnOkClicked(dialog: DialogFragment) {
-                                            dialog.dismiss()
-                                        }
-                                    }
-                                ).show(supportFragmentManager,
-                                        FRAGMENT_DIALOG
-                                )
+                        videoPlayerErrorListener?.onPlayerError(uri, what, extra, exception)
                     }
                 }
 
