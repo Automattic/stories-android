@@ -260,14 +260,6 @@ internal class MultiTouchListener(
         this.onMultiTouchListener = onMultiTouchListener
     }
 
-    class RectanglePoints {
-        var points = ArrayList<Point>()
-        constructor(rect: Rect) {
-            points.add(Point(rect.left, rect.top))
-            points.add(Point(rect.right, rect.bottom))
-        }
-    }
-
     private inner class ScaleGestureListener : SimpleOnScaleGestureListener() {
         private var mPivotX: Float = 0.toFloat()
         private var mPivotY: Float = 0.toFloat()
