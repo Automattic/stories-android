@@ -3,6 +3,7 @@ package com.automattic.photoeditor.util
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Matrix
 import android.opengl.GLException
 import android.opengl.GLSurfaceView
 import android.view.View
@@ -130,5 +131,18 @@ internal object BitmapUtil {
                 cropWidth,
                 cropHeight
         )
+    }
+
+    fun createRotatedBitmapFromViewWithMatrix(v: View): Bitmap {
+        val bitmap = Bitmap.createBitmap(
+                v.width,
+                v.height,
+                Bitmap.Config.ARGB_8888
+        )
+        val c = Canvas(bitmap)
+        v.draw(c)
+        val result =
+                Bitmap.createBitmap(bitmap, 0, 0, v.width,v.height, v.matrix, false)
+        return result
     }
 }
