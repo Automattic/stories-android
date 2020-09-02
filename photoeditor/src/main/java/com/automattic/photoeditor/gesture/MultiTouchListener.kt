@@ -3,7 +3,6 @@ package com.automattic.photoeditor.gesture
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.graphics.Point
 import android.graphics.Rect
 import android.view.GestureDetector
 import android.view.MotionEvent
@@ -183,12 +182,12 @@ internal class MultiTouchListener(
 
     fun isViewOverlappingDeleteView(deleteView: View, viewB: View): Boolean {
         // using the View's matrix so the bitmap also has its content rotated and scaled.
-        val bmpForDraggedView =  BitmapUtil.createRotatedBitmapFromViewWithMatrix(viewB)
+        val bmpForDraggedView = BitmapUtil.createRotatedBitmapFromViewWithMatrix(viewB)
 
         val globalVisibleRectB = Rect()
         viewB.getGlobalVisibleRect(globalVisibleRectB)
 
-        val globalVisibleRectDelete= Rect()
+        val globalVisibleRectDelete = Rect()
         deleteView.getGlobalVisibleRect(globalVisibleRectDelete)
 
         return isPixelOverlapping(
@@ -200,8 +199,12 @@ internal class MultiTouchListener(
     // when we find both pixels on the same coordinate for each bitmap being not transparent, that means
     // there is an overlap between both images
     fun isPixelOverlapping(
-        bitmap1: Bitmap, x1: Int, y1: Int,
-        bitmap2: Bitmap, x2: Int, y2: Int
+        bitmap1: Bitmap,
+        x1: Int,
+        y1: Int,
+        bitmap2: Bitmap,
+        x2: Int,
+        y2: Int
     ): Boolean {
         val bounds1 = Rect(
                 x1,
