@@ -42,9 +42,7 @@ import java.io.IOException
 
 interface PlayerPreparedListener {
     fun onPlayerPrepared()
-    // onPlayerError takes what and extra from MediaPlayer's OnErrorListener.onError() method signature
-    // https://developer.android.com/reference/android/media/MediaPlayer.OnErrorListener
-    fun onPlayerError(uri: Uri, what: Int? = 0, extra: Int? = 0, exception: Exception? = null)
+    fun onPlayerError()
 }
 
 class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlayerSoundOnOffHandler {
@@ -178,10 +176,6 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
                         playerPreparedListener?.onPlayerPrepared()
                         it.start()
                     }
-                    setOnErrorListener { mp, what, extra ->
-                        playerPreparedListener?.onPlayerError(Uri.fromFile(file), what, extra)
-                        true
-                    }
                     prepareAsync()
                     setVolume(if (isMuted) 0f else 1f, if (isMuted) 0f else 1f)
                 }
@@ -215,7 +209,7 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
                         it.setLooping(true)
                     }
                     setOnErrorListener { mp, what, extra ->
-                        playerPreparedListener?.onPlayerError(uri, what, extra)
+                        playerPreparedListener?.onPlayerError()
                         true
                     }
                     setOnCompletionListener {
@@ -228,24 +222,18 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
                 }
             }
         } catch (e: IllegalArgumentException) {
-            playerPreparedListener?.onPlayerError(uri = getCurrentUri(), exception = e)
+            playerPreparedListener?.onPlayerError()
             e.printStackTrace()
         } catch (e: SecurityException) {
-            playerPreparedListener?.onPlayerError(uri = getCurrentUri(), exception = e)
+            playerPreparedListener?.onPlayerError()
             e.printStackTrace()
         } catch (e: IllegalStateException) {
-            playerPreparedListener?.onPlayerError(uri = getCurrentUri(), exception = e)
+            playerPreparedListener?.onPlayerError()
             e.printStackTrace()
         } catch (e: IOException) {
-            playerPreparedListener?.onPlayerError(uri = getCurrentUri(), exception = e)
+            playerPreparedListener?.onPlayerError()
             e.printStackTrace()
         }
-    }
-
-    private fun getCurrentUri(): Uri {
-        return currentFile?.let {
-            return Uri.fromFile(currentFile)
-        } ?: requireNotNull(currentExternalUri)
     }
 
     override fun mute() {
