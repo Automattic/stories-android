@@ -722,6 +722,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        PermissionUtils.processRequestedPermissionsResultAndSave(this, permissions, grantResults)
         if (PermissionUtils.allRequestedPermissionsGranted(grantResults)) {
             onLoadFromIntent(intent)
             permissionsRequestForCameraInProgress = false
