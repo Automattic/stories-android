@@ -161,7 +161,7 @@ class PermissionUtils {
             )
             val editor: SharedPreferences.Editor = genPrefs.edit()
             editor.putBoolean(permission, true)
-            editor.commit()
+            editor.apply()
         }
 
         private fun isShouldShowPermissionPermanentlyDeniedDialog(
