@@ -167,6 +167,10 @@ interface PrepublishingEventProvider {
     fun onStorySaveButtonPressed()
 }
 
+interface PermanentPermissionDenialDialogProvider {
+    fun showPermissionPermanentlyDeniedDialog(permission: String)
+}
+
 interface StoryDiscardListener {
     fun onStoryDiscarded()
 }
@@ -216,6 +220,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private var prepublishingEventProvider: PrepublishingEventProvider? = null
     private var firstIntentLoaded: Boolean = false
     protected var permissionsRequestForCameraInProgress: Boolean = false
+    private var permissionDenialDialogProvider: PermanentPermissionDenialDialogProvider? = null
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
@@ -717,7 +722,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (PermissionUtils.allRequiredPermissionsGranted(this)) {
+        PermissionUtils.processRequestedPermissionsResultAndSave(this, permissions, grantResults)
+        if (PermissionUtils.allRequestedPermissionsGranted(grantResults)) {
             onLoadFromIntent(intent)
             permissionsRequestForCameraInProgress = false
         } else if (permissions.isEmpty() || storyViewModel.getCurrentStorySize() == 0) {
@@ -838,7 +844,21 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                         }
                         override fun onHoldingGestureStart() {
                             timesUpHandler.removeCallbacksAndMessages(null)
-                            startRecordingVideoAfterVibrationIndication()
+                            if (PermissionUtils.allVideoPermissionsGranted(this@ComposeLoopFrameActivity)) {
+                                // if we at least have
+                                startRecordingVideoAfterVibrationIndication()
+                            } else {
+                                // request permissions including audio for video
+                                val permissionName = PermissionUtils.anyVideoNeededPermissionPermanentlyDenied(
+                                        this@ComposeLoopFrameActivity
+                                )
+
+                                permissionName?.let {
+                                    showPermissionPermanentlyDeniedDialog(it)
+                                } ?: PermissionUtils.requestAllRequiredPermissionsIncludingAudioForVideo(
+                                        this@ComposeLoopFrameActivity
+                                )
+                            }
                         }
 
                         override fun onHoldingGestureEnd() {
@@ -1467,6 +1487,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         } ?: Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
+    private fun showPermissionPermanentlyDeniedDialog(permission: String) {
+        permissionDenialDialogProvider?.showPermissionPermanentlyDeniedDialog(permission)
+                ?: showToast(getString(R.string.toast_capture_operation_permission_needed))
+    }
+
     private fun showToast(message: String) {
         val toast = Toast.makeText(this, message, Toast.LENGTH_SHORT)
         toast.setGravity(Gravity.TOP, 0, 0)
@@ -1931,6 +1956,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     fun setPrepublishingEventProvider(provider: PrepublishingEventProvider) {
         prepublishingEventProvider = provider
+    }
+
+    fun setPermissionDialogProvider(provider: PermanentPermissionDenialDialogProvider) {
+        permissionDenialDialogProvider = provider
     }
 
     class ExternalMediaPickerRequestCodesAndExtraKeys {

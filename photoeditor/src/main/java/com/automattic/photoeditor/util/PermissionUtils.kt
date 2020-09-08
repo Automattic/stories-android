@@ -3,7 +3,11 @@ package com.automattic.photoeditor.util
 import android.Manifest
 import android.app.Activity
 import android.content.Context
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.os.Build
+import android.os.Build.VERSION_CODES
+import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
@@ -13,10 +17,17 @@ class PermissionUtils {
     }
     companion object {
         val PERMISSION_REQUEST_CODE = 5200
+        val IS_PERMISSION_REQUESTED_PREFS = "is_permission_requested_prefs"
         val REQUIRED_PERMISSIONS = arrayOf(
             Manifest.permission.CAMERA,
-            Manifest.permission.RECORD_AUDIO,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
+
+        // Video requires access to recording audio (microphone).
+        val REQUIRED_PERMISSIONS_WITH_AUDIO = arrayOf(
+                Manifest.permission.CAMERA,
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
         )
 
         fun checkPermission(context: Context, permission: String) =
@@ -37,6 +48,12 @@ class PermissionUtils {
         fun requestAllRequiredPermissions(activity: Activity) {
             ActivityCompat.requestPermissions(activity, REQUIRED_PERMISSIONS,
                 PERMISSION_REQUEST_CODE
+            )
+        }
+
+        fun requestAllRequiredPermissionsIncludingAudioForVideo(activity: Activity) {
+            ActivityCompat.requestPermissions(activity, REQUIRED_PERMISSIONS_WITH_AUDIO,
+                    PERMISSION_REQUEST_CODE
             )
         }
 
@@ -68,14 +85,94 @@ class PermissionUtils {
             }
         }
 
-        fun allRequiredPermissionsGranted(context: Context): Boolean {
-            for (permission in REQUIRED_PERMISSIONS) {
-                if (ContextCompat.checkSelfPermission(
-                        context, permission) != PackageManager.PERMISSION_GRANTED) {
+        fun allRequestedPermissionsGranted(grantResults: IntArray): Boolean {
+            for (result in grantResults) {
+                if (result != PackageManager.PERMISSION_GRANTED) {
                     return false
                 }
             }
             return true
+        }
+
+        fun processRequestedPermissionsResultAndSave(
+            activity: Activity,
+            permissions: Array<String>,
+            grantResults: IntArray
+        ) {
+            for ((index, result) in grantResults.withIndex()) {
+                if (result != PackageManager.PERMISSION_GRANTED) {
+                    setShouldShowPermissionPermanentlyDeniedDialog(activity, permissions[index])
+                }
+            }
+        }
+
+        fun allRequiredPermissionsGranted(context: Context): Boolean {
+            return checkPermissionsForArray(context, REQUIRED_PERMISSIONS)
+        }
+
+        fun allVideoPermissionsGranted(context: Context): Boolean {
+            return checkPermissionsForArray(context, REQUIRED_PERMISSIONS_WITH_AUDIO)
+        }
+
+        private fun checkPermissionsForArray(context: Context, permissions: Array<String>): Boolean {
+            for (permission in permissions) {
+                if (ContextCompat.checkSelfPermission(
+                                context, permission) != PackageManager.PERMISSION_GRANTED) {
+                    return false
+                }
+            }
+            return true
+        }
+
+        fun anyVideoNeededPermissionPermanentlyDenied(activity: Activity): String? {
+            if (Build.VERSION.SDK_INT >= VERSION_CODES.M) {
+                return checkPermanentDenyForPermissions(activity, REQUIRED_PERMISSIONS_WITH_AUDIO)
+            } else {
+                return null
+            }
+        }
+
+        @RequiresApi(VERSION_CODES.M)
+        private fun checkPermanentDenyForPermissions(activity: Activity, permissions: Array<String>): String? {
+            for (permission in permissions) {
+                if (ContextCompat.checkSelfPermission(
+                                activity, permission) == PackageManager.PERMISSION_DENIED &&
+                        neverAskAgainSelected(activity, permission)) {
+                    return permission
+                }
+            }
+            return null
+        }
+
+        @RequiresApi(VERSION_CODES.M)
+        fun neverAskAgainSelected(
+            activity: Activity,
+            permission: String
+        ): Boolean {
+            val prevShouldShowStatus = isShouldShowPermissionPermanentlyDeniedDialog(activity, permission)
+            val currShouldShowStatus = ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)
+            return (prevShouldShowStatus == true) && (currShouldShowStatus == false)
+        }
+
+        fun setShouldShowPermissionPermanentlyDeniedDialog(context: Context, permission: String) {
+            val genPrefs: SharedPreferences = context.getSharedPreferences(
+                    IS_PERMISSION_REQUESTED_PREFS,
+                    Context.MODE_PRIVATE
+            )
+            val editor: SharedPreferences.Editor = genPrefs.edit()
+            editor.putBoolean(permission, true)
+            editor.apply()
+        }
+
+        private fun isShouldShowPermissionPermanentlyDeniedDialog(
+            context: Context,
+            permission: String
+        ): Boolean {
+            val genPrefs: SharedPreferences = context.getSharedPreferences(
+                    IS_PERMISSION_REQUESTED_PREFS,
+                    Context.MODE_PRIVATE
+            )
+            return genPrefs.getBoolean(permission, false)
         }
     }
 }
