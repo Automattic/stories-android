@@ -122,9 +122,6 @@ class TextEditorDialogFragment : DialogFragment() {
         add_text_done_tv?.setOnClickListener { _ ->
             dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
             dismiss()
-            val inputText = add_text_edit_text.text.toString()
-            textEditor?.onDone(inputText, TextStyler.from(add_text_edit_text, typefaceId))
-            textEditorAnalyticsHandler?.report()
         }
     }
 
