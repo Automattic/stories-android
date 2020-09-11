@@ -102,6 +102,12 @@ class TextEditorDialogFragment : DialogFragment() {
         val layoutManager = LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
         addTextColorPickerRecyclerView.layoutManager = layoutManager
         addTextColorPickerRecyclerView.setHasFixedSize(true)
+
+        // Hide the bottom sheet if the user taps in the EditText
+        add_text_edit_text.setOnClickListener {
+            hideBottomSheet()
+        }
+
         activity?.let {
             val colorPickerAdapter = ColorPickerAdapter(it)
             // This listener will change the text color when clicked on any color from picker
