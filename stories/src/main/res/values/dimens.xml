@@ -18,6 +18,7 @@
 
     <!-- Color picker bottom sheet -->
     <dimen name="color_picker_bottom_sheet_default_height">250dp</dimen>
+    <dimen name="color_picker_bottom_sheet_height_max_margin">75dp</dimen>
 
     <dimen name="shutter_button_margin">68dp</dimen>
 
