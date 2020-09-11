@@ -2,24 +2,19 @@ package com.wordpress.stories.compose.text
 
 import android.content.Context
 import android.content.DialogInterface
-import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewTreeObserver
 import android.view.WindowManager
-import android.view.inputmethod.InputMethodManager
-import android.widget.RelativeLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.automattic.photoeditor.text.IdentifiableTypeface.TypefaceId
 import com.automattic.photoeditor.text.TextStyler
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.wordpress.stories.R
 import com.wordpress.stories.compose.StoriesAnalyticsListener
 import kotlinx.android.synthetic.main.add_text_dialog.*
@@ -40,10 +35,6 @@ class TextEditorDialogFragment : DialogFragment() {
     private var analyticsListener: StoriesAnalyticsListener? = null
     private var textEditorAnalyticsHandler: TextEditorAnalyticsHandler? = null
 
-    private var bottomSheetBehavior: BottomSheetBehavior<RelativeLayout>? = null
-    private var keyboardHeight: Int = 0
-    private var originalViewHeight: Int = 0
-
     interface TextEditor {
         fun onDone(inputText: String, textStyler: TextStyler)
     }
@@ -52,31 +43,6 @@ class TextEditorDialogFragment : DialogFragment() {
         super.onAttach(context)
 
         textStyleGroupManager = TextStyleGroupManager(context)
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        val rootView = activity?.window?.decorView?.rootView
-
-        rootView?.viewTreeObserver?.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
-            override fun onGlobalLayout() {
-                val r = Rect()
-                rootView.getWindowVisibleDisplayFrame(r)
-                val screenHeight: Int = rootView.height
-                var heightDifference = screenHeight - (r.bottom - r.top)
-
-                val resourceIdNav = resources.getIdentifier("navigation_bar_height", "dimen", "android")
-                if (resourceIdNav > 0) {
-                    heightDifference -= resources.getDimensionPixelSize(resourceIdNav)
-                }
-
-                if (heightDifference > 150) {
-                    keyboardHeight = heightDifference
-                    rootView.viewTreeObserver?.removeOnGlobalLayoutListener(this)
-                }
-            }
-        })
     }
 
     override fun onStart() {
@@ -97,6 +63,10 @@ class TextEditorDialogFragment : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val bottomSheetHandler = activity?.let {
+            ColorPickerBottomSheetHandler(it, view)
+        }
+
         // Setup the color picker for text color
         val addTextColorPickerRecyclerView = view.add_text_color_picker_recycler_view
         val layoutManager = LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
@@ -105,7 +75,7 @@ class TextEditorDialogFragment : DialogFragment() {
 
         // Hide the bottom sheet if the user taps in the EditText
         add_text_edit_text.setOnClickListener {
-            hideBottomSheet()
+            bottomSheetHandler?.hideBottomSheet()
         }
 
         activity?.let {
@@ -133,14 +103,7 @@ class TextEditorDialogFragment : DialogFragment() {
         }
 
         color_picker_button.setOnClickListener {
-            activity?.let {
-                if (bottomSheetBehavior == null) { initBottomSheet() }
-                if (bottomSheetBehavior?.state == BottomSheetBehavior.STATE_EXPANDED) {
-                    hideBottomSheet()
-                } else {
-                    showBottomSheet(view)
-                }
-            }
+            bottomSheetHandler?.toggleBottomSheet()
         }
 
         arguments?.let {
@@ -203,75 +166,6 @@ class TextEditorDialogFragment : DialogFragment() {
         })
     }
 
-    private fun initBottomSheet() {
-        val bottomSheetCallback = object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(bottomSheet: View, newState: Int) {
-                if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
-                    // Restore the view's original size
-                    with(main_layout.layoutParams) { height = originalViewHeight }
-
-                    // Show the keyboard
-                    add_text_edit_text.requestFocus()
-                    with(activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager) {
-                        showSoftInput(add_text_edit_text, InputMethodManager.SHOW_IMPLICIT)
-                    }
-                }
-            }
-
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {}
-        }
-
-        bottomSheetBehavior = BottomSheetBehavior.from(bottom_sheet_container).apply {
-            addBottomSheetCallback(bottomSheetCallback)
-        }
-
-        originalViewHeight = main_layout.measuredHeight + keyboardHeight
-    }
-
-    private fun showBottomSheet(view: View) {
-        // Hide the software keyboard
-        with(activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager) {
-            hideSoftInputFromWindow(view.windowToken, 0)
-        }
-
-        view.postDelayed({
-            // Set bottom sheet to the keyboard height
-            val defaultBottomSheetHeight =
-                    resources.getDimensionPixelSize(R.dimen.color_picker_bottom_sheet_default_height)
-            val maxBottomSheetMargin =
-                    resources.getDimensionPixelSize(R.dimen.color_picker_bottom_sheet_height_max_margin)
-            with(bottom_sheet_layout.layoutParams) {
-                // Resize the bottom sheet to match the keyboard height, so the text is kept at around the same
-                // height on the screen.
-                // Fall back to default height if there's no keyboard, or the keyboard is too short or too tall.
-                if (keyboardHeight > defaultBottomSheetHeight &&
-                        keyboardHeight < defaultBottomSheetHeight + maxBottomSheetMargin) {
-                    height = keyboardHeight
-                    bottom_sheet_layout.layoutParams = this
-                }
-            }
-
-            // Shift layout up so text is still centered on screen
-            with(main_layout.layoutParams) {
-                val bottomSheetHeight = if (bottom_sheet_layout.layoutParams.height > 0) {
-                    bottom_sheet_layout.layoutParams.height
-                } else {
-                    defaultBottomSheetHeight
-                }
-                height = originalViewHeight - bottomSheetHeight
-                main_layout.layoutParams = this
-            }
-
-            // Show the bottom sheet
-            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-        }, BOTTOM_SHEET_DISPLAY_DELAY_MS)
-    }
-
-    private fun hideBottomSheet() {
-        // This will trigger additional view adjustment logic via BottomSheetCallback
-        bottomSheetBehavior?.state = BottomSheetBehavior.STATE_COLLAPSED
-    }
-
     private fun trackTextStyleToggled() {
         textEditorAnalyticsHandler?.trackTextStyleToggled(textStyleGroupManager.getAnalyticsLabelFor(typefaceId))
     }
@@ -282,8 +176,6 @@ class TextEditorDialogFragment : DialogFragment() {
         const val EXTRA_COLOR_CODE = "extra_color_code"
         const val EXTRA_TEXT_ALIGNMENT = "extra_text_alignment"
         const val EXTRA_TYPEFACE = "extra_typeface"
-
-        const val BOTTOM_SHEET_DISPLAY_DELAY_MS = 300L
 
         // Show dialog with provide text and text color
         @JvmOverloads
