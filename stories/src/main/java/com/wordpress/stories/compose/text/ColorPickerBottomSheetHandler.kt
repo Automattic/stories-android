@@ -21,6 +21,14 @@ class ColorPickerBottomSheetHandler(val activity: Activity, val view: View) {
     private val bottomSheetLayout: View = view.findViewById(R.id.bottom_sheet_layout)
     private val bottomSheetContainer: ViewGroup = view.findViewById(R.id.bottom_sheet_container)
 
+    private val defaultBottomSheetHeight by lazy {
+        activity.resources.getDimensionPixelSize(R.dimen.color_picker_bottom_sheet_default_height)
+    }
+
+    private val maxBottomSheetMargin by lazy {
+        activity.resources.getDimensionPixelSize(R.dimen.color_picker_bottom_sheet_height_max_margin)
+    }
+
     init {
         captureKeyboardHeight()
     }
@@ -91,10 +99,6 @@ class ColorPickerBottomSheetHandler(val activity: Activity, val view: View) {
 
         rootView.postDelayed({
             // Set bottom sheet to the keyboard height
-            val defaultBottomSheetHeight =
-                    activity.resources.getDimensionPixelSize(R.dimen.color_picker_bottom_sheet_default_height)
-            val maxBottomSheetMargin =
-                    activity.resources.getDimensionPixelSize(R.dimen.color_picker_bottom_sheet_height_max_margin)
             with(bottomSheetLayout.layoutParams) {
                 // Resize the bottom sheet to match the keyboard height, so the text is kept at around the same
                 // height on the screen.
