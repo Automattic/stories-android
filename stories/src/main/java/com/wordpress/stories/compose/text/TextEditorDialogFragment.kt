@@ -2,12 +2,14 @@ package com.wordpress.stories.compose.text
 
 import android.content.Context
 import android.content.DialogInterface
+import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -35,6 +37,8 @@ class TextEditorDialogFragment : DialogFragment() {
     private var analyticsListener: StoriesAnalyticsListener? = null
     private var textEditorAnalyticsHandler: TextEditorAnalyticsHandler? = null
 
+    private var keyboardHeight: Int = 0
+
     interface TextEditor {
         fun onDone(inputText: String, textStyler: TextStyler)
     }
@@ -43,6 +47,31 @@ class TextEditorDialogFragment : DialogFragment() {
         super.onAttach(context)
 
         textStyleGroupManager = TextStyleGroupManager(context)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        val rootView = activity?.window?.decorView?.rootView
+
+        rootView?.viewTreeObserver?.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                val r = Rect()
+                rootView.getWindowVisibleDisplayFrame(r)
+                val screenHeight: Int = rootView.height
+                var heightDifference = screenHeight - (r.bottom - r.top)
+
+                val resourceIdNav = resources.getIdentifier("navigation_bar_height", "dimen", "android")
+                if (resourceIdNav > 0) {
+                    heightDifference -= resources.getDimensionPixelSize(resourceIdNav)
+                }
+
+                if (heightDifference > 150) {
+                    keyboardHeight = heightDifference
+                    rootView.viewTreeObserver?.removeOnGlobalLayoutListener(this)
+                }
+            }
+        })
     }
 
     override fun onStart() {
