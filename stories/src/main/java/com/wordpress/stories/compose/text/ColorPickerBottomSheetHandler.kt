@@ -60,14 +60,19 @@ class ColorPickerBottomSheetHandler(val activity: Activity, val view: View) {
         val bottomSheetCallback = object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
-                    // Restore the view's original size
-                    with(mainLayout.layoutParams) { height = originalViewHeight }
-
                     // Show the keyboard
                     editText.requestFocus()
                     with(activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager) {
                         showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT)
                     }
+
+                    view.postDelayed({
+                        // Restore the view's original size, after the keyboard comes back up to avoid jerkiness
+                        with(mainLayout.layoutParams) {
+                            height = originalViewHeight
+                            mainLayout.layoutParams = this
+                        }
+                    }, BOTTOM_SHEET_DISPLAY_DELAY_MS)
                 }
             }
 
@@ -97,30 +102,30 @@ class ColorPickerBottomSheetHandler(val activity: Activity, val view: View) {
             hideSoftInputFromWindow(rootView.windowToken, 0)
         }
 
+        // Set bottom sheet to the keyboard height
+        with(bottomSheetLayout.layoutParams) {
+            // Resize the bottom sheet to match the keyboard height, so the text is kept at around the same
+            // height on the screen.
+            // Fall back to default height if there's no keyboard, or the keyboard is too short or too tall.
+            if (keyboardHeight > defaultBottomSheetHeight &&
+                    keyboardHeight < defaultBottomSheetHeight + maxBottomSheetMargin) {
+                height = keyboardHeight
+                bottomSheetLayout.layoutParams = this
+            }
+        }
+
+        // Shift layout up so text is still centered on screen
+        with(mainLayout.layoutParams) {
+            val bottomSheetHeight = if (bottomSheetLayout.layoutParams.height > 0) {
+                bottomSheetLayout.layoutParams.height
+            } else {
+                defaultBottomSheetHeight
+            }
+            height = originalViewHeight - bottomSheetHeight
+            mainLayout.layoutParams = this
+        }
+
         rootView.postDelayed({
-            // Set bottom sheet to the keyboard height
-            with(bottomSheetLayout.layoutParams) {
-                // Resize the bottom sheet to match the keyboard height, so the text is kept at around the same
-                // height on the screen.
-                // Fall back to default height if there's no keyboard, or the keyboard is too short or too tall.
-                if (keyboardHeight > defaultBottomSheetHeight &&
-                        keyboardHeight < defaultBottomSheetHeight + maxBottomSheetMargin) {
-                    height = keyboardHeight
-                    bottomSheetLayout.layoutParams = this
-                }
-            }
-
-            // Shift layout up so text is still centered on screen
-            with(mainLayout.layoutParams) {
-                val bottomSheetHeight = if (bottomSheetLayout.layoutParams.height > 0) {
-                    bottomSheetLayout.layoutParams.height
-                } else {
-                    defaultBottomSheetHeight
-                }
-                height = originalViewHeight - bottomSheetHeight
-                mainLayout.layoutParams = this
-            }
-
             // Show the bottom sheet
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
         }, BOTTOM_SHEET_DISPLAY_DELAY_MS)
