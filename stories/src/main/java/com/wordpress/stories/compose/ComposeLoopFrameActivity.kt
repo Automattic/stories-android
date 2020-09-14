@@ -502,7 +502,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             permissionsRequestForCameraInProgress = savedInstanceState.getBoolean(STATE_KEY_PERMISSION_REQ_IN_PROGRESS)
 
             storyViewModel.loadStory(
-                StorySerializerUtils.deserializeStory(savedInstanceState.getString(STATE_KEY_STORY_SAVE_STATE))
+                StorySerializerUtils.deserializeStory(
+                        requireNotNull(savedInstanceState.getString(STATE_KEY_STORY_SAVE_STATE))
+                )
             )
 
             val selectedFrameIndex = savedInstanceState.getInt(STATE_KEY_STORY_SAVE_STATE_SELECTED_FRAME)
