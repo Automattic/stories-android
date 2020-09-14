@@ -12,7 +12,6 @@
         android:id="@+id/frame_image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_add_white_24dp"
         android:contentDescription="@string/label_frame_image"
         android:layout_centerInParent="true"/>
 
