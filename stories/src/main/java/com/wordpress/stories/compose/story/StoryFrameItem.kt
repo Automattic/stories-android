@@ -9,7 +9,6 @@ import com.wordpress.stories.compose.story.StoryFrameItemType.IMAGE
 import kotlinx.serialization.Decoder
 import kotlinx.serialization.Encoder
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Transient
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Serializer
 import kotlinx.serialization.internal.ArrayListSerializer
@@ -22,7 +21,7 @@ data class StoryFrameItem(
     @Serializable(with = AddedViewListSerializer::class)
     var addedViews: AddedViewList = AddedViewList(),
     var saveResultReason: SaveResultReason = SaveSuccess,
-    @Transient
+    @Serializable(with = FileSerializer::class)
     var composedFrameFile: File? = null
 ) {
     @Serializable
