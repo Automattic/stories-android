@@ -5,7 +5,9 @@ import com.automattic.photoeditor.views.added.AddedView
 import com.automattic.photoeditor.views.added.AddedViewList
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
+import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.UriBackgroundSource
 import com.wordpress.stories.compose.story.StoryFrameItemType.IMAGE
+import com.wordpress.stories.compose.story.StoryFrameItemType.VIDEO
 import kotlinx.serialization.Decoder
 import kotlinx.serialization.Encoder
 import kotlinx.serialization.KSerializer
@@ -22,7 +24,8 @@ data class StoryFrameItem(
     var addedViews: AddedViewList = AddedViewList(),
     var saveResultReason: SaveResultReason = SaveSuccess,
     @Serializable(with = FileSerializer::class)
-    var composedFrameFile: File? = null
+    var composedFrameFile: File? = null,
+    var id: String? = null
 ) {
     @Serializable
     sealed class BackgroundSource {
@@ -71,6 +74,20 @@ data class StoryFrameItem(
 
         override fun serialize(output: Encoder, addedViews: AddedViewList) {
             output.encodeSerializableValue(ArrayListSerializer(AddedView.serializer()), addedViews)
+        }
+    }
+
+    companion object {
+        @JvmStatic
+        fun getNewStoryFrameItemFromUri(uri: Uri, isVideo: Boolean): StoryFrameItem {
+            return StoryFrameItem(
+                    UriBackgroundSource(uri),
+                    if (isVideo) {
+                        VIDEO(false)
+                    } else {
+                        IMAGE
+                    }
+            )
         }
     }
 }
