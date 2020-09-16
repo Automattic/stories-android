@@ -511,7 +511,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             if (selectedFrameIndex < storyViewModel.getCurrentStorySize()) {
                 storyViewModel.setSelectedFrame(selectedFrameIndex)
             }
-        } else {
+        } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED) {
             onLoadFromIntent(intent)
         }
     }
@@ -645,7 +645,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         if (storyViewModel.getCurrentStoryIndex() == StoryRepository.DEFAULT_NONE_SELECTED) {
             storyViewModel.loadStory(storyIndexToSelect)
             storyIndexToSelect = storyViewModel.getCurrentStoryIndex()
-        } else if (StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.isNotEmpty()) {
+        } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED &&
+                StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.isNotEmpty()) {
             storyViewModel.loadStory(storyIndexToSelect)
             refreshStoryFrameSelection()
             return
