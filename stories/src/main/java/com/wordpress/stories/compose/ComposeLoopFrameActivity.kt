@@ -209,7 +209,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private var saveServiceBound: Boolean = false
     private var preHookRun: Boolean = false
     private var storyIndexToSelect = -1
-    private var storyFrameIndexToRetry: FrameIndex = StoryRepository.DEFAULT_NONE_SELECTED
+    private var storyFrameIndexToRetry: FrameIndex = StoryRepository.DEFAULT_FRAME_NONE_SELECTED
     private var snackbarProvider: SnackbarProvider? = null
     private var mediaPickerProvider: MediaPickerProvider? = null
     private var notificationIntentLoader: NotificationIntentLoader? = null
