@@ -648,7 +648,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED &&
                 StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.isNotEmpty()) {
             storyViewModel.loadStory(storyIndexToSelect)
-            refreshStoryFrameSelection()
             return
         }
 
