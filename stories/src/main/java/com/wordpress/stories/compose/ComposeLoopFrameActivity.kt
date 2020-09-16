@@ -172,6 +172,10 @@ interface PermanentPermissionDenialDialogProvider {
     fun showPermissionPermanentlyDeniedDialog(permission: String)
 }
 
+interface GenericAnnouncementDialogProvider {
+    fun showGenericAnnouncementDialog()
+}
+
 interface StoryDiscardListener {
     fun onStoryDiscarded()
 }
@@ -222,6 +226,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private var firstIntentLoaded: Boolean = false
     protected var permissionsRequestForCameraInProgress: Boolean = false
     private var permissionDenialDialogProvider: PermanentPermissionDenialDialogProvider? = null
+    private var genericAnnouncementDialogProvider: GenericAnnouncementDialogProvider? = null
+    private var showGenericAnnouncementDialogWhenReady = false
     private var useTempCaptureFile = true
 
     private val connection = object : ServiceConnection {
@@ -526,6 +532,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         if (selectedFrameIndex < storyViewModel.getCurrentStorySize()) {
             updateBackgroundSurfaceUIWithStoryFrame(selectedFrameIndex)
         }
+        // upon loading an existing Story, show the generic announcement dialog if present
+        if (showGenericAnnouncementDialogWhenReady) {
+            showGenericAnnouncementDialogWhenReady = false
+            genericAnnouncementDialogProvider?.showGenericAnnouncementDialog()
+        }
     }
 
     private fun setupStoryViewModelObservers() {
@@ -652,6 +663,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED &&
                 StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.isNotEmpty()) {
             storyViewModel.loadStory(storyIndexToSelect)
+            showGenericAnnouncementDialogWhenReady = true
             return
         }
 
@@ -1983,6 +1995,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         this.useTempCaptureFile = useTempFiles
         this.storyViewModel.useTempCaptureFile = useTempFiles
         this.backgroundSurfaceManager.useTempCaptureFile = useTempFiles
+    }
+
+    fun setGenericAnnouncementDialogProvider(provider: GenericAnnouncementDialogProvider) {
+        genericAnnouncementDialogProvider = provider
     }
 
     class ExternalMediaPickerRequestCodesAndExtraKeys {
