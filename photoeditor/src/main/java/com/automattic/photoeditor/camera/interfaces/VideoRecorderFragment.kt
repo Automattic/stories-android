@@ -27,6 +27,7 @@ abstract class VideoRecorderFragment : Fragment(),
             prop, old, new -> flashSupportChangeListener.onFlashSupportChanged(new)
         }
     )
+    var useTempCaptureFile = true
 
     interface FlashSupportChangeListener {
         fun onFlashSupportChanged(isSupported: Boolean)

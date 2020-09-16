@@ -164,7 +164,11 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     @SuppressLint("RestrictedApi")
     override fun startRecordingVideo(finishedListener: VideoRecorderFinished?) {
         activity?.let {
-            currentFile = FileUtils.getTempCaptureFile(it, true)
+            if (useTempCaptureFile) {
+                currentFile = FileUtils.getTempCaptureFile(it, true)
+            } else {
+                currentFile = FileUtils.getLoopFrameFile(it, true)
+            }
         }
 
         currentFile?.let {
@@ -226,7 +230,11 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     override fun takePicture(onImageCapturedListener: ImageCaptureListener) {
         // Create output file to hold the image
         context?.let { context ->
-            currentFile = FileUtils.getTempCaptureFile(context, false).apply { createNewFile() }
+            if (useTempCaptureFile) {
+                currentFile = FileUtils.getTempCaptureFile(context, false).apply { createNewFile() }
+            } else {
+                currentFile = FileUtils.getLoopFrameFile(context, false).apply { createNewFile() }
+            }
 
             currentFile?.let {
                 // Setup image capture metadata
@@ -326,10 +334,12 @@ class CameraXBasicHandling : VideoRecorderFragment() {
 
         @JvmStatic fun getInstance(
             textureView: AutoFitTextureView,
-            flashSupportChangeListener: FlashSupportChangeListener
+            flashSupportChangeListener: FlashSupportChangeListener,
+            useTempCaptureFile: Boolean
         ): CameraXBasicHandling {
             instance.textureView = textureView
             instance.flashSupportChangeListener = flashSupportChangeListener
+            instance.useTempCaptureFile = useTempCaptureFile
             return instance
         }
     }

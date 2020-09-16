@@ -43,6 +43,7 @@ class FrameSaveService : Service() {
     private var optionalMetadata: Bundle? = null // keeps optional metadata about the Story
     private var notificationErrorBaseId: Int = 700 // default
     private var notificationTrackerProvider: NotificationTrackerProvider? = null
+    var useTempCaptureFile: Boolean = true
 
     override fun onCreate() {
         super.onCreate()
@@ -146,7 +147,9 @@ class FrameSaveService : Service() {
             // remove the processor from the list once it's done processing this Story's frames
             storySaveProcessors.remove(processor)
 
-            cleanUpTempStoryFrameFiles(storyFrames.filter { it.saveResultReason == SaveSuccess })
+            if (useTempCaptureFile) {
+                cleanUpTempStoryFrameFiles(storyFrames.filter { it.saveResultReason == SaveSuccess })
+            }
 
             // also if more than one processor is running, let's not stop the Service just now.
             if (storySaveProcessors.isEmpty()) {
