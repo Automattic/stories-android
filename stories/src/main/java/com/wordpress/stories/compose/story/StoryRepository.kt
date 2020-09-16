@@ -53,6 +53,10 @@ object StoryRepository {
         return stories[index]
     }
 
+    @JvmStatic fun getImmutableStories(): List<Story> {
+        return stories.toList()
+    }
+
     private fun createNewStory(): StoryIndex {
         val story = Story(ArrayList())
         stories.add(story)
