@@ -511,6 +511,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             if (selectedFrameIndex < storyViewModel.getCurrentStorySize()) {
                 storyViewModel.setSelectedFrame(selectedFrameIndex)
             }
+        } else {
+            onLoadFromIntent(intent)
         }
     }
 
@@ -643,6 +645,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         if (storyViewModel.getCurrentStoryIndex() == StoryRepository.DEFAULT_NONE_SELECTED) {
             storyViewModel.loadStory(storyIndexToSelect)
             storyIndexToSelect = storyViewModel.getCurrentStoryIndex()
+        } else if (StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.isNotEmpty()) {
+            storyViewModel.loadStory(storyIndexToSelect)
+            refreshStoryFrameSelection()
+            return
         }
 
         if (intent.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED) ||
@@ -674,11 +680,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             )
             addFramesToStoryFromMediaUriList(uriList)
             setDefaultSelectionAndUpdateBackgroundSurfaceUI(uriList)
-        } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED) {
-            if (StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.isNotEmpty()) {
-                storyViewModel.loadStory(storyIndexToSelect)
-                refreshStoryFrameSelection()
-            }
         }
     }
 
