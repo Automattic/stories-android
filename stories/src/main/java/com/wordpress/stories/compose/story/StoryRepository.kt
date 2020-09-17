@@ -13,10 +13,11 @@ typealias StoryIndex = Int
 object StoryRepository {
     const val DEFAULT_NONE_SELECTED = -1
     const val DEFAULT_FRAME_NONE_SELECTED = -1
+    @JvmField
     var currentStoryIndex = DEFAULT_NONE_SELECTED
-        private set
     private val stories = ArrayList<Story>()
 
+    @JvmStatic
     fun loadStory(storyIndex: StoryIndex): Story? {
         when {
             storyIndex == DEFAULT_NONE_SELECTED -> {
@@ -39,6 +40,7 @@ object StoryRepository {
         }
     }
 
+    @JvmStatic
     fun loadStory(story: Story): StoryIndex {
         stories.add(story)
         currentStoryIndex = stories.size - 1
@@ -57,6 +59,20 @@ object StoryRepository {
         return stories.toList()
     }
 
+    @JvmStatic
+    fun findStoryContainingStoryFrameItemsByIds(ids: ArrayList<String>): StoryIndex {
+        // now look for a Story in the StoryRepository that has all these frames and, if not found, let's
+        // just build the Story object ourselves to keep these files arrangement
+        for ((index, story) in stories.withIndex()) {
+            // find the MediaModel for a given Uri from composedFrameFile
+            if (story.frames.filter { ids.contains(it.id) }.size == ids.size) {
+                // here we found the story whose frames collection contains all of the passed ids
+                return index
+            }
+        }
+        return DEFAULT_NONE_SELECTED
+    }
+
     private fun createNewStory(): StoryIndex {
         val story = Story(ArrayList())
         stories.add(story)
@@ -64,6 +80,7 @@ object StoryRepository {
         return currentStoryIndex
     }
 
+    @JvmStatic
     fun addStoryFrameItemToCurrentStory(item: StoryFrameItem) {
         if (!isStoryIndexValid(currentStoryIndex)) return
         stories[currentStoryIndex].frames.add(item)
