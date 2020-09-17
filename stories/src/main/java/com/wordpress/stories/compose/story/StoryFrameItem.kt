@@ -6,13 +6,13 @@ import com.automattic.photoeditor.views.added.AddedViewList
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
 import com.wordpress.stories.compose.story.StoryFrameItemType.IMAGE
-import kotlinx.serialization.Decoder
-import kotlinx.serialization.Encoder
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Transient
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Serializer
-import kotlinx.serialization.internal.ArrayListSerializer
+import kotlinx.serialization.builtins.ListSerializer
 import java.io.File
 
 @Serializable
@@ -66,12 +66,12 @@ data class StoryFrameItem(
     object AddedViewListSerializer : KSerializer<AddedViewList> {
         override fun deserialize(input: Decoder): AddedViewList {
             val newList = AddedViewList()
-            newList.addAll(input.decodeSerializableValue(ArrayListSerializer(AddedView.serializer())))
+            newList.addAll(input.decodeSerializableValue(ListSerializer(AddedView.serializer())))
             return newList
         }
 
         override fun serialize(output: Encoder, addedViews: AddedViewList) {
-            output.encodeSerializableValue(ArrayListSerializer(AddedView.serializer()), addedViews)
+            output.encodeSerializableValue(ListSerializer(AddedView.serializer()), addedViews)
         }
     }
 }
