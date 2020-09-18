@@ -28,6 +28,7 @@ fun getStoryIndexFromIntentOrBundle(savedInstanceState: Bundle?, intent: Intent?
     return index
 }
 
+const val KEY_STORY_EDIT_MODE = "key_story_edit_mode"
 const val KEY_STORY_INDEX = "key_story_index"
 const val KEY_STORY_SAVE_RESULT = "key_story_save_result"
 const val STATE_KEY_CURRENT_STORY_INDEX = "key_current_story_index"
