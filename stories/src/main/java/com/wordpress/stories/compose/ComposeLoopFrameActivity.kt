@@ -221,12 +221,14 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private var firstIntentLoaded: Boolean = false
     protected var permissionsRequestForCameraInProgress: Boolean = false
     private var permissionDenialDialogProvider: PermanentPermissionDenialDialogProvider? = null
+    private var useTempCaptureFile = true
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
             Log.d("ComposeLoopFrame", "onServiceConnected()")
             val binder = service as FrameSaveService.FrameSaveServiceBinder
             frameSaveService = binder.getService()
+            frameSaveService.useTempCaptureFile = useTempCaptureFile
 
             // keep these as they're changing when we call `storyViewModel.finishCurrentStory()`
             val storyIndex = storyViewModel.getCurrentStoryIndex()
@@ -448,7 +450,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     }
                 }
             },
-            authHeaderInterfaceBridge
+                authHeaderInterfaceBridge,
+                useTempCaptureFile
         )
 
         lifecycle.addObserver(backgroundSurfaceManager)
@@ -1963,6 +1966,14 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     fun setPermissionDialogProvider(provider: PermanentPermissionDenialDialogProvider) {
         permissionDenialDialogProvider = provider
+    }
+
+    // true: default, files are created in the internal app directory and these will be cleaned on exit
+    // false: we won't do cleanup and the files will be saved on the app's output directory
+    fun setUseTempCaptureFile(useTempFiles: Boolean) {
+        this.useTempCaptureFile = useTempFiles
+        this.storyViewModel.useTempCaptureFile = useTempFiles
+        this.backgroundSurfaceManager.useTempCaptureFile = useTempFiles
     }
 
     class ExternalMediaPickerRequestCodesAndExtraKeys {

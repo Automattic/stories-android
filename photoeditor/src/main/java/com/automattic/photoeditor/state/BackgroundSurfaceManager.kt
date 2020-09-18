@@ -53,7 +53,8 @@ class BackgroundSurfaceManager(
     private val flashSupportChangeListener: FlashSupportChangeListener,
     private val useCameraX: Boolean,
     private val managerReadyListener: BackgroundSurfaceManagerReadyListener? = null,
-    private val authenticationHeadersInterface: AuthenticationHeadersInterface? = null
+    private val authenticationHeadersInterface: AuthenticationHeadersInterface? = null,
+    var useTempCaptureFile: Boolean = true
 ) : LifecycleObserver {
     private lateinit var cameraBasicHandler: VideoRecorderFragment
     private lateinit var videoPlayerHandling: VideoPlayingBasicHandling
@@ -360,7 +361,7 @@ class BackgroundSurfaceManager(
                 val cameraFragment = supportFragmentManager.findFragmentByTag(KEY_CAMERA_HANDLING_FRAGMENT_TAG)
                 if (cameraFragment == null) {
                     cameraBasicHandler = CameraXBasicHandling.getInstance(photoEditorView.textureView,
-                        flashSupportChangeListener)
+                        flashSupportChangeListener, useTempCaptureFile)
                     supportFragmentManager
                         .beginTransaction().add(cameraBasicHandler, KEY_CAMERA_HANDLING_FRAGMENT_TAG).commit()
                 } else {
@@ -369,6 +370,7 @@ class BackgroundSurfaceManager(
                     // the photoEditorView layout has been recreated so, re-assign its TextureView
                     cameraBasicHandler.textureView = photoEditorView.textureView
                     cameraBasicHandler.flashSupportChangeListener = flashSupportChangeListener
+                    cameraBasicHandler.useTempCaptureFile = useTempCaptureFile
                 }
             }
             CAMERA2 -> {
@@ -376,7 +378,7 @@ class BackgroundSurfaceManager(
                 val cameraFragment = supportFragmentManager.findFragmentByTag(KEY_CAMERA_HANDLING_FRAGMENT_TAG)
                 if (cameraFragment == null) {
                     cameraBasicHandler = Camera2BasicHandling.getInstance(photoEditorView.textureView,
-                        flashSupportChangeListener)
+                        flashSupportChangeListener, useTempCaptureFile)
                     supportFragmentManager
                         .beginTransaction().add(cameraBasicHandler, KEY_CAMERA_HANDLING_FRAGMENT_TAG).commit()
                 } else {
@@ -385,6 +387,7 @@ class BackgroundSurfaceManager(
                     // the photoEditorView layout has been recreated so, re-assign its TextureView
                     cameraBasicHandler.textureView = photoEditorView.textureView
                     cameraBasicHandler.flashSupportChangeListener = flashSupportChangeListener
+                    cameraBasicHandler.useTempCaptureFile = useTempCaptureFile
                 }
                 // add camera handling texture listener
                 photoEditorView.listeners.add((cameraBasicHandler as Camera2BasicHandling).surfaceTextureListener)

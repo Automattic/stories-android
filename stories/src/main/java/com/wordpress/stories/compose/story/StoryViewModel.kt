@@ -14,6 +14,7 @@ import com.wordpress.stories.util.SingleLiveEvent
 
 class StoryViewModel(private val repository: StoryRepository, val storyIndex: StoryIndex) : ViewModel() {
     private var currentSelectedFrameIndex: Int = DEFAULT_SELECTION
+    var useTempCaptureFile = true
 
     private val _uiState: MutableLiveData<StoryFrameListUiState> = MutableLiveData()
     val uiState: LiveData<StoryFrameListUiState> = _uiState
@@ -69,7 +70,9 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
     }
 
     fun discardCurrentStory() {
-        FrameSaveService.cleanUpTempStoryFrameFiles(getImmutableCurrentStoryFrames())
+        if (useTempCaptureFile) {
+            FrameSaveService.cleanUpTempStoryFrameFiles(getImmutableCurrentStoryFrames())
+        }
         repository.discardCurrentStory()
         currentSelectedFrameIndex = DEFAULT_SELECTION // default selected frame when loading a new Story
         _onSelectedFrameIndex.value = Pair(DEFAULT_SELECTION, currentSelectedFrameIndex)
@@ -178,7 +181,9 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
 
     fun removeFrameAt(pos: Int) {
         // delete any temporal files
-        FrameSaveService.cleanUpTempStoryFrameFiles(getImmutableCurrentStoryFrames().subList(pos, pos + 1))
+        if (useTempCaptureFile) {
+            FrameSaveService.cleanUpTempStoryFrameFiles(getImmutableCurrentStoryFrames().subList(pos, pos + 1))
+        }
 
         // remove from the repo
         repository.removeFrameAt(pos)
