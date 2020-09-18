@@ -36,4 +36,8 @@ class NextButton @JvmOverloads constructor(
         super.setEnabled(enabled)
         invalidate()
     }
+
+    fun setText(newText: String) {
+        findViewById<TextView>(R.id.next_button_text).text = newText
+    }
 }

@@ -503,6 +503,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
         setupStoryViewModelObservers()
 
+        if (intent.getBooleanExtra(KEY_STORY_EDIT_MODE, false)) {
+            next_button.setText(getString(R.string.label_control_edit_done))
+        }
+
         if (savedInstanceState != null) {
             currentOriginalCapturedFile =
                 savedInstanceState.getSerializable(STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE) as File?
