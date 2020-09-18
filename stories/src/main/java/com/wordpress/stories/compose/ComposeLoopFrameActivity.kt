@@ -209,7 +209,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private var saveServiceBound: Boolean = false
     private var preHookRun: Boolean = false
     private var storyIndexToSelect = -1
-    private var storyFrameIndexToRetry: FrameIndex = StoryRepository.DEFAULT_NONE_SELECTED
+    private var storyFrameIndexToRetry: FrameIndex = StoryRepository.DEFAULT_FRAME_NONE_SELECTED
     private var snackbarProvider: SnackbarProvider? = null
     private var mediaPickerProvider: MediaPickerProvider? = null
     private var notificationIntentLoader: NotificationIntentLoader? = null
@@ -511,6 +511,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             if (selectedFrameIndex < storyViewModel.getCurrentStorySize()) {
                 storyViewModel.setSelectedFrame(selectedFrameIndex)
             }
+        } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED) {
+            onLoadFromIntent(intent)
         }
     }
 
@@ -643,6 +645,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         if (storyViewModel.getCurrentStoryIndex() == StoryRepository.DEFAULT_NONE_SELECTED) {
             storyViewModel.loadStory(storyIndexToSelect)
             storyIndexToSelect = storyViewModel.getCurrentStoryIndex()
+        } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED &&
+                StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.isNotEmpty()) {
+            storyViewModel.loadStory(storyIndexToSelect)
+            return
         }
 
         if (intent.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED) ||
@@ -674,11 +680,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             )
             addFramesToStoryFromMediaUriList(uriList)
             setDefaultSelectionAndUpdateBackgroundSurfaceUI(uriList)
-        } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED) {
-            if (StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.isNotEmpty()) {
-                storyViewModel.loadStory(storyIndexToSelect)
-                refreshStoryFrameSelection()
-            }
         }
     }
 
