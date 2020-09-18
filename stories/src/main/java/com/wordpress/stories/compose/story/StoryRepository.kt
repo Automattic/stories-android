@@ -13,11 +13,9 @@ typealias StoryIndex = Int
 object StoryRepository {
     const val DEFAULT_NONE_SELECTED = -1
     const val DEFAULT_FRAME_NONE_SELECTED = -1
-    @JvmField
     var currentStoryIndex = DEFAULT_NONE_SELECTED
     private val stories = ArrayList<Story>()
 
-    @JvmStatic
     fun loadStory(storyIndex: StoryIndex): Story? {
         when {
             storyIndex == DEFAULT_NONE_SELECTED -> {
@@ -40,7 +38,6 @@ object StoryRepository {
         }
     }
 
-    @JvmStatic
     fun loadStory(story: Story): StoryIndex {
         stories.add(story)
         currentStoryIndex = stories.size - 1
@@ -51,11 +48,11 @@ object StoryRepository {
         return storyIndex > DEFAULT_NONE_SELECTED && stories.size > storyIndex
     }
 
-    @JvmStatic fun getStoryAtIndex(index: StoryIndex): Story {
+    fun getStoryAtIndex(index: StoryIndex): Story {
         return stories[index]
     }
 
-    @JvmStatic fun getImmutableStories(): List<Story> {
+    fun getImmutableStories(): List<Story> {
         return stories.toList()
     }
 
@@ -80,7 +77,6 @@ object StoryRepository {
         return currentStoryIndex
     }
 
-    @JvmStatic
     fun addStoryFrameItemToCurrentStory(item: StoryFrameItem) {
         if (!isStoryIndexValid(currentStoryIndex)) return
         stories[currentStoryIndex].frames.add(item)
