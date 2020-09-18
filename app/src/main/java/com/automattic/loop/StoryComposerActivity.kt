@@ -18,6 +18,8 @@ import com.automattic.loop.photopicker.RequestCodes
 import com.automattic.loop.util.CopyExternalUrisLocallyUseCase
 import com.google.android.material.snackbar.Snackbar
 import com.wordpress.stories.compose.ComposeLoopFrameActivity
+import com.wordpress.stories.compose.FrameSaveErrorDialog
+import com.wordpress.stories.compose.GenericAnnouncementDialogProvider
 import com.wordpress.stories.compose.MediaPickerProvider
 import com.wordpress.stories.compose.MetadataProvider
 import com.wordpress.stories.compose.NotificationIntentLoader
@@ -46,6 +48,7 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
     MetadataProvider,
     StoryDiscardListener,
     PrepublishingEventProvider,
+    GenericAnnouncementDialogProvider,
     CoroutineScope {
     private var job: Job = Job()
 
@@ -61,6 +64,7 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
         setStoryDiscardListener(this) // optionally listen to discard events
         setPrepublishingEventProvider(this)
         setNotificationTrackerProvider(application as Loop) // optionally set Notification Tracker.
+        setGenericAnnouncementDialogProvider(this)
         // The notifiationTracker needs to be something that outlives the Activity, given the Service could be running
         // after the user has exited ComposeLoopFrameActivity
     }
@@ -153,6 +157,7 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
     }
 
     companion object {
+        protected const val FRAGMENT_DIALOG = "dialog"
         const val KEY_EXAMPLE_METADATA = "key_example_metadata"
         const val KEY_STORY_INDEX = "key_story_index"
         const val BASE_FRAME_MEDIA_ERROR_NOTIFICATION_ID: Int = 72300
@@ -165,5 +170,12 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
 
     override fun onStorySaveButtonPressed() {
         processStorySaving()
+    }
+
+    override fun showGenericAnnouncementDialog() {
+        FrameSaveErrorDialog.newInstance(
+                title = getString(R.string.dialog_general_announcement_title),
+                message = getString(R.string.dialog_general_announcement_title)
+        ).show(supportFragmentManager, FRAGMENT_DIALOG)
     }
 }
