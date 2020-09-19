@@ -41,7 +41,7 @@
     <string name="dialog_discard_story_ok_button">Discard</string>
 
     <string name="dialog_discard_story_title_edit">Discard changes?</string>
-    <string name="dialog_discard_story_message_edit">Any changes made will be lost.</string>
+    <string name="dialog_discard_story_message_edit">Any changes made will not be saved.</string>
     <string name="dialog_discard_story_ok_button_edit">Discard</string>
 
     <!--preference keys-->
