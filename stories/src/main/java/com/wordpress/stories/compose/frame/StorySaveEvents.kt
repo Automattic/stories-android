@@ -14,6 +14,7 @@ class StorySaveEvents {
         var storyIndex: StoryIndex = 0,
         val frameSaveResult: MutableList<FrameSaveResult> = mutableListOf(),
         val isRetry: Boolean = false,
+        val isEditMode: Boolean = false,
         var elapsedTime: Long = 0,
         val metadata: Bundle? = null
     ) : Parcelable {

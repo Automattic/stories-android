@@ -44,6 +44,7 @@ class FrameSaveService : Service() {
     private var notificationErrorBaseId: Int = 700 // default
     private var notificationTrackerProvider: NotificationTrackerProvider? = null
     var useTempCaptureFile: Boolean = true
+    var isEditMode: Boolean = false
 
     override fun onCreate() {
         super.onCreate()
@@ -137,7 +138,7 @@ class FrameSaveService : Service() {
             // also hold a reference to it in the storySaveProcessors list in case the Service is destroyed, so
             // we can cancel each coroutine.
             val isRetry = frameIndex > StoryRepository.DEFAULT_NONE_SELECTED
-            val processor = createProcessor(storyIndex, frameIndex, photoEditor, isRetry)
+            val processor = createProcessor(storyIndex, frameIndex, photoEditor, isRetry, isEditMode)
             storySaveProcessors.add(processor)
             runProcessor(
                 processor,
@@ -172,7 +173,8 @@ class FrameSaveService : Service() {
         storyIndex: StoryIndex,
         frameIndex: FrameIndex,
         photoEditor: PhotoEditor,
-        isRetry: Boolean
+        isRetry: Boolean,
+        isEditMode: Boolean
     ): StorySaveProcessor {
         return StorySaveProcessor(
             this,
@@ -181,6 +183,7 @@ class FrameSaveService : Service() {
             frameSaveNotifier,
             FrameSaveManager(photoEditor),
             isRetry,
+            isEditMode,
             FrameSaveTimeTracker(),
             metadata = optionalMetadata
         )
@@ -279,10 +282,11 @@ class FrameSaveService : Service() {
         private val frameSaveNotifier: FrameSaveNotifier,
         private val frameSaveManager: FrameSaveManager,
         private val isRetry: Boolean,
+        private val isEditMode: Boolean,
         val timeTracker: FrameSaveTimeTracker,
         private val metadata: Bundle? = null
     ) : FrameSaveProgressListener {
-        val storySaveResult = StorySaveResult(isRetry = isRetry, metadata = metadata)
+        val storySaveResult = StorySaveResult(isRetry = isRetry, isEditMode = isEditMode, metadata = metadata)
         val title =
             StoryRepository.getStoryAtIndex(storyIndex).title ?: context.getString(R.string.story_saving_untitled)
 
