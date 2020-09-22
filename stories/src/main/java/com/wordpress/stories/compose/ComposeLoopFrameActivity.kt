@@ -236,6 +236,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             val binder = service as FrameSaveService.FrameSaveServiceBinder
             frameSaveService = binder.getService()
             frameSaveService.useTempCaptureFile = useTempCaptureFile
+            frameSaveService.isEditMode = intent.getBooleanExtra(KEY_STORY_EDIT_MODE, false)
 
             // keep these as they're changing when we call `storyViewModel.finishCurrentStory()`
             val storyIndex = storyViewModel.getCurrentStoryIndex()
