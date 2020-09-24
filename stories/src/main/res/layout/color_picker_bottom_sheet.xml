@@ -7,4 +7,13 @@
     android:layout_height="@dimen/color_picker_bottom_sheet_default_height"
     android:orientation="vertical">
 
+    <View
+        android:id="@+id/bottom_sheet_handle"
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="4dp"
+        android:alpha="0.12"
+        android:background="@drawable/bg_bottom_sheet_handle" />
+
 </LinearLayout>
