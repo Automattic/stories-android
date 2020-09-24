@@ -17,6 +17,7 @@ import com.automattic.photoeditor.text.IdentifiableTypeface
 import com.automattic.photoeditor.text.IdentifiableTypeface.TypefaceId
 import com.wordpress.stories.R
 import java.util.TreeMap
+import kotlin.math.roundToInt
 
 /**
  * Helper class that keeps track of predefined supported text style rules and supports
@@ -126,6 +127,10 @@ class TextStyleGroupManager(val context: Context) {
         textView.setShadowLayer(textStyleRule.shadowLayer)
 
         textView.text = textStyleRule.label
+
+        // Add some corrective padding so the label for each font is kept at roughly center,
+        // despite their different intrinsic heights and placements
+        adjustTextViewLabelAlignment(typefaceId, textView)
     }
 
     /**
@@ -135,17 +140,44 @@ class TextStyleGroupManager(val context: Context) {
         return supportedTypefaces.higherKey(typefaceId) ?: supportedTypefaces.firstKey()
     }
 
+    private fun adjustTextViewLabelAlignment(@TypefaceId typefaceId: Int, textView: TextView) {
+        // Always reset text size since it's modified for Pacifico
+        var newTextSize = 18F
+        var paddingBottom = 0F
+        var paddingTop = 0F
+
+        when (typefaceId) {
+            TYPEFACE_ID_NUNITO -> paddingBottom = 1.9F
+            TYPEFACE_ID_LIBRE_BASKERVILLE -> paddingTop = 1.5F
+            TYPEFACE_ID_OSWALD -> paddingBottom = 2.3F
+            TYPEFACE_ID_PACIFICO -> {
+                paddingBottom = 4.5F
+                newTextSize = 15F
+            }
+            TYPEFACE_ID_SPACE_MONO -> {}
+            TYPEFACE_ID_SHRIKHAND -> paddingTop = 2.3F
+        }
+
+        textView.setPadding(0, paddingTop.dpToPx().roundToInt(), 0, paddingBottom.dpToPx().roundToInt())
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, newTextSize)
+    }
+
     private fun TextView.setShadowLayer(shadowLayer: ShadowLayer?) {
         shadowLayer?.run {
-            setShadowLayer(radius.toPx(), dx.toPx(), dy.toPx(), color)
+            setShadowLayer(radius.spToPx(), dx.spToPx(), dy.spToPx(), color)
         } ?: run {
             setShadowLayer(0F, 0F, 0F, 0)
         }
     }
 
-    private fun Float.toPx(): Float {
+    private fun Float.spToPx(): Float {
         return TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_SP, this, context.resources.displayMetrics)
+    }
+
+    private fun Float.dpToPx(): Float {
+        return TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, this, context.resources.displayMetrics)
     }
 
     companion object {
