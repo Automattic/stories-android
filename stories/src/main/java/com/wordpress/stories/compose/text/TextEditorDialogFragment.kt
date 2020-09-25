@@ -17,7 +17,9 @@ import com.automattic.photoeditor.text.IdentifiableTypeface.TypefaceId
 import com.automattic.photoeditor.text.TextStyler
 import com.wordpress.stories.R
 import com.wordpress.stories.compose.StoriesAnalyticsListener
+import com.wordpress.stories.compose.text.TextColorPickerAdapter.Companion.Mode
 import kotlinx.android.synthetic.main.add_text_dialog.*
+import kotlinx.android.synthetic.main.color_picker_bottom_sheet.*
 import kotlinx.android.synthetic.main.add_text_dialog.view.*
 
 /**
@@ -70,6 +72,7 @@ class TextEditorDialogFragment : DialogFragment() {
             ColorPickerBottomSheetHandler(it, view)
         }
 
+        // TODO Delete
         // Setup the color picker for text color
         val addTextColorPickerRecyclerView = view.add_text_color_picker_recycler_view
         val layoutManager = LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
@@ -82,6 +85,7 @@ class TextEditorDialogFragment : DialogFragment() {
         }
 
         activity?.let {
+            // TODO Delete
             val colorPickerAdapter = ColorPickerAdapter(it)
             // This listener will change the text color when clicked on any color from picker
             colorPickerAdapter.setOnColorPickerClickListener { colorCode ->
@@ -89,6 +93,19 @@ class TextEditorDialogFragment : DialogFragment() {
                 add_text_edit_text?.setTextColor(colorCode)
             }
             addTextColorPickerRecyclerView.adapter = colorPickerAdapter
+
+            // Set up the color picker for text color
+            val textColorPickerAdapter = TextColorPickerAdapter(it, Mode.FOREGROUND).apply {
+                setOnColorPickerClickListener { colorCode ->
+                    this@TextEditorDialogFragment.colorCode = colorCode
+                    add_text_edit_text?.setTextColor(colorCode)
+                }
+            }
+            with(text_color_picker_recycler_view) {
+                this.layoutManager = LinearLayoutManager(it, LinearLayoutManager.HORIZONTAL, false)
+                setHasFixedSize(true)
+                this.adapter = textColorPickerAdapter
+            }
         }
 
         text_alignment_button.setOnClickListener {
