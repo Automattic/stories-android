@@ -16,4 +16,27 @@
         android:alpha="0.12"
         android:background="@drawable/bg_bottom_sheet_handle" />
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="2dp"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#DE000000"
+        android:text="@string/color_picker_label_text" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/text_color_picker_recycler_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:orientation="horizontal"
+        android:visibility="visible"
+        android:clipToPadding="false"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        tools:background="@android:color/black"
+        tools:listitem="@layout/color_picker_list_item" />
+
 </LinearLayout>
