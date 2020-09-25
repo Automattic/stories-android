@@ -191,6 +191,7 @@
             android:contentDescription="@string/stickers_button_alt"
             android:background="@drawable/edit_mode_controls_circle_selector"
             android:layout_marginStart="@dimen/edit_mode_button_group_margin_between"
+            android:visibility="gone"
             />
 
         <ImageButton
