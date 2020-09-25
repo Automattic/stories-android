@@ -4,22 +4,38 @@
     android:id="@+id/color_picker_view_touchable_area"
     android:layout_width="@dimen/color_picker_touchable_area_size"
     android:layout_height="@dimen/color_picker_touchable_area_size"
-    android:padding="@dimen/color_picker_item_margin"
-    android:layout_alignParentTop="true"
-    >
-    <RelativeLayout
-        android:id="@+id/color_picker_view_background"
-        android:layout_width="@dimen/color_picker_background_size"
-        android:layout_height="@dimen/color_picker_background_size"
-        android:layout_centerInParent="true"
-        android:background="@drawable/ic_color_picker_background"
-        tools:ignore="UselessParent">
+    android:layout_alignParentTop="true">
 
         <View
             android:id="@+id/color_picker_view_actual_color"
-            android:layout_width="@dimen/color_picker_filler_size"
-            android:layout_height="@dimen/color_picker_filler_size"
+            android:layout_width="@dimen/color_picker_background_size"
+            android:layout_height="@dimen/color_picker_background_size"
             android:layout_centerInParent="true"
             android:background="@drawable/ic_color_picker_filler"/>
-    </RelativeLayout>
+
+        <View
+            android:id="@+id/color_picker_view_actual_color_outline"
+            android:layout_width="@dimen/color_picker_background_size"
+            android:layout_height="@dimen/color_picker_background_size"
+            android:layout_centerInParent="true"
+            android:background="@drawable/color_picker_background_ring"/>
+
+        <RelativeLayout
+            android:id="@+id/color_picker_selected_checkmark_view"
+            android:layout_width="@dimen/color_picker_selection_background_size"
+            android:layout_height="@dimen/color_picker_selection_background_size"
+            android:layout_centerInParent="true"
+            android:background="@drawable/color_picker_selection_background"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <View
+                android:id="@+id/color_picker_selected_checkmark_drawable"
+                android:layout_width="@dimen/color_picker_checkmark_size"
+                android:layout_height="@dimen/color_picker_checkmark_size"
+                android:layout_centerInParent="true"
+                android:background="@drawable/ic_checkmark" />
+
+        </RelativeLayout>
+
 </RelativeLayout>
