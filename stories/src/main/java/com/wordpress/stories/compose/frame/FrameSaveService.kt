@@ -18,7 +18,12 @@ import com.automattic.photoeditor.PhotoEditor
 import com.automattic.photoeditor.util.FileUtils.Companion.TEMP_FILE_NAME_PREFIX
 import com.wordpress.stories.R
 import com.wordpress.stories.compose.NotificationTrackerProvider
+import com.wordpress.stories.compose.frame.StorySaveEvents.FrameSaveCanceled
+import com.wordpress.stories.compose.frame.StorySaveEvents.FrameSaveCompleted
+import com.wordpress.stories.compose.frame.StorySaveEvents.FrameSaveFailed
+import com.wordpress.stories.compose.frame.StorySaveEvents.FrameSaveProgress
 import com.wordpress.stories.compose.frame.StorySaveEvents.FrameSaveResult
+import com.wordpress.stories.compose.frame.StorySaveEvents.FrameSaveStart
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveError
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
 import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveProcessStart
@@ -291,22 +296,28 @@ class FrameSaveService : Service() {
             StoryRepository.getStoryAtIndex(storyIndex).title ?: context.getString(R.string.story_saving_untitled)
 
         // FrameSaveProgressListener overrides
-        override fun onFrameSaveStart(frameIndex: FrameIndex) {
+        override fun onFrameSaveStart(frameIndex: FrameIndex, frame: StoryFrameItem) {
             Log.d(LOG_TAG, "START save frame idx: " + applyFrameIndexOverride(frameIndex))
             frameSaveNotifier.addStoryPageInfoToForegroundNotification(
                 storyIndex,
                 mediaIdFromStoryAndFrameIndex(storyIndex, applyFrameIndexOverride(frameIndex)),
                 title
             )
+            // dispatch FrameSaveStart event
+            EventBus.getDefault().post(FrameSaveStart(storyIndex, frameIndex, frame.id))
         }
 
-        override fun onFrameSaveProgress(frameIndex: FrameIndex, progress: Double) {
+        override fun onFrameSaveProgress(frameIndex: FrameIndex, frame: StoryFrameItem, progress: Double) {
             Log.d(LOG_TAG, "PROGRESS save frame idx: " + applyFrameIndexOverride(frameIndex) + " %: " + progress)
+            val progressF = progress.toFloat()
             frameSaveNotifier.updateNotificationProgressForMedia(
-                mediaIdFromStoryAndFrameIndex(storyIndex, applyFrameIndexOverride(frameIndex)), progress.toFloat())
+                mediaIdFromStoryAndFrameIndex(storyIndex, applyFrameIndexOverride(frameIndex)), progressF)
+
+            // dispatch FrameSaveProgress event
+            EventBus.getDefault().post(FrameSaveProgress(storyIndex, frameIndex, frame.id, progressF))
         }
 
-        override fun onFrameSaveCompleted(frameIndex: FrameIndex) {
+        override fun onFrameSaveCompleted(frameIndex: FrameIndex, frame: StoryFrameItem) {
             Log.d(LOG_TAG, "END save frame idx: " + applyFrameIndexOverride(frameIndex))
             frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(
                 storyIndex,
@@ -316,9 +327,12 @@ class FrameSaveService : Service() {
             )
             // add success data to StorySaveResult
             storySaveResult.frameSaveResult.add(FrameSaveResult(applyFrameIndexOverride(frameIndex), SaveSuccess))
+
+            // dispatch FrameSaveCompleted event
+            EventBus.getDefault().post(FrameSaveCompleted(storyIndex, frameIndex, frame.id))
         }
 
-        override fun onFrameSaveCanceled(frameIndex: FrameIndex) {
+        override fun onFrameSaveCanceled(frameIndex: FrameIndex, frame: StoryFrameItem) {
             Log.d(LOG_TAG, "CANCELED save frame idx: " + applyFrameIndexOverride(frameIndex))
             // remove one from the count
             frameSaveNotifier.incrementUploadedMediaCountFromProgressNotification(
@@ -329,9 +343,12 @@ class FrameSaveService : Service() {
             // add error data to StorySaveResult
             storySaveResult.frameSaveResult.add(
                 FrameSaveResult(applyFrameIndexOverride(frameIndex), SaveError(REASON_CANCELLED)))
+
+            // dispatch FrameSaveCanceled event
+            EventBus.getDefault().post(FrameSaveCanceled(storyIndex, frameIndex, frame.id))
         }
 
-        override fun onFrameSaveFailed(frameIndex: FrameIndex, reason: String?) {
+        override fun onFrameSaveFailed(frameIndex: FrameIndex, frame: StoryFrameItem, reason: String?) {
             Log.d(LOG_TAG, "FAILED save frame idx: " + applyFrameIndexOverride(frameIndex) +
                     " - error: " + reason.orEmpty())
             // remove one from the count
@@ -342,6 +359,9 @@ class FrameSaveService : Service() {
             )
             // add error data to StorySaveResult
             storySaveResult.frameSaveResult.add(FrameSaveResult(applyFrameIndexOverride(frameIndex), SaveError(reason)))
+
+            // dispatch FrameSaveFailed event
+            EventBus.getDefault().post(FrameSaveFailed(storyIndex, frameIndex, frame.id))
         }
 
         fun attachProgressListener() {

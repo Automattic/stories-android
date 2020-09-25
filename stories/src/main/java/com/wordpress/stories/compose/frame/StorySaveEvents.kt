@@ -42,6 +42,38 @@ class StorySaveEvents {
         var storyIndex: StoryIndex
     )
 
+    // StoryFrameSave progress events broadcasted with EventBus
+    data class FrameSaveProgress(
+        val storyIndex: StoryIndex,
+        val frameIndex: FrameIndex,
+        val frameId: String?,
+        val progress: Float
+    )
+
+    data class FrameSaveStart(
+        val storyIndex: StoryIndex,
+        val frameIndex: FrameIndex,
+        val frameId: String?
+    )
+
+    data class FrameSaveCompleted(
+        val storyIndex: StoryIndex,
+        val frameIndex: FrameIndex,
+        val frameId: String?
+    )
+
+    data class FrameSaveFailed(
+        val storyIndex: StoryIndex,
+        val frameIndex: FrameIndex,
+        val frameId: String?
+    )
+
+    data class FrameSaveCanceled(
+        val storyIndex: StoryIndex,
+        val frameIndex: FrameIndex,
+        val frameId: String?
+    )
+
     companion object {
         @JvmStatic fun allErrorsInResult(frameSaveResult: List<FrameSaveResult>): List<FrameSaveResult> {
             return frameSaveResult.filter { it.resultReason is SaveError }
