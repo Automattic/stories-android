@@ -84,9 +84,8 @@ class TextEditorDialogFragment : DialogFragment() {
         }
 
         activity?.let {
-
             // Set up the color picker for text color
-            val textColorPickerAdapter = TextColorPickerAdapter(it, Mode.FOREGROUND).apply {
+            val textColorPickerAdapter = TextColorPickerAdapter(it, Mode.FOREGROUND, colorCode).apply {
                 setOnColorPickerClickListener { colorCode ->
                     this@TextEditorDialogFragment.colorCode = colorCode
                     add_text_edit_text?.setTextColor(colorCode)

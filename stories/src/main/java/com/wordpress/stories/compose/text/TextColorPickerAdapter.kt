@@ -13,13 +13,13 @@ import java.util.ArrayList
 
 typealias OnTextColorPickerClickListener = (Int) -> Unit
 
-class TextColorPickerAdapter internal constructor(private val context: Context, mode: Mode) :
+class TextColorPickerAdapter internal constructor(private val context: Context, mode: Mode, startColor: Int? = null) :
         RecyclerView.Adapter<TextColorPickerAdapter.ViewHolder>() {
     private val colorPickerColors = getDefaultColors(context, mode)
 
     private var onTextColorPickerClickListener: OnTextColorPickerClickListener? = null
 
-    private var selectedPosition = RecyclerView.NO_POSITION
+    private var selectedPosition = colorPickerColors.indexOf(startColor)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(context).inflate(R.layout.color_picker_list_item, parent, false)
