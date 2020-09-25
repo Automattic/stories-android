@@ -8,8 +8,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.wordpress.stories.R
+import com.wordpress.stories.util.colorListFromTypedArray
 import kotlinx.android.synthetic.main.color_picker_list_item.view.*
-import java.util.ArrayList
 
 typealias OnTextColorPickerClickListener = (Int) -> Unit
 
@@ -66,18 +66,12 @@ class TextColorPickerAdapter internal constructor(private val context: Context, 
         enum class Mode { FOREGROUND, BACKGROUND }
 
         fun getDefaultColors(context: Context, mode: Mode): List<Int> {
-            val colorArray = context.resources.obtainTypedArray(when (mode) {
+            val baseArray = context.resources.obtainTypedArray(when (mode) {
                 Mode.FOREGROUND -> R.array.text_colors
                 Mode.BACKGROUND -> R.array.text_background_colors
             })
 
-            val arrayList = ArrayList<Int>()
-            for (i in 0 until colorArray.length()) {
-                arrayList.add(colorArray.getColor(i, 0))
-            }
-
-            colorArray.recycle()
-            return arrayList
+            return colorListFromTypedArray(context.resources, baseArray)
         }
     }
 }
