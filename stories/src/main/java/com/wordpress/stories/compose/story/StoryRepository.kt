@@ -2,6 +2,7 @@ package com.wordpress.stories.compose.story
 
 import com.wordpress.stories.compose.frame.FrameIndex
 import com.wordpress.stories.compose.frame.StorySaveEvents.FrameSaveResult
+import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
 import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveResult
 import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.FileBackgroundSource
 import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.UriBackgroundSource
@@ -170,5 +171,20 @@ object StoryRepository {
         } else {
             (model.source as FileBackgroundSource).file.toString()
         }
+    }
+
+    fun getCurrentStorySaveProgress(storyIndex: StoryIndex, oneItemActualProgress: Float = 0.0F): Float {
+        var currentProgress = 0.0F
+        if (isStoryIndexValid(storyIndex)) {
+            val story = getStoryAtIndex(storyIndex)
+            if (story.frames.isNotEmpty()) {
+                val readyFrameCount = story.frames.filter {
+                    it.composedFrameFile != null && it.saveResultReason is SaveSuccess
+                }.count()
+                currentProgress = (readyFrameCount / story.frames.size).toFloat()
+                currentProgress += (oneItemActualProgress / story.frames.size)
+            }
+        }
+        return currentProgress
     }
 }
