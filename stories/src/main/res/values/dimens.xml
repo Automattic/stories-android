@@ -11,7 +11,6 @@
     <dimen name="normal_button_font_size">13sp</dimen>
     <dimen name="top_button_group_margin">@dimen/normal_button_margin</dimen>
     <dimen name="main_button_elevation">2dp</dimen>
-    <dimen name="color_picker_item_margin">8dp</dimen>
 
     <!-- Color picker bottom sheet -->
     <dimen name="color_picker_bottom_sheet_default_height">250dp</dimen>

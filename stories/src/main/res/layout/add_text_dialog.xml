@@ -83,21 +83,6 @@
             android:layout_margin="@dimen/normal_button_margin"
             android:background="@android:color/transparent"
             android:src="@drawable/ic_textcolor_replaceme" />
-
-        <!-- TODO Delete -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/add_text_color_picker_recycler_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/color_picker_item_margin"
-            android:layout_centerHorizontal="true"
-            android:layout_alignParentBottom="true"
-            android:layout_toStartOf="@id/color_picker_button"
-            android:orientation="horizontal"
-            android:visibility="gone"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:background="@android:color/black"
-            tools:listitem="@layout/color_picker_list_item" />
     </RelativeLayout>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout

@@ -20,7 +20,6 @@ import com.wordpress.stories.compose.StoriesAnalyticsListener
 import com.wordpress.stories.compose.text.TextColorPickerAdapter.Companion.Mode
 import kotlinx.android.synthetic.main.add_text_dialog.*
 import kotlinx.android.synthetic.main.color_picker_bottom_sheet.*
-import kotlinx.android.synthetic.main.add_text_dialog.view.*
 
 /**
  * Created by Burhanuddin Rashid on 1/16/2018.
@@ -72,27 +71,12 @@ class TextEditorDialogFragment : DialogFragment() {
             ColorPickerBottomSheetHandler(it, view)
         }
 
-        // TODO Delete
-        // Setup the color picker for text color
-        val addTextColorPickerRecyclerView = view.add_text_color_picker_recycler_view
-        val layoutManager = LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
-        addTextColorPickerRecyclerView.layoutManager = layoutManager
-        addTextColorPickerRecyclerView.setHasFixedSize(true)
-
         // Hide the bottom sheet if the user taps in the EditText
         add_text_edit_text.setOnClickListener {
             bottomSheetHandler?.hideBottomSheet()
         }
 
         activity?.let {
-            // TODO Delete
-            val colorPickerAdapter = ColorPickerAdapter(it)
-            // This listener will change the text color when clicked on any color from picker
-            colorPickerAdapter.setOnColorPickerClickListener { colorCode ->
-                this.colorCode = colorCode
-                add_text_edit_text?.setTextColor(colorCode)
-            }
-            addTextColorPickerRecyclerView.adapter = colorPickerAdapter
 
             // Set up the color picker for text color
             val textColorPickerAdapter = TextColorPickerAdapter(it, Mode.FOREGROUND).apply {
