@@ -534,7 +534,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     override fun onStart() {
         super.onStart()
         val selectedFrameIndex = storyViewModel.getSelectedFrameIndex()
-        if (selectedFrameIndex < storyViewModel.getCurrentStorySize()) {
+        if (!launchCameraRequestPending && !launchVideoPlayerRequestPending
+                && selectedFrameIndex < storyViewModel.getCurrentStorySize()) {
             updateBackgroundSurfaceUIWithStoryFrame(selectedFrameIndex)
         }
         // upon loading an existing Story, show the generic announcement dialog if present
