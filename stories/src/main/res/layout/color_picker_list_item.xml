@@ -30,6 +30,13 @@
             tools:visibility="visible">
 
             <View
+                android:id="@+id/color_picker_selected_checkmark_outline"
+                android:layout_width="@dimen/color_picker_selection_background_size"
+                android:layout_height="@dimen/color_picker_selection_background_size"
+                android:layout_centerInParent="true"
+                android:background="@drawable/color_picker_background_ring"/>
+
+            <View
                 android:id="@+id/color_picker_selected_checkmark_drawable"
                 android:layout_width="@dimen/color_picker_checkmark_size"
                 android:layout_height="@dimen/color_picker_checkmark_size"
