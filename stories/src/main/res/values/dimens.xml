@@ -18,9 +18,9 @@
 
     <!-- Color picker item -->
     <dimen name="color_picker_touchable_area_size">60dp</dimen>
-    <dimen name="color_picker_background_size">52dp</dimen>
-    <dimen name="color_picker_selection_background_size">28dp</dimen>
-    <dimen name="color_picker_checkmark_size">16dp</dimen>
+    <dimen name="color_picker_background_size">54dp</dimen>
+    <dimen name="color_picker_selection_background_size">34dp</dimen>
+    <dimen name="color_picker_checkmark_size">20dp</dimen>
 
     <dimen name="shutter_button_margin">68dp</dimen>
 
