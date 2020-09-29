@@ -4,6 +4,7 @@
     android:id="@+id/color_picker_view_touchable_area"
     android:layout_width="@dimen/color_picker_touchable_area_size"
     android:layout_height="@dimen/color_picker_touchable_area_size"
+    android:layout_marginHorizontal="2dp"
     android:layout_alignParentTop="true">
 
         <View
