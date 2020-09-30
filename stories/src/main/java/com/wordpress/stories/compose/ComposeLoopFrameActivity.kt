@@ -178,6 +178,7 @@ interface GenericAnnouncementDialogProvider {
 
 interface StoryDiscardListener {
     fun onStoryDiscarded()
+    fun onFrameRemove(storyIndex: StoryIndex, storyFrameIndex: Int) // called right before actual removal
 }
 
 abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTappedListener {
@@ -1023,10 +1024,13 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                             if (storyViewModel.getCurrentStorySize() == 1) {
                                 // discard the whole story
                                 safelyDiscardCurrentStoryAndCleanUpIntent()
+                                storyDiscardListener?.onStoryDiscarded()
                             } else {
                                 // get currentFrame value as it will change after calling onAboutToDeleteStoryFrame
                                 val currentFrameToDeleteIndex = storyViewModel.getSelectedFrameIndex()
                                 onAboutToDeleteStoryFrame(currentFrameToDeleteIndex)
+                                storyDiscardListener?.onFrameRemove(storyViewModel.getCurrentStoryIndex(),
+                                        currentFrameToDeleteIndex)
                                 // now discard it from the viewModel
                                 storyViewModel.removeFrameAt(currentFrameToDeleteIndex)
                             }
