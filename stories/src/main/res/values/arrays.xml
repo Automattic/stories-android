@@ -52,6 +52,7 @@
     </array>
 
     <array name="text_background_colors">
+        <item>#00000000</item>
         <item>@array/text_colors_base</item>
         <item>@array/text_colors_light</item>
         <item>@array/text_colors_regular</item>
