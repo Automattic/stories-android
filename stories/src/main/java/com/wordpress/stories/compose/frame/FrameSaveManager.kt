@@ -217,6 +217,7 @@ class FrameSaveManager(
                 override fun onSuccess(filePath: String) {
                     // all good here, continue success path
                     file = File(filePath)
+                    frame.composedFrameFile = file
                     saveProgressListener?.onFrameSaveCompleted(frameIndex, frame)
                     listenerDone = true
                 }
