@@ -132,6 +132,7 @@ class FrameSaveManager(
                     // don't process the video but return the original file if no added views in this Story frame
                     frameFile = (frame.source as FileBackgroundSource).file
                 }
+                frame.composedFrameFile = frameFile
             }
             is IMAGE -> {
                 // check whether there are any GIF stickers - if there are, we need to produce a video instead
@@ -143,6 +144,7 @@ class FrameSaveManager(
                         // create ghost PhotoEditorView to be used for saving off-screen
                         val ghostPhotoEditorView = createGhostPhotoEditor(context, photoEditor.composedCanvas)
                         frameFile = saveImageFrame(context, frame, ghostPhotoEditorView, frameIndex)
+                        frame.composedFrameFile = frameFile
                         saveProgressListener?.onFrameSaveCompleted(frameIndex, frame)
                     } catch (ex: Exception) {
                         saveProgressListener?.onFrameSaveFailed(frameIndex, frame, ex.message)
@@ -158,7 +160,6 @@ class FrameSaveManager(
                 }
             }
         }
-        frame.composedFrameFile = frameFile
         return frameFile
     }
 
