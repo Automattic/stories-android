@@ -2,8 +2,11 @@ package com.wordpress.stories.compose.text
 
 import android.content.Context
 import android.content.DialogInterface
+import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.text.Spannable
+import android.text.style.BackgroundColorSpan
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -27,6 +30,8 @@ import kotlinx.android.synthetic.main.color_picker_bottom_sheet.*
 
 class TextEditorDialogFragment : DialogFragment() {
     private var colorCode: Int = 0
+    private var backgroundColorCode: Int = Color.TRANSPARENT
+
     private lateinit var textAlignment: TextAlignment
     @TypefaceId private var typefaceId: Int = 0
     private var textEditor: TextEditor? = null
@@ -53,7 +58,7 @@ class TextEditorDialogFragment : DialogFragment() {
             decorView.setPadding(0, 0, 0, 0)
 
             setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-            setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
 
             attributes = attributes.apply { dimAmount = 0.5f } // The default dimAmount is 0.6
@@ -69,7 +74,8 @@ class TextEditorDialogFragment : DialogFragment() {
 
         arguments?.let {
             add_text_edit_text.setText(it.getString(EXTRA_INPUT_TEXT))
-            colorCode = it.getInt(EXTRA_COLOR_CODE)
+            colorCode = it.getInt(EXTRA_TEXT_COLOR_CODE)
+            backgroundColorCode = it.getInt(EXTRA_TEXT_BACKGROUND_COLOR_CODE)
             textAlignment = TextAlignment.valueOf(it.getInt(EXTRA_TEXT_ALIGNMENT))
             typefaceId = it.getInt(EXTRA_TYPEFACE)
         }
@@ -96,6 +102,19 @@ class TextEditorDialogFragment : DialogFragment() {
                 setHasFixedSize(true)
                 this.adapter = textColorPickerAdapter
             }
+
+            // Set up the color picker for text background color
+            val textBgColorPickerAdapter = TextColorPickerAdapter(it, Mode.BACKGROUND, backgroundColorCode).apply {
+                setOnColorPickerClickListener { colorCode ->
+                    this@TextEditorDialogFragment.backgroundColorCode = colorCode
+                    applyBackgroundColor(colorCode)
+                }
+            }
+            with(text_background_color_picker_recycler_view) {
+                this.layoutManager = LinearLayoutManager(it, LinearLayoutManager.HORIZONTAL, false)
+                setHasFixedSize(true)
+                this.adapter = textBgColorPickerAdapter
+            }
         }
 
         text_alignment_button.setOnClickListener {
@@ -117,6 +136,7 @@ class TextEditorDialogFragment : DialogFragment() {
         }
 
         add_text_edit_text.setTextColor(colorCode)
+        applyBackgroundColor(backgroundColorCode)
 
         updateTextAlignment(textAlignment)
 
@@ -171,6 +191,20 @@ class TextEditorDialogFragment : DialogFragment() {
         })
     }
 
+    /**
+     * Applies the given background color as a span to the EditText.
+     * Will clear any background color spans if [colorCode] is [Color.TRANSPARENT].
+     */
+    private fun applyBackgroundColor(colorCode: Int) {
+        add_text_edit_text.text?.apply {
+            // Clear any existing background color spans
+            getSpans(0, length, BackgroundColorSpan::class.java)?.forEach { removeSpan(it) }
+            if (colorCode != Color.TRANSPARENT) {
+                setSpan(BackgroundColorSpan(colorCode), 0, length, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
+            }
+        }
+    }
+
     private fun trackTextStyleToggled() {
         textEditorAnalyticsHandler?.trackTextStyleToggled(textStyleGroupManager.getAnalyticsLabelFor(typefaceId))
     }
@@ -178,7 +212,8 @@ class TextEditorDialogFragment : DialogFragment() {
     companion object {
         private val TAG = TextEditorDialogFragment::class.java.simpleName
         const val EXTRA_INPUT_TEXT = "extra_input_text"
-        const val EXTRA_COLOR_CODE = "extra_color_code"
+        const val EXTRA_TEXT_COLOR_CODE = "extra_color_code"
+        const val EXTRA_TEXT_BACKGROUND_COLOR_CODE = "extra_background_color_code"
         const val EXTRA_TEXT_ALIGNMENT = "extra_text_alignment"
         const val EXTRA_TYPEFACE = "extra_typeface"
 
@@ -192,7 +227,7 @@ class TextEditorDialogFragment : DialogFragment() {
                 arguments = Bundle().apply {
                     putString(EXTRA_INPUT_TEXT, inputText)
 
-                    putInt(EXTRA_COLOR_CODE, textStyler?.textColor
+                    putInt(EXTRA_TEXT_COLOR_CODE, textStyler?.textColor
                                 ?: ContextCompat.getColor(appCompatActivity, android.R.color.white))
                     putInt(EXTRA_TEXT_ALIGNMENT, textStyler?.textAlignment ?: TextAlignment.default())
                     putInt(EXTRA_TYPEFACE, textStyler?.typefaceId ?: TextStyleGroupManager.TYPEFACE_ID_NUNITO)

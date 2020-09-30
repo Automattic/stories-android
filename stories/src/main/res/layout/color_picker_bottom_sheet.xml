@@ -40,4 +40,28 @@
         tools:background="@android:color/black"
         tools:listitem="@layout/color_picker_list_item" />
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:layout_marginTop="22dp"
+        android:layout_marginBottom="4dp"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#DE000000"
+        android:text="@string/color_picker_label_background" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/text_background_color_picker_recycler_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="15dp"
+        android:paddingVertical="8dp"
+        android:orientation="horizontal"
+        android:visibility="visible"
+        android:clipToPadding="false"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        tools:background="@android:color/black"
+        tools:listitem="@layout/color_picker_list_item" />
+
 </LinearLayout>
