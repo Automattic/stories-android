@@ -95,8 +95,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/bottom_sheet_container"
-            android:background="?android:attr/colorBackground"
-            style="@style/Widget.Stories.BottomSheet"
+            android:background="@drawable/bg_bottom_sheet"
             app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
             app:behavior_peekHeight="0dp"
             app:behavior_hideable="true">
