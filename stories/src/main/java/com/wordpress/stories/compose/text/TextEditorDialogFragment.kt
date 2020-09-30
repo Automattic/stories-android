@@ -229,6 +229,7 @@ class TextEditorDialogFragment : DialogFragment() {
 
                     putInt(EXTRA_TEXT_COLOR_CODE, textStyler?.textColor
                                 ?: ContextCompat.getColor(appCompatActivity, android.R.color.white))
+                    putInt(EXTRA_TEXT_BACKGROUND_COLOR_CODE, textStyler?.textBackgroundColor ?: Color.TRANSPARENT)
                     putInt(EXTRA_TEXT_ALIGNMENT, textStyler?.textAlignment ?: TextAlignment.default())
                     putInt(EXTRA_TYPEFACE, textStyler?.typefaceId ?: TextStyleGroupManager.TYPEFACE_ID_NUNITO)
                 }
