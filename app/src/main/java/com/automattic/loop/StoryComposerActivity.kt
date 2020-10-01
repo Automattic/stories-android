@@ -168,6 +168,11 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
         Toast.makeText(this, "Story has been discarded!", Toast.LENGTH_SHORT).show()
     }
 
+    override fun onFrameRemove(storyIndex: StoryIndex, storyFrameIndex: Int) {
+        Toast.makeText(this, "Story frame has been discarded!: index: " + storyFrameIndex,
+                Toast.LENGTH_SHORT).show()
+    }
+
     override fun onStorySaveButtonPressed() {
         processStorySaving()
     }
