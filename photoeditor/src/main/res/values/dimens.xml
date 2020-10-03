@@ -4,13 +4,13 @@
     This ensures that text is wrapped at the same point in the text editor and in the added view.
     If using RoundedBackgroundColorSpan, changing these values may require tweaking the default padding
     in that class so prevent any artifacts from showing up at line edges when applying the span. -->
-    <dimen name="text_view_padding">7dp</dimen>
-    <dimen name="text_view_horizontal_margin">17dp</dimen>
+    <dimen name="text_view_padding">8dp</dimen>
+    <dimen name="text_view_horizontal_margin">16dp</dimen>
 
-    <dimen name="edit_text_padding">7.5dp</dimen>
-    <dimen name="edit_text_horizontal_margin">16.5dp</dimen>
+    <dimen name="edit_text_padding">@dimen/text_view_padding</dimen>
+    <dimen name="edit_text_horizontal_margin">@dimen/text_view_horizontal_margin</dimen>
 
-    <dimen name="rounded_background_color_span_padding">8dp</dimen>
+    <dimen name="rounded_background_color_span_padding">@dimen/text_view_padding</dimen>
     <dimen name="rounded_background_color_span_radius">4dp</dimen>
 
     <!-- End text spacing -->
