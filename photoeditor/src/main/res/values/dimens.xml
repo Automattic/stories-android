@@ -1,8 +1,19 @@
 <resources>
-    <dimen name="text_view_padding">24dp</dimen>
+    <!-- Begin text spacing -->
+    <!-- These two sets of dimens should match, i.e. padding + horizontal_margin should equal the same for both.
+    This ensures that text is wrapped at the same point in the text editor and in the added view.
+    If using RoundedBackgroundColorSpan, changing these values may require tweaking the default padding
+    in that class so prevent any artifacts from showing up at line edges when applying the span. -->
+    <dimen name="text_view_padding">7dp</dimen>
+    <dimen name="text_view_horizontal_margin">17dp</dimen>
+
+    <dimen name="edit_text_padding">7.5dp</dimen>
+    <dimen name="edit_text_horizontal_margin">16.5dp</dimen>
 
     <dimen name="rounded_background_color_span_padding">8dp</dimen>
     <dimen name="rounded_background_color_span_radius">4dp</dimen>
+
+    <!-- End text spacing -->
 
     <dimen name="emoji_view_size">108dp</dimen>
     <dimen name="emoji_view_touchable_area_size">86dp</dimen>
