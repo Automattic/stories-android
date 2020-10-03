@@ -190,6 +190,9 @@ class TextEditorDialogFragment : DialogFragment() {
             TextAlignment.CENTER -> R.drawable.ic_gridicons_align_center_32
             TextAlignment.RIGHT -> R.drawable.ic_gridicons_align_right_32
         })
+
+        // The background span needs to be re-applied to adjust for the alignment change
+        applyBackgroundColor(backgroundColorCode)
     }
 
     /**
