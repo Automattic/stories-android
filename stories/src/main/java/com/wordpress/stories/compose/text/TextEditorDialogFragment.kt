@@ -135,6 +135,8 @@ class TextEditorDialogFragment : DialogFragment() {
 
         textSizeSlider.update()
 
+        updateColorPickerButton()
+
         add_text_edit_text.requestFocus()
 
         // Make a callback on activity when user is done with text editing
@@ -168,6 +170,7 @@ class TextEditorDialogFragment : DialogFragment() {
                 setOnColorPickerClickListener { colorCode ->
                     this@TextEditorDialogFragment.colorCode = colorCode
                     add_text_edit_text?.setTextColor(colorCode)
+                    updateColorPickerButton()
                 }
             }
             with(text_color_picker_recycler_view) {
@@ -181,6 +184,7 @@ class TextEditorDialogFragment : DialogFragment() {
                 setOnColorPickerClickListener { colorCode ->
                     this@TextEditorDialogFragment.backgroundColorCode = colorCode
                     applyBackgroundColor(colorCode)
+                    updateColorPickerButton()
                     // Reapply the styles, since text shadow depends on the background color + style combination
                     textStyleGroupManager.styleTextView(typefaceId, add_text_edit_text)
                 }
@@ -229,6 +233,19 @@ class TextEditorDialogFragment : DialogFragment() {
             if (colorCode != Color.TRANSPARENT) {
                 val span = RoundedBackgroundColorSpan(colorCode, textAlignment.value, resources)
                 setSpan(span, 0, length, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
+            }
+        }
+    }
+
+    /**
+     * Colorizes the color picker button image with the current text and text background colors.
+     */
+    private fun updateColorPickerButton() {
+        context?.let { context ->
+            PathAwareVectorDrawable(context, R.drawable.ic_textcolor, color_picker_button).apply {
+                // The path names used need to be defined as 'name' properties in the drawable.
+                setPathFillColor("inner-fill", colorCode)
+                setPathFillColor("outer-fill", backgroundColorCode)
             }
         }
     }
