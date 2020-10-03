@@ -3,8 +3,6 @@ package com.automattic.photoeditor.text
 import android.graphics.Color
 import android.text.Spannable
 import android.text.SpannableString
-import android.text.SpannableStringBuilder
-import android.text.style.BackgroundColorSpan
 import android.util.TypedValue
 import android.widget.TextView
 import androidx.annotation.ColorInt
@@ -41,20 +39,21 @@ class TextStyler(
 
         textColor?.let { textView.setTextColor(it) }
         textBackgroundColor?.takeIf { it != Color.TRANSPARENT }?.let {
-            val length = textView.text?.length ?: 0
-            val spannable = SpannableString(textView.text).apply {
-                setSpan(BackgroundColorSpan(it), 0, length, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
+            textView.apply {
+                val backgroundColorSpan = RoundedBackgroundColorSpan(it, textAlignment, resources)
+                text = SpannableString(text).apply {
+                    setSpan(backgroundColorSpan, 0, text?.length ?: 0, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
+                }
             }
-            textView.text = spannable
         }
     }
 
     companion object {
         fun from(textView: PhotoEditorTextView): TextStyler {
-            return from(textView, textView.identifiableTypeface?.id)
+            return from(textView, textView.identifiableTypeface?.id, textView.textBackgroundColor)
         }
 
-        fun from(textView: TextView, @TypefaceId typefaceId: Int?): TextStyler {
+        fun from(textView: TextView, @TypefaceId typefaceId: Int?, @ColorInt textBackgroundColor: Int?): TextStyler {
             return TextStyler(
                     textAlignment = textView.textAlignment,
                     typefaceId = typefaceId,
@@ -62,7 +61,7 @@ class TextStyler(
                     lineSpacingMultiplier = textView.lineSpacingMultiplier,
                     letterSpacing = textView.letterSpacing,
                     textColor = textView.currentTextColor,
-                    textBackgroundColor = textView.getTextBackgroundColor(),
+                    textBackgroundColor = textBackgroundColor ?: Color.TRANSPARENT,
                     shadowRadius = textView.shadowRadius,
                     shadowDx = textView.shadowDx,
                     shadowDy = textView.shadowDy,
@@ -84,13 +83,6 @@ class TextStyler(
                     shadowDy = addedViewTextInfo.shadowDy,
                     shadowColor = addedViewTextInfo.shadowColor
             )
-        }
-
-        fun TextView.getTextBackgroundColor(): Int {
-            val length = text?.length ?: 0
-            return SpannableStringBuilder(text)
-                    .getSpans(0, length, BackgroundColorSpan::class.java)?.firstOrNull()?.backgroundColor
-                    ?: Color.TRANSPARENT
         }
     }
 }

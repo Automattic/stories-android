@@ -7,7 +7,6 @@ import androidx.annotation.Dimension
 import androidx.annotation.Dimension.PX
 import com.automattic.photoeditor.text.PhotoEditorTextView
 import com.automattic.photoeditor.text.IdentifiableTypeface.TypefaceId
-import com.automattic.photoeditor.text.TextStyler.Companion.getTextBackgroundColor
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -45,7 +44,7 @@ data class AddedViewTextInfo(
                         lineSpacingMultiplier = lineSpacingMultiplier,
                         letterSpacing = letterSpacing,
                         textColor = currentTextColor,
-                        textBackgroundColor = getTextBackgroundColor() ?: Color.TRANSPARENT,
+                        textBackgroundColor = (this as? PhotoEditorTextView)?.textBackgroundColor ?: Color.TRANSPARENT,
                         shadowRadius = shadowRadius,
                         shadowDx = shadowDx,
                         shadowDy = shadowDy,

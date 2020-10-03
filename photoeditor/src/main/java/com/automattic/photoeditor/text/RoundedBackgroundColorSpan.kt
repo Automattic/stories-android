@@ -5,8 +5,10 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
+import android.text.SpannableStringBuilder
 import android.text.style.LineBackgroundSpan
 import android.view.View
+import android.widget.TextView
 import com.automattic.photoeditor.R
 import kotlin.math.abs
 import kotlin.math.sign
@@ -168,5 +170,11 @@ class RoundedBackgroundColorSpan(
         private const val ALIGN_CENTER = View.TEXT_ALIGNMENT_CENTER
         private const val ALIGN_START = View.TEXT_ALIGNMENT_TEXT_START
         private const val ALIGN_END = View.TEXT_ALIGNMENT_TEXT_END
+
+        fun from(textView: TextView): RoundedBackgroundColorSpan? {
+            val length = textView.text?.length ?: 0
+            return SpannableStringBuilder(textView.text)
+                    .getSpans(0, length, RoundedBackgroundColorSpan::class.java)?.firstOrNull()
+        }
     }
 }

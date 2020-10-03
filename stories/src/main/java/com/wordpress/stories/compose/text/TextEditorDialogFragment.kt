@@ -6,17 +6,18 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.Spannable
-import android.text.style.BackgroundColorSpan
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.automattic.photoeditor.text.IdentifiableTypeface.TypefaceId
+import com.automattic.photoeditor.text.RoundedBackgroundColorSpan
 import com.automattic.photoeditor.text.TextStyler
 import com.wordpress.stories.R
 import com.wordpress.stories.compose.StoriesAnalyticsListener
@@ -29,8 +30,8 @@ import kotlinx.android.synthetic.main.color_picker_bottom_sheet.*
  */
 
 class TextEditorDialogFragment : DialogFragment() {
-    private var colorCode: Int = 0
-    private var backgroundColorCode: Int = Color.TRANSPARENT
+    @ColorInt private var colorCode: Int = 0
+    @ColorInt private var backgroundColorCode: Int = Color.TRANSPARENT
 
     private lateinit var textAlignment: TextAlignment
     @TypefaceId private var typefaceId: Int = 0
@@ -154,7 +155,7 @@ class TextEditorDialogFragment : DialogFragment() {
 
     override fun onDismiss(dialog: DialogInterface) {
         val inputText = add_text_edit_text?.text.toString()
-        textEditor?.onDone(inputText, TextStyler.from(add_text_edit_text, typefaceId))
+        textEditor?.onDone(inputText, TextStyler.from(add_text_edit_text, typefaceId, backgroundColorCode))
         textEditorAnalyticsHandler?.report()
         super.onDismiss(dialog)
     }
@@ -195,12 +196,13 @@ class TextEditorDialogFragment : DialogFragment() {
      * Applies the given background color as a span to the EditText.
      * Will clear any background color spans if [colorCode] is [Color.TRANSPARENT].
      */
-    private fun applyBackgroundColor(colorCode: Int) {
+    private fun applyBackgroundColor(@ColorInt colorCode: Int) {
         add_text_edit_text.text?.apply {
             // Clear any existing background color spans
-            getSpans(0, length, BackgroundColorSpan::class.java)?.forEach { removeSpan(it) }
+            getSpans(0, length, RoundedBackgroundColorSpan::class.java)?.forEach { removeSpan(it) }
             if (colorCode != Color.TRANSPARENT) {
-                setSpan(BackgroundColorSpan(colorCode), 0, length, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
+                val span = RoundedBackgroundColorSpan(colorCode, textAlignment.value, resources)
+                setSpan(span, 0, length, Spannable.SPAN_INCLUSIVE_INCLUSIVE)
             }
         }
     }
