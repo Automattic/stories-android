@@ -109,6 +109,8 @@ class TextEditorDialogFragment : DialogFragment() {
                 setOnColorPickerClickListener { colorCode ->
                     this@TextEditorDialogFragment.backgroundColorCode = colorCode
                     applyBackgroundColor(colorCode)
+                    // Reapply the styles, since text shadow depends on the background color + style combination
+                    textStyleGroupManager.styleTextView(typefaceId, add_text_edit_text)
                 }
             }
             with(text_background_color_picker_recycler_view) {
