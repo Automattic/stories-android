@@ -1,6 +1,9 @@
 <resources>
     <dimen name="text_view_padding">24dp</dimen>
 
+    <dimen name="rounded_background_color_span_padding">8dp</dimen>
+    <dimen name="rounded_background_color_span_radius">4dp</dimen>
+
     <dimen name="emoji_view_size">108dp</dimen>
     <dimen name="emoji_view_touchable_area_size">86dp</dimen>
 </resources>
