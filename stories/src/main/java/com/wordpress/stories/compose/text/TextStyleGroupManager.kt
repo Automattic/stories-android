@@ -15,6 +15,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import com.automattic.photoeditor.text.IdentifiableTypeface
 import com.automattic.photoeditor.text.IdentifiableTypeface.TypefaceId
+import com.automattic.photoeditor.text.RoundedBackgroundColorSpan
 import com.wordpress.stories.R
 import java.util.Locale
 import java.util.TreeMap
@@ -112,7 +113,15 @@ class TextStyleGroupManager(val context: Context) {
 
         with(textStyleRule) {
             textView.typeface = typeface
-            textView.setShadowLayer(shadowLayer)
+
+            // If the text has a background color span, apply a shadow layer matching the span padding
+            // Otherwise, set the custom shadow layer for the font style
+            val backgroundColorSpan = RoundedBackgroundColorSpan.from(textView)
+            if (backgroundColorSpan != null) {
+                textView.setShadowLayer(backgroundColorSpan.padding, 0F, 0F, 0)
+            } else {
+                textView.setShadowLayer(shadowLayer)
+            }
 
             textView.setLineSpacing(0F, lineSpacingMultiplier)
             textView.letterSpacing = letterSpacing
