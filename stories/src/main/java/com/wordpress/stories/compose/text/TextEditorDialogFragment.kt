@@ -90,6 +90,60 @@ class TextEditorDialogFragment : DialogFragment() {
             bottomSheetHandler?.hideBottomSheet()
         }
 
+        initTextColoring()
+
+        text_alignment_button.setOnClickListener {
+            textAlignment = TextAlignment.getNext(textAlignment)
+            updateTextAlignment(textAlignment)
+        }
+
+        text_style_toggle_button?.setOnClickListener {
+            typefaceId = textStyleGroupManager.getNextTypeface(typefaceId)
+            textStyleGroupManager.styleTextView(typefaceId, add_text_edit_text)
+            textStyleGroupManager.styleAndLabelTextView(typefaceId, text_style_toggle_button)
+            trackTextStyleToggled()
+        }
+
+        color_picker_button.setOnClickListener {
+            bottomSheetHandler?.toggleBottomSheet()
+        }
+
+        // Apply any existing styling to text
+        add_text_edit_text.setTextColor(colorCode)
+        applyBackgroundColor(backgroundColorCode)
+
+        updateTextAlignment(textAlignment)
+
+        textStyleGroupManager.styleTextView(typefaceId, add_text_edit_text)
+        textStyleGroupManager.styleAndLabelTextView(typefaceId, text_style_toggle_button)
+
+        add_text_edit_text.requestFocus()
+
+        // Make a callback on activity when user is done with text editing
+        add_text_done_tv?.setOnClickListener {
+            dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
+            dismiss()
+        }
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        val inputText = add_text_edit_text?.text.toString()
+        textEditor?.onDone(inputText, TextStyler.from(add_text_edit_text, typefaceId, backgroundColorCode))
+        textEditorAnalyticsHandler?.report()
+        super.onDismiss(dialog)
+    }
+
+    // Callback to listener if user is done with text editing
+    fun setOnTextEditorListener(textEditor: TextEditor) {
+        this.textEditor = textEditor
+    }
+
+    fun setAnalyticsEventListener(listener: StoriesAnalyticsListener?) {
+        analyticsListener = listener
+        textEditorAnalyticsHandler = TextEditorAnalyticsHandler { analyticsListener?.trackStoryTextChanged(it) }
+    }
+
+    private fun initTextColoring() {
         activity?.let {
             // Set up the color picker for text color
             val textColorPickerAdapter = TextColorPickerAdapter(it, Mode.FOREGROUND, colorCode).apply {
@@ -119,57 +173,6 @@ class TextEditorDialogFragment : DialogFragment() {
                 this.adapter = textBgColorPickerAdapter
             }
         }
-
-        text_alignment_button.setOnClickListener {
-            textAlignment = TextAlignment.getNext(textAlignment)
-            updateTextAlignment(textAlignment)
-        }
-
-        activity?.let {
-            text_style_toggle_button?.setOnClickListener { _ ->
-                typefaceId = textStyleGroupManager.getNextTypeface(typefaceId)
-                textStyleGroupManager.styleTextView(typefaceId, add_text_edit_text)
-                textStyleGroupManager.styleAndLabelTextView(typefaceId, text_style_toggle_button)
-                trackTextStyleToggled()
-            }
-        }
-
-        color_picker_button.setOnClickListener {
-            bottomSheetHandler?.toggleBottomSheet()
-        }
-
-        add_text_edit_text.setTextColor(colorCode)
-        applyBackgroundColor(backgroundColorCode)
-
-        updateTextAlignment(textAlignment)
-
-        textStyleGroupManager.styleTextView(typefaceId, add_text_edit_text)
-        textStyleGroupManager.styleAndLabelTextView(typefaceId, text_style_toggle_button)
-
-        add_text_edit_text.requestFocus()
-
-        // Make a callback on activity when user is done with text editing
-        add_text_done_tv?.setOnClickListener { _ ->
-            dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
-            dismiss()
-        }
-    }
-
-    override fun onDismiss(dialog: DialogInterface) {
-        val inputText = add_text_edit_text?.text.toString()
-        textEditor?.onDone(inputText, TextStyler.from(add_text_edit_text, typefaceId, backgroundColorCode))
-        textEditorAnalyticsHandler?.report()
-        super.onDismiss(dialog)
-    }
-
-    // Callback to listener if user is done with text editing
-    fun setOnTextEditorListener(textEditor: TextEditor) {
-        this.textEditor = textEditor
-    }
-
-    fun setAnalyticsEventListener(listener: StoriesAnalyticsListener?) {
-        analyticsListener = listener
-        textEditorAnalyticsHandler = TextEditorAnalyticsHandler { analyticsListener?.trackStoryTextChanged(it) }
     }
 
     private fun updateTextAlignment(textAlignment: TextAlignment) {
