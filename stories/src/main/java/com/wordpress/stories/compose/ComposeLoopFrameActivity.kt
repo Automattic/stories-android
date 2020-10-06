@@ -45,6 +45,8 @@ import com.automattic.photoeditor.text.FontResolver
 import com.automattic.photoeditor.OnPhotoEditorListener
 import com.automattic.photoeditor.PhotoEditor
 import com.automattic.photoeditor.SaveSettings
+import com.automattic.photoeditor.camera.ErrorDialog
+import com.automattic.photoeditor.camera.ErrorDialogOk
 import com.automattic.photoeditor.text.TextStyler
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState
@@ -54,6 +56,7 @@ import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment.FlashS
 import com.automattic.photoeditor.state.AuthenticationHeadersInterface
 import com.automattic.photoeditor.state.BackgroundSurfaceManager
 import com.automattic.photoeditor.state.BackgroundSurfaceManagerReadyListener
+import com.automattic.photoeditor.state.VideoPlayerErrorListener
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.util.FileUtils.Companion.getLoopFrameFile
 import com.automattic.photoeditor.text.IdentifiableTypeface
@@ -445,6 +448,40 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     } else if (launchVideoPlayerRequestPending) {
                         launchVideoPlayerRequestPending = false
                         showPlayVideoWithSurfaceSafeguard(launchVideoPlayerRequestPendingSource)
+                    }
+                }
+            },
+            object : VideoPlayerErrorListener {
+                override fun onPlayerError(uri: Uri, what: Int?, extra: Int?, exception: Exception?) {
+                    // only show dialog if the player error is for a background source that is currently
+                    // being shown. This will prevent showing an error dialog for a Story slide that the user
+                    // has already changed / switched away from.
+                    var doShowDialog = false
+                    storyViewModel.getCurrentStoryFrameAt(storyViewModel.getSelectedFrameIndex())?.let {
+                        if (it.source is UriBackgroundSource) {
+                            it.source.contentUri?.let { sourceUri ->
+                                if (sourceUri.equals(uri)) {
+                                    doShowDialog = true
+                                }
+                            }
+                        } else {
+                            (it.source as FileBackgroundSource).file?.let { sourceFile ->
+                                if (Uri.fromFile(sourceFile).equals(uri)) {
+                                    doShowDialog = true
+                                }
+                            }
+                        }
+                    }
+
+                    if (doShowDialog) {
+                        ErrorDialog.newInstance(requireNotNull(this@ComposeLoopFrameActivity)
+                                .getString(com.automattic.photoeditor.R.string.toast_error_playing_video),
+                                object : ErrorDialogOk {
+                                    override fun OnOkClicked(dialog: DialogFragment) {
+                                        dialog.dismiss()
+                                    }
+                                }
+                        ).show(supportFragmentManager, FRAGMENT_DIALOG)
                     }
                 }
             },
