@@ -48,6 +48,9 @@ class TextEditorDialogFragment : DialogFragment() {
     override fun onStart() {
         super.onStart()
         dialog?.window?.apply {
+            // It seems some default padding is applied to DialogFragment DecorViews in Android 11 - get rid of it.
+            decorView.setPadding(0, 0, 0, 0)
+
             setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             setBackgroundDrawable(ColorDrawable(android.graphics.Color.TRANSPARENT))
             setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)

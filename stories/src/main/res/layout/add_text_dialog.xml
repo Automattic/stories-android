@@ -59,10 +59,10 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_margin="@dimen/normal_button_margin"
+        android:gravity="center"
         android:background="@drawable/transparent_text_button_selector"
         android:backgroundTint="@android:color/white"
         android:textColor="@android:color/white"
-        android:textSize="17sp"
         android:textAllCaps="false"
         android:text="@string/typeface_label_nunito"
         tools:text="@string/typeface_label_nunito" />
