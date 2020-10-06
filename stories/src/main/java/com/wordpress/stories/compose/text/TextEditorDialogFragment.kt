@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.automattic.photoeditor.text.IdentifiableTypeface.TypefaceId
 import com.automattic.photoeditor.text.TextStyler
 import com.wordpress.stories.R
+import com.wordpress.stories.compose.StoriesAnalyticsListener
 import kotlinx.android.synthetic.main.add_text_dialog.*
 import kotlinx.android.synthetic.main.add_text_dialog.view.*
 
@@ -30,6 +31,9 @@ class TextEditorDialogFragment : DialogFragment() {
     private var textEditor: TextEditor? = null
 
     private lateinit var textStyleGroupManager: TextStyleGroupManager
+
+    private var analyticsListener: StoriesAnalyticsListener? = null
+    private var textEditorAnalyticsHandler: TextEditorAnalyticsHandler? = null
 
     interface TextEditor {
         fun onDone(inputText: String, textStyler: TextStyler)
@@ -87,6 +91,7 @@ class TextEditorDialogFragment : DialogFragment() {
                 typefaceId = textStyleGroupManager.getNextTypeface(typefaceId)
                 textStyleGroupManager.styleTextView(typefaceId, add_text_edit_text)
                 textStyleGroupManager.styleAndLabelTextView(typefaceId, text_style_toggle_button)
+                trackTextStyleToggled()
             }
         }
 
@@ -120,20 +125,24 @@ class TextEditorDialogFragment : DialogFragment() {
         add_text_done_tv?.setOnClickListener { _ ->
             dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
             dismiss()
-            val inputText = add_text_edit_text.text.toString()
-            textEditor?.onDone(inputText, TextStyler.from(add_text_edit_text, typefaceId))
         }
     }
 
     override fun onDismiss(dialog: DialogInterface) {
         val inputText = add_text_edit_text?.text.toString()
         textEditor?.onDone(inputText, TextStyler.from(add_text_edit_text, typefaceId))
+        textEditorAnalyticsHandler?.report()
         super.onDismiss(dialog)
     }
 
     // Callback to listener if user is done with text editing
     fun setOnTextEditorListener(textEditor: TextEditor) {
         this.textEditor = textEditor
+    }
+
+    fun setAnalyticsEventListener(listener: StoriesAnalyticsListener?) {
+        analyticsListener = listener
+        textEditorAnalyticsHandler = TextEditorAnalyticsHandler { analyticsListener?.trackStoryTextChanged(it) }
     }
 
     private fun updateTextAlignment(textAlignment: TextAlignment) {
@@ -156,6 +165,10 @@ class TextEditorDialogFragment : DialogFragment() {
             TextAlignment.CENTER -> R.drawable.ic_gridicons_align_center_32
             TextAlignment.RIGHT -> R.drawable.ic_gridicons_align_right_32
         })
+    }
+
+    private fun trackTextStyleToggled() {
+        textEditorAnalyticsHandler?.trackTextStyleToggled(textStyleGroupManager.getAnalyticsLabelFor(typefaceId))
     }
 
     companion object {
