@@ -34,6 +34,7 @@ class TextEditorDialogFragment : DialogFragment() {
 
     private var analyticsListener: StoriesAnalyticsListener? = null
     private var textEditorAnalyticsHandler: TextEditorAnalyticsHandler? = null
+    private var bottomSheetHandler: ColorPickerBottomSheetHandler? = null
 
     interface TextEditor {
         fun onDone(inputText: String, textStyler: TextStyler)
@@ -63,14 +64,30 @@ class TextEditorDialogFragment : DialogFragment() {
         return inflater.inflate(R.layout.add_text_dialog, container, false)
     }
 
+    override fun onStop() {
+        dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
+        bottomSheetHandler?.hideBottomSheet()
+        super.onStop()
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        bottomSheetHandler = activity?.let {
+            ColorPickerBottomSheetHandler(it, view)
+        }
 
         // Setup the color picker for text color
         val addTextColorPickerRecyclerView = view.add_text_color_picker_recycler_view
         val layoutManager = LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
         addTextColorPickerRecyclerView.layoutManager = layoutManager
         addTextColorPickerRecyclerView.setHasFixedSize(true)
+
+        // Hide the bottom sheet if the user taps in the EditText
+        add_text_edit_text.setOnClickListener {
+            bottomSheetHandler?.hideBottomSheet()
+        }
+
         activity?.let {
             val colorPickerAdapter = ColorPickerAdapter(it)
             // This listener will change the text color when clicked on any color from picker
@@ -96,15 +113,7 @@ class TextEditorDialogFragment : DialogFragment() {
         }
 
         color_picker_button.setOnClickListener {
-            if (add_text_color_picker_recycler_view.visibility == View.VISIBLE) {
-                add_text_color_picker_recycler_view.visibility = View.GONE
-                text_alignment_button.visibility = View.VISIBLE
-                text_style_toggle_button.visibility = View.VISIBLE
-            } else {
-                add_text_color_picker_recycler_view.visibility = View.VISIBLE
-                text_alignment_button.visibility = View.GONE
-                text_style_toggle_button.visibility = View.GONE
-            }
+            bottomSheetHandler?.toggleBottomSheet()
         }
 
         arguments?.let {
