@@ -1,6 +1,7 @@
 package com.wordpress.stories.compose.text
 
 import android.content.Context
+import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
@@ -29,14 +30,20 @@ class TextColorPickerAdapter internal constructor(private val context: Context, 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.itemView.isSelected = (selectedPosition == position)
 
-        val background = holder.colorPickerActualColorViewRef.background
-        if (background is GradientDrawable) {
-            background.setColor(colorPickerColors[position])
-        } else if (background is ColorDrawable) {
-            background.color = colorPickerColors[position]
-        }
+        if (colorPickerColors[position] == Color.TRANSPARENT) {
+            holder.colorPickerActualColorViewRef.setBackgroundResource(R.drawable.ic_gridicons_block_cropped)
+            holder.colorPickerSelectionViewRef.visibility = View.GONE
+        } else {
+            holder.colorPickerActualColorViewRef.setBackgroundResource(R.drawable.ic_color_picker_filler)
+            val background = holder.colorPickerActualColorViewRef.background
+            if (background is GradientDrawable) {
+                background.setColor(colorPickerColors[position])
+            } else if (background is ColorDrawable) {
+                background.color = colorPickerColors[position]
+            }
 
-        holder.colorPickerSelectionViewRef.visibility = if (holder.itemView.isSelected) View.VISIBLE else View.GONE
+            holder.colorPickerSelectionViewRef.visibility = if (holder.itemView.isSelected) View.VISIBLE else View.GONE
+        }
     }
 
     override fun getItemCount() = colorPickerColors.size
