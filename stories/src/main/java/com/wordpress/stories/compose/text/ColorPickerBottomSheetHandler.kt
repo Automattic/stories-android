@@ -48,6 +48,11 @@ class ColorPickerBottomSheetHandler(val activity: Activity, val view: View) {
                     heightDifference -= activity.resources.getDimensionPixelSize(resourceIdNav)
                 }
 
+                val resourceIdStatus = activity.resources.getIdentifier("status_bar_height", "dimen", "android")
+                if (resourceIdStatus > 0 && r.top != 0) {
+                    heightDifference -= activity.resources.getDimensionPixelSize(resourceIdStatus)
+                }
+
                 if (heightDifference > 150) {
                     keyboardHeight = heightDifference
                     rootView.viewTreeObserver?.removeOnGlobalLayoutListener(this)
