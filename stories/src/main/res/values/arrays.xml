@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="text_colors_base">
+        <item>#FFFFFF</item>
+        <item>#000000</item>
+    </array>
+
+    <array name="text_colors_regular">
+        <item>#3582C4</item>
+        <item>#EB6594</item>
+        <item>#B35EB1</item>
+        <item>#6AD9E9</item>
+        <item>#68DE86</item>
+        <item>#F2D76B</item>
+        <item>#FAA754</item>
+        <item>#F86368</item>
+        <item>#B1714D</item>
+        <item>#A7A7A7</item>
+    </array>
+
+    <array name="text_colors_dark">
+        <item>#0A4B78</item>
+        <item>#AB235A</item>
+        <item>#662C6E</item>
+        <item>#006F7E</item>
+        <item>#007017</item>
+        <item>#C08C00</item>
+        <item>#D67709</item>
+        <item>#B32D2E</item>
+        <item>#361F00</item>
+        <item>#474747</item>
+    </array>
+
+    <array name="text_colors_light">
+        <item>#D7EAFD</item>
+        <item>#FFE1F1</item>
+        <item>#F8ECFF</item>
+        <item>#D1F5F8</item>
+        <item>#E8FBEC</item>
+        <item>#FFFCDD</item>
+        <item>#FFEAD9</item>
+        <item>#FFE4E6</item>
+        <item>#F6E4DA</item>
+        <item>#EBEBEB</item>
+    </array>
+
+    <array name="text_colors">
+        <item>@array/text_colors_base</item>
+        <item>@array/text_colors_regular</item>
+        <item>@array/text_colors_dark</item>
+        <item>@array/text_colors_light</item>
+    </array>
+
+    <array name="text_background_colors">
+        <item>@array/text_colors_base</item>
+        <item>@array/text_colors_light</item>
+        <item>@array/text_colors_regular</item>
+        <item>@array/text_colors_dark</item>
+    </array>
+</resources>

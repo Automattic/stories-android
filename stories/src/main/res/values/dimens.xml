@@ -11,14 +11,28 @@
     <dimen name="normal_button_font_size">13sp</dimen>
     <dimen name="top_button_group_margin">@dimen/normal_button_margin</dimen>
     <dimen name="main_button_elevation">2dp</dimen>
-    <dimen name="color_picker_touchable_area_size">40dp</dimen>
-    <dimen name="color_picker_background_size">24dp</dimen>
-    <dimen name="color_picker_filler_size">22dp</dimen>
-    <dimen name="color_picker_item_margin">8dp</dimen>
 
-    <!-- Color picker bottom sheet -->
+    <!-- START: Color picker bottom sheet -->
+
     <dimen name="color_picker_bottom_sheet_default_height">250dp</dimen>
     <dimen name="color_picker_bottom_sheet_height_max_margin">75dp</dimen>
+    <dimen name="color_picker_bottom_sheet_handle_width">40dp</dimen>
+    <dimen name="color_picker_bottom_sheet_handle_height">4dp</dimen>
+    <dimen name="color_picker_bottom_sheet_handle_top_margin">4dp</dimen>
+
+    <dimen name="color_picker_bottom_sheet_label_top_margin">22dp</dimen>
+    <dimen name="color_picker_bottom_sheet_label_bottom_margin">4dp</dimen>
+
+    <dimen name="color_picker_bottom_sheet_recycler_padding_horizontal">15dp</dimen>
+    <dimen name="color_picker_bottom_sheet_recycler_padding_vertical">8dp</dimen>
+
+    <!-- Color picker item -->
+    <dimen name="color_picker_touchable_area_size">60dp</dimen>
+    <dimen name="color_picker_background_size">54dp</dimen>
+    <dimen name="color_picker_selection_background_size">34dp</dimen>
+    <dimen name="color_picker_checkmark_size">20dp</dimen>
+
+    <!-- END: Color picker bottom sheet -->
 
     <dimen name="shutter_button_margin">68dp</dimen>
 
