@@ -9,10 +9,10 @@
 
     <View
         android:id="@+id/bottom_sheet_handle"
-        android:layout_width="40dp"
-        android:layout_height="4dp"
+        android:layout_width="@dimen/color_picker_bottom_sheet_handle_width"
+        android:layout_height="@dimen/color_picker_bottom_sheet_handle_height"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="@dimen/color_picker_bottom_sheet_handle_top_margin"
         android:alpha="0.12"
         android:background="@drawable/bg_bottom_sheet_handle" />
 
@@ -20,8 +20,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
-        android:layout_marginTop="22dp"
-        android:layout_marginBottom="4dp"
+        android:layout_marginTop="@dimen/color_picker_bottom_sheet_label_top_margin"
+        android:layout_marginBottom="@dimen/color_picker_bottom_sheet_label_bottom_margin"
         android:textSize="18sp"
         android:textStyle="bold"
         android:textColor="#DE000000"
@@ -31,8 +31,8 @@
         android:id="@+id/text_color_picker_recycler_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingHorizontal="15dp"
-        android:paddingVertical="8dp"
+        android:paddingHorizontal="@dimen/color_picker_bottom_sheet_recycler_padding_horizontal"
+        android:paddingVertical="@dimen/color_picker_bottom_sheet_recycler_padding_vertical"
         android:orientation="horizontal"
         android:visibility="visible"
         android:clipToPadding="false"

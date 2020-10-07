@@ -38,6 +38,7 @@ class TextEditorDialogFragment : DialogFragment() {
     private var textEditor: TextEditor? = null
 
     private lateinit var textStyleGroupManager: TextStyleGroupManager
+    private var bottomSheetHandler: ColorPickerBottomSheetHandler? = null
 
     private var analyticsListener: StoriesAnalyticsListener? = null
     private var textEditorAnalyticsHandler: TextEditorAnalyticsHandler? = null
@@ -70,6 +71,12 @@ class TextEditorDialogFragment : DialogFragment() {
         return inflater.inflate(R.layout.add_text_dialog, container, false)
     }
 
+    override fun onStop() {
+        dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
+        bottomSheetHandler?.hideBottomSheet()
+        super.onStop()
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -81,7 +88,7 @@ class TextEditorDialogFragment : DialogFragment() {
             typefaceId = it.getInt(EXTRA_TYPEFACE)
         }
 
-        val bottomSheetHandler = activity?.let {
+        bottomSheetHandler = activity?.let {
             ColorPickerBottomSheetHandler(it, view)
         }
 

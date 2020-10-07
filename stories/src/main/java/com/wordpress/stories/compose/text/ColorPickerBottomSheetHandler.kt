@@ -48,7 +48,12 @@ class ColorPickerBottomSheetHandler(val activity: Activity, val view: View) {
                     heightDifference -= activity.resources.getDimensionPixelSize(resourceIdNav)
                 }
 
-                if (heightDifference > 150) {
+                val resourceIdStatus = activity.resources.getIdentifier("status_bar_height", "dimen", "android")
+                if (resourceIdStatus > 0 && r.top != 0) {
+                    heightDifference -= activity.resources.getDimensionPixelSize(resourceIdStatus)
+                }
+
+                if (heightDifference > KEYBOARD_MINIMUM_HEIGHT) {
                     keyboardHeight = heightDifference
                     rootView.viewTreeObserver?.removeOnGlobalLayoutListener(this)
                 }
@@ -138,5 +143,10 @@ class ColorPickerBottomSheetHandler(val activity: Activity, val view: View) {
 
     companion object {
         const val BOTTOM_SHEET_DISPLAY_DELAY_MS = 300L
+
+        // A minimum valid keyboard height.
+        // If the screen height changes by at least this amount, we assume it's because a software keyboard
+        // has been displayed.
+        const val KEYBOARD_MINIMUM_HEIGHT = 150
     }
 }
