@@ -57,7 +57,6 @@ object StoryRepository {
         return stories.toList()
     }
 
-    @JvmStatic
     fun findStoryContainingStoryFrameItemsByIds(ids: ArrayList<String>): StoryIndex {
         // now look for a Story in the StoryRepository that has all these frames and, if not found, let's
         // just build the Story object ourselves to keep these files arrangement
