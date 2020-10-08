@@ -58,8 +58,7 @@ object StoryRepository {
     }
 
     fun findStoryContainingStoryFrameItemsByIds(ids: ArrayList<String>): StoryIndex {
-        // now look for a Story in the StoryRepository that has all these frames and, if not found, let's
-        // just build the Story object ourselves to keep these files arrangement
+        // now look for a Story in the StoryRepository that contains a matching frame id and return the story index
         for ((index, story) in stories.withIndex()) {
             // find the MediaModel for a given Uri from composedFrameFile
             if (story.frames.filter { ids.contains(it.id) }.size == ids.size) {
