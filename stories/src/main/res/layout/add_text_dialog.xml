@@ -3,54 +3,60 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#00000000"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/add_text_done_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true"
-        android:layout_margin="20dp"
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp"
-        android:paddingLeft="20dp"
-        android:paddingRight="20dp"
-        android:text="@string/label_done"
-        android:textAllCaps="true"
-        android:textColor="@color/white" />
-
-    <com.wordpress.stories.compose.text.StoriesEditText
-        android:id="@+id/add_text_edit_text"
-        style="@style/EditText"
-        android:textColor="@color/white"
+    <RelativeLayout
+        android:id="@+id/main_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/add_text_done_tv"
-        android:paddingStart="@dimen/text_view_padding"
-        android:paddingEnd="@dimen/text_view_padding"
-        android:textCursorDrawable="@null"
-        android:background="@null"
-        android:gravity="center"
-        android:inputType="textCapSentences|textMultiLine"
-        android:textSize="@dimen/editor_initial_text_size"
-        tools:text="Some text checking line span 1 2 3 4 5 6 7 8 9"
-        tools:textColor="@android:color/black"
-        tools:textSize="22sp" />
+        android:layout_alignParentTop="true"
+        android:background="#00000000"
+        android:orientation="vertical">
 
-    <ImageButton
-        android:id="@+id/text_alignment_button"
-        android:contentDescription="@string/label_text_alignment_button"
-        android:layout_width="@dimen/normal_button_medium"
-        android:layout_height="@dimen/normal_button_medium"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:layout_margin="@dimen/normal_button_margin"
-        android:background="@android:color/transparent"
-        android:tint="@android:color/white"
-        android:src="@drawable/ic_gridicons_align_left_32" />
+        <TextView
+            android:id="@+id/add_text_done_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:layout_margin="20dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:text="@string/label_done"
+            android:textAllCaps="true"
+            android:textColor="@color/white" />
+
+        <com.wordpress.stories.compose.text.StoriesEditText
+            android:id="@+id/add_text_edit_text"
+            style="@style/EditText"
+            android:textColor="@color/white"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/add_text_done_tv"
+            android:padding="@dimen/edit_text_padding"
+            android:layout_marginHorizontal="@dimen/edit_text_horizontal_margin"
+            android:textCursorDrawable="@null"
+            android:background="@null"
+            android:gravity="center"
+            android:inputType="textCapSentences|textMultiLine"
+            android:textSize="@dimen/editor_initial_text_size"
+            tools:text="Some text checking line span 1 2 3 4 5 6 7 8 9"
+            tools:textColor="@android:color/black"
+            tools:textSize="22sp" />
+
+        <ImageButton
+            android:id="@+id/text_alignment_button"
+            android:contentDescription="@string/label_text_alignment_button"
+            android:layout_width="@dimen/normal_button_medium"
+            android:layout_height="@dimen/normal_button_medium"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"
+            android:layout_margin="@dimen/normal_button_margin"
+            android:background="@android:color/transparent"
+            android:tint="@android:color/white"
+            android:src="@drawable/ic_gridicons_align_left_32" />
 
     <Button
         android:id="@+id/text_style_toggle_button"
@@ -67,29 +73,37 @@
         android:text="@string/typeface_label_nunito"
         tools:text="@string/typeface_label_nunito" />
 
-    <ImageButton
-        android:id="@+id/color_picker_button"
-        android:contentDescription="@string/label_text_color_button"
-        android:layout_width="@dimen/normal_button_medium"
-        android:layout_height="@dimen/normal_button_medium"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_margin="@dimen/normal_button_margin"
-        android:background="@android:color/transparent"
-        android:src="@drawable/ic_textcolor_replaceme" />
+        <ImageButton
+            android:id="@+id/color_picker_button"
+            android:contentDescription="@string/label_text_color_button"
+            android:layout_width="@dimen/normal_button_medium"
+            android:layout_height="@dimen/normal_button_medium"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_margin="@dimen/normal_button_margin"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_textcolor_replaceme" />
+    </RelativeLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/add_text_color_picker_recycler_view"
-        android:layout_width="wrap_content"
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/color_picker_item_margin"
-        android:layout_centerHorizontal="true"
-        android:layout_alignParentBottom="true"
-        android:layout_toStartOf="@id/color_picker_button"
-        android:orientation="horizontal"
-        android:visibility="gone"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        tools:background="@android:color/black"
-        tools:listitem="@layout/color_picker_list_item" />
+        android:id="@+id/bottom_sheet_layout"
+        android:layout_alignParentBottom="true">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/bottom_sheet_container"
+            android:background="@drawable/bg_bottom_sheet"
+            app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+            app:behavior_peekHeight="0dp"
+            app:behavior_hideable="true">
+
+            <include
+                layout="@layout/color_picker_bottom_sheet"
+                android:id="@+id/color_picker_bottom_sheet" />
+        </RelativeLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 </RelativeLayout>

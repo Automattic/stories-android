@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/color_picker_bottom_sheet_default_height"
+    android:orientation="vertical">
+
+    <View
+        android:id="@+id/bottom_sheet_handle"
+        android:layout_width="@dimen/color_picker_bottom_sheet_handle_width"
+        android:layout_height="@dimen/color_picker_bottom_sheet_handle_height"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/color_picker_bottom_sheet_handle_top_margin"
+        android:alpha="0.12"
+        android:background="@drawable/bg_bottom_sheet_handle" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:layout_marginTop="@dimen/color_picker_bottom_sheet_label_top_margin"
+        android:layout_marginBottom="@dimen/color_picker_bottom_sheet_label_bottom_margin"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#DE000000"
+        android:text="@string/color_picker_label_text" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/text_color_picker_recycler_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="@dimen/color_picker_bottom_sheet_recycler_padding_horizontal"
+        android:paddingVertical="@dimen/color_picker_bottom_sheet_recycler_padding_vertical"
+        android:orientation="horizontal"
+        android:visibility="visible"
+        android:clipToPadding="false"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        tools:background="@android:color/black"
+        tools:listitem="@layout/color_picker_list_item" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:layout_marginTop="@dimen/color_picker_bottom_sheet_label_top_margin"
+        android:layout_marginBottom="@dimen/color_picker_bottom_sheet_label_bottom_margin"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#DE000000"
+        android:text="@string/color_picker_label_background" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/text_background_color_picker_recycler_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="@dimen/color_picker_bottom_sheet_recycler_padding_horizontal"
+        android:paddingVertical="@dimen/color_picker_bottom_sheet_recycler_padding_vertical"
+        android:orientation="horizontal"
+        android:visibility="visible"
+        android:clipToPadding="false"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        tools:background="@android:color/black"
+        tools:listitem="@layout/color_picker_list_item" />
+
+</LinearLayout>
