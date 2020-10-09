@@ -1528,6 +1528,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         updateEditMode()
         more_button.visibility = View.VISIBLE
         next_button.visibility = View.VISIBLE
+        delete_slide_view.visibility = View.GONE
     }
 
     private fun hideStoryFrameSelector() {
