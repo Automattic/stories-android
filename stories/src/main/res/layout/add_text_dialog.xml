@@ -46,6 +46,22 @@
             tools:textColor="@android:color/black"
             tools:textSize="22sp" />
 
+        <com.wordpress.stories.util.SeekBarRotator
+            android:id="@+id/slider_container"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/add_text_done_tv"
+            android:layout_above="@+id/color_picker_button"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="@dimen/text_size_slider_margin"
+            android:orientation="vertical">
+
+            <androidx.appcompat.widget.AppCompatSeekBar
+                android:id="@+id/text_size_slider"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent" />
+        </com.wordpress.stories.util.SeekBarRotator>
+
         <ImageButton
             android:id="@+id/text_alignment_button"
             android:contentDescription="@string/label_text_alignment_button"
