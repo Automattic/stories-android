@@ -41,7 +41,7 @@ class DeleteButton @JvmOverloads constructor(
 
     override fun setOnClickListener(l: OnClickListener?) {
         deleteButtonClickListener = l
-        super.setOnClickListener {
+        deleteButton.setOnClickListener {
             onClick(it)
         }
     }

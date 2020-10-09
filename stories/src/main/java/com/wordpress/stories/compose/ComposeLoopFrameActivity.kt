@@ -1009,6 +1009,33 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             })
             view_popup_menu.visibility = View.VISIBLE
         }
+
+        delete_slide_view.setOnClickListener {
+            var messageToUse = getString(R.string.dialog_discard_page_message)
+            if (storyViewModel.getSelectedFrame()?.saveResultReason != SaveSuccess) {
+                messageToUse = getString(R.string.dialog_discard_errored_page_message)
+            }
+            // show dialog
+            FrameSaveErrorDialog.newInstance(
+                    title = getString(R.string.dialog_discard_page_title),
+                    message = messageToUse,
+                    okButtonLabel = getString(R.string.dialog_discard_page_ok_button),
+                    listener = object : FrameSaveErrorDialogOk {
+                        override fun OnOkClicked(dialog: DialogFragment) {
+                            dialog.dismiss()
+                            if (storyViewModel.getCurrentStorySize() == 1) {
+                                // discard the whole story
+                                safelyDiscardCurrentStoryAndCleanUpIntent()
+                            } else {
+                                // get currentFrame value as it will change after calling onAboutToDeleteStoryFrame
+                                val currentFrameToDeleteIndex = storyViewModel.getSelectedFrameIndex()
+                                onAboutToDeleteStoryFrame(currentFrameToDeleteIndex)
+                                // now discard it from the viewModel
+                                storyViewModel.removeFrameAt(currentFrameToDeleteIndex)
+                            }
+                        }
+                    }).show(supportFragmentManager, FRAGMENT_DIALOG)
+        }
     }
 
     fun processStorySaving() {
