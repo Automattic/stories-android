@@ -67,6 +67,7 @@ import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.wordpress.stories.BuildConfig
 import com.wordpress.stories.R
 import com.wordpress.stories.compose.ComposeLoopFrameActivity.ExternalMediaPickerRequestCodesAndExtraKeys
+import com.wordpress.stories.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_DELETE_SLIDE
 import com.wordpress.stories.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_FULL_SCREEN
 import com.wordpress.stories.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_NONE
 import com.wordpress.stories.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION
@@ -128,8 +129,9 @@ enum class ScreenTouchBlockMode {
     BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION, // used when in error resolution mode: user needs to take
     // action, so we allow them to use the StoryFrameSelector and menu, but no edits on
     // the Photo Editor canvas are allowed at this stage
-    BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY // used when errors have been sorted out by the user - no edits allowed,
+    BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY, // used when errors have been sorted out by the user - no edits allowed,
     // but they should be good to upload the Story now
+    BLOCK_TOUCH_MODE_DELETE_SLIDE // Used in delete slide mode, tapping the screen releases the block
 }
 
 interface SnackbarProvider {
@@ -1753,6 +1755,22 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     true
                 }
             }
+            // block touch, no scrim, tapping releases block
+            BLOCK_TOUCH_MODE_DELETE_SLIDE -> {
+                translucent_view.visibility = View.GONE
+                translucent_error_view.visibility = View.VISIBLE
+                translucent_error_view.background = ColorDrawable(
+                        ContextCompat.getColor(this, android.R.color.transparent)
+                )
+                translucent_error_view.setOnTouchListener { _, _ ->
+                    // If the error view is tapped, dismiss it and cancel delete slide mode
+                    // Don't consume the touch event, pass it along
+                    delete_slide_view.visibility = View.GONE
+                    editModeRestoreAllUIControls()
+                    releaseTouchOnPhotoEditor(BLOCK_TOUCH_MODE_NONE)
+                    false
+                }
+            }
             // just don't block touch
             BLOCK_TOUCH_MODE_NONE -> {
                 translucent_view.visibility = View.GONE
@@ -1868,9 +1886,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         if (delete_slide_view.visibility == View.VISIBLE) {
             delete_slide_view.visibility = View.GONE
             editModeRestoreAllUIControls()
+            releaseTouchOnPhotoEditor(BLOCK_TOUCH_MODE_NONE)
         } else {
             delete_slide_view.visibility = View.VISIBLE
             editModeHideAllUIControls(hideNextButton = true, hideFrameSelector = false)
+            blockTouchOnPhotoEditor(BLOCK_TOUCH_MODE_DELETE_SLIDE)
         }
     }
 
