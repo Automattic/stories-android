@@ -998,6 +998,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                             }
                         }
                     }).show(supportFragmentManager, FRAGMENT_DIALOG)
+            disableDeleteSlideMode()
         }
     }
 
