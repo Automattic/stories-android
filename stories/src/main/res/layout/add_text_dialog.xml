@@ -58,6 +58,7 @@
 
             <androidx.appcompat.widget.AppCompatSeekBar
                 android:id="@+id/text_size_slider"
+                style="@style/StoriesSeekBar"
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent" />
         </com.wordpress.stories.util.SeekBarRotator>

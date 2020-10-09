@@ -37,4 +37,11 @@
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 
+    <style name="StoriesSeekBar" parent="Widget.AppCompat.SeekBar">
+        <item name="android:progressTint">@android:color/white</item>
+        <item name="android:progressBackgroundTint">@android:color/white</item>
+        <item name="android:colorControlActivated">@android:color/white</item>
+        <item name="android:thumbTint">@android:color/white</item>
+    </style>
+
 </resources>
