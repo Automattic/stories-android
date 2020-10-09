@@ -1766,9 +1766,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 translucent_error_view.setOnTouchListener { _, _ ->
                     // If the error view is tapped, dismiss it and cancel delete slide mode
                     // Don't consume the touch event, pass it along
-                    delete_slide_view.visibility = View.GONE
-                    editModeRestoreAllUIControls()
-                    releaseTouchOnPhotoEditor(BLOCK_TOUCH_MODE_NONE)
+                    disableDeleteSlideMode()
                     false
                 }
             }
@@ -1883,16 +1881,23 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     override fun onCurrentFrameTapped() {
-        // Toggle 'delete slide' mode on or off
         if (delete_slide_view.visibility == View.VISIBLE) {
-            delete_slide_view.visibility = View.GONE
-            editModeRestoreAllUIControls()
-            releaseTouchOnPhotoEditor(BLOCK_TOUCH_MODE_NONE)
+            disableDeleteSlideMode()
         } else {
-            delete_slide_view.visibility = View.VISIBLE
-            editModeHideAllUIControls(hideNextButton = true, hideFrameSelector = false)
-            blockTouchOnPhotoEditor(BLOCK_TOUCH_MODE_DELETE_SLIDE)
+            enableDeleteSlideMode()
         }
+    }
+
+    private fun enableDeleteSlideMode() {
+        delete_slide_view.visibility = View.VISIBLE
+        editModeHideAllUIControls(hideNextButton = true, hideFrameSelector = false)
+        blockTouchOnPhotoEditor(BLOCK_TOUCH_MODE_DELETE_SLIDE)
+    }
+
+    private fun disableDeleteSlideMode() {
+        delete_slide_view.visibility = View.GONE
+        editModeRestoreAllUIControls()
+        releaseTouchOnPhotoEditor(BLOCK_TOUCH_MODE_NONE)
     }
 
     private fun showPlayVideoWithSurfaceSafeguard(source: BackgroundSource) {
