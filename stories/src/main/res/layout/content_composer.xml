@@ -241,7 +241,7 @@
         android:visibility="invisible"
         app:text="@string/label_control_publish"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintRight_toLeftOf="@id/more_button"/>
+        app:layout_constraintRight_toRightOf="parent"/>
 
     <!-- this is the retry saving view  -->
     <com.wordpress.stories.compose.SaveButton
@@ -256,24 +256,6 @@
         app:layout_constraintRight_toRightOf="parent"
         />
 
-
-    <ImageView
-        android:id="@+id/more_button"
-        android:visibility="invisible"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:background="@drawable/ic_more_vert_black_24dp"
-        android:backgroundTint="@color/white"
-        android:contentDescription="@string/more_button_alt"
-        android:scaleType="fitCenter"
-        android:paddingTop="@dimen/edit_mode_button_group_margin"
-        android:layout_marginEnd="@dimen/top_button_group_margin"
-        android:layout_marginTop="@dimen/next_button_top_margin"
-        app:layout_constraintTop_toTopOf="@id/next_button"
-        app:layout_constraintRight_toRightOf="parent"
-        />
-
     <fragment android:name="com.wordpress.stories.compose.story.StoryFrameSelectorFragment"
         android:id="@+id/bottom_strip_view"
         android:layout_width="match_parent"
@@ -281,20 +263,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         tools:ignore="FragmentTagUsage"/>
-
-    <!-- note: setting the same elevation as per the Next button so this view appears on top -->
-    <com.wordpress.stories.compose.CustomPopUpMenuView
-        android:id="@+id/view_popup_menu"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone"
-        android:elevation="@dimen/next_button_elevation"
-        android:layout_centerHorizontal="true"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        />
 
     <FrameLayout
         android:id="@+id/translucent_view"

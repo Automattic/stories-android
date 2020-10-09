@@ -73,11 +73,4 @@
     <dimen name="story_frame_selector_item_padding">8dp</dimen>
     <dimen name="story_frame_selector_item_elevation">@dimen/main_button_elevation</dimen>
 
-    <!--  custom menu view-->
-    <dimen name="custom_menu_margin">16dp</dimen>
-    <dimen name="custom_menu_padding">16dp</dimen>
-    <dimen name="custom_menu_background_radius">1dp</dimen>
-    <dimen name="custom_menu_elevation">6dp</dimen>
-    <dimen name="custom_menu_button_width">140dp</dimen>
-
 </resources>

@@ -319,8 +319,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             delete_view.addBottomOffset(bottomNavigationBarMargin)
             delete_slide_view.addBottomOffset(bottomNavigationBarMargin)
             (bottom_strip_view as StoryFrameSelectorFragment).setBottomOffset(bottomNavigationBarMargin)
-            view_popup_menu.setTopOffset(
-                next_button.measuredHeight + (nextButtonBaseTopMargin * 2) + insets.systemWindowInsetTop)
             insets
         }
 
@@ -747,11 +745,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     override fun onBackPressed() {
-        if (view_popup_menu.visibility == View.VISIBLE) {
-            view_popup_menu.visibility = View.GONE
-            return
-        }
-
         if (!backgroundSurfaceManager.cameraVisible()) {
             close_button.performClick()
         } else if (storyViewModel.getCurrentStorySize() > 0) {
@@ -978,36 +971,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             storyFrameIndexToRetry = storyViewModel.getSelectedFrameIndex()
             retry_button.setSaving(true)
             saveStory()
-        }
-
-        more_button.setOnClickListener {
-            view_popup_menu.setOnDeletePageButtonClickListener(OnClickListener {
-                var messageToUse = getString(R.string.dialog_discard_page_message)
-                if (storyViewModel.getSelectedFrame()?.saveResultReason != SaveSuccess) {
-                    messageToUse = getString(R.string.dialog_discard_errored_page_message)
-                }
-                // show dialog
-                FrameSaveErrorDialog.newInstance(
-                    title = getString(R.string.dialog_discard_page_title),
-                    message = messageToUse,
-                    okButtonLabel = getString(R.string.dialog_discard_page_ok_button),
-                    listener = object : FrameSaveErrorDialogOk {
-                        override fun OnOkClicked(dialog: DialogFragment) {
-                            dialog.dismiss()
-                            if (storyViewModel.getCurrentStorySize() == 1) {
-                                // discard the whole story
-                                safelyDiscardCurrentStoryAndCleanUpIntent()
-                            } else {
-                                // get currentFrame value as it will change after calling onAboutToDeleteStoryFrame
-                                val currentFrameToDeleteIndex = storyViewModel.getSelectedFrameIndex()
-                                onAboutToDeleteStoryFrame(currentFrameToDeleteIndex)
-                                // now discard it from the viewModel
-                                storyViewModel.removeFrameAt(currentFrameToDeleteIndex)
-                            }
-                        }
-                    }).show(supportFragmentManager, FRAGMENT_DIALOG)
-            })
-            view_popup_menu.visibility = View.VISIBLE
         }
 
         delete_slide_view.setOnClickListener {
@@ -1553,7 +1516,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
         // show proper edit mode controls
         updateEditMode()
-        more_button.visibility = View.VISIBLE
         next_button.visibility = View.VISIBLE
         delete_slide_view.visibility = View.GONE
     }
@@ -1571,7 +1533,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
         // hide proper edit mode controls
         edit_mode_controls.visibility = View.INVISIBLE
-        more_button.visibility = View.INVISIBLE
         sound_button.visibility = View.INVISIBLE
         next_button.visibility = View.INVISIBLE
         retry_button.visibility = View.GONE
@@ -1582,7 +1543,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private fun editModeHideAllUIControls(hideNextButton: Boolean, hideFrameSelector: Boolean = true) {
         // momentarily hide proper edit mode controls
         edit_mode_controls.visibility = View.INVISIBLE
-        more_button.visibility = View.INVISIBLE
         sound_button.visibility = View.INVISIBLE
         if (hideFrameSelector) {
             hideStoryFrameSelector()
@@ -1642,7 +1602,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private fun editModeRestoreAllUIControls() {
         // show all edit mode controls
         updateEditMode()
-        more_button.visibility = View.VISIBLE
         next_button.visibility = View.VISIBLE
 
         showStoryFrameSelector()
