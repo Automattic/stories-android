@@ -35,6 +35,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@+id/add_text_done_tv"
+            android:layout_toStartOf="@+id/slider_container"
             android:padding="@dimen/edit_text_padding"
             android:layout_marginHorizontal="@dimen/edit_text_horizontal_margin"
             android:textCursorDrawable="@null"
