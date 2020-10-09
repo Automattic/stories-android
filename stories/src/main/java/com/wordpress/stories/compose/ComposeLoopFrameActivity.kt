@@ -315,6 +315,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             workingAreaRect = calculateWorkingArea()
             photoEditor.updateWorkAreaRect(workingAreaRect)
             delete_view.addBottomOffset(bottomNavigationBarMargin)
+            delete_slide_view.addBottomOffset(bottomNavigationBarMargin)
             (bottom_strip_view as StoryFrameSelectorFragment).setBottomOffset(bottomNavigationBarMargin)
             view_popup_menu.setTopOffset(
                 next_button.measuredHeight + (nextButtonBaseTopMargin * 2) + insets.systemWindowInsetTop)
