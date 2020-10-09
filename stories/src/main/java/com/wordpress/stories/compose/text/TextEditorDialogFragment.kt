@@ -6,11 +6,14 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.Spannable
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.SeekBar
+import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -109,6 +112,7 @@ class TextEditorDialogFragment : DialogFragment() {
             textStyleGroupManager.styleTextView(typefaceId, add_text_edit_text)
             textStyleGroupManager.styleAndLabelTextView(typefaceId, text_style_toggle_button)
             trackTextStyleToggled()
+            updateFontSizeSlider()
         }
 
         color_picker_button.setOnClickListener {
@@ -118,11 +122,31 @@ class TextEditorDialogFragment : DialogFragment() {
         // Apply any existing styling to text
         add_text_edit_text.setTextColor(colorCode)
         applyBackgroundColor(backgroundColorCode)
+        activity?.let {
+            text_size_slider.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
+                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                    if (!fromUser) return
+                    add_text_edit_text.setTextSize(TypedValue.COMPLEX_UNIT_SP,
+                            (progress * TEXT_SIZE_SLIDER_STEP + TEXT_SIZE_SLIDER_MIN_VALUE).toFloat())
+                    textStyleGroupManager.customFontSizeApplied = true
+                }
+
+                override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+
+                override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+            })
+        }
 
         updateTextAlignment(textAlignment)
 
-        textStyleGroupManager.styleTextView(typefaceId, add_text_edit_text)
+        // This first time pass the font size so we know if we should fix the size
+        val initialTextSize = arguments?.getFloat(EXTRA_TEXT_SIZE) ?: 0F
+
+        textStyleGroupManager.styleTextView(typefaceId, add_text_edit_text, initialTextSize)
         textStyleGroupManager.styleAndLabelTextView(typefaceId, text_style_toggle_button)
+
+        text_size_slider.max = TEXT_SIZE_SLIDER_MAX // This corresponds to a font size of MAX + MIN_VALUE sp
+        updateFontSizeSlider()
 
         add_text_edit_text.requestFocus()
 
@@ -226,6 +250,11 @@ class TextEditorDialogFragment : DialogFragment() {
         textEditorAnalyticsHandler?.trackTextStyleToggled(textStyleGroupManager.getAnalyticsLabelFor(typefaceId))
     }
 
+    private fun updateFontSizeSlider() {
+        val fontSizeSp = (add_text_edit_text.textSize / resources.displayMetrics.scaledDensity).toInt()
+        text_size_slider.progress = (fontSizeSp - TEXT_SIZE_SLIDER_MIN_VALUE) / TEXT_SIZE_SLIDER_STEP
+    }
+
     companion object {
         private val TAG = TextEditorDialogFragment::class.java.simpleName
         const val EXTRA_INPUT_TEXT = "extra_input_text"
@@ -233,6 +262,11 @@ class TextEditorDialogFragment : DialogFragment() {
         const val EXTRA_TEXT_BACKGROUND_COLOR_CODE = "extra_background_color_code"
         const val EXTRA_TEXT_ALIGNMENT = "extra_text_alignment"
         const val EXTRA_TYPEFACE = "extra_typeface"
+        const val EXTRA_TEXT_SIZE = "extra_text_size"
+
+        const val TEXT_SIZE_SLIDER_MAX = 20
+        const val TEXT_SIZE_SLIDER_MIN_VALUE = 14
+        const val TEXT_SIZE_SLIDER_STEP = 2
 
         @JvmOverloads
         fun show(
@@ -249,6 +283,7 @@ class TextEditorDialogFragment : DialogFragment() {
                     putInt(EXTRA_TEXT_BACKGROUND_COLOR_CODE, textStyler?.textBackgroundColor ?: Color.TRANSPARENT)
                     putInt(EXTRA_TEXT_ALIGNMENT, textStyler?.textAlignment ?: TextAlignment.default())
                     putInt(EXTRA_TYPEFACE, textStyler?.typefaceId ?: TextStyleGroupManager.TYPEFACE_ID_NUNITO)
+                    putFloat(EXTRA_TEXT_SIZE, textStyler?.fontSize ?: 0F)
                 }
                 show(appCompatActivity.supportFragmentManager, TAG)
             }
