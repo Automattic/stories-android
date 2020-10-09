@@ -1863,6 +1863,17 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         showMediaPicker()
     }
 
+    override fun onCurrentFrameTapped() {
+        // Toggle 'delete slide' mode on or off
+        if (delete_slide_view.visibility == View.VISIBLE) {
+            delete_slide_view.visibility = View.GONE
+            editModeRestoreAllUIControls()
+        } else {
+            delete_slide_view.visibility = View.VISIBLE
+            editModeHideAllUIControls(hideNextButton = true, hideFrameSelector = false)
+        }
+    }
+
     private fun showPlayVideoWithSurfaceSafeguard(source: BackgroundSource) {
         if (backgroundSurfaceManager.isTextureViewAvailable()) {
             CoroutineScope(Dispatchers.Main).launch {
