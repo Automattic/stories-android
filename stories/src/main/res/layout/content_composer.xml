@@ -231,16 +231,16 @@
         android:contentDescription="@string/label_close_button"
         />
 
-    <com.wordpress.stories.compose.NextButton
+    <com.wordpress.stories.compose.FinishButton
         android:id="@+id/next_button"
-        android:layout_width="@dimen/next_button_total_width"
-        android:layout_height="@dimen/next_button_total_height"
-        android:layout_marginTop="@dimen/next_button_top_margin"
-        android:layout_marginEnd="@dimen/top_button_group_margin"
-        android:background="@drawable/next_button_background"
-        android:elevation="@dimen/next_button_elevation"
+        android:layout_width="@dimen/edit_mode_button_size"
+        android:layout_height="@dimen/edit_mode_button_size"
+        android:layout_margin="@dimen/top_button_group_margin"
+        android:elevation="@dimen/main_button_elevation"
         android:visibility="invisible"
-        app:text="@string/label_control_publish"
+        android:tint="@color/black"
+        android:contentDescription="@string/label_next_button"
+        app:buttonMode="next"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintRight_toRightOf="parent"/>
 

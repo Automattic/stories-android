@@ -14,7 +14,6 @@
     <string name="label_snackbar_loop_frame_saved">Saved to photos</string>
     <string name="label_snackbar_share">SHARE</string>
     <string name="label_share_to">Share to</string>
-    <string name="label_control_publish">Next</string>
 
     <!-- content description labels   -->
     <string name="label_next_button">Next</string>
