@@ -291,7 +291,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         val height = photoEditorView.measuredHeight
 
         val bottomAreaHeight = resources.getDimensionPixelSize(R.dimen.bottom_strip_height) + bottomNavigationBarMargin
-        val topAreaHeight = resources.getDimensionPixelSize(R.dimen.next_button_total_height)
+        val topAreaHeight = resources.getDimensionPixelSize(R.dimen.edit_mode_button_size)
 
         return Rect(
             xCoord,

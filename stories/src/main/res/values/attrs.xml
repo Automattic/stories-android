@@ -20,10 +20,6 @@
         <attr name="aevTitle" format="string"/>
     </declare-styleable>
 
-    <declare-styleable name="NextButton">
-        <attr name="text" format="string"/>
-    </declare-styleable>
-
     <declare-styleable name="FinishButton">
         <attr name="buttonMode" format="enum">
             <enum name="next" value="0"/>
