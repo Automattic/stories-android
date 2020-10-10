@@ -39,6 +39,7 @@ class TextEditorDialogFragment : DialogFragment() {
 
     private lateinit var textStyleGroupManager: TextStyleGroupManager
     private var bottomSheetHandler: ColorPickerBottomSheetHandler? = null
+    private lateinit var textSizeSlider: TextSizeSlider
 
     private var analyticsListener: StoriesAnalyticsListener? = null
     private var textEditorAnalyticsHandler: TextEditorAnalyticsHandler? = null
@@ -97,6 +98,10 @@ class TextEditorDialogFragment : DialogFragment() {
             bottomSheetHandler?.hideBottomSheet()
         }
 
+        textSizeSlider = TextSizeSlider(text_size_slider, add_text_edit_text, resources) {
+            textStyleGroupManager.customFontSizeApplied = true
+        }
+
         initTextColoring()
 
         text_alignment_button.setOnClickListener {
@@ -109,6 +114,7 @@ class TextEditorDialogFragment : DialogFragment() {
             textStyleGroupManager.styleTextView(typefaceId, add_text_edit_text)
             textStyleGroupManager.styleAndLabelTextView(typefaceId, text_style_toggle_button)
             trackTextStyleToggled()
+            textSizeSlider.update()
         }
 
         color_picker_button.setOnClickListener {
@@ -121,8 +127,13 @@ class TextEditorDialogFragment : DialogFragment() {
 
         updateTextAlignment(textAlignment)
 
-        textStyleGroupManager.styleTextView(typefaceId, add_text_edit_text)
+        // This first time pass the font size so we know if we should fix the size
+        val initialTextSize = arguments?.getFloat(EXTRA_TEXT_SIZE) ?: 0F
+
+        textStyleGroupManager.styleTextView(typefaceId, add_text_edit_text, initialTextSize)
         textStyleGroupManager.styleAndLabelTextView(typefaceId, text_style_toggle_button)
+
+        textSizeSlider.update()
 
         add_text_edit_text.requestFocus()
 
@@ -233,6 +244,7 @@ class TextEditorDialogFragment : DialogFragment() {
         const val EXTRA_TEXT_BACKGROUND_COLOR_CODE = "extra_background_color_code"
         const val EXTRA_TEXT_ALIGNMENT = "extra_text_alignment"
         const val EXTRA_TYPEFACE = "extra_typeface"
+        const val EXTRA_TEXT_SIZE = "extra_text_size"
 
         @JvmOverloads
         fun show(
@@ -249,6 +261,7 @@ class TextEditorDialogFragment : DialogFragment() {
                     putInt(EXTRA_TEXT_BACKGROUND_COLOR_CODE, textStyler?.textBackgroundColor ?: Color.TRANSPARENT)
                     putInt(EXTRA_TEXT_ALIGNMENT, textStyler?.textAlignment ?: TextAlignment.default())
                     putInt(EXTRA_TYPEFACE, textStyler?.typefaceId ?: TextStyleGroupManager.TYPEFACE_ID_NUNITO)
+                    putFloat(EXTRA_TEXT_SIZE, textStyler?.fontSize ?: 0F)
                 }
                 show(appCompatActivity.supportFragmentManager, TAG)
             }

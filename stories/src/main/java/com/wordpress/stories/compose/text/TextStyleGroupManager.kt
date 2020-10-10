@@ -45,6 +45,9 @@ class TextStyleGroupManager(val context: Context) {
 
     private var supportedTypefaces = TreeMap<Int, TextStyleRule>()
 
+    // Tracks whether the user has changed the font size
+    var customFontSizeApplied = false
+
     init {
         supportedTypefaces[TYPEFACE_ID_NUNITO] = TextStyleRule(
                 id = TYPEFACE_ID_NUNITO,
@@ -108,7 +111,7 @@ class TextStyleGroupManager(val context: Context) {
 
     @ColorInt private fun getColor(@ColorRes colorRes: Int) = ContextCompat.getColor(context, colorRes)
 
-    fun styleTextView(@TypefaceId typefaceId: Int, textView: TextView) {
+    fun styleTextView(@TypefaceId typefaceId: Int, textView: TextView, fontSizePx: Float = 0F) {
         val textStyleRule = supportedTypefaces[typefaceId] ?: return
 
         with(textStyleRule) {
@@ -126,7 +129,17 @@ class TextStyleGroupManager(val context: Context) {
             textView.setLineSpacing(0F, lineSpacingMultiplier)
             textView.letterSpacing = letterSpacing
 
-            textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, defaultFontSize)
+            if (customFontSizeApplied) {
+                // No op: leave the textView's font size intact
+            } else if (fontSizePx > 0 && fontSizePx != defaultFontSize.spToPx()) {
+                // We were given a specific font size, and it's not the default for this font, so it's been
+                // customized by the user at some point.
+                // Apply the font and toggle on custom font size mode.
+                textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSizePx)
+                customFontSizeApplied = true
+            } else {
+                textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, defaultFontSize)
+            }
         }
     }
 
