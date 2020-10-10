@@ -21,6 +21,10 @@
     <color name="black_transp_story_frame_selector">@color/black_transp_light</color>
     <color name="black_transp_edit_mode_controls">@color/black_transp_light</color>
     <color name="black_transp_edit_mode_controls_pressed">@color/black_transp_light_darker</color>
+
+    <color name="white_transp_light_darker">#99FFFFFF</color>
+    <color name="white_transp_navigation_controls_pressed">@color/white_transp_light_darker</color>
+
     <color name="black_transp_error_scrim">#4D000000</color>
     <color name="red">#FF0000</color>
 
