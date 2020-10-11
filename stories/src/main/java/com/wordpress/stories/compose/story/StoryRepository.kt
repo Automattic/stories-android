@@ -60,8 +60,18 @@ object StoryRepository {
     fun findStoryContainingStoryFrameItemsByIds(ids: ArrayList<String>): StoryIndex {
         // now look for a Story in the StoryRepository that contains a matching frame id and return the story index
         for ((index, story) in stories.withIndex()) {
-            // find the MediaModel for a given Uri from composedFrameFile
             if (story.frames.filter { ids.contains(it.id) }.size == ids.size) {
+                // here we found the story whose frames collection contains all of the passed ids
+                return index
+            }
+        }
+        return DEFAULT_NONE_SELECTED
+    }
+
+    fun findFirstStoryContainingAtLeastOneStoryFrameItemWithId(id: String): StoryIndex {
+        // now look for a Story in the StoryRepository that contains a matching frame id and return the story index
+        for ((index, story) in stories.withIndex()) {
+            if (story.frames.filter { it.id == id }.size > 0) {
                 // here we found the story whose frames collection contains all of the passed ids
                 return index
             }
