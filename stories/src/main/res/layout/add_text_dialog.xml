@@ -13,20 +13,18 @@
         android:background="#00000000"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/add_text_done_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <ImageButton
+            android:id="@+id/add_text_done_button"
+            android:layout_width="@dimen/edit_mode_button_size"
+            android:layout_height="@dimen/edit_mode_button_size"
+            android:layout_margin="@dimen/top_button_group_margin"
             android:layout_alignParentEnd="true"
             android:layout_alignParentTop="true"
-            android:layout_margin="20dp"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"
-            android:paddingLeft="20dp"
-            android:paddingRight="20dp"
-            android:text="@string/label_done"
-            android:textAllCaps="true"
-            android:textColor="@color/white" />
+            android:src="@drawable/ic_checkmark"
+            android:tint="@color/black"
+            android:background="@drawable/navigation_controls_circle_selector"
+            android:elevation="@dimen/main_button_elevation"
+            android:contentDescription="@string/label_done_button" />
 
         <com.wordpress.stories.compose.text.StoriesEditText
             android:id="@+id/add_text_edit_text"
@@ -34,7 +32,7 @@
             android:textColor="@color/white"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@+id/add_text_done_tv"
+            android:layout_below="@+id/add_text_done_button"
             android:layout_toStartOf="@+id/slider_container"
             android:padding="@dimen/edit_text_padding"
             android:layout_marginHorizontal="@dimen/edit_text_horizontal_margin"
@@ -51,7 +49,7 @@
             android:id="@+id/slider_container"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_below="@+id/add_text_done_tv"
+            android:layout_below="@+id/add_text_done_button"
             android:layout_above="@+id/color_picker_button"
             android:layout_alignParentEnd="true"
             android:layout_marginEnd="@dimen/text_size_slider_margin"
