@@ -291,7 +291,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         val height = photoEditorView.measuredHeight
 
         val bottomAreaHeight = resources.getDimensionPixelSize(R.dimen.bottom_strip_height) + bottomNavigationBarMargin
-        val topAreaHeight = resources.getDimensionPixelSize(R.dimen.next_button_total_height)
+        val topAreaHeight = resources.getDimensionPixelSize(R.dimen.edit_mode_button_size)
 
         return Rect(
             xCoord,
@@ -347,7 +347,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 }
 
                 isEditingText = true
-                editModeHideAllUIControls(true)
+                editModeHideAllUIControls(hideNextButton = true, hideCloseButton = true)
                 // Hide the text in the background while it's being edited
                 rootView.visibility = View.INVISIBLE
 
@@ -389,7 +389,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
             override fun onStartViewChangeListener(viewType: ViewType) {
                 // in this case, also hide the SAVE button, but don't hide the bottom strip view.
-                editModeHideAllUIControls(hideNextButton = true, hideFrameSelector = false)
+                editModeHideAllUIControls(hideNextButton = true, hideCloseButton = false, hideFrameSelector = false)
             }
 
             override fun onStopViewChangeListener(viewType: ViewType) {
@@ -1518,6 +1518,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // show proper edit mode controls
         updateEditMode()
         next_button.visibility = View.VISIBLE
+        close_button.visibility = View.VISIBLE
         delete_slide_view.visibility = View.GONE
     }
 
@@ -1541,7 +1542,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         showVideoUIControls()
     }
 
-    private fun editModeHideAllUIControls(hideNextButton: Boolean, hideFrameSelector: Boolean = true) {
+    private fun editModeHideAllUIControls(
+        hideNextButton: Boolean,
+        hideCloseButton: Boolean = false,
+        hideFrameSelector: Boolean = true
+    ) {
         // momentarily hide proper edit mode controls
         edit_mode_controls.visibility = View.INVISIBLE
         sound_button.visibility = View.INVISIBLE
@@ -1550,6 +1555,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         }
         if (hideNextButton) {
             next_button.visibility = View.INVISIBLE
+        }
+        if (hideCloseButton) {
+            close_button.visibility = View.INVISIBLE
         }
     }
 
@@ -1604,6 +1612,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // show all edit mode controls
         updateEditMode()
         next_button.visibility = View.VISIBLE
+        close_button.visibility = View.VISIBLE
 
         showStoryFrameSelector()
     }

@@ -47,11 +47,6 @@
     <dimen name="save_button_padding">8dp</dimen>
     <dimen name="save_button_spinner_size">24dp</dimen>
 
-    <dimen name="next_button_top_margin">8dp</dimen>
-    <dimen name="next_button_total_width">100dp</dimen>
-    <dimen name="next_button_total_height">40dp</dimen>
-    <dimen name="next_button_elevation">@dimen/main_button_elevation</dimen>
-
     <dimen name="edit_mode_button_group_margin">16dp</dimen>
     <dimen name="edit_mode_button_group_margin_between">16dp</dimen>
     <dimen name="edit_mode_button_size">44dp</dimen>

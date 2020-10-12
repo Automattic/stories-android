@@ -28,7 +28,7 @@ class DeleteButton @JvmOverloads constructor(
     fun setReadyForDelete(isReadyForDelete: Boolean) {
         readyForDeleteState = isReadyForDelete
         if (readyForDeleteState) {
-            deleteButton.background = getDrawable(context, R.drawable.bg_oval_white_delete_control)
+            deleteButton.background = getDrawable(context, R.drawable.bg_rounded_button)
             // make the icon black
             deleteButton.setColorFilter(Color.argb(255, 0, 0, 0))
         } else {

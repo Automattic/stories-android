@@ -138,7 +138,7 @@ class TextEditorDialogFragment : DialogFragment() {
         add_text_edit_text.requestFocus()
 
         // Make a callback on activity when user is done with text editing
-        add_text_done_tv?.setOnClickListener {
+        add_text_done_button?.setOnClickListener {
             dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
             dismiss()
         }
