@@ -921,26 +921,19 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 !backgroundSurfaceManager.cameraVisible() -> {
                     addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
 
-                    // add discard dialog
-                    if (storyViewModel.anyOfCurrentStoryFramesHasViews()) {
-                        // show dialog
-                        FrameSaveErrorDialog.newInstance(
-                            title = getString(R.string.dialog_discard_story_title),
-                            message = getString(R.string.dialog_discard_story_message),
-                            okButtonLabel = getString(R.string.dialog_discard_story_ok_button),
-                            listener = object : FrameSaveErrorDialogOk {
-                                override fun OnOkClicked(dialog: DialogFragment) {
-                                    dialog.dismiss()
-                                    // discard the whole story
-                                    safelyDiscardCurrentStoryAndCleanUpIntent()
-                                    storyDiscardListener?.onStoryDiscarded()
-                                }
-                            }).show(supportFragmentManager, FRAGMENT_DIALOG)
-                    } else {
-                        // discard the whole story
-                        safelyDiscardCurrentStoryAndCleanUpIntent()
-                        storyDiscardListener?.onStoryDiscarded()
-                    }
+                    // Show discard dialog
+                    FrameSaveErrorDialog.newInstance(
+                        title = getString(R.string.dialog_discard_story_title),
+                        message = getString(R.string.dialog_discard_story_message),
+                        okButtonLabel = getString(R.string.dialog_discard_story_ok_button),
+                        listener = object : FrameSaveErrorDialogOk {
+                            override fun OnOkClicked(dialog: DialogFragment) {
+                                dialog.dismiss()
+                                // discard the whole story
+                                safelyDiscardCurrentStoryAndCleanUpIntent()
+                                storyDiscardListener?.onStoryDiscarded()
+                            }
+                        }).show(supportFragmentManager, FRAGMENT_DIALOG)
                 }
             }
         }
