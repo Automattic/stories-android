@@ -3,7 +3,7 @@
     <string name="flip_button_alt">Flip camera</string>
     <string name="flash_button_alt">Flash</string>
     <string name="stickers_button_alt">Stickers</string>
-    <string name="more_button_alt">More</string>
+    <string name="delete_button_alt">Delete</string>
     <string name="text_button_alt">Text</string>
     <string name="sound_button_alt">Sound</string>
     <string name="label_control_flip_camera">Flip</string>
@@ -15,10 +15,10 @@
     <string name="label_snackbar_share">SHARE</string>
     <string name="label_share_to">Share to</string>
     <string name="label_done">Done</string>
-    <string name="label_control_publish">Next</string>
-    <string name="label_control_edit_done">Done</string>
 
     <!-- content description labels   -->
+    <string name="label_next_button">Next</string>
+    <string name="label_done_button">Done</string>
     <string name="label_close_button">Close</string>
     <string name="label_saved_icon">Saved</string>
     <string name="label_retry_icon">Retry</string>
@@ -28,8 +28,6 @@
     <string name="label_frame_errored">errored</string>
     <string name="label_text_alignment_button">Change text alignment</string>
     <string name="label_text_color_button">Change text color</string>
-
-    <string name="menu_delete_page">Delete slide</string>
 
     <string name="dialog_discard_page_title">Delete story slide?</string>
     <string name="dialog_discard_page_message">This slide will be removed from your story.</string>
@@ -88,6 +86,7 @@
     <string name="toast_error_saving_video">Video could not be saved</string>
     <string name="toast_capture_operation_permission_needed">You need to grant the app audio recording permission in order to record video</string>
 
+    <!-- Text editing -->
     <!-- Typeface labels -->
     <string name="typeface_label_nunito">Casual</string>
     <string name="typeface_label_libre_baskerville">Classic</string>
@@ -100,6 +99,9 @@
      by resource merging -->
     <string name="camera_error">This device doesn\'t support Camera2 API.</string>
     <string name="toast_error_playing_video">An error occurred while playing your video</string>
+
+    <string name="color_picker_label_text">Text</string>
+    <string name="color_picker_label_background">Background</string>
 
     <!-- WordPress Android strings - matching in case of future integration -->
     <!-- Android O notification channels, these show in the Android app settings -->

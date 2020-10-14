@@ -44,6 +44,9 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
     private val _onUserSelectedFrame = SingleLiveEvent<Pair<Int, Int>>()
     val onUserSelectedFrame = _onUserSelectedFrame
 
+    private val _onUserTappedCurrentFrame = SingleLiveEvent<Unit>()
+    val onUserTappedCurrentFrame = _onUserTappedCurrentFrame
+
     fun createNewStory() {
         loadStory(StoryRepository.DEFAULT_NONE_SELECTED)
     }
@@ -91,10 +94,14 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
         return newlySelectedFrame
     }
 
-    fun setSelectedFrameByUser(index: Int) {
+    fun setSelectedFrameByUser(index: Int, userInitiated: Boolean = false) {
         val oldIndex = currentSelectedFrameIndex
         setSelectedFrame(index)
-        _onUserSelectedFrame.value = Pair(oldIndex, index)
+        if (userInitiated && (oldIndex == index)) {
+            _onUserTappedCurrentFrame.call()
+        } else {
+            _onUserSelectedFrame.value = Pair(oldIndex, index)
+        }
     }
 
     fun updateCurrentSelectedFrameOnRetryResult(frameSaveResult: FrameSaveResult) {
@@ -282,7 +289,7 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
                 selected = isSelected, filePath = filePath, errored = model.saveResultReason != SaveSuccess
             )
             oneFrameUiState.onItemTapped = {
-                setSelectedFrameByUser(index)
+                setSelectedFrameByUser(index, userInitiated = true)
             }
             uiStateItems.add(oneFrameUiState)
         }

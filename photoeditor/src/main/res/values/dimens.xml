@@ -1,5 +1,27 @@
 <resources>
-    <dimen name="text_view_padding">24dp</dimen>
+    <!-- Begin text spacing -->
+    <!-- The pairs of padding and horizontal margin for the TextView and EditText are interrelated - we want the
+    resulting width of each view to be the same, so that long text added in the EditText wraps in the same places
+    when added as a TextView.
+
+    If adjusting one, make sure to check the other.
+
+    If using RoundedBackgroundColorSpan, changing these values may require tweaking the default padding
+    in that class so prevent any artifacts from showing up at line edges when applying the span.
+
+    Note that the EditText doesn't take up the full width of the editor, since some space is taken by the SeekBar.
+    The SeekBar takes up about ~40dp of horizontal space, so the TextView needs to add that much extra margin
+    for the text to wrap at the same place as the EditText. -->
+    <dimen name="text_view_padding">8dp</dimen>
+    <dimen name="text_view_horizontal_margin">36dp</dimen>
+
+    <dimen name="edit_text_padding">@dimen/text_view_padding</dimen>
+    <dimen name="edit_text_horizontal_margin">16dp</dimen>
+
+    <dimen name="rounded_background_color_span_padding">@dimen/text_view_padding</dimen>
+    <dimen name="rounded_background_color_span_radius">4dp</dimen>
+
+    <!-- End text spacing -->
 
     <dimen name="emoji_view_size">108dp</dimen>
     <dimen name="emoji_view_touchable_area_size">86dp</dimen>

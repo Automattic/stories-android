@@ -52,7 +52,7 @@
         android:paddingEnd="@dimen/save_button_padding"
         android:text="@string/label_control_retry"
         android:textAllCaps="true"
-        android:textColor="@color/text_color_black"
+        android:textColor="@android:color/black"
         />
 </LinearLayout>
 
