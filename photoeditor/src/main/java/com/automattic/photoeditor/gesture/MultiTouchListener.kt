@@ -84,11 +84,11 @@ internal class MultiTouchListener(
                 mPrevRawX = event.rawX
                 mPrevRawY = event.rawY
                 mActivePointerId = event.getPointerId(0)
-                if (deleteView != null) {
-                    deleteView.visibility = View.VISIBLE
-                }
                 view.bringToFront()
                 firePhotoEditorSDKListener(view, true)
+
+                // Reset delete button state
+                onMultiTouchListener?.onRemoveViewReadyListener(view, false)
             }
             MotionEvent.ACTION_MOVE -> {
                 val pointerIndexMove = event.findPointerIndex(mActivePointerId)
@@ -110,16 +110,15 @@ internal class MultiTouchListener(
                             currY - mPrevY
                         )
                     }
-
                     onMultiTouchListener?.let { touchListener ->
-                        deleteView?.let { delView ->
+                        deleteView?.let { deleteView ->
                             // initialize bitmap for deleteView once
                             if (deleteViewBitmap == null && deleteView.isLaidOut) {
                                 deleteViewBitmap = BitmapUtil.createBitmapFromView(deleteView)
                             }
 
                             deleteViewBitmap?.let {
-                                val readyForDelete = isViewOverlappingDeleteView(delView, view)
+                                val readyForDelete = isViewOverlappingDeleteView(deleteView, view)
                                 // fade the view a bit to indicate it's going bye bye
                                 setAlphaOnView(view, readyForDelete)
                                 touchListener.onRemoveViewReadyListener(view, readyForDelete)
@@ -180,7 +179,11 @@ internal class MultiTouchListener(
         return outRect?.contains(x, y) ?: false
     }
 
-    fun isViewOverlappingDeleteView(deleteView: View, viewB: View): Boolean {
+    private fun isViewOverlappingDeleteView(deleteView: View, viewB: View): Boolean {
+        if (deleteView.visibility != View.VISIBLE) {
+            return false
+        }
+
         // using the View's matrix so the bitmap also has its content rotated and scaled.
         val bmpForDraggedView = BitmapUtil.createRotatedBitmapFromViewWithMatrix(viewB)
 
@@ -190,10 +193,12 @@ internal class MultiTouchListener(
         val globalVisibleRectDelete = Rect()
         deleteView.getGlobalVisibleRect(globalVisibleRectDelete)
 
-        return isPixelOverlapping(
-                requireNotNull(deleteViewBitmap), globalVisibleRectDelete.left, globalVisibleRectDelete.top,
-                bmpForDraggedView, globalVisibleRectB.left, globalVisibleRectB.top
-        )
+        return deleteViewBitmap?.let {
+            isPixelOverlapping(
+                    it, globalVisibleRectDelete.left, globalVisibleRectDelete.top,
+                    bmpForDraggedView, globalVisibleRectB.left, globalVisibleRectB.top
+            )
+        } ?: false
     }
 
     // when we find both pixels on the same coordinate for each bitmap being not transparent, that means
@@ -332,6 +337,7 @@ internal class MultiTouchListener(
         override fun onLongPress(e: MotionEvent) {
             super.onLongPress(e)
             mOnGestureControl?.onLongClick()
+            deleteView?.visibility = View.VISIBLE
         }
     }
 
