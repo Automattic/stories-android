@@ -1,6 +1,8 @@
 package com.automattic.photoeditor.gesture
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.Rect
 import android.view.GestureDetector
 import android.view.MotionEvent
@@ -10,6 +12,7 @@ import android.widget.ImageView
 import android.widget.RelativeLayout
 import com.automattic.photoeditor.OnPhotoEditorListener
 import com.automattic.photoeditor.gesture.ScaleGestureDetector.SimpleOnScaleGestureListener
+import com.automattic.photoeditor.util.BitmapUtil
 import com.automattic.photoeditor.views.ViewType
 
 /**
@@ -43,6 +46,7 @@ internal class MultiTouchListener(
 
     private val location = IntArray(2)
     private var outRect: Rect? = null
+    private var deleteViewBitmap: Bitmap? = null
 
     // private var onMultiTouchListener: OnMultiTouchListener? = null
     private var mOnGestureControl: OnGestureControl? = null
@@ -108,11 +112,18 @@ internal class MultiTouchListener(
                     }
 
                     onMultiTouchListener?.let { touchListener ->
-                        deleteView?.let {
-                            val readyForDelete = isAnyCornerOfViewAOverlappingViewB(it, view)
-                            // fade the view a bit to indicate it's going bye bye
-                            setAlphaOnView(view, readyForDelete)
-                            touchListener.onRemoveViewReadyListener(view, readyForDelete)
+                        deleteView?.let { delView ->
+                            // initialize bitmap for deleteView once
+                            if (deleteViewBitmap == null && deleteView.isLaidOut) {
+                                deleteViewBitmap = BitmapUtil.createBitmapFromView(deleteView)
+                            }
+
+                            deleteViewBitmap?.let {
+                                val readyForDelete = isViewOverlappingDeleteView(delView, view)
+                                // fade the view a bit to indicate it's going bye bye
+                                setAlphaOnView(view, readyForDelete)
+                                touchListener.onRemoveViewReadyListener(view, readyForDelete)
+                            }
                         }
                     }
                 }
@@ -121,14 +132,11 @@ internal class MultiTouchListener(
                 INVALID_POINTER_ID
             MotionEvent.ACTION_UP -> {
                 mActivePointerId = INVALID_POINTER_ID
-                if (deleteView != null && isAnyCornerOfViewAOverlappingViewB(deleteView, view)) {
-                    onMultiTouchListener?.onRemoveViewListener(view)
-                }
-//                else if (!isViewInBounds(photoEditImageView, x, y)) {
-//                    view.animate().translationY(0f).translationY(0f)
-//                }
-                if (deleteView != null) {
-                    deleteView.visibility = View.GONE
+                deleteView?.let { delView ->
+                    if (isViewOverlappingDeleteView(delView, view)) {
+                        onMultiTouchListener?.onRemoveViewListener(view)
+                    }
+                    delView.visibility = View.GONE
                 }
                 firePhotoEditorSDKListener(view, false)
             }
@@ -172,34 +180,73 @@ internal class MultiTouchListener(
         return outRect?.contains(x, y) ?: false
     }
 
-    private fun isAnyCornerOfViewAOverlappingViewB(viewA: View, viewB: View, percentage: Float = 0.08f): Boolean {
-        val firstPosition = IntArray(2)
-        val secondPosition = IntArray(2)
+    fun isViewOverlappingDeleteView(deleteView: View, viewB: View): Boolean {
+        // using the View's matrix so the bitmap also has its content rotated and scaled.
+        val bmpForDraggedView = BitmapUtil.createRotatedBitmapFromViewWithMatrix(viewB)
 
-        viewA.getLocationOnScreen(firstPosition)
-        viewB.getLocationOnScreen(secondPosition)
+        val globalVisibleRectB = Rect()
+        viewB.getGlobalVisibleRect(globalVisibleRectB)
 
-        // Rect constructor parameters: left, top, right, bottom
-        val rectViewA = Rect(
-            firstPosition[0],
-            firstPosition[1],
-            firstPosition[0] + viewA.measuredWidth,
-            firstPosition[1] + viewA.measuredHeight
+        val globalVisibleRectDelete = Rect()
+        deleteView.getGlobalVisibleRect(globalVisibleRectDelete)
+
+        return isPixelOverlapping(
+                requireNotNull(deleteViewBitmap), globalVisibleRectDelete.left, globalVisibleRectDelete.top,
+                bmpForDraggedView, globalVisibleRectB.left, globalVisibleRectB.top
         )
-        // adjust the second view to make it slightly smaller
-        // (the area near its borders do not have meaningful information) - otherwise it feels like they "overlap"
-        // but visually they don't look like so
-        val adjustedWidth = (viewB.measuredWidth * (1 - percentage)).toInt()
-        val adjustedHeight = (viewB.measuredHeight * (1 - percentage)).toInt()
-        val adjustedXPos = (secondPosition[0] * (1 + percentage)).toInt()
-        val adjustedYPos = (secondPosition[1] * (1 + percentage)).toInt()
-        val rectViewB = Rect(
-            adjustedXPos,
-            adjustedYPos,
-            secondPosition[0] + adjustedWidth,
-            secondPosition[1] + adjustedHeight
+    }
+
+    // when we find both pixels on the same coordinate for each bitmap being not transparent, that means
+    // there is an overlap between both images
+    fun isPixelOverlapping(
+        bitmap1: Bitmap,
+        x1: Int,
+        y1: Int,
+        bitmap2: Bitmap,
+        x2: Int,
+        y2: Int
+    ): Boolean {
+        val bounds1 = Rect(
+                x1,
+                y1,
+                x1 + bitmap1.width,
+                y1 + bitmap1.height
         )
-        return rectViewA.intersect(rectViewB)
+        val bounds2 = Rect(
+                x2,
+                y2,
+                x2 + bitmap2.width,
+                y2 + bitmap2.height
+        )
+        if (Rect.intersects(bounds1, bounds2)) {
+            val collisionRect = getCollisionRect(bounds1, bounds2)
+            for (i in collisionRect.left until collisionRect.right) {
+                for (j in collisionRect.top until collisionRect.bottom) {
+                    val bitmap1Pixel = bitmap1.getPixel(i - x1, j - y1)
+                    val bitmap2Pixel = bitmap2.getPixel(i - x2, j - y2)
+                    if (isNonTransparent(bitmap1Pixel) && isNonTransparent(bitmap2Pixel)) {
+                        return true
+                    }
+                }
+            }
+        }
+        return false
+    }
+
+    private fun getCollisionRect(
+        rect1: Rect,
+        rect2: Rect
+    ): Rect {
+        return Rect(
+                Math.max(rect1.left, rect2.left),
+                Math.max(rect1.top, rect2.top),
+                Math.min(rect1.right, rect2.right),
+                Math.min(rect1.bottom, rect2.bottom)
+        )
+    }
+
+    private fun isNonTransparent(pixel: Int): Boolean {
+        return pixel != Color.TRANSPARENT
     }
 
     private fun isViewCenterInWorkingAreaBounds(view: View, deltaX: Float, deltaY: Float): Boolean {
