@@ -193,10 +193,12 @@ internal class MultiTouchListener(
         val globalVisibleRectDelete = Rect()
         deleteView.getGlobalVisibleRect(globalVisibleRectDelete)
 
-        return isPixelOverlapping(
-                requireNotNull(deleteViewBitmap), globalVisibleRectDelete.left, globalVisibleRectDelete.top,
-                bmpForDraggedView, globalVisibleRectB.left, globalVisibleRectB.top
-        )
+        return deleteViewBitmap?.let {
+            isPixelOverlapping(
+                    it, globalVisibleRectDelete.left, globalVisibleRectDelete.top,
+                    bmpForDraggedView, globalVisibleRectB.left, globalVisibleRectB.top
+            )
+        } ?: false
     }
 
     // when we find both pixels on the same coordinate for each bitmap being not transparent, that means
