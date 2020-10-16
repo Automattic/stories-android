@@ -86,6 +86,9 @@ internal class MultiTouchListener(
                 mActivePointerId = event.getPointerId(0)
                 view.bringToFront()
                 firePhotoEditorSDKListener(view, true)
+
+                // Reset delete button state
+                onMultiTouchListener?.onRemoveViewReadyListener(view, false)
             }
             MotionEvent.ACTION_MOVE -> {
                 val pointerIndexMove = event.findPointerIndex(mActivePointerId)
