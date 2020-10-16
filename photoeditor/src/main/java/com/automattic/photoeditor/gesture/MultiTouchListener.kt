@@ -51,6 +51,8 @@ internal class MultiTouchListener(
     // private var onMultiTouchListener: OnMultiTouchListener? = null
     private var mOnGestureControl: OnGestureControl? = null
 
+    private var isLongPressActive: Boolean = false
+
     init {
         mScaleGestureDetector = ScaleGestureDetector(ScaleGestureListener())
         mGestureListener = GestureDetector(GestureListener())
@@ -84,9 +86,6 @@ internal class MultiTouchListener(
                 mPrevRawX = event.rawX
                 mPrevRawY = event.rawY
                 mActivePointerId = event.getPointerId(0)
-                if (deleteView != null) {
-                    deleteView.visibility = View.VISIBLE
-                }
                 view.bringToFront()
                 firePhotoEditorSDKListener(view, true)
             }
@@ -110,19 +109,20 @@ internal class MultiTouchListener(
                             currY - mPrevY
                         )
                     }
+                    if (isLongPressActive) {
+                        onMultiTouchListener?.let { touchListener ->
+                            deleteView?.let { delView ->
+                                // initialize bitmap for deleteView once
+                                if (deleteViewBitmap == null && deleteView.isLaidOut) {
+                                    deleteViewBitmap = BitmapUtil.createBitmapFromView(deleteView)
+                                }
 
-                    onMultiTouchListener?.let { touchListener ->
-                        deleteView?.let { delView ->
-                            // initialize bitmap for deleteView once
-                            if (deleteViewBitmap == null && deleteView.isLaidOut) {
-                                deleteViewBitmap = BitmapUtil.createBitmapFromView(deleteView)
-                            }
-
-                            deleteViewBitmap?.let {
-                                val readyForDelete = isViewOverlappingDeleteView(delView, view)
-                                // fade the view a bit to indicate it's going bye bye
-                                setAlphaOnView(view, readyForDelete)
-                                touchListener.onRemoveViewReadyListener(view, readyForDelete)
+                                deleteViewBitmap?.let {
+                                    val readyForDelete = isViewOverlappingDeleteView(delView, view)
+                                    // fade the view a bit to indicate it's going bye bye
+                                    setAlphaOnView(view, readyForDelete)
+                                    touchListener.onRemoveViewReadyListener(view, readyForDelete)
+                                }
                             }
                         }
                     }
@@ -138,6 +138,7 @@ internal class MultiTouchListener(
                     }
                     delView.visibility = View.GONE
                 }
+                isLongPressActive = false
                 firePhotoEditorSDKListener(view, false)
             }
             MotionEvent.ACTION_POINTER_UP -> {
@@ -332,6 +333,8 @@ internal class MultiTouchListener(
         override fun onLongPress(e: MotionEvent) {
             super.onLongPress(e)
             mOnGestureControl?.onLongClick()
+            deleteView?.visibility = View.VISIBLE
+            isLongPressActive = true
         }
     }
 
