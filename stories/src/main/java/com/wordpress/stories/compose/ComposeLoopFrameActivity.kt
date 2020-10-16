@@ -919,8 +919,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     onBackPressed()
                 }
                 !backgroundSurfaceManager.cameraVisible() -> {
-                    addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
-
                     // Show discard dialog
                     FrameSaveErrorDialog.newInstance(
                         title = getString(R.string.dialog_discard_story_title),
@@ -928,6 +926,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                         okButtonLabel = getString(R.string.dialog_discard_story_ok_button),
                         listener = object : FrameSaveErrorDialogOk {
                             override fun OnOkClicked(dialog: DialogFragment) {
+                                addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
                                 dialog.dismiss()
                                 // discard the whole story
                                 safelyDiscardCurrentStoryAndCleanUpIntent()
