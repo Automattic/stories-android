@@ -50,7 +50,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_below="@+id/add_text_done_button"
-            android:layout_above="@+id/color_picker_button"
+            android:layout_above="@+id/bottom_controls_container"
             android:layout_alignParentEnd="true"
             android:layout_marginEnd="@dimen/text_size_slider_margin"
             android:orientation="vertical">
@@ -62,43 +62,55 @@
                 android:layout_width="match_parent" />
         </com.wordpress.stories.util.SeekBarRotator>
 
-        <ImageButton
-            android:id="@+id/text_alignment_button"
-            android:contentDescription="@string/label_text_alignment_button"
-            android:layout_width="@dimen/normal_button_medium"
-            android:layout_height="@dimen/normal_button_medium"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentStart="true"
-            android:layout_margin="@dimen/normal_button_margin"
-            android:background="@android:color/transparent"
-            android:tint="@android:color/white"
-            android:src="@drawable/ic_gridicons_align_left_32" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/bottom_controls_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true">
 
-    <Button
-        android:id="@+id/text_style_toggle_button"
-        android:layout_width="wrap_content"
-        android:layout_height="@dimen/normal_button_medium"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_margin="@dimen/normal_button_margin"
-        android:gravity="center"
-        android:background="@drawable/transparent_text_button_selector"
-        android:backgroundTint="@android:color/white"
-        android:textColor="@android:color/white"
-        android:textAllCaps="false"
-        android:text="@string/typeface_label_nunito"
-        tools:text="@string/typeface_label_nunito" />
+            <ImageButton
+                android:id="@+id/text_alignment_button"
+                android:contentDescription="@string/label_text_alignment_button"
+                android:layout_width="@dimen/normal_button_medium"
+                android:layout_height="@dimen/normal_button_medium"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_margin="@dimen/normal_button_margin"
+                android:background="@android:color/transparent"
+                android:tint="@android:color/white"
+                android:src="@drawable/ic_gridicons_align_left_32" />
 
-        <ImageButton
-            android:id="@+id/color_picker_button"
-            android:contentDescription="@string/label_text_color_button"
-            android:layout_width="@dimen/normal_button_medium"
-            android:layout_height="@dimen/normal_button_medium"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true"
-            android:layout_margin="@dimen/normal_button_margin"
-            android:background="@android:color/transparent"
-            android:src="@drawable/ic_textcolor_replaceme" />
+            <Button
+                android:id="@+id/text_style_toggle_button"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/normal_button_medium"
+                android:layout_alignParentBottom="true"
+                app:layout_constraintStart_toEndOf="@+id/text_alignment_button"
+                app:layout_constraintEnd_toStartOf="@+id/color_picker_button"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_centerHorizontal="true"
+                android:layout_margin="@dimen/normal_button_margin"
+                android:gravity="center"
+                android:background="@drawable/transparent_text_button_selector"
+                android:backgroundTint="@android:color/white"
+                android:textColor="@android:color/white"
+                android:textAllCaps="false"
+                android:text="@string/typeface_label_nunito"
+                tools:text="@string/typeface_label_nunito" />
+
+            <ImageButton
+                android:id="@+id/color_picker_button"
+                android:contentDescription="@string/label_text_color_button"
+                android:layout_width="@dimen/normal_button_medium"
+                android:layout_height="@dimen/normal_button_medium"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_margin="@dimen/normal_button_margin"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_textcolor_replaceme" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
     </RelativeLayout>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
