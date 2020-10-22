@@ -32,11 +32,6 @@
         <item name="android:background">@android:color/transparent</item>
     </style>
 
-    <style name="Stories.Delete.Button" parent="Widget.MaterialComponents.Button.TextButton">
-        <item name="backgroundTint">?attr/colorOnBackground</item>
-        <item name="android:textColor">?attr/colorOnSurface</item>
-    </style>
-
     <style name="StoriesSeekBar" parent="Widget.AppCompat.SeekBar">
         <item name="android:progressTint">@android:color/white</item>
         <item name="android:progressBackgroundTint">@android:color/white</item>
