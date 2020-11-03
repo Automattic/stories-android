@@ -47,6 +47,9 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
     private val _onUserTappedCurrentFrame = SingleLiveEvent<Unit>()
     val onUserTappedCurrentFrame = _onUserTappedCurrentFrame
 
+    private val _onUserLongPressedFrame = SingleLiveEvent<Pair<Int, Int>>()
+    val onUserLongPressedFrame = _onUserLongPressedFrame
+
     fun createNewStory() {
         loadStory(StoryRepository.DEFAULT_NONE_SELECTED)
     }
@@ -102,6 +105,12 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
         } else {
             _onUserSelectedFrame.value = Pair(oldIndex, index)
         }
+    }
+
+    private fun setLongPressedFrame(index: Int) {
+        val oldIndex = currentSelectedFrameIndex
+        setSelectedFrame(index)
+        _onUserLongPressedFrame.value = Pair(oldIndex, index)
     }
 
     fun updateCurrentSelectedFrameOnRetryResult(frameSaveResult: FrameSaveResult) {
@@ -291,6 +300,9 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
             oneFrameUiState.onItemTapped = {
                 setSelectedFrameByUser(index, userInitiated = true)
             }
+            oneFrameUiState.onItemLongPressed = {
+                setLongPressedFrame(index)
+            }
             uiStateItems.add(oneFrameUiState)
         }
         return newUiState
@@ -300,6 +312,7 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
 
     sealed class StoryFrameListItemUiState() {
         var onItemTapped: (() -> Unit)? = null
+        var onItemLongPressed: (() -> Unit)? = null
 
         data class StoryFrameListItemUiStateFrame(
             var selected: Boolean = false,
