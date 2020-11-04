@@ -1,8 +1,10 @@
 package com.automattic.photoeditor.text
 
 import android.content.Context
+import android.graphics.Color
 import android.graphics.Typeface
 import android.util.AttributeSet
+import androidx.annotation.ColorInt
 import androidx.appcompat.widget.AppCompatTextView
 
 /**
@@ -13,12 +15,15 @@ class PhotoEditorTextView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
-) : AppCompatTextView(context, attrs, defStyleAttr) {
+) : AppCompatTextView(context, attrs, defStyleAttr), TextBackgroundColor {
     var identifiableTypeface: IdentifiableTypeface? = null
         set(value) {
             super.setTypeface(value?.typeface)
             field = value
         }
+
+    override val textBackgroundColor: Int
+        @ColorInt get() = RoundedBackgroundColorSpan.from(this)?.backgroundColor ?: Color.TRANSPARENT
 
     @Deprecated("Use IdentifiableTypeface", ReplaceWith("identifiableTypeface"))
     override fun setTypeface(tf: Typeface?) {

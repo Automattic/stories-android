@@ -6,7 +6,6 @@ apply plugin: 'io.sentry.android.gradle'
 
 android {
     compileSdkVersion rootProject.compileSdkVersion
-    buildToolsVersion rootProject.buildToolVersion
 
     defaultConfig {
         applicationId "com.automattic.loop"

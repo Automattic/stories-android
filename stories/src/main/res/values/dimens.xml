@@ -11,10 +11,30 @@
     <dimen name="normal_button_font_size">13sp</dimen>
     <dimen name="top_button_group_margin">@dimen/normal_button_margin</dimen>
     <dimen name="main_button_elevation">2dp</dimen>
-    <dimen name="color_picker_touchable_area_size">40dp</dimen>
-    <dimen name="color_picker_background_size">24dp</dimen>
-    <dimen name="color_picker_filler_size">22dp</dimen>
-    <dimen name="color_picker_item_margin">8dp</dimen>
+
+    <dimen name="text_size_slider_margin">23dp</dimen>
+
+    <!-- START: Color picker bottom sheet -->
+
+    <dimen name="color_picker_bottom_sheet_default_height">250dp</dimen>
+    <dimen name="color_picker_bottom_sheet_height_max_margin">75dp</dimen>
+    <dimen name="color_picker_bottom_sheet_handle_width">40dp</dimen>
+    <dimen name="color_picker_bottom_sheet_handle_height">4dp</dimen>
+    <dimen name="color_picker_bottom_sheet_handle_top_margin">4dp</dimen>
+
+    <dimen name="color_picker_bottom_sheet_label_top_margin">22dp</dimen>
+    <dimen name="color_picker_bottom_sheet_label_bottom_margin">4dp</dimen>
+
+    <dimen name="color_picker_bottom_sheet_recycler_padding_horizontal">15dp</dimen>
+    <dimen name="color_picker_bottom_sheet_recycler_padding_vertical">8dp</dimen>
+
+    <!-- Color picker item -->
+    <dimen name="color_picker_touchable_area_size">60dp</dimen>
+    <dimen name="color_picker_background_size">54dp</dimen>
+    <dimen name="color_picker_selection_background_size">34dp</dimen>
+    <dimen name="color_picker_checkmark_size">20dp</dimen>
+
+    <!-- END: Color picker bottom sheet -->
 
     <dimen name="shutter_button_margin">68dp</dimen>
 
@@ -26,11 +46,6 @@
     <dimen name="save_button_margin_bottom">16dp</dimen>
     <dimen name="save_button_padding">8dp</dimen>
     <dimen name="save_button_spinner_size">24dp</dimen>
-
-    <dimen name="next_button_top_margin">8dp</dimen>
-    <dimen name="next_button_total_width">100dp</dimen>
-    <dimen name="next_button_total_height">40dp</dimen>
-    <dimen name="next_button_elevation">@dimen/main_button_elevation</dimen>
 
     <dimen name="edit_mode_button_group_margin">16dp</dimen>
     <dimen name="edit_mode_button_group_margin_between">16dp</dimen>
@@ -52,12 +67,5 @@
     <dimen name="story_frame_selector_padding">8dp</dimen>
     <dimen name="story_frame_selector_item_padding">8dp</dimen>
     <dimen name="story_frame_selector_item_elevation">@dimen/main_button_elevation</dimen>
-
-    <!--  custom menu view-->
-    <dimen name="custom_menu_margin">16dp</dimen>
-    <dimen name="custom_menu_padding">16dp</dimen>
-    <dimen name="custom_menu_background_radius">1dp</dimen>
-    <dimen name="custom_menu_elevation">6dp</dimen>
-    <dimen name="custom_menu_button_width">140dp</dimen>
 
 </resources>

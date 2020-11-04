@@ -67,6 +67,7 @@ import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.wordpress.stories.BuildConfig
 import com.wordpress.stories.R
 import com.wordpress.stories.compose.ComposeLoopFrameActivity.ExternalMediaPickerRequestCodesAndExtraKeys
+import com.wordpress.stories.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_DELETE_SLIDE
 import com.wordpress.stories.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_FULL_SCREEN
 import com.wordpress.stories.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_NONE
 import com.wordpress.stories.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION
@@ -128,8 +129,9 @@ enum class ScreenTouchBlockMode {
     BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION, // used when in error resolution mode: user needs to take
     // action, so we allow them to use the StoryFrameSelector and menu, but no edits on
     // the Photo Editor canvas are allowed at this stage
-    BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY // used when errors have been sorted out by the user - no edits allowed,
+    BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY, // used when errors have been sorted out by the user - no edits allowed,
     // but they should be good to upload the Story now
+    BLOCK_TOUCH_MODE_DELETE_SLIDE // Used in delete slide mode, tapping the screen releases the block
 }
 
 interface SnackbarProvider {
@@ -216,6 +218,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private var authHeadersProvider: AuthenticationHeadersProvider? = null
     private var metadataProvider: MetadataProvider? = null
     private var storyDiscardListener: StoryDiscardListener? = null
+    private var analyticsListener: StoriesAnalyticsListener? = null
     private var notificationTrackerProvider: NotificationTrackerProvider? = null
     private var prepublishingEventProvider: PrepublishingEventProvider? = null
     private var firstIntentLoaded: Boolean = false
@@ -288,7 +291,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         val height = photoEditorView.measuredHeight
 
         val bottomAreaHeight = resources.getDimensionPixelSize(R.dimen.bottom_strip_height) + bottomNavigationBarMargin
-        val topAreaHeight = resources.getDimensionPixelSize(R.dimen.next_button_total_height)
+        val topAreaHeight = resources.getDimensionPixelSize(R.dimen.edit_mode_button_size)
 
         return Rect(
             xCoord,
@@ -314,9 +317,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             workingAreaRect = calculateWorkingArea()
             photoEditor.updateWorkAreaRect(workingAreaRect)
             delete_view.addBottomOffset(bottomNavigationBarMargin)
+            delete_slide_view.addBottomOffset(bottomNavigationBarMargin)
             (bottom_strip_view as StoryFrameSelectorFragment).setBottomOffset(bottomNavigationBarMargin)
-            view_popup_menu.setTopOffset(
-                next_button.measuredHeight + (nextButtonBaseTopMargin * 2) + insets.systemWindowInsetTop)
             insets
         }
 
@@ -345,7 +347,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 }
 
                 isEditingText = true
-                editModeHideAllUIControls(true)
+                editModeHideAllUIControls(hideNextButton = true, hideCloseButton = true)
                 // Hide the text in the background while it's being edited
                 rootView.visibility = View.INVISIBLE
 
@@ -374,6 +376,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                         editModeRestoreAllUIControls()
                     }
                 })
+                textEditorDialogFragment.setAnalyticsEventListener(analyticsListener)
             }
 
             override fun onAddViewListener(viewType: ViewType, numberOfAddedViews: Int) {
@@ -386,7 +389,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
             override fun onStartViewChangeListener(viewType: ViewType) {
                 // in this case, also hide the SAVE button, but don't hide the bottom strip view.
-                editModeHideAllUIControls(hideNextButton = true, hideFrameSelector = false)
+                editModeHideAllUIControls(hideNextButton = true, hideCloseButton = false, hideFrameSelector = false)
             }
 
             override fun onStopViewChangeListener(viewType: ViewType) {
@@ -502,7 +505,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             permissionsRequestForCameraInProgress = savedInstanceState.getBoolean(STATE_KEY_PERMISSION_REQ_IN_PROGRESS)
 
             storyViewModel.loadStory(
-                StorySerializerUtils.deserializeStory(savedInstanceState.getString(STATE_KEY_STORY_SAVE_STATE))
+                StorySerializerUtils.deserializeStory(
+                        requireNotNull(savedInstanceState.getString(STATE_KEY_STORY_SAVE_STATE))
+                )
             )
 
             val selectedFrameIndex = savedInstanceState.getInt(STATE_KEY_STORY_SAVE_STATE_SELECTED_FRAME)
@@ -740,11 +745,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     override fun onBackPressed() {
-        if (view_popup_menu.visibility == View.VISIBLE) {
-            view_popup_menu.visibility = View.GONE
-            return
-        }
-
         if (!backgroundSurfaceManager.cameraVisible()) {
             close_button.performClick()
         } else if (storyViewModel.getCurrentStorySize() > 0) {
@@ -919,28 +919,20 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     onBackPressed()
                 }
                 !backgroundSurfaceManager.cameraVisible() -> {
-                    addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
-
-                    // add discard dialog
-                    if (storyViewModel.anyOfCurrentStoryFramesHasViews()) {
-                        // show dialog
-                        FrameSaveErrorDialog.newInstance(
-                            title = getString(R.string.dialog_discard_story_title),
-                            message = getString(R.string.dialog_discard_story_message),
-                            okButtonLabel = getString(R.string.dialog_discard_story_ok_button),
-                            listener = object : FrameSaveErrorDialogOk {
-                                override fun OnOkClicked(dialog: DialogFragment) {
-                                    dialog.dismiss()
-                                    // discard the whole story
-                                    safelyDiscardCurrentStoryAndCleanUpIntent()
-                                    storyDiscardListener?.onStoryDiscarded()
-                                }
-                            }).show(supportFragmentManager, FRAGMENT_DIALOG)
-                    } else {
-                        // discard the whole story
-                        safelyDiscardCurrentStoryAndCleanUpIntent()
-                        storyDiscardListener?.onStoryDiscarded()
-                    }
+                    // Show discard dialog
+                    FrameSaveErrorDialog.newInstance(
+                        title = getString(R.string.dialog_discard_story_title),
+                        message = getString(R.string.dialog_discard_story_message),
+                        okButtonLabel = getString(R.string.dialog_discard_story_ok_button),
+                        listener = object : FrameSaveErrorDialogOk {
+                            override fun OnOkClicked(dialog: DialogFragment) {
+                                addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
+                                dialog.dismiss()
+                                // discard the whole story
+                                safelyDiscardCurrentStoryAndCleanUpIntent()
+                                storyDiscardListener?.onStoryDiscarded()
+                            }
+                        }).show(supportFragmentManager, FRAGMENT_DIALOG)
                 }
             }
         }
@@ -973,14 +965,13 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             saveStory()
         }
 
-        more_button.setOnClickListener {
-            view_popup_menu.setOnDeletePageButtonClickListener(OnClickListener {
-                var messageToUse = getString(R.string.dialog_discard_page_message)
-                if (storyViewModel.getSelectedFrame()?.saveResultReason != SaveSuccess) {
-                    messageToUse = getString(R.string.dialog_discard_errored_page_message)
-                }
-                // show dialog
-                FrameSaveErrorDialog.newInstance(
+        delete_slide_view.setOnClickListener {
+            var messageToUse = getString(R.string.dialog_discard_page_message)
+            if (storyViewModel.getSelectedFrame()?.saveResultReason != SaveSuccess) {
+                messageToUse = getString(R.string.dialog_discard_errored_page_message)
+            }
+            // show dialog
+            FrameSaveErrorDialog.newInstance(
                     title = getString(R.string.dialog_discard_page_title),
                     message = messageToUse,
                     okButtonLabel = getString(R.string.dialog_discard_page_ok_button),
@@ -999,8 +990,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                             }
                         }
                     }).show(supportFragmentManager, FRAGMENT_DIALOG)
-            })
-            view_popup_menu.visibility = View.VISIBLE
+            disableDeleteSlideMode()
         }
     }
 
@@ -1519,8 +1509,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
         // show proper edit mode controls
         updateEditMode()
-        more_button.visibility = View.VISIBLE
         next_button.visibility = View.VISIBLE
+        close_button.visibility = View.VISIBLE
+        delete_slide_view.visibility = View.GONE
     }
 
     private fun hideStoryFrameSelector() {
@@ -1536,7 +1527,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
         // hide proper edit mode controls
         edit_mode_controls.visibility = View.INVISIBLE
-        more_button.visibility = View.INVISIBLE
         sound_button.visibility = View.INVISIBLE
         next_button.visibility = View.INVISIBLE
         retry_button.visibility = View.GONE
@@ -1544,16 +1534,22 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         showVideoUIControls()
     }
 
-    private fun editModeHideAllUIControls(hideNextButton: Boolean, hideFrameSelector: Boolean = true) {
+    private fun editModeHideAllUIControls(
+        hideNextButton: Boolean,
+        hideCloseButton: Boolean = false,
+        hideFrameSelector: Boolean = true
+    ) {
         // momentarily hide proper edit mode controls
         edit_mode_controls.visibility = View.INVISIBLE
-        more_button.visibility = View.INVISIBLE
         sound_button.visibility = View.INVISIBLE
         if (hideFrameSelector) {
             hideStoryFrameSelector()
         }
         if (hideNextButton) {
             next_button.visibility = View.INVISIBLE
+        }
+        if (hideCloseButton) {
+            close_button.visibility = View.INVISIBLE
         }
     }
 
@@ -1607,8 +1603,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private fun editModeRestoreAllUIControls() {
         // show all edit mode controls
         updateEditMode()
-        more_button.visibility = View.VISIBLE
         next_button.visibility = View.VISIBLE
+        close_button.visibility = View.VISIBLE
 
         showStoryFrameSelector()
     }
@@ -1748,6 +1744,20 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     true
                 }
             }
+            // block touch, no scrim, tapping releases block
+            BLOCK_TOUCH_MODE_DELETE_SLIDE -> {
+                translucent_view.visibility = View.GONE
+                translucent_error_view.visibility = View.VISIBLE
+                translucent_error_view.background = ColorDrawable(
+                        ContextCompat.getColor(this, android.R.color.transparent)
+                )
+                translucent_error_view.setOnTouchListener { _, _ ->
+                    // If the error view is tapped, dismiss it and cancel delete slide mode
+                    // Don't consume the touch event, pass it along
+                    disableDeleteSlideMode()
+                    false
+                }
+            }
             // just don't block touch
             BLOCK_TOUCH_MODE_NONE -> {
                 translucent_view.visibility = View.GONE
@@ -1858,6 +1868,26 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         showMediaPicker()
     }
 
+    override fun onCurrentFrameTapped() {
+        if (delete_slide_view.visibility == View.VISIBLE) {
+            disableDeleteSlideMode()
+        } else {
+            enableDeleteSlideMode()
+        }
+    }
+
+    private fun enableDeleteSlideMode() {
+        delete_slide_view.visibility = View.VISIBLE
+        editModeHideAllUIControls(hideNextButton = true, hideFrameSelector = false)
+        blockTouchOnPhotoEditor(BLOCK_TOUCH_MODE_DELETE_SLIDE)
+    }
+
+    private fun disableDeleteSlideMode() {
+        delete_slide_view.visibility = View.GONE
+        editModeRestoreAllUIControls()
+        releaseTouchOnPhotoEditor(BLOCK_TOUCH_MODE_NONE)
+    }
+
     private fun showPlayVideoWithSurfaceSafeguard(source: BackgroundSource) {
         if (backgroundSurfaceManager.isTextureViewAvailable()) {
             CoroutineScope(Dispatchers.Main).launch {
@@ -1948,6 +1978,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     fun setStoryDiscardListener(listener: StoryDiscardListener) {
         storyDiscardListener = listener
+    }
+
+    fun setStoriesAnalyticsListener(listener: StoriesAnalyticsListener) {
+        analyticsListener = listener
     }
 
     fun setNotificationTrackerProvider(provider: NotificationTrackerProvider) {

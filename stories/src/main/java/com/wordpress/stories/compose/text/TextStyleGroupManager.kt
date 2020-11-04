@@ -15,8 +15,11 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import com.automattic.photoeditor.text.IdentifiableTypeface
 import com.automattic.photoeditor.text.IdentifiableTypeface.TypefaceId
+import com.automattic.photoeditor.text.RoundedBackgroundColorSpan
 import com.wordpress.stories.R
+import java.util.Locale
 import java.util.TreeMap
+import kotlin.math.roundToInt
 
 /**
  * Helper class that keeps track of predefined supported text style rules and supports
@@ -41,6 +44,9 @@ class TextStyleGroupManager(val context: Context) {
     )
 
     private var supportedTypefaces = TreeMap<Int, TextStyleRule>()
+
+    // Tracks whether the user has changed the font size
+    var customFontSizeApplied = false
 
     init {
         supportedTypefaces[TYPEFACE_ID_NUNITO] = TextStyleRule(
@@ -105,17 +111,35 @@ class TextStyleGroupManager(val context: Context) {
 
     @ColorInt private fun getColor(@ColorRes colorRes: Int) = ContextCompat.getColor(context, colorRes)
 
-    fun styleTextView(@TypefaceId typefaceId: Int, textView: TextView) {
+    fun styleTextView(@TypefaceId typefaceId: Int, textView: TextView, fontSizePx: Float = 0F) {
         val textStyleRule = supportedTypefaces[typefaceId] ?: return
 
         with(textStyleRule) {
             textView.typeface = typeface
-            textView.setShadowLayer(shadowLayer)
+
+            // If the text has a background color span, apply a shadow layer matching the span padding
+            // Otherwise, set the custom shadow layer for the font style
+            val backgroundColorSpan = RoundedBackgroundColorSpan.from(textView)
+            if (backgroundColorSpan != null) {
+                textView.setShadowLayer(backgroundColorSpan.padding, 0F, 0F, 0)
+            } else {
+                textView.setShadowLayer(shadowLayer)
+            }
 
             textView.setLineSpacing(0F, lineSpacingMultiplier)
             textView.letterSpacing = letterSpacing
 
-            textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, defaultFontSize)
+            if (customFontSizeApplied) {
+                // No op: leave the textView's font size intact
+            } else if (fontSizePx > 0 && fontSizePx != defaultFontSize.spToPx()) {
+                // We were given a specific font size, and it's not the default for this font, so it's been
+                // customized by the user at some point.
+                // Apply the font and toggle on custom font size mode.
+                textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSizePx)
+                customFontSizeApplied = true
+            } else {
+                textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, defaultFontSize)
+            }
         }
     }
 
@@ -126,6 +150,10 @@ class TextStyleGroupManager(val context: Context) {
         textView.setShadowLayer(textStyleRule.shadowLayer)
 
         textView.text = textStyleRule.label
+
+        // Add some corrective padding so the label for each font is kept at roughly center,
+        // despite their different intrinsic heights and placements
+        adjustTextViewLabelAlignment(typefaceId, textView)
     }
 
     /**
@@ -135,17 +163,48 @@ class TextStyleGroupManager(val context: Context) {
         return supportedTypefaces.higherKey(typefaceId) ?: supportedTypefaces.firstKey()
     }
 
+    fun getAnalyticsLabelFor(@TypefaceId typefaceId: Int): String {
+        return supportedTypefaces[typefaceId]?.label?.toLowerCase(Locale.ROOT).orEmpty()
+    }
+
+    private fun adjustTextViewLabelAlignment(@TypefaceId typefaceId: Int, textView: TextView) {
+        // Always reset text size since it's modified for Pacifico
+        var newTextSize = 18F
+        var paddingBottom = 0F
+        var paddingTop = 0F
+
+        when (typefaceId) {
+            TYPEFACE_ID_NUNITO -> paddingBottom = 1.9F
+            TYPEFACE_ID_LIBRE_BASKERVILLE -> paddingTop = 1.5F
+            TYPEFACE_ID_OSWALD -> paddingBottom = 2.3F
+            TYPEFACE_ID_PACIFICO -> {
+                paddingBottom = 4.5F
+                newTextSize = 15F
+            }
+            TYPEFACE_ID_SPACE_MONO -> {}
+            TYPEFACE_ID_SHRIKHAND -> paddingTop = 2.3F
+        }
+
+        textView.setPadding(0, paddingTop.dpToPx().roundToInt(), 0, paddingBottom.dpToPx().roundToInt())
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, newTextSize)
+    }
+
     private fun TextView.setShadowLayer(shadowLayer: ShadowLayer?) {
         shadowLayer?.run {
-            setShadowLayer(radius.toPx(), dx.toPx(), dy.toPx(), color)
+            setShadowLayer(radius.spToPx(), dx.spToPx(), dy.spToPx(), color)
         } ?: run {
             setShadowLayer(0F, 0F, 0F, 0)
         }
     }
 
-    private fun Float.toPx(): Float {
+    private fun Float.spToPx(): Float {
         return TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_SP, this, context.resources.displayMetrics)
+    }
+
+    private fun Float.dpToPx(): Float {
+        return TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, this, context.resources.displayMetrics)
     }
 
     companion object {

@@ -131,4 +131,17 @@ internal object BitmapUtil {
                 cropHeight
         )
     }
+
+    fun createRotatedBitmapFromViewWithMatrix(v: View): Bitmap {
+        val bitmap = Bitmap.createBitmap(
+                v.width,
+                v.height,
+                Bitmap.Config.ARGB_8888
+        )
+        val c = Canvas(bitmap)
+        v.draw(c)
+        val result =
+                Bitmap.createBitmap(bitmap, 0, 0, v.width, v.height, v.matrix, false)
+        return result
+    }
 }

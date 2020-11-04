@@ -1,5 +1,6 @@
 package com.automattic.photoeditor.views.added
 
+import android.graphics.Color
 import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.annotation.Dimension
@@ -26,6 +27,7 @@ data class AddedViewTextInfo(
     val lineSpacingMultiplier: Float = 1F,
     val letterSpacing: Float = 0F,
     @ColorInt val textColor: Int,
+    @ColorInt val textBackgroundColor: Int,
     @Dimension(unit = PX) val shadowRadius: Float = 0F,
     @Dimension(unit = PX) val shadowDx: Float = 0F,
     @Dimension(unit = PX) val shadowDy: Float = 0F,
@@ -42,6 +44,7 @@ data class AddedViewTextInfo(
                         lineSpacingMultiplier = lineSpacingMultiplier,
                         letterSpacing = letterSpacing,
                         textColor = currentTextColor,
+                        textBackgroundColor = (this as? PhotoEditorTextView)?.textBackgroundColor ?: Color.TRANSPARENT,
                         shadowRadius = shadowRadius,
                         shadowDx = shadowDx,
                         shadowDy = shadowDy,
