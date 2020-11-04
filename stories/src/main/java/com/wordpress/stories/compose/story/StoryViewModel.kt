@@ -14,6 +14,7 @@ import com.wordpress.stories.util.SingleLiveEvent
 
 class StoryViewModel(private val repository: StoryRepository, val storyIndex: StoryIndex) : ViewModel() {
     private var currentSelectedFrameIndex: Int = DEFAULT_SELECTION
+    var useTempCaptureFile = true
 
     private val _uiState: MutableLiveData<StoryFrameListUiState> = MutableLiveData()
     val uiState: LiveData<StoryFrameListUiState> = _uiState
@@ -43,6 +44,9 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
     private val _onUserSelectedFrame = SingleLiveEvent<Pair<Int, Int>>()
     val onUserSelectedFrame = _onUserSelectedFrame
 
+    private val _onUserTappedCurrentFrame = SingleLiveEvent<Unit>()
+    val onUserTappedCurrentFrame = _onUserTappedCurrentFrame
+
     fun createNewStory() {
         loadStory(StoryRepository.DEFAULT_NONE_SELECTED)
     }
@@ -69,7 +73,9 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
     }
 
     fun discardCurrentStory() {
-        FrameSaveService.cleanUpTempStoryFrameFiles(getImmutableCurrentStoryFrames())
+        if (useTempCaptureFile) {
+            FrameSaveService.cleanUpTempStoryFrameFiles(getImmutableCurrentStoryFrames())
+        }
         repository.discardCurrentStory()
         currentSelectedFrameIndex = DEFAULT_SELECTION // default selected frame when loading a new Story
         _onSelectedFrameIndex.value = Pair(DEFAULT_SELECTION, currentSelectedFrameIndex)
@@ -88,10 +94,14 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
         return newlySelectedFrame
     }
 
-    fun setSelectedFrameByUser(index: Int) {
+    fun setSelectedFrameByUser(index: Int, userInitiated: Boolean = false) {
         val oldIndex = currentSelectedFrameIndex
         setSelectedFrame(index)
-        _onUserSelectedFrame.value = Pair(oldIndex, index)
+        if (userInitiated && (oldIndex == index)) {
+            _onUserTappedCurrentFrame.call()
+        } else {
+            _onUserSelectedFrame.value = Pair(oldIndex, index)
+        }
     }
 
     fun updateCurrentSelectedFrameOnRetryResult(frameSaveResult: FrameSaveResult) {
@@ -178,7 +188,9 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
 
     fun removeFrameAt(pos: Int) {
         // delete any temporal files
-        FrameSaveService.cleanUpTempStoryFrameFiles(getImmutableCurrentStoryFrames().subList(pos, pos + 1))
+        if (useTempCaptureFile) {
+            FrameSaveService.cleanUpTempStoryFrameFiles(getImmutableCurrentStoryFrames().subList(pos, pos + 1))
+        }
 
         // remove from the repo
         repository.removeFrameAt(pos)
@@ -277,7 +289,7 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
                 selected = isSelected, filePath = filePath, errored = model.saveResultReason != SaveSuccess
             )
             oneFrameUiState.onItemTapped = {
-                setSelectedFrameByUser(index)
+                setSelectedFrameByUser(index, userInitiated = true)
             }
             uiStateItems.add(oneFrameUiState)
         }

@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -15,14 +16,18 @@ import com.automattic.loop.photopicker.MediaBrowserType
 import com.automattic.loop.photopicker.PhotoPickerActivity
 import com.automattic.loop.photopicker.PhotoPickerFragment
 import com.automattic.loop.photopicker.RequestCodes
+import com.automattic.loop.util.ANALYTICS_TAG
 import com.automattic.loop.util.CopyExternalUrisLocallyUseCase
 import com.google.android.material.snackbar.Snackbar
 import com.wordpress.stories.compose.ComposeLoopFrameActivity
+import com.wordpress.stories.compose.FrameSaveErrorDialog
+import com.wordpress.stories.compose.GenericAnnouncementDialogProvider
 import com.wordpress.stories.compose.MediaPickerProvider
 import com.wordpress.stories.compose.MetadataProvider
 import com.wordpress.stories.compose.NotificationIntentLoader
 import com.wordpress.stories.compose.PrepublishingEventProvider
 import com.wordpress.stories.compose.SnackbarProvider
+import com.wordpress.stories.compose.StoriesAnalyticsListener
 import com.wordpress.stories.compose.StoryDiscardListener
 import com.wordpress.stories.compose.story.StoryIndex
 import kotlinx.coroutines.CoroutineScope
@@ -45,7 +50,9 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
     NotificationIntentLoader,
     MetadataProvider,
     StoryDiscardListener,
+    StoriesAnalyticsListener,
     PrepublishingEventProvider,
+    GenericAnnouncementDialogProvider,
     CoroutineScope {
     private var job: Job = Job()
 
@@ -59,8 +66,10 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
         setNotificationExtrasLoader(this)
         setMetadataProvider(this)
         setStoryDiscardListener(this) // optionally listen to discard events
+        setStoriesAnalyticsListener(this)
         setPrepublishingEventProvider(this)
         setNotificationTrackerProvider(application as Loop) // optionally set Notification Tracker.
+        setGenericAnnouncementDialogProvider(this)
         // The notifiationTracker needs to be something that outlives the Activity, given the Service could be running
         // after the user has exited ComposeLoopFrameActivity
     }
@@ -152,18 +161,35 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
         return bundle
     }
 
-    companion object {
-        const val KEY_EXAMPLE_METADATA = "key_example_metadata"
-        const val KEY_STORY_INDEX = "key_story_index"
-        const val BASE_FRAME_MEDIA_ERROR_NOTIFICATION_ID: Int = 72300
-    }
-
     override fun onStoryDiscarded() {
         // example: do any cleanup you may need here
         Toast.makeText(this, "Story has been discarded!", Toast.LENGTH_SHORT).show()
     }
 
+    override fun onFrameRemove(storyIndex: StoryIndex, storyFrameIndex: Int) {
+        Toast.makeText(this, "Story frame has been discarded!: index: " + storyFrameIndex,
+                Toast.LENGTH_SHORT).show()
+    }
+
     override fun onStorySaveButtonPressed() {
         processStorySaving()
+    }
+
+    override fun showGenericAnnouncementDialog() {
+        FrameSaveErrorDialog.newInstance(
+                title = getString(R.string.dialog_general_announcement_title),
+                message = getString(R.string.dialog_general_announcement_title)
+        ).show(supportFragmentManager, FRAGMENT_DIALOG)
+    }
+
+    override fun trackStoryTextChanged(properties: Map<String, *>) {
+        Log.i(ANALYTICS_TAG, "story_text_changed: $properties")
+    }
+
+    companion object {
+        protected const val FRAGMENT_DIALOG = "dialog"
+        const val KEY_EXAMPLE_METADATA = "key_example_metadata"
+        const val KEY_STORY_INDEX = "key_story_index"
+        const val BASE_FRAME_MEDIA_ERROR_NOTIFICATION_ID: Int = 72300
     }
 }
