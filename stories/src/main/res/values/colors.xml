@@ -33,8 +33,6 @@
     <color name="black_25_transparent">#40000000</color>
     <color name="white_50_transparent">#80FFFFFF</color>
 
-    <color name="lighter_gray">#E3DFE2</color>
-
     <!-- WordPress colors-->
     <color name="wordpress_blue_50">#006088</color>
     <color name="primary_50">@color/wordpress_blue_50</color>

@@ -100,6 +100,7 @@ import com.wordpress.stories.compose.story.StoryViewModel.StoryFrameListItemUiSt
 import com.wordpress.stories.compose.story.StoryViewModelFactory
 import com.wordpress.stories.compose.text.TextEditorDialogFragment
 import com.wordpress.stories.compose.text.TextStyleGroupManager
+import com.wordpress.stories.util.KEY_STORY_EDIT_MODE
 import com.wordpress.stories.util.KEY_STORY_SAVE_RESULT
 import com.wordpress.stories.util.STATE_KEY_CURRENT_STORY_INDEX
 import com.wordpress.stories.util.getDisplayPixelSize
@@ -173,8 +174,13 @@ interface PermanentPermissionDenialDialogProvider {
     fun showPermissionPermanentlyDeniedDialog(permission: String)
 }
 
+interface GenericAnnouncementDialogProvider {
+    fun showGenericAnnouncementDialog()
+}
+
 interface StoryDiscardListener {
     fun onStoryDiscarded()
+    fun onFrameRemove(storyIndex: StoryIndex, storyFrameIndex: Int) // called right before actual removal
 }
 
 abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTappedListener {
@@ -211,7 +217,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private var saveServiceBound: Boolean = false
     private var preHookRun: Boolean = false
     private var storyIndexToSelect = -1
-    private var storyFrameIndexToRetry: FrameIndex = StoryRepository.DEFAULT_NONE_SELECTED
+    private var storyFrameIndexToRetry: FrameIndex = StoryRepository.DEFAULT_FRAME_NONE_SELECTED
     private var snackbarProvider: SnackbarProvider? = null
     private var mediaPickerProvider: MediaPickerProvider? = null
     private var notificationIntentLoader: NotificationIntentLoader? = null
@@ -224,12 +230,17 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private var firstIntentLoaded: Boolean = false
     protected var permissionsRequestForCameraInProgress: Boolean = false
     private var permissionDenialDialogProvider: PermanentPermissionDenialDialogProvider? = null
+    private var genericAnnouncementDialogProvider: GenericAnnouncementDialogProvider? = null
+    private var showGenericAnnouncementDialogWhenReady = false
+    private var useTempCaptureFile = true
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
             Log.d("ComposeLoopFrame", "onServiceConnected()")
             val binder = service as FrameSaveService.FrameSaveServiceBinder
             frameSaveService = binder.getService()
+            frameSaveService.useTempCaptureFile = useTempCaptureFile
+            frameSaveService.isEditMode = intent.getBooleanExtra(KEY_STORY_EDIT_MODE, false)
 
             // keep these as they're changing when we call `storyViewModel.finishCurrentStory()`
             val storyIndex = storyViewModel.getCurrentStoryIndex()
@@ -451,7 +462,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     }
                 }
             },
-            authHeaderInterfaceBridge
+                authHeaderInterfaceBridge,
+                useTempCaptureFile
         )
 
         lifecycle.addObserver(backgroundSurfaceManager)
@@ -514,14 +526,22 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             if (selectedFrameIndex < storyViewModel.getCurrentStorySize()) {
                 storyViewModel.setSelectedFrame(selectedFrameIndex)
             }
+        } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED) {
+            onLoadFromIntent(intent)
         }
     }
 
     override fun onStart() {
         super.onStart()
         val selectedFrameIndex = storyViewModel.getSelectedFrameIndex()
-        if (selectedFrameIndex < storyViewModel.getCurrentStorySize()) {
+        if (!launchCameraRequestPending && !launchVideoPlayerRequestPending &&
+                selectedFrameIndex < storyViewModel.getCurrentStorySize()) {
             updateBackgroundSurfaceUIWithStoryFrame(selectedFrameIndex)
+        }
+        // upon loading an existing Story, show the generic announcement dialog if present
+        if (showGenericAnnouncementDialogWhenReady) {
+            showGenericAnnouncementDialogWhenReady = false
+            genericAnnouncementDialogProvider?.showGenericAnnouncementDialog()
         }
     }
 
@@ -646,6 +666,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         if (storyViewModel.getCurrentStoryIndex() == StoryRepository.DEFAULT_NONE_SELECTED) {
             storyViewModel.loadStory(storyIndexToSelect)
             storyIndexToSelect = storyViewModel.getCurrentStoryIndex()
+        } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED &&
+                StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.isNotEmpty()) {
+            storyViewModel.loadStory(storyIndexToSelect)
+            showGenericAnnouncementDialogWhenReady = true
+            return
         }
 
         if (intent.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED) ||
@@ -677,11 +702,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             )
             addFramesToStoryFromMediaUriList(uriList)
             setDefaultSelectionAndUpdateBackgroundSurfaceUI(uriList)
-        } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED) {
-            if (StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.isNotEmpty()) {
-                storyViewModel.loadStory(storyIndexToSelect)
-                refreshStoryFrameSelection()
-            }
         }
     }
 
@@ -920,10 +940,18 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 }
                 !backgroundSurfaceManager.cameraVisible() -> {
                     // Show discard dialog
+                    var discardTitle = getString(R.string.dialog_discard_story_title)
+                    var discardMessage = getString(R.string.dialog_discard_story_message)
+                    var discardOkButton = getString(R.string.dialog_discard_story_ok_button)
+                    if (intent.getBooleanExtra(KEY_STORY_EDIT_MODE, false)) {
+                        discardTitle = getString(R.string.dialog_discard_story_title_edit)
+                        discardMessage = getString(R.string.dialog_discard_story_message_edit)
+                        discardOkButton = getString(R.string.dialog_discard_story_ok_button_edit)
+                    }
                     FrameSaveErrorDialog.newInstance(
-                        title = getString(R.string.dialog_discard_story_title),
-                        message = getString(R.string.dialog_discard_story_message),
-                        okButtonLabel = getString(R.string.dialog_discard_story_ok_button),
+                        title = discardTitle,
+                        message = discardMessage,
+                        okButtonLabel = discardOkButton,
                         listener = object : FrameSaveErrorDialogOk {
                             override fun OnOkClicked(dialog: DialogFragment) {
                                 addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
@@ -981,10 +1009,13 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                             if (storyViewModel.getCurrentStorySize() == 1) {
                                 // discard the whole story
                                 safelyDiscardCurrentStoryAndCleanUpIntent()
+                                storyDiscardListener?.onStoryDiscarded()
                             } else {
                                 // get currentFrame value as it will change after calling onAboutToDeleteStoryFrame
                                 val currentFrameToDeleteIndex = storyViewModel.getSelectedFrameIndex()
                                 onAboutToDeleteStoryFrame(currentFrameToDeleteIndex)
+                                storyDiscardListener?.onFrameRemove(storyViewModel.getCurrentStoryIndex(),
+                                        currentFrameToDeleteIndex)
                                 // now discard it from the viewModel
                                 storyViewModel.removeFrameAt(currentFrameToDeleteIndex)
                             }
@@ -1994,6 +2025,18 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     fun setPermissionDialogProvider(provider: PermanentPermissionDenialDialogProvider) {
         permissionDenialDialogProvider = provider
+    }
+
+    // true: default, files are created in the internal app directory and these will be cleaned on exit
+    // false: we won't do cleanup and the files will be saved on the app's output directory
+    fun setUseTempCaptureFile(useTempFiles: Boolean) {
+        this.useTempCaptureFile = useTempFiles
+        this.storyViewModel.useTempCaptureFile = useTempFiles
+        this.backgroundSurfaceManager.useTempCaptureFile = useTempFiles
+    }
+
+    fun setGenericAnnouncementDialogProvider(provider: GenericAnnouncementDialogProvider) {
+        genericAnnouncementDialogProvider = provider
     }
 
     class ExternalMediaPickerRequestCodesAndExtraKeys {

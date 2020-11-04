@@ -720,7 +720,11 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
             /**
              * create video output file
              */
-            currentFile = FileUtils.getTempCaptureFile(activity, true)
+            if (useTempCaptureFile) {
+                currentFile = FileUtils.getTempCaptureFile(activity, true)
+            } else {
+                currentFile = FileUtils.getLoopFrameFile(activity, true)
+            }
             currentFile?.createNewFile()
 
             /**
@@ -840,7 +844,11 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
     override fun takePicture(onImageCapturedListener: ImageCaptureListener) {
         // Create output file to hold the image
         activity?.let {
-            currentFile = FileUtils.getTempCaptureFile(it, false)
+            if (useTempCaptureFile) {
+                currentFile = FileUtils.getTempCaptureFile(it, false)
+            } else {
+                currentFile = FileUtils.getLoopFrameFile(it, false)
+            }
         }
         currentFile?.createNewFile()
 
@@ -954,10 +962,12 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
 
         @JvmStatic fun getInstance(
             textureView: AutoFitTextureView,
-            flashSupportChangeListener: FlashSupportChangeListener
+            flashSupportChangeListener: FlashSupportChangeListener,
+            useTempCaptureFile: Boolean
         ): Camera2BasicHandling {
             instance.textureView = textureView
             instance.flashSupportChangeListener = flashSupportChangeListener
+            instance.useTempCaptureFile = useTempCaptureFile
             return instance
         }
     }
