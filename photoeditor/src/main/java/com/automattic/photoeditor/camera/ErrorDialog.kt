@@ -31,7 +31,7 @@ interface ErrorDialogOk {
 class ErrorDialog : DialogFragment() {
     private var okListener: ErrorDialogOk? = null
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        var builder = MaterialAlertDialogBuilder(activity)
+        var builder = MaterialAlertDialogBuilder(requireContext())
                 .setMessage(arguments?.getString(ARG_MESSAGE))
 
         okListener?.let {
