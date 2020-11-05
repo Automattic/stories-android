@@ -1912,6 +1912,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         toggleDeleteSlideMode()
     }
 
+    override fun onStoryFrameMovedLongPressed() {
+        disableDeleteSlideMode()
+    }
+
     private fun toggleDeleteSlideMode() {
         if (delete_slide_view.visibility == View.VISIBLE) {
             disableDeleteSlideMode()

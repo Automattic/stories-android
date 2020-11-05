@@ -50,6 +50,9 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
     private val _onUserLongPressedFrame = SingleLiveEvent<Pair<Int, Int>>()
     val onUserLongPressedFrame = _onUserLongPressedFrame
 
+    private val _onUserMovedLongPressedFrame = SingleLiveEvent<Unit>()
+    val onUserMovedLongPressedFrame = _onUserMovedLongPressedFrame
+
     fun createNewStory() {
         loadStory(StoryRepository.DEFAULT_NONE_SELECTED)
     }
@@ -111,6 +114,10 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
         val oldIndex = currentSelectedFrameIndex
         setSelectedFrame(index)
         _onUserLongPressedFrame.value = Pair(oldIndex, index)
+    }
+
+    private fun setMovedLongPressedFrame() {
+        _onUserMovedLongPressedFrame.call()
     }
 
     fun updateCurrentSelectedFrameOnRetryResult(frameSaveResult: FrameSaveResult) {
@@ -221,6 +228,7 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
     }
 
     fun swapItemsInPositions(pos1: Int, pos2: Int) {
+        setMovedLongPressedFrame()
         repository.swapItemsInPositions(pos1, pos2)
         // adjust currentSelectedFrameIndex so it reflects the movement only
         // if the movement occurred entierly to the left of the selection, don't update it
