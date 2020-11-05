@@ -24,6 +24,8 @@ interface OnStoryFrameSelectorTappedListener {
     fun onStoryFrameSelected(oldIndex: Int, newIndex: Int)
     fun onStoryFrameAddTapped()
     fun onCurrentFrameTapped()
+    fun onStoryFrameLongPressed(oldIndex: Int, newIndex: Int)
+    fun onStoryFrameMovedLongPressed()
 }
 
 class StoryFrameSelectorFragment : Fragment() {
@@ -49,6 +51,15 @@ class StoryFrameSelectorFragment : Fragment() {
 
         storyViewModel.onUserTappedCurrentFrame.observe(this, Observer {
             storyFrameTappedListener?.onCurrentFrameTapped()
+        })
+
+        storyViewModel.onUserLongPressedFrame.observe(this, Observer { selectedFrameIndexChange ->
+            storyFrameTappedListener?.onStoryFrameLongPressed(
+                    selectedFrameIndexChange.first, selectedFrameIndexChange.second)
+        })
+
+        storyViewModel.onUserMovedLongPressedFrame.observe(this, Observer {
+            storyFrameTappedListener?.onStoryFrameMovedLongPressed()
         })
 
         storyViewModel.onFrameIndexMoved.observe(this, Observer<Pair<Int, Int>> { positionFrameIndexChange ->

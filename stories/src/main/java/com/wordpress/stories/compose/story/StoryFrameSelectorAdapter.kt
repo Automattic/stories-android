@@ -80,15 +80,21 @@ class StoryFrameSelectorAdapter : RecyclerView.Adapter<StoryFrameSelectorAdapter
 
         class StoryFrameHolderItem(v: View) : StoryFrameHolder(v) {
             private var onFrameSelected: (() -> Unit)? = null
+            private var onFrameLongPressed: (() -> Unit)? = null
 
             init {
                 clickableView.setOnClickListener {
                     onFrameSelected?.invoke()
                 }
+                clickableView.setOnLongClickListener {
+                    onFrameLongPressed?.invoke()
+                    true
+                }
             }
 
             override fun onBind(uiState: StoryFrameListItemUiState) {
                 onFrameSelected = requireNotNull(uiState.onItemTapped) { "OnItemTapped is required." }
+                onFrameLongPressed = requireNotNull(uiState.onItemLongPressed) { "OnItemLongPressed is required." }
                 uiState as StoryFrameListItemUiStateFrame
 
                 val loadThumbnailImage = {

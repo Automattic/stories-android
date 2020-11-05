@@ -1900,6 +1900,23 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     override fun onCurrentFrameTapped() {
+        toggleDeleteSlideMode()
+    }
+
+    override fun onStoryFrameLongPressed(oldIndex: Int, newIndex: Int) {
+        // On long press we want to switch to that frame and show the delete slide move all together.
+        if (oldIndex != newIndex) {
+            // The long-pressed frame was not the one already in focus - switch to it first.
+            onStoryFrameSelected(oldIndex, newIndex)
+        }
+        toggleDeleteSlideMode()
+    }
+
+    override fun onStoryFrameMovedLongPressed() {
+        disableDeleteSlideMode()
+    }
+
+    private fun toggleDeleteSlideMode() {
         if (delete_slide_view.visibility == View.VISIBLE) {
             disableDeleteSlideMode()
         } else {
