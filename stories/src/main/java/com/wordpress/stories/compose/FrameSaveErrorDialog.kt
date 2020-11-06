@@ -12,7 +12,7 @@ interface FrameSaveErrorDialogOk {
 class FrameSaveErrorDialog : DialogFragment() {
     private var okListener: FrameSaveErrorDialogOk? = null
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val builder = MaterialAlertDialogBuilder(activity)
+        val builder = MaterialAlertDialogBuilder(requireContext())
             .setTitle(arguments?.getString(ARG_TITLE))
             .setMessage(arguments?.getString(ARG_MESSAGE))
 

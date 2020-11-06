@@ -45,7 +45,7 @@ dependencies {
     implementation 'androidx.emoji:emoji:1.0.0'
     implementation "androidx.recyclerview:recyclerview:1.1.0"
 
-    implementation 'com.google.android.material:material:1.1.0'
+    implementation 'com.google.android.material:material:1.2.1'
 
     implementation 'com.github.bumptech.glide:glide:4.10.0'
     kapt 'com.github.bumptech.glide:compiler:4.10.0'
