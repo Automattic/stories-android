@@ -7,13 +7,13 @@ import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
 import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.UriBackgroundSource
 import com.wordpress.stories.compose.story.StoryFrameItemType.IMAGE
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import com.wordpress.stories.compose.story.StoryFrameItemType.VIDEO
-import kotlinx.serialization.Decoder
-import kotlinx.serialization.Encoder
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Serializer
-import kotlinx.serialization.internal.ArrayListSerializer
+import kotlinx.serialization.builtins.ListSerializer
 import java.io.File
 
 @Serializable
@@ -44,36 +44,36 @@ data class StoryFrameItem(
 
     @Serializer(forClass = Uri::class)
     object UriSerializer : KSerializer<Uri> {
-        override fun deserialize(input: Decoder): Uri {
-            return Uri.parse(input.decodeString())
+        override fun deserialize(decoder: Decoder): Uri {
+            return Uri.parse(decoder.decodeString())
         }
 
-        override fun serialize(output: Encoder, obj: Uri) {
-            output.encodeString(obj.toString())
+        override fun serialize(encoder: Encoder, value: Uri) {
+            encoder.encodeString(value.toString())
         }
     }
 
     @Serializer(forClass = File::class)
     object FileSerializer : KSerializer<File> {
-        override fun deserialize(input: Decoder): File {
-            return File(input.decodeString())
+        override fun deserialize(decoder: Decoder): File {
+            return File(decoder.decodeString())
         }
 
-        override fun serialize(output: Encoder, obj: File) {
-            output.encodeString(obj.toString())
+        override fun serialize(encoder: Encoder, value: File) {
+            encoder.encodeString(value.toString())
         }
     }
 
     @Serializer(forClass = AddedViewList::class)
     object AddedViewListSerializer : KSerializer<AddedViewList> {
-        override fun deserialize(input: Decoder): AddedViewList {
+        override fun deserialize(decoder: Decoder): AddedViewList {
             val newList = AddedViewList()
-            newList.addAll(input.decodeSerializableValue(ArrayListSerializer(AddedView.serializer())))
+            newList.addAll(decoder.decodeSerializableValue(ListSerializer(AddedView.serializer())))
             return newList
         }
 
-        override fun serialize(output: Encoder, addedViews: AddedViewList) {
-            output.encodeSerializableValue(ArrayListSerializer(AddedView.serializer()), addedViews)
+        override fun serialize(encoder: Encoder, value: AddedViewList) {
+            encoder.encodeSerializableValue(ListSerializer(AddedView.serializer()), value)
         }
     }
 

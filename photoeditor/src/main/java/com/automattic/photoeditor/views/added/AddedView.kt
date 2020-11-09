@@ -8,8 +8,8 @@ import com.automattic.photoeditor.views.ViewType
 import com.automattic.photoeditor.views.ViewType.EMOJI
 import com.automattic.photoeditor.views.ViewType.TEXT
 import kotlinx.serialization.Transient
-import kotlinx.serialization.Decoder
-import kotlinx.serialization.Encoder
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Serializer
@@ -80,12 +80,12 @@ class AddedView(
 
     @Serializer(forClass = Uri::class)
     object UriSerializer : KSerializer<Uri> {
-        override fun deserialize(input: Decoder): Uri {
-            return Uri.parse(input.decodeString())
+        override fun deserialize(decoder: Decoder): Uri {
+            return Uri.parse(decoder.decodeString())
         }
 
-        override fun serialize(output: Encoder, obj: Uri) {
-            output.encodeString(obj.toString())
+        override fun serialize(encoder: Encoder, value: Uri) {
+            encoder.encodeString(value.toString())
         }
     }
 }
