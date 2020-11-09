@@ -80,12 +80,12 @@ class AddedView(
 
     @Serializer(forClass = Uri::class)
     object UriSerializer : KSerializer<Uri> {
-        override fun deserialize(input: Decoder): Uri {
-            return Uri.parse(input.decodeString())
+        override fun deserialize(decoder: Decoder): Uri {
+            return Uri.parse(decoder.decodeString())
         }
 
-        override fun serialize(output: Encoder, obj: Uri) {
-            output.encodeString(obj.toString())
+        override fun serialize(encoder: Encoder, value: Uri) {
+            encoder.encodeString(value.toString())
         }
     }
 }
