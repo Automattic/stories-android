@@ -36,6 +36,9 @@
     <string name="photo_picker_wpmedia_desc">pick from WordPress media</string>
     <string name="content_description_person_reading_device_notification">Person reading device with notifications</string>
 
+    <string name="dialog_general_announcement_title">General announcement</string>
+    <string name="dialog_general_announcement_message">This is an announcement you can make from the host app</string>
+
     <!-- Photo picker - Loop   -->
     <string name="photo_picker_add_photos_to_story">Choose the photos and videos you\'d like to add to your story</string>
     <!-- SD Card errors -->

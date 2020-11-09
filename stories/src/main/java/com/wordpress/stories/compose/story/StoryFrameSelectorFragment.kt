@@ -23,6 +23,7 @@ import kotlinx.android.synthetic.main.fragment_story_frame_selector.view.*
 interface OnStoryFrameSelectorTappedListener {
     fun onStoryFrameSelected(oldIndex: Int, newIndex: Int)
     fun onStoryFrameAddTapped()
+    fun onCurrentFrameTapped()
 }
 
 class StoryFrameSelectorFragment : Fragment() {
@@ -44,6 +45,10 @@ class StoryFrameSelectorFragment : Fragment() {
             storyFrameTappedListener?.onStoryFrameSelected(
                 selectedFrameIndexChange.first, selectedFrameIndexChange.second
             )
+        })
+
+        storyViewModel.onUserTappedCurrentFrame.observe(this, Observer {
+            storyFrameTappedListener?.onCurrentFrameTapped()
         })
 
         storyViewModel.onFrameIndexMoved.observe(this, Observer<Pair<Int, Int>> { positionFrameIndexChange ->

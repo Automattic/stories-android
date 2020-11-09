@@ -5,11 +5,12 @@ import com.automattic.photoeditor.views.added.AddedView
 import com.automattic.photoeditor.views.added.AddedViewList
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
+import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.UriBackgroundSource
 import com.wordpress.stories.compose.story.StoryFrameItemType.IMAGE
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import com.wordpress.stories.compose.story.StoryFrameItemType.VIDEO
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Transient
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Serializer
 import kotlinx.serialization.builtins.ListSerializer
@@ -22,8 +23,9 @@ data class StoryFrameItem(
     @Serializable(with = AddedViewListSerializer::class)
     var addedViews: AddedViewList = AddedViewList(),
     var saveResultReason: SaveResultReason = SaveSuccess,
-    @Transient
-    var composedFrameFile: File? = null
+    @Serializable(with = FileSerializer::class)
+    var composedFrameFile: File? = null,
+    var id: String? = null
 ) {
     @Serializable
     sealed class BackgroundSource {
@@ -72,6 +74,20 @@ data class StoryFrameItem(
 
         override fun serialize(encoder: Encoder, value: AddedViewList) {
             encoder.encodeSerializableValue(ListSerializer(AddedView.serializer()), value)
+        }
+    }
+
+    companion object {
+        @JvmStatic
+        fun getNewStoryFrameItemFromUri(uri: Uri, isVideo: Boolean): StoryFrameItem {
+            return StoryFrameItem(
+                    UriBackgroundSource(uri),
+                    if (isVideo) {
+                        VIDEO(false)
+                    } else {
+                        IMAGE
+                    }
+            )
         }
     }
 }

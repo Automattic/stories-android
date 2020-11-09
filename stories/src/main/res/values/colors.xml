@@ -21,26 +21,17 @@
     <color name="black_transp_story_frame_selector">@color/black_transp_light</color>
     <color name="black_transp_edit_mode_controls">@color/black_transp_light</color>
     <color name="black_transp_edit_mode_controls_pressed">@color/black_transp_light_darker</color>
+
+    <color name="white_transp_light_darker">#99FFFFFF</color>
+    <color name="white_transp_navigation_controls_pressed">@color/white_transp_light_darker</color>
+
     <color name="black_transp_error_scrim">#4D000000</color>
     <color name="red">#FF0000</color>
-
-    <color name="text_color_white">@color/white</color>
-    <color name="text_color_black">@color/black</color>
-    <color name="text_color_red">#E81A1C</color>
-    <color name="text_color_orange">#F88500</color>
-    <color name="text_color_yellow">#EEBA0C</color>
-    <color name="text_color_green">#007E65</color>
-    <color name="text_color_blue">#2271B1</color>
-    <color name="text_color_violet">#984A9C</color>
-    <color name="text_color_magenta">@color/loop_magenta</color>
-
 
     <color name="loop_magenta">#C9356E</color>
 
     <color name="black_25_transparent">#40000000</color>
     <color name="white_50_transparent">#80FFFFFF</color>
-
-    <color name="lighter_gray">#E3DFE2</color>
 
     <!-- WordPress colors-->
     <color name="wordpress_blue_50">#006088</color>
@@ -49,5 +40,4 @@
     <color name="red_30">#f86368</color>
     <color name="background_dark">#121212</color>
     <color name="background_dark_elevated">#2e2e2e</color>
-    <color name="black_translucent_50">#80000000</color>
 </resources>

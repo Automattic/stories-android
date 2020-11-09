@@ -64,7 +64,7 @@ class FrameSaveManager(
     ): List<File> {
         // calling the listener here so the progress notification initializes itself properly and
         // shows really how many Story frame pages we're going to save
-        preDispatchStartProgressListenerCalls(frames.size)
+        preDispatchStartProgressListenerCalls(frames)
 
         // first, save all images async and wait
         val savedImages = saveLoopFramesAsyncAwait(
@@ -82,9 +82,9 @@ class FrameSaveManager(
         return savedImages + savedVideos
     }
 
-    private fun preDispatchStartProgressListenerCalls(framesAmount: Int) {
-        for (frameIndex in 0 until framesAmount) {
-            saveProgressListener?.onFrameSaveStart(frameIndex)
+    private fun preDispatchStartProgressListenerCalls(frames: List<StoryFrameItem>) {
+        for ((frameIndex, frame) in frames.withIndex()) {
+            saveProgressListener?.onFrameSaveStart(frameIndex, frame)
         }
     }
 
@@ -132,6 +132,7 @@ class FrameSaveManager(
                     // don't process the video but return the original file if no added views in this Story frame
                     frameFile = (frame.source as FileBackgroundSource).file
                 }
+                frame.composedFrameFile = frameFile
             }
             is IMAGE -> {
                 // check whether there are any GIF stickers - if there are, we need to produce a video instead
@@ -143,9 +144,10 @@ class FrameSaveManager(
                         // create ghost PhotoEditorView to be used for saving off-screen
                         val ghostPhotoEditorView = createGhostPhotoEditor(context, photoEditor.composedCanvas)
                         frameFile = saveImageFrame(context, frame, ghostPhotoEditorView, frameIndex)
-                        saveProgressListener?.onFrameSaveCompleted(frameIndex)
+                        frame.composedFrameFile = frameFile
+                        saveProgressListener?.onFrameSaveCompleted(frameIndex, frame)
                     } catch (ex: Exception) {
-                        saveProgressListener?.onFrameSaveFailed(frameIndex, ex.message)
+                        saveProgressListener?.onFrameSaveFailed(frameIndex, frame, ex.message)
                     } finally {
                         // if anything happened, just make sure the added views were removed from the offscreen
                         // photoEditor layout, otherwise it won't be possible to re-add them when we show the
@@ -158,7 +160,6 @@ class FrameSaveManager(
                 }
             }
         }
-        frame.composedFrameFile = frameFile
         return frameFile
     }
 
@@ -209,23 +210,24 @@ class FrameSaveManager(
             var listenerDone = false
             val saveListener = object : OnSaveWithCancelAndProgressListener {
                 override fun onCancel(noAddedViews: Boolean) {
-                    saveProgressListener?.onFrameSaveCanceled(frameIndex)
+                    saveProgressListener?.onFrameSaveCanceled(frameIndex, frame)
                     listenerDone = true
                 }
 
                 override fun onSuccess(filePath: String) {
                     // all good here, continue success path
                     file = File(filePath)
-                    saveProgressListener?.onFrameSaveCompleted(frameIndex)
+                    frame.composedFrameFile = file
+                    saveProgressListener?.onFrameSaveCompleted(frameIndex, frame)
                     listenerDone = true
                 }
 
                 override fun onFailure(exception: Exception) {
-                    saveProgressListener?.onFrameSaveFailed(frameIndex, exception.message)
+                    saveProgressListener?.onFrameSaveFailed(frameIndex, frame, exception.message)
                     listenerDone = true
                 }
                 override fun onProgress(progress: Double) {
-                    saveProgressListener?.onFrameSaveProgress(frameIndex, progress)
+                    saveProgressListener?.onFrameSaveProgress(frameIndex, frame, progress)
                 }
             }
 
@@ -239,7 +241,7 @@ class FrameSaveManager(
                     throw Exception("Save not called")
                 }
             } catch (ex: Exception) {
-                saveProgressListener?.onFrameSaveFailed(frameIndex, ex.message)
+                saveProgressListener?.onFrameSaveFailed(frameIndex, frame, ex.message)
             }
         }
 
@@ -329,11 +331,11 @@ class FrameSaveManager(
 
     interface FrameSaveProgressListener {
         // only one Story gets saved at a time, frameIndex is the frame's position within the Story array
-        fun onFrameSaveStart(frameIndex: FrameIndex)
-        fun onFrameSaveProgress(frameIndex: FrameIndex, progress: Double)
-        fun onFrameSaveCompleted(frameIndex: FrameIndex)
-        fun onFrameSaveCanceled(frameIndex: FrameIndex)
-        fun onFrameSaveFailed(frameIndex: FrameIndex, reason: String?)
+        fun onFrameSaveStart(frameIndex: FrameIndex, frame: StoryFrameItem)
+        fun onFrameSaveProgress(frameIndex: FrameIndex, frame: StoryFrameItem, progress: Double)
+        fun onFrameSaveCompleted(frameIndex: FrameIndex, frame: StoryFrameItem)
+        fun onFrameSaveCanceled(frameIndex: FrameIndex, frame: StoryFrameItem)
+        fun onFrameSaveFailed(frameIndex: FrameIndex, frame: StoryFrameItem, reason: String?)
     }
 
     companion object {
