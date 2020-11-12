@@ -18,20 +18,7 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:animateLayoutChanges="true"
-        android:background="@color/black"
-        >
-
-        <!-- this is the delete view  -->
-        <com.wordpress.stories.compose.DeleteButton
-            android:id="@+id/delete_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/delete_button_margin_bottom"
-            android:visibility="gone"
-            android:layout_centerHorizontal="true"
-            android:layout_alignParentBottom="true"/>
-
-    </com.automattic.photoeditor.views.PhotoEditorView>
+        android:background="@color/black" />
 
     <FrameLayout
         android:id="@+id/translucent_error_view"
@@ -41,6 +28,19 @@
         android:background="@color/black_transp_error_scrim">
     </FrameLayout>
 
+    <!-- Delete added view button -->
+    <com.wordpress.stories.compose.DeleteButton
+        android:id="@+id/delete_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/delete_button_margin_bottom"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_alignParentBottom="true"/>
+
+    <!-- Delete slide button  -->
     <com.wordpress.stories.compose.DeleteButton
         android:id="@+id/delete_slide_view"
         android:layout_width="wrap_content"
