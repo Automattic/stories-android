@@ -2,6 +2,7 @@ package com.automattic.photoeditor.util
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.os.Environment
 import android.util.Size
 import android.view.View
 import com.automattic.photoeditor.R
@@ -24,8 +25,9 @@ class FileUtils {
         /** Use external media if it is available, our app's file directory otherwise */
         fun getOutputDirectory(context: Context): File {
             val appContext = context.applicationContext
-            val mediaDir = context.externalMediaDirs.firstOrNull()?.let {
-                File(it, appContext.resources.getString(R.string.app_name)).apply { mkdirs() } }
+            val mediaDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)?.let {
+                File(it, appContext.resources.getString(R.string.app_name)).apply { mkdirs() }
+            }
             return if (mediaDir != null && mediaDir.exists())
                 mediaDir else appContext.filesDir
         }
