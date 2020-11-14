@@ -67,6 +67,7 @@ import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.wordpress.stories.BuildConfig
 import com.wordpress.stories.R
 import com.wordpress.stories.compose.ComposeLoopFrameActivity.ExternalMediaPickerRequestCodesAndExtraKeys
+import com.wordpress.stories.compose.FinishButton.FinishButtonMode.DONE
 import com.wordpress.stories.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_DELETE_SLIDE
 import com.wordpress.stories.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_FULL_SCREEN
 import com.wordpress.stories.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_NONE
@@ -507,6 +508,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         updateFlashModeSelectionIcon()
 
         setupStoryViewModelObservers()
+
+        if (intent.getBooleanExtra(KEY_STORY_EDIT_MODE, false)) {
+            next_button.buttonMode = DONE
+        }
 
         if (savedInstanceState != null) {
             currentOriginalCapturedFile =
