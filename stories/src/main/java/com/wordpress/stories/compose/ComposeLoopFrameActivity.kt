@@ -668,18 +668,20 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     protected open fun onLoadFromIntent(intent: Intent) {
+        val partialCameraOperationInProgress = intent.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED) ||
+                permissionsRequestForCameraInProgress
+
         if (storyViewModel.getCurrentStoryIndex() == StoryRepository.DEFAULT_NONE_SELECTED) {
             storyViewModel.loadStory(storyIndexToSelect)
             storyIndexToSelect = storyViewModel.getCurrentStoryIndex()
-        } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED &&
+        } else if (!partialCameraOperationInProgress && storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED &&
                 StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.isNotEmpty()) {
             storyViewModel.loadStory(storyIndexToSelect)
             showGenericAnnouncementDialogWhenReady = true
             return
         }
 
-        if (intent.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED) ||
-                permissionsRequestForCameraInProgress) {
+        if (partialCameraOperationInProgress) {
             launchCameraPreviewWithSurfaceSafeguard()
             checkForLowSpaceAndShowDialog()
         } else if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
@@ -755,7 +757,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         PermissionUtils.processRequestedPermissionsResultAndSave(this, permissions, grantResults)
         if (PermissionUtils.allRequestedPermissionsGranted(grantResults)) {
             onLoadFromIntent(intent)
-            permissionsRequestForCameraInProgress = false
         } else if (permissions.isEmpty() || storyViewModel.getCurrentStorySize() == 0) {
             // an empty permissions array means the user cancelled giving permissions. End the interaction.
             // same if we are already in the midst of requesting permission for camera but user will refuse some,
@@ -767,6 +768,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             // if user won't give permissions but we have an ongoing Story with frames, just come back to where we were.
             showCurrentSelectedFrame()
         }
+        // clear flag in the end only - we are in onRequestPermissionsResult so that means the request has a result
+        // already, and clearing it as a last step given we need to check it's state in the above calls to
+        // onLoadIntent(), but also clear it if the user denied permissions this time.
+        permissionsRequestForCameraInProgress = false
     }
 
     override fun onBackPressed() {
@@ -882,7 +887,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                                     showPermissionPermanentlyDeniedDialog(it)
                                 } ?: PermissionUtils.requestAllRequiredPermissionsIncludingAudioForVideo(
                                         this@ComposeLoopFrameActivity
-                                )
+                                ).also {
+                                    permissionsRequestForCameraInProgress = true
+                                }
                             }
                         }
 
