@@ -162,7 +162,7 @@ class Mp4Composer {
             if (!isStaticImageBkgSource) {
                 initializeUriDataSource(engine)
                 val videoRotate = getVideoRotation(srcUri!!)
-                val srcVideoResolution = getVideoResolution(srcUri)
+                val srcVideoResolution = getVideoResolution(srcUri, DEFAULT_FALLBACK_VIDEO_RESOLUTION)
 
                 if (outputResolution == null) {
                     if (fillMode == FillMode.CUSTOM) {
@@ -221,7 +221,7 @@ class Mp4Composer {
                 }
             } else {
                 // FIXME hardcoded video output resolution
-                outputResolution = Size(480, 720)
+                outputResolution = DEFAULT_FALLBACK_VIDEO_RESOLUTION
                 // outputResolution = new Size(640, 480);
                 timeScale = 1
                 bitrate = calcBitRate(outputResolution!!.width, outputResolution!!.height)
@@ -331,7 +331,7 @@ class Mp4Composer {
         return bitrate
     }
 
-    private fun getVideoResolution(videoUri: Uri): Size {
+    private fun getVideoResolution(videoUri: Uri, defaultResolution: Size): Size {
         var retriever: MediaMetadataRetriever? = null
         try {
             retriever = MediaMetadataRetriever()
@@ -349,6 +349,15 @@ class Mp4Composer {
             val height = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT))
 
             return Size(width, height)
+        } catch (e: IllegalArgumentException) {
+            Log.e("MediaMetadataRetriever", "getVideoResolution IllegalArgumentException")
+            return defaultResolution
+        } catch (e: RuntimeException) {
+            Log.e("MediaMetadataRetriever", "getVideoResolution RuntimeException")
+            return defaultResolution
+        } catch (e: Exception) {
+            Log.e("MediaMetadataRetriever", "getVideoResolution Exception")
+            return defaultResolution
         } finally {
             try {
                 retriever?.release()
@@ -360,5 +369,6 @@ class Mp4Composer {
 
     companion object {
         private val TAG = Mp4Composer::class.java.simpleName
+        private val DEFAULT_FALLBACK_VIDEO_RESOLUTION = Size(480, 720)
     }
 }
