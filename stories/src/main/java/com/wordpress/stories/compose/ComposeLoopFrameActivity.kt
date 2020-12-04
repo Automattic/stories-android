@@ -64,6 +64,7 @@ import com.automattic.photoeditor.views.ViewType.TEXT
 import com.automattic.photoeditor.views.added.AddedViewList
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.wordpress.stories.BuildConfig
 import com.wordpress.stories.R
 import com.wordpress.stories.compose.ComposeLoopFrameActivity.ExternalMediaPickerRequestCodesAndExtraKeys
@@ -931,6 +932,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     })
             )
 
+        container_gallery_upload.setOnClickListener {
+            showMediaPicker()
+        }
+
         camera_flip_group.setOnClickListener {
             cameraSelection = backgroundSurfaceManager.flipCamera()
             saveCameraSelectionPref()
@@ -1291,6 +1296,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 runOnUiThread {
                     Glide.with(this@ComposeLoopFrameActivity)
                         .load(file)
+                        .transform(CenterCrop(), RoundedCorners(16))
+                        .into(gallery_upload_img)
+                    Glide.with(this@ComposeLoopFrameActivity)
+                        .load(file)
                         .transform(CenterCrop())
                         .into(photoEditorView.source)
                     storyViewModel.apply {
@@ -1536,6 +1545,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         label_flash.visibility = View.INVISIBLE
 
         camera_flip_group.visibility = View.INVISIBLE
+
+        container_gallery_upload.visibility = View.INVISIBLE
     }
 
     private fun showVideoUIControls() {
@@ -1543,6 +1554,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         label_flash.visibility = View.VISIBLE
 
         camera_flip_group.visibility = View.VISIBLE
+
+        container_gallery_upload.visibility = View.VISIBLE
     }
 
     private fun showEditModeUIControls() {

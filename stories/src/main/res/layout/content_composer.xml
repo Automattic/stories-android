@@ -70,6 +70,54 @@
         android:contentDescription="@string/capture_button_alt" />
 
 
+    <LinearLayout
+        android:id="@+id/container_gallery_upload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:orientation="vertical"
+        android:animateLayoutChanges="true"
+        app:layout_constraintBottom_toBottomOf="@+id/camera_capture_button"
+        app:layout_constraintEnd_toStartOf="@+id/camera_capture_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/camera_capture_button">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal">
+            <!-- this will hold the thumbnail img for the picture taken  -->
+            <ImageView
+                android:id="@+id/gallery_upload_img"
+                android:layout_width="@dimen/normal_button_medium_round_corner"
+                android:layout_height="@dimen/normal_button_medium_round_corner"
+                android:background="@drawable/ic_gallery_upload"
+                android:contentDescription="@string/capture_button_alt"
+                android:scaleType="centerCrop"
+                android:layout_centerInParent="true"/>
+
+            <!-- this is just the border  -->
+            <ImageView
+                android:id="@+id/gallery_upload"
+                android:layout_width="@dimen/normal_button_medium"
+                android:layout_height="@dimen/normal_button_medium"
+                android:background="@drawable/ic_gallery_upload"
+                android:contentDescription="@string/capture_button_alt"
+                android:scaleType="fitCenter"
+                android:layout_centerInParent="true"/>
+        </RelativeLayout>
+
+        <TextView
+            android:id="@+id/label_upload"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/label_control_upload"
+            android:textColor="@color/white"
+            android:textSize="@dimen/normal_button_font_size"
+            android:layout_gravity="center_horizontal"/>
+    </LinearLayout>
+
     <!-- top gradient  -->
     <View
         android:id="@+id/gradient_top"
