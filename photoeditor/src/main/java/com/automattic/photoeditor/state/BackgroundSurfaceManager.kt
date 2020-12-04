@@ -414,17 +414,19 @@ class BackgroundSurfaceManager(
                     }
 
                     override fun onPlayerError() {
-                        photoEditorView.hideLoading()
-                        ErrorDialog.newInstance(requireNotNull(videoPlayerHandling.context)
-                                .getString(R.string.toast_error_playing_video),
+                        photoEditorView.post {
+                            photoEditorView.hideLoading()
+                            ErrorDialog.newInstance(requireNotNull(videoPlayerHandling.context)
+                                    .getString(R.string.toast_error_playing_video),
                                     object : ErrorDialogOk {
                                         override fun OnOkClicked(dialog: DialogFragment) {
                                             dialog.dismiss()
                                         }
                                     }
-                                ).show(supportFragmentManager,
-                                        FRAGMENT_DIALOG
-                                )
+                            ).show(supportFragmentManager,
+                                    FRAGMENT_DIALOG
+                            )
+                        }
                     }
                 }
 
