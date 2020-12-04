@@ -27,6 +27,7 @@
     <string name="label_frame_errored">errored</string>
     <string name="label_text_alignment_button">Change text alignment</string>
     <string name="label_text_color_button">Change text color</string>
+    <string name="label_control_upload">Upload</string>
 
     <string name="dialog_discard_page_title">Delete story slide?</string>
     <string name="dialog_discard_page_message">This slide will be removed from your story.</string>
