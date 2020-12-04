@@ -276,12 +276,13 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
             Log.d(TAG, e.message)
         } catch (e: IllegalArgumentException) {
             playerPreparedListener?.onPlayerError()
-            Log.e(TAG, "Can't read duration of the video.", e);
+            Log.e(TAG, "Can't read duration of the video.", e)
         } catch (e: RuntimeException) {
             playerPreparedListener?.onPlayerError()
             // Ref: https://github.com/wordpress-mobile/WordPress-Android/issues/5431
             Log.e(TAG,
-                    "Can't calculateVideoSizeAndOrientation due to a Runtime Exception happened setting the datasource", e);
+                    "Can't calculateVideoSizeAndOrientation due to a" +
+                            "Runtime Exception happened setting the datasource", e)
         } finally {
             metadataRetriever.release()
         }
