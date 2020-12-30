@@ -522,7 +522,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             firstIntentLoaded = savedInstanceState.getBoolean(STATE_KEY_FIRST_INTENT_LOADED)
             permissionsRequestForCameraInProgress = savedInstanceState.getBoolean(STATE_KEY_PERMISSION_REQ_IN_PROGRESS)
 
-            storyViewModel.loadStory(
+            storyViewModel.replaceCurrentStory(
                 StorySerializerUtils.deserializeStory(
                         requireNotNull(savedInstanceState.getString(STATE_KEY_STORY_SAVE_STATE))
                 )
