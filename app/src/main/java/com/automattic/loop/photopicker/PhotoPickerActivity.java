@@ -9,6 +9,7 @@ import android.transition.Slide;
 import android.util.Log;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.Window;
@@ -20,20 +21,18 @@ import androidx.core.view.GestureDetectorCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.automattic.loop.LoopActivity;
 import com.automattic.loop.R;
 import com.automattic.loop.databinding.PhotoPickerActivityBinding;
 import com.automattic.loop.databinding.ToolbarBinding;
 import com.automattic.loop.photopicker.utils.CameraIntentUtils;
 import com.automattic.loop.util.WPMediaUtils;
-
-import org.jetbrains.annotations.NotNull;
+import com.wordpress.stories.ViewBindingActivity;
 
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
-public class PhotoPickerActivity extends LoopActivity<PhotoPickerActivityBinding>
+public class PhotoPickerActivity extends ViewBindingActivity<PhotoPickerActivityBinding>
         implements PhotoPickerFragment.PhotoPickerListener {
     private static final String PICKER_FRAGMENT_TAG = "picker_fragment_tag";
     private static final String KEY_MEDIA_CAPTURE_PATH = "media_capture_path";
@@ -76,24 +75,23 @@ public class PhotoPickerActivity extends LoopActivity<PhotoPickerActivityBinding
         }
     }
 
-    @NotNull @Override public PhotoPickerActivityBinding inflateBinding() {
-        return PhotoPickerActivityBinding.inflate(getLayoutInflater());
+    @NonNull @Override public PhotoPickerActivityBinding inflateBinding(@NonNull LayoutInflater layoutInflater) {
+        return PhotoPickerActivityBinding.inflate(layoutInflater);
     }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         // inside your activity (if you did not enable transitions in your theme)
         getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
-
-        super.onCreate(savedInstanceState);
 
         // set an enter transition (slide up from bottom)
         getWindow().setEnterTransition(new Slide(Gravity.BOTTOM));
         // set exit transition (slide down from top)
         getWindow().setExitTransition(new Slide(Gravity.TOP));
 
-        ToolbarBinding toolbarBinding = ToolbarBinding.bind(binding.getRoot());
-        setContentView(binding.getRoot());
+        ToolbarBinding toolbarBinding = ToolbarBinding.bind(getBinding().getRoot());
+        setContentView(getBinding().getRoot());
 
         mSwipeDetector = new GestureDetectorCompat(this, new FlingGestureListener());
 
@@ -119,9 +117,9 @@ public class PhotoPickerActivity extends LoopActivity<PhotoPickerActivityBinding
 //            fragment = PhotoPickerFragment.newInstance(this, mBrowserType, mSite);
             fragment = PhotoPickerFragment.newInstance(this, mBrowserType);
             getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.fragment_container, fragment, PICKER_FRAGMENT_TAG)
-                                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                                .commitAllowingStateLoss();
+                                       .replace(R.id.fragment_container, fragment, PICKER_FRAGMENT_TAG)
+                                       .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                                       .commitAllowingStateLoss();
         } else {
             fragment.setPhotoPickerListener(this);
         }
@@ -353,11 +351,11 @@ public class PhotoPickerActivity extends LoopActivity<PhotoPickerActivityBinding
 //                        }
 //                    });
 //        } else {
-            Intent intent = new Intent()
-                    .putExtra(EXTRA_MEDIA_URIS, convertUrisListToStringArray(mediaUris))
-                    .putExtra(EXTRA_MEDIA_SOURCE, source.name());
-            setResult(RESULT_OK, intent);
-            finish();
+        Intent intent = new Intent()
+                .putExtra(EXTRA_MEDIA_URIS, convertUrisListToStringArray(mediaUris))
+                .putExtra(EXTRA_MEDIA_SOURCE, source.name());
+        setResult(RESULT_OK, intent);
+        finish();
 //        }
     }
 

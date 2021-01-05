@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.Navigation
 import com.automattic.loop.StoryComposerActivity.Companion.KEY_EXAMPLE_METADATA
 import com.automattic.loop.StoryComposerActivity.Companion.KEY_STORY_INDEX
@@ -19,16 +20,17 @@ import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveProcessStart
 import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveResult
 import com.wordpress.stories.compose.story.StoryRepository
 import com.wordpress.stories.util.KEY_STORY_SAVE_RESULT
+import com.wordpress.stories.viewBinding
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
-class MainActivity : LoopActivity<ActivityMainBinding>(), MainFragment.OnFragmentInteractionListener {
+class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionListener {
+    private val binding by viewBinding(ActivityMainBinding::inflate)
+
     override fun onFragmentInteraction(uri: Uri) {
         // TODO: change OnFragmentInteractionListener for something relevant to our needs
     }
-
-    override fun inflateBinding(): ActivityMainBinding = ActivityMainBinding.inflate(layoutInflater)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,7 +87,7 @@ class MainActivity : LoopActivity<ActivityMainBinding>(), MainFragment.OnFragmen
             val payloadString = it.getString(KEY_EXAMPLE_METADATA)
             val storyIndex = it.getInt(KEY_STORY_INDEX)
             Toast.makeText(
-                    this, "Payload is: " + payloadString + " - index: " + storyIndex,
+                    this, "Payload is: $payloadString - index: $storyIndex",
                     Toast.LENGTH_SHORT
             )
                     .show()

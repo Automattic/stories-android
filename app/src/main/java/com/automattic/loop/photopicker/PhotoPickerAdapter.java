@@ -12,15 +12,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.automattic.loop.R;
+import com.automattic.loop.databinding.PhotoPickerThumbnailBinding;
 import com.automattic.loop.photopicker.utils.AniUtils;
 import com.automattic.loop.photopicker.utils.AniUtils.Duration;
-import com.automattic.loop.R;
 import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
@@ -152,9 +152,10 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
     }
 
     @Override
-    public ThumbnailViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = mInflater.inflate(R.layout.photo_picker_thumbnail, parent, false);
-        return new ThumbnailViewHolder(view);
+    public ThumbnailViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        return new ThumbnailViewHolder(
+                PhotoPickerThumbnailBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false)
+        );
     }
 
     private void updateSelectionCountForPosition(int position,
@@ -176,25 +177,25 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
         }
 
         boolean isSelected = isItemSelected(position);
-        holder.mTxtSelectionCount.setSelected(isSelected);
-        holder.mTxtSelectionCount.setVisibility(isSelected || canMultiselect() ? View.VISIBLE : View.GONE);
-        updateSelectionCountForPosition(position, isSelected, holder.mTxtSelectionCount);
+        holder.mBinding.textSelectionCount.setSelected(isSelected);
+        holder.mBinding.textSelectionCount.setVisibility(isSelected || canMultiselect() ? View.VISIBLE : View.GONE);
+        updateSelectionCountForPosition(position, isSelected, holder.mBinding.textSelectionCount);
 
         float scale = isSelected ? SCALE_SELECTED : SCALE_NORMAL;
-        if (holder.mImgThumbnail.getScaleX() != scale) {
-            holder.mImgThumbnail.setScaleX(scale);
-            holder.mImgThumbnail.setScaleY(scale);
+        if (holder.mBinding.imageThumbnail.getScaleX() != scale) {
+            holder.mBinding.imageThumbnail.setScaleX(scale);
+            holder.mBinding.imageThumbnail.setScaleY(scale);
         }
 
 //        holder.mVideoOverlay.setVisibility(item.mIsVideo ? View.VISIBLE : View.GONE);
-        holder.mTxtVideoDuration.setVisibility(item.mIsVideo ? View.VISIBLE : View.GONE);
+        holder.mBinding.textVideoDuration.setVisibility(item.mIsVideo ? View.VISIBLE : View.GONE);
 
         if (mLoadThumbnails) {
             // mImageManager.load(holder.mImgThumbnail, ImageType.PHOTO, item.mUri.toString(), ScaleType.FIT_CENTER);
             Glide.with(mContext)
                  .load(item.mUri.toString())
-                    .fitCenter()
-                    .into(holder.mImgThumbnail);
+                 .fitCenter()
+                 .into(holder.mBinding.imageThumbnail);
 
             if (item.mIsVideo) {
 //                SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
@@ -217,12 +218,12 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
                 } else {
                     duration = duration + "01"; // default to 1 second if even less than a second
                 }
-                holder.mTxtVideoDuration.setText(duration);
+                holder.mBinding.textVideoDuration.setText(duration);
             } else {
-                holder.mTxtVideoDuration.setText("");
+                holder.mBinding.textVideoDuration.setText("");
             }
         } else {
-            Glide.with(holder.mImgThumbnail.getContext()).clear(holder.mImgThumbnail);
+            Glide.with(holder.mBinding.imageThumbnail.getContext()).clear(holder.mBinding.imageThumbnail);
         }
     }
 
@@ -281,21 +282,21 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
 
         ThumbnailViewHolder holder = getViewHolderAtPosition(position);
         if (holder != null) {
-            holder.mTxtSelectionCount.setSelected(isSelected);
-            updateSelectionCountForPosition(position, isSelected, holder.mTxtSelectionCount);
+            holder.mBinding.textSelectionCount.setSelected(isSelected);
+            updateSelectionCountForPosition(position, isSelected, holder.mBinding.textSelectionCount);
 
             if (isSelected) {
-                AniUtils.scale(holder.mImgThumbnail, SCALE_NORMAL, SCALE_SELECTED, ANI_DURATION);
+                AniUtils.scale(holder.mBinding.imageThumbnail, SCALE_NORMAL, SCALE_SELECTED, ANI_DURATION);
             } else {
-                AniUtils.scale(holder.mImgThumbnail, SCALE_SELECTED, SCALE_NORMAL, ANI_DURATION);
+                AniUtils.scale(holder.mBinding.imageThumbnail, SCALE_SELECTED, SCALE_NORMAL, ANI_DURATION);
             }
 
             if (canMultiselect()) {
-                AniUtils.startAnimation(holder.mTxtSelectionCount, R.anim.pop);
+                AniUtils.startAnimation(holder.mBinding.textSelectionCount, R.anim.pop);
             } else if (isSelected) {
-                AniUtils.fadeIn(holder.mTxtSelectionCount, ANI_DURATION);
+                AniUtils.fadeIn(holder.mBinding.textSelectionCount, ANI_DURATION);
             } else {
-                AniUtils.fadeOut(holder.mTxtSelectionCount, ANI_DURATION);
+                AniUtils.fadeOut(holder.mBinding.textSelectionCount, ANI_DURATION);
             }
         }
 
@@ -367,27 +368,19 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
      * ViewHolder containing a device thumbnail
      */
     class ThumbnailViewHolder extends RecyclerView.ViewHolder {
-        private final ImageView mImgThumbnail;
-        private final TextView mTxtSelectionCount;
-        private final ImageView mVideoOverlay;
-        private final TextView mTxtVideoDuration;
+        PhotoPickerThumbnailBinding mBinding;
 
-        ThumbnailViewHolder(View view) {
-            super(view);
-
-            mImgThumbnail = view.findViewById(R.id.image_thumbnail);
-            mTxtSelectionCount = view.findViewById(R.id.text_selection_count);
-            mVideoOverlay = view.findViewById(R.id.image_video_overlay);
-            mTxtVideoDuration = view.findViewById(R.id.text_video_duration);
-
-            mImgThumbnail.getLayoutParams().width = mThumbWidth;
-            mImgThumbnail.getLayoutParams().height = mThumbHeight;
+        ThumbnailViewHolder(PhotoPickerThumbnailBinding binding) {
+            super(binding.getRoot());
+            this.mBinding = binding;
+            mBinding.imageThumbnail.getLayoutParams().width = mThumbWidth;
+            mBinding.imageThumbnail.getLayoutParams().height = mThumbHeight;
 
             if (!canMultiselect()) {
-                mTxtSelectionCount.setBackgroundResource(R.drawable.photo_picker_circle_pressed);
+                mBinding.textSelectionCount.setBackgroundResource(R.drawable.photo_picker_circle_pressed);
             }
 
-            mImgThumbnail.setOnClickListener(new View.OnClickListener() {
+            mBinding.imageThumbnail.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     int position = getAdapterPosition();
@@ -406,7 +399,7 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
 //                }
 //            });
 
-            mVideoOverlay.setOnClickListener(new View.OnClickListener() {
+            mBinding.imageVideoOverlay.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     int position = getAdapterPosition();
@@ -451,8 +444,8 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
         try {
             mediaMetadataRetriever.setDataSource(mContext, videoUri);
             durationUs = Long.parseLong(
-                            mediaMetadataRetriever.extractMetadata(
-                    MediaMetadataRetriever.METADATA_KEY_DURATION));
+                    mediaMetadataRetriever.extractMetadata(
+                            MediaMetadataRetriever.METADATA_KEY_DURATION));
         } catch (NumberFormatException e) {
             durationUs = -1;
         } catch (Exception ex) {
@@ -463,6 +456,7 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
 
         return durationUs;
     }
+
     /*
      * builds the list of media items from the device
      */
@@ -504,7 +498,7 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
             String[] projection = {ID_COL};
             Cursor cursor = null;
             try {
-                 cursor = mContext.getContentResolver().query(
+                cursor = mContext.getContentResolver().query(
                         baseUri,
                         projection,
                         null,

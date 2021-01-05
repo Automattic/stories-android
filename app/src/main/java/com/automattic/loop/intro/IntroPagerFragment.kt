@@ -1,16 +1,17 @@
 package com.automattic.loop.intro
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.automattic.loop.R
+import com.automattic.loop.databinding.IntroTemplateViewBinding
 import com.automattic.loop.util.INVALID_RESOURCE_ID
 import com.bumptech.glide.Glide
-import kotlinx.android.synthetic.main.intro_title_template_view.*
+import com.wordpress.stories.viewBinding
 
-class IntroPagerFragment : Fragment() {
+class IntroPagerFragment : Fragment(R.layout.intro_template_view) {
+    private val binding by viewBinding(IntroTemplateViewBinding::bind)
+
     private var promoText: Int = INVALID_RESOURCE_ID
     private var backgroundImage: Int = INVALID_RESOURCE_ID
 
@@ -23,19 +24,16 @@ class IntroPagerFragment : Fragment() {
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.intro_template_view, container, false)
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         with(view) {
             Glide.with(context)
-                .load(backgroundImage)
-                .into(background_image)
+                    .load(backgroundImage)
+                    .into(binding.backgroundImage)
         }
-        promo_text.setText(promoText)
+
+        binding.promoText.setText(promoText)
     }
 
     companion object {

@@ -2,35 +2,35 @@ package com.automattic.loop.intro
 
 import android.content.Context
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.automattic.loop.R.layout
+import com.automattic.loop.R
+import com.automattic.loop.databinding.FragmentIntroBinding
+import com.wordpress.stories.viewBinding
 import kotlinx.android.synthetic.main.fragment_intro.*
 
-class IntroFragment : Fragment() {
+class IntroFragment : Fragment(R.layout.fragment_intro) {
     interface OnFragmentInteractionListener {
         fun onGetStartedPressed()
     }
 
-    private var listener: OnFragmentInteractionListener? = null
+    private val binding by viewBinding(FragmentIntroBinding::bind)
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(layout.fragment_intro, container, false)
-    }
+    private var listener: OnFragmentInteractionListener? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        get_started_button.setOnClickListener {
-            listener?.onGetStartedPressed()
+        binding.run {
+            getStartedButton.setOnClickListener {
+                listener?.onGetStartedPressed()
+            }
+
+            introPager.adapter = IntroPagerAdapter(childFragmentManager)
+
+            // Using a TabLayout for simulating a page indicator strip
+            tabLayoutIndicator.setupWithViewPager(intro_pager, true)
         }
-
-        intro_pager.adapter = IntroPagerAdapter(childFragmentManager)
-
-        // Using a TabLayout for simulating a page indicator strip
-        tab_layout_indicator.setupWithViewPager(intro_pager, true)
     }
 
     override fun onAttach(context: Context) {

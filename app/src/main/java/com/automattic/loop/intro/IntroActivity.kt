@@ -6,23 +6,22 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.Navigation
-import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.loop.AppPrefs
 import com.automattic.loop.MainActivity
 import com.automattic.loop.R
+import com.automattic.photoeditor.util.PermissionUtils
 
 class IntroActivity : AppCompatActivity(), IntroFragment.OnFragmentInteractionListener,
-    PermissionRequestFragment.OnFragmentInteractionListener {
+        PermissionRequestFragment.OnFragmentInteractionListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_intro)
 
         window.statusBarColor = ContextCompat.getColor(this, android.R.color.white)
         showFragment(IntroFragment(), IntroFragment.TAG)
     }
 
     override fun onSupportNavigateUp() =
-        Navigation.findNavController(this, R.id.nav_host_fragment).navigateUp()
+            Navigation.findNavController(this, R.id.nav_host_fragment).navigateUp()
 
     override fun onGetStartedPressed() {
         AppPrefs.setIntroRequired(false)

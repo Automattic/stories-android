@@ -8,6 +8,6 @@
         android:fitsSystemWindows="true"
         tools:context="com.wordpress.stories.compose.ComposeLoopFrameActivity">
 
-    <include layout="@layout/content_composer"/>
+    <include android:id="@+id/content_composer" layout="@layout/content_composer"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

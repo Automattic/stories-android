@@ -18,6 +18,10 @@ android {
         consumerProguardFiles 'consumer-rules.pro'
     }
 
+    viewBinding {
+        enabled = true
+    }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -55,6 +59,8 @@ dependencies {
 
     implementation project(path: ':photoeditor')
 
+    // lifecycle
+    implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycleVersion"
     // ViewModel and LiveData
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion"
     // LiveData
