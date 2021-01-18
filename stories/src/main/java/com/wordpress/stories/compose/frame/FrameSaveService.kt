@@ -329,7 +329,7 @@ class FrameSaveService : Service() {
             storySaveResult.frameSaveResult.add(FrameSaveResult(applyFrameIndexOverride(frameIndex), SaveSuccess))
 
             // dispatch FrameSaveCompleted event
-            EventBus.getDefault().post(FrameSaveCompleted(storyIndex, frameIndex, frame.id))
+            EventBus.getDefault().postSticky(FrameSaveCompleted(storyIndex, frameIndex, frame.id))
         }
 
         override fun onFrameSaveCanceled(frameIndex: FrameIndex, frame: StoryFrameItem) {
@@ -361,7 +361,7 @@ class FrameSaveService : Service() {
             storySaveResult.frameSaveResult.add(FrameSaveResult(applyFrameIndexOverride(frameIndex), SaveError(reason)))
 
             // dispatch FrameSaveFailed event
-            EventBus.getDefault().post(FrameSaveFailed(storyIndex, frameIndex, frame.id))
+            EventBus.getDefault().postSticky(FrameSaveFailed(storyIndex, frameIndex, frame.id))
         }
 
         fun attachProgressListener() {
