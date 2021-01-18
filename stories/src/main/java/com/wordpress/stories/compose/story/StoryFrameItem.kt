@@ -92,7 +92,7 @@ data class StoryFrameItem(
 
         @JvmStatic
         fun getAltTextFromFrameAddedViews(frame: StoryFrameItem): String {
-            return frame.addedViews.joinToString(separator = " ") { it -> "${it.viewInfo.addedViewTextInfo.text}" }
+            return frame.addedViews.joinToString(separator = " ") { it.viewInfo.addedViewTextInfo.text }
         }
     }
 }
