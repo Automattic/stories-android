@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
                 val bundle = Bundle()
                 bundle.putBoolean(PhotoPickerActivity.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED, true)
                 Navigation.findNavController(this@MainActivity, R.id.nav_host_fragment)
-                        .navigate(R.id.action_mainFragment_to_composeLoopFrameActivity, bundle)
+                    .navigate(R.id.action_mainFragment_to_composeLoopFrameActivity, bundle)
             }
         }
     }
@@ -71,7 +71,7 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
     }
 
     override fun onSupportNavigateUp() =
-            Navigation.findNavController(this, R.id.nav_host_fragment).navigateUp()
+        Navigation.findNavController(this, R.id.nav_host_fragment).navigateUp()
 
     override fun onDestroy() {
         EventBus.getDefault().unregister(this)
@@ -87,28 +87,28 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
             val payloadString = it.getString(KEY_EXAMPLE_METADATA)
             val storyIndex = it.getInt(KEY_STORY_INDEX)
             Toast.makeText(
-                    this, "Payload is: $payloadString - index: $storyIndex",
-                    Toast.LENGTH_SHORT
+                this, "Payload is: $payloadString - index: $storyIndex",
+                Toast.LENGTH_SHORT
             )
-                    .show()
+                .show()
         }
 
         if (event.isSuccess()) {
             val text = String.format(
-                    getString(R.string.story_saving_snackbar_finished_successfully),
-                    StoryRepository.getStoryAtIndex(event.storyIndex).title
+                getString(R.string.story_saving_snackbar_finished_successfully),
+                StoryRepository.getStoryAtIndex(event.storyIndex).title
             )
             Snackbar.make(findViewById(android.R.id.content), text, Snackbar.LENGTH_SHORT).show()
         } else {
             // show snackbar and add the PendingIntent with the StorySaveResult as a Serialized object if errors
             val errorText = String.format(
-                    getString(R.string.story_saving_snackbar_finished_with_error),
-                    StoryRepository.getStoryAtIndex(event.storyIndex).title
+                getString(R.string.story_saving_snackbar_finished_with_error),
+                StoryRepository.getStoryAtIndex(event.storyIndex).title
             )
             val snackbarMessage = FrameSaveNotifier.buildSnackbarErrorMessage(
-                    this,
-                    event.frameSaveResult.count { it.resultReason is SaveError },
-                    errorText
+                this,
+                event.frameSaveResult.count { it.resultReason is SaveError },
+                errorText
             )
             val snackbar = Snackbar.make(findViewById(android.R.id.content), snackbarMessage, Snackbar.LENGTH_LONG)
             snackbar.setAction(R.string.story_saving_failed_quick_action_manage) { view ->
@@ -122,7 +122,7 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
                 // from tapping on MANAGE on the snackbar (otherwise they'll be able to discard the
                 // errored story but the error notification will remain existing in the system dashboard)
                 intent.action = getNotificationIdForError(
-                        StoryComposerActivity.BASE_FRAME_MEDIA_ERROR_NOTIFICATION_ID, event.storyIndex
+                    StoryComposerActivity.BASE_FRAME_MEDIA_ERROR_NOTIFICATION_ID, event.storyIndex
                 ).toString() + ""
 
                 startActivity(intent)
@@ -135,8 +135,8 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
     fun onStorySaveStart(event: StorySaveProcessStart) {
         EventBus.getDefault().removeStickyEvent(event)
         val text = String.format(
-                getString(R.string.story_saving_snackbar_started),
-                StoryRepository.getStoryAtIndex(event.storyIndex).title
+            getString(R.string.story_saving_snackbar_started),
+            StoryRepository.getStoryAtIndex(event.storyIndex).title
         )
         Snackbar.make(findViewById(android.R.id.content), text, Snackbar.LENGTH_SHORT).show()
     }

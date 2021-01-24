@@ -215,11 +215,11 @@ class TextEditorDialogFragment : DialogFragment() {
         }
 
         binding.textAlignmentButton.setImageResource(
-                when (textAlignment) {
-                    TextAlignment.LEFT -> R.drawable.ic_gridicons_align_left_32
-                    TextAlignment.CENTER -> R.drawable.ic_gridicons_align_center_32
-                    TextAlignment.RIGHT -> R.drawable.ic_gridicons_align_right_32
-                }
+            when (textAlignment) {
+                TextAlignment.LEFT -> R.drawable.ic_gridicons_align_left_32
+                TextAlignment.CENTER -> R.drawable.ic_gridicons_align_center_32
+                TextAlignment.RIGHT -> R.drawable.ic_gridicons_align_right_32
+            }
         )
 
         // The background span needs to be re-applied to adjust for the alignment change
@@ -278,8 +278,8 @@ class TextEditorDialogFragment : DialogFragment() {
                     putString(EXTRA_INPUT_TEXT, inputText)
 
                     putInt(
-                            EXTRA_TEXT_COLOR_CODE, textStyler?.textColor
-                            ?: ContextCompat.getColor(appCompatActivity, android.R.color.white)
+                        EXTRA_TEXT_COLOR_CODE, textStyler?.textColor
+                        ?: ContextCompat.getColor(appCompatActivity, android.R.color.white)
                     )
                     putInt(EXTRA_TEXT_BACKGROUND_COLOR_CODE, textStyler?.textBackgroundColor ?: Color.TRANSPARENT)
                     putInt(EXTRA_TEXT_ALIGNMENT, textStyler?.textAlignment ?: TextAlignment.default())

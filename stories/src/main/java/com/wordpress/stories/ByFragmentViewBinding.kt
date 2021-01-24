@@ -15,7 +15,7 @@ import kotlin.reflect.KProperty
  * https://gist.github.com/Zhuinden/ea3189198938bd16c03db628e084a4fa#file-fragmentviewbindingdelegate-kt
  */
 fun <T : ViewBinding> Fragment.viewBinding(initializer: (View) -> T) =
-        FragmentViewBindingDelegate(this, initializer)
+    FragmentViewBindingDelegate(this, initializer)
 
 class FragmentViewBindingDelegate<T : ViewBinding>(
     val fragment: Fragment,

@@ -33,7 +33,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class PhotoPickerActivity extends ViewBindingActivity<PhotoPickerActivityBinding>
-        implements PhotoPickerFragment.PhotoPickerListener {
+    implements PhotoPickerFragment.PhotoPickerListener {
     private static final String PICKER_FRAGMENT_TAG = "picker_fragment_tag";
     private static final String KEY_MEDIA_CAPTURE_PATH = "media_capture_path";
 
@@ -44,7 +44,7 @@ public class PhotoPickerActivity extends ViewBindingActivity<PhotoPickerActivity
     // the enum name of the source will be returned as a string in EXTRA_MEDIA_SOURCE
     public static final String EXTRA_MEDIA_SOURCE = "media_source";
     public static final String EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED
-            = "launch_wpstories_camera_requested";
+        = "launch_wpstories_camera_requested";
 
     public static final String LOCAL_POST_ID = "local_post_id";
 
@@ -182,7 +182,7 @@ public class PhotoPickerActivity extends ViewBindingActivity<PhotoPickerActivity
             case RequestCodes.VIDEO_LIBRARY:
                 if (data != null) {
                     doMediaUrisSelected(WPMediaUtils.retrieveMediaUris(data),
-                            PhotoPickerMediaSource.ANDROID_PICKER);
+                        PhotoPickerMediaSource.ANDROID_PICKER);
                 }
                 break;
             // user took a photo with the device camera
@@ -218,12 +218,12 @@ public class PhotoPickerActivity extends ViewBindingActivity<PhotoPickerActivity
 
     private void launchCamera() {
         CameraIntentUtils.launchCamera(this, getApplicationContext().getPackageName(),
-                mediaCapturePath -> mMediaCapturePath = mediaCapturePath);
+            mediaCapturePath -> mMediaCapturePath = mediaCapturePath);
     }
 
     private void launchWPStoriesCamera() {
         Intent intent = new Intent()
-                .putExtra(EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED, true);
+            .putExtra(EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED, true);
         setResult(RESULT_OK, intent);
         finish();
     }
@@ -231,13 +231,13 @@ public class PhotoPickerActivity extends ViewBindingActivity<PhotoPickerActivity
     private void launchPictureLibrary() {
 //        WPMediaUtils.launchPictureLibrary(this, false);
         startActivityForResult(
-                preparePictureLibraryIntent(getString(R.string.pick_photo), true),
-                RequestCodes.PICTURE_LIBRARY);
+            preparePictureLibraryIntent(getString(R.string.pick_photo), true),
+            RequestCodes.PICTURE_LIBRARY);
     }
 
     private void launchVideoLibrary() {
         startActivityForResult(prepareVideoLibraryIntent(getString(R.string.pick_video), true),
-                RequestCodes.VIDEO_LIBRARY);
+            RequestCodes.VIDEO_LIBRARY);
     }
 
 
@@ -352,8 +352,8 @@ public class PhotoPickerActivity extends ViewBindingActivity<PhotoPickerActivity
 //                    });
 //        } else {
         Intent intent = new Intent()
-                .putExtra(EXTRA_MEDIA_URIS, convertUrisListToStringArray(mediaUris))
-                .putExtra(EXTRA_MEDIA_SOURCE, source.name());
+            .putExtra(EXTRA_MEDIA_URIS, convertUrisListToStringArray(mediaUris))
+            .putExtra(EXTRA_MEDIA_SOURCE, source.name());
         setResult(RESULT_OK, intent);
         finish();
 //        }
@@ -361,8 +361,8 @@ public class PhotoPickerActivity extends ViewBindingActivity<PhotoPickerActivity
 
     private void doMediaIdSelected(long mediaId, @NonNull PhotoPickerMediaSource source) {
         Intent data = new Intent()
-                .putExtra(EXTRA_MEDIA_ID, mediaId)
-                .putExtra(EXTRA_MEDIA_SOURCE, source.name());
+            .putExtra(EXTRA_MEDIA_ID, mediaId)
+            .putExtra(EXTRA_MEDIA_SOURCE, source.name());
         setResult(RESULT_OK, data);
         finish();
     }

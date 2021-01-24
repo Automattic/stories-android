@@ -31,8 +31,8 @@ class IntroPagerTitleFragment : Fragment(R.layout.intro_title_template_view) {
 
         with(view) {
             Glide.with(context)
-                    .load(backgroundImage)
-                    .into(binding.backgroundImage)
+                .load(backgroundImage)
+                .into(binding.backgroundImage)
         }
 
         binding.titleText.setText(titleText)

@@ -16,7 +16,7 @@ import kotlin.reflect.KProperty
  * https://gist.github.com/seanghay/0fd991d7a823815500557fe043b052ce#file-view-binding-ktx-kt
  */
 fun <T : ViewBinding> AppCompatActivity.viewBinding(initializer: (LayoutInflater) -> T) =
-        ViewBindingPropertyDelegate(this, initializer)
+    ViewBindingPropertyDelegate(this, initializer)
 
 class ViewBindingPropertyDelegate<T : ViewBinding>(
     private val activity: AppCompatActivity,
@@ -44,7 +44,7 @@ class ViewBindingPropertyDelegate<T : ViewBinding>(
             // This must be on the main thread only
             if (Looper.myLooper() != Looper.getMainLooper()) {
                 throw IllegalThreadStateException(
-                        "This cannot be called from other threads. It should be on the main thread only."
+                    "This cannot be called from other threads. It should be on the main thread only."
                 )
             }
 

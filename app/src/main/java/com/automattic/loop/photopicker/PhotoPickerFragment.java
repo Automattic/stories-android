@@ -123,7 +123,7 @@ public class PhotoPickerFragment extends ViewBindingFragment<PhotoPickerFragment
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                                                 @Nullable Bundle savedInstanceState) {
+                             @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.photo_picker_fragment, container, false);
     }
 
@@ -232,7 +232,7 @@ public class PhotoPickerFragment extends ViewBindingFragment<PhotoPickerFragment
             || icon == PhotoPickerIcon.ANDROID_CAPTURE_VIDEO
             || icon == PhotoPickerIcon.WP_STORIES_CAPTURE) {
             if (ContextCompat.checkSelfPermission(
-                    getActivity(), permission.CAMERA) != PackageManager.PERMISSION_GRANTED || !hasStoragePermission()) {
+                getActivity(), permission.CAMERA) != PackageManager.PERMISSION_GRANTED || !hasStoragePermission()) {
 //                requestCameraPermission();
                 Toast.makeText(getActivity(), "Need permissions", Toast.LENGTH_SHORT).show();
                 return;
@@ -507,7 +507,7 @@ public class PhotoPickerFragment extends ViewBindingFragment<PhotoPickerFragment
 
     private boolean hasStoragePermission() {
         return ContextCompat.checkSelfPermission(
-                getActivity(), permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+            getActivity(), permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
     }
 
 ///*

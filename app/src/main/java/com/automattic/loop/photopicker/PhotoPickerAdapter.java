@@ -154,7 +154,7 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
     @Override
     public ThumbnailViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         return new ThumbnailViewHolder(
-                PhotoPickerThumbnailBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false)
+            PhotoPickerThumbnailBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false)
         );
     }
 
@@ -444,8 +444,8 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
         try {
             mediaMetadataRetriever.setDataSource(mContext, videoUri);
             durationUs = Long.parseLong(
-                    mediaMetadataRetriever.extractMetadata(
-                            MediaMetadataRetriever.METADATA_KEY_DURATION));
+                mediaMetadataRetriever.extractMetadata(
+                    MediaMetadataRetriever.METADATA_KEY_DURATION));
         } catch (NumberFormatException e) {
             durationUs = -1;
         } catch (Exception ex) {
@@ -499,11 +499,11 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
             Cursor cursor = null;
             try {
                 cursor = mContext.getContentResolver().query(
-                        baseUri,
-                        projection,
-                        null,
-                        null,
-                        null);
+                    baseUri,
+                    projection,
+                    null,
+                    null,
+                    null);
             } catch (SecurityException e) {
                 Log.e(TAG, e.getMessage());
             }

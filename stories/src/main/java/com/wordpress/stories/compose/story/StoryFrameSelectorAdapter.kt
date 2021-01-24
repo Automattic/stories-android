@@ -24,10 +24,10 @@ class StoryFrameSelectorAdapter : RecyclerView.Adapter<StoryFrameSelectorAdapter
         return when (viewType) {
             VIEW_TYPE_IMAGE ->
                 StoryFrameHolderItem(
-                        FragmentStoryFrameItemBinding.inflate(
-                                LayoutInflater
-                                        .from(parent.context)
-                        )
+                    FragmentStoryFrameItemBinding.inflate(
+                        LayoutInflater
+                            .from(parent.context)
+                    )
                 )
             else -> throw NotImplementedError("Unknown ViewType")
         }
@@ -97,10 +97,10 @@ class StoryFrameSelectorAdapter : RecyclerView.Adapter<StoryFrameSelectorAdapter
                     // get the first frame in the video, that is the frame located at frameTime 0
                     val options = RequestOptions().frame(0)
                     Glide.with(binding.frameImage.context)
-                            .load(uiState.filePath)
-                            .apply(options)
-                            .transform(CenterCrop(), RoundedCorners(8))
-                            .into(binding.frameImage)
+                        .load(uiState.filePath)
+                        .apply(options)
+                        .transform(CenterCrop(), RoundedCorners(8))
+                        .into(binding.frameImage)
                 }
 
                 if (URLUtil.isNetworkUrl(uiState.filePath)) {

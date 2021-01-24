@@ -15,7 +15,7 @@ import com.wordpress.stories.util.extractColorList
 typealias OnTextColorPickerClickListener = (Int) -> Unit
 
 class TextColorPickerAdapter internal constructor(private val context: Context, mode: Mode, startColor: Int? = null) :
-        RecyclerView.Adapter<TextColorPickerAdapter.ViewHolder>() {
+    RecyclerView.Adapter<TextColorPickerAdapter.ViewHolder>() {
     private val colorPickerColors = getDefaultColors(context, mode)
 
     private var onTextColorPickerClickListener: OnTextColorPickerClickListener? = null
@@ -74,10 +74,10 @@ class TextColorPickerAdapter internal constructor(private val context: Context, 
 
         fun getDefaultColors(context: Context, mode: Mode): List<Int> {
             val baseArray = context.resources.obtainTypedArray(
-                    when (mode) {
-                        Mode.FOREGROUND -> R.array.text_colors
-                        Mode.BACKGROUND -> R.array.text_background_colors
-                    }
+                when (mode) {
+                    Mode.FOREGROUND -> R.array.text_colors
+                    Mode.BACKGROUND -> R.array.text_background_colors
+                }
             )
 
             return baseArray.extractColorList(context.resources).also { baseArray.recycle() }

@@ -14,7 +14,7 @@ import com.automattic.photoeditor.util.PermissionUtils
 import com.wordpress.stories.viewBinding
 
 class IntroActivity : AppCompatActivity(), IntroFragment.OnFragmentInteractionListener,
-        PermissionRequestFragment.OnFragmentInteractionListener {
+    PermissionRequestFragment.OnFragmentInteractionListener {
     private val binding by viewBinding(ActivityIntroBinding::inflate)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,7 +25,7 @@ class IntroActivity : AppCompatActivity(), IntroFragment.OnFragmentInteractionLi
     }
 
     override fun onSupportNavigateUp() =
-            Navigation.findNavController(this, R.id.nav_host_fragment).navigateUp()
+        Navigation.findNavController(this, R.id.nav_host_fragment).navigateUp()
 
     override fun onGetStartedPressed() {
         AppPrefs.setIntroRequired(false)

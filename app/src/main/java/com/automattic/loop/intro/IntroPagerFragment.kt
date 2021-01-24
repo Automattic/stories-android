@@ -29,8 +29,8 @@ class IntroPagerFragment : Fragment(R.layout.intro_template_view) {
 
         with(view) {
             Glide.with(context)
-                    .load(backgroundImage)
-                    .into(binding.backgroundImage)
+                .load(backgroundImage)
+                .into(binding.backgroundImage)
         }
 
         binding.promoText.setText(promoText)
