@@ -2,12 +2,12 @@ package com.wordpress.stories.compose
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
 import androidx.core.content.ContextCompat.getDrawable
 import com.wordpress.stories.R
-
-import kotlinx.android.synthetic.main.content_save_button.view.*
+import com.wordpress.stories.databinding.ContentSaveButtonBinding
 
 class SaveButton @JvmOverloads constructor(
     context: Context,
@@ -17,40 +17,47 @@ class SaveButton @JvmOverloads constructor(
     private var savingState = false
     private var saveButtonClickListener: OnClickListener? = null
 
+    private var binding: ContentSaveButtonBinding? = null
+
     init {
-        val view = View.inflate(context, R.layout.content_save_button, null)
-        addView(view)
+        binding = ContentSaveButtonBinding.inflate(LayoutInflater.from(context))
+//        val view = View.inflate(context, R.layout.content_save_button, null)
+        addView(binding?.root)
         setSaving(false)
     }
 
     fun setSaving(isSaving: Boolean) {
         savingState = isSaving
-        if (savingState) {
-            save_button_text.setText(R.string.label_control_saving)
-            save_button_icon.visibility = View.INVISIBLE
-            save_button_spinner.visibility = View.VISIBLE
-            save_button_saved_icon.visibility = View.INVISIBLE
-            background = getDrawable(context, R.drawable.save_button_background_disabled)
-        } else {
-            save_button_text.setText(R.string.label_control_retry)
-            save_button_icon.visibility = View.VISIBLE
-            save_button_spinner.visibility = View.INVISIBLE
-            save_button_saved_icon.visibility = View.INVISIBLE
-            background = getDrawable(context, R.drawable.save_button_background_enabled)
+        binding?.run {
+            if (savingState) {
+                saveButtonText.setText(R.string.label_control_saving)
+                saveButtonIcon.visibility = View.INVISIBLE
+                saveButtonSpinner.visibility = View.VISIBLE
+                saveButtonSavedIcon.visibility = View.INVISIBLE
+                background = getDrawable(context, R.drawable.save_button_background_disabled)
+            } else {
+                saveButtonText.setText(R.string.label_control_retry)
+                saveButtonIcon.visibility = View.VISIBLE
+                saveButtonSpinner.visibility = View.INVISIBLE
+                saveButtonSavedIcon.visibility = View.INVISIBLE
+                background = getDrawable(context, R.drawable.save_button_background_enabled)
+            }
         }
     }
 
     fun showSavedAnimation(callback: Runnable?) {
         if (savingState) {
-            savingState = false
-            save_button_text.setText(R.string.label_control_saved)
-            save_button_icon.visibility = View.INVISIBLE
-            save_button_spinner.visibility = View.INVISIBLE
-            save_button_saved_icon.visibility = View.VISIBLE
-            background = getDrawable(context, R.drawable.save_button_background_disabled)
-            postDelayed({
-                callback?.run()
-            }, 250)
+            binding?.run {
+                savingState = false
+                saveButtonText.setText(R.string.label_control_saved)
+                saveButtonIcon.visibility = View.INVISIBLE
+                saveButtonSpinner.visibility = View.INVISIBLE
+                saveButtonSavedIcon.visibility = View.VISIBLE
+                background = getDrawable(context, R.drawable.save_button_background_disabled)
+                postDelayed({
+                    callback?.run()
+                }, 250)
+            }
         }
     }
 
