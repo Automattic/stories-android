@@ -14,7 +14,6 @@ import com.automattic.loop.R.string
 import com.automattic.loop.util.CrashLoggingUtils
 import com.wordpress.stories.compose.NotificationTrackerProvider
 import com.wordpress.stories.compose.frame.StoryNotificationType
-import com.wordpress.stories.util.LOG_TAG
 
 open class Loop : Application(), NotificationTrackerProvider {
     private var statusBarHeight: Int = 0
@@ -22,8 +21,6 @@ open class Loop : Application(), NotificationTrackerProvider {
     override fun onCreate() {
         super.onCreate()
         AppPrefs.init(this)
-
-        Thread.setDefaultUncaughtExceptionHandler(ExceptionHandler())
 
         CrashLoggingUtils.startCrashLogging(this)
 
@@ -38,22 +35,22 @@ open class Loop : Application(), NotificationTrackerProvider {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // Create the NORMAL channel (used for likes, comments, replies, etc.)
             val normalChannel = NotificationChannel(
-                getString(string.notification_channel_normal_id),
-                getString(string.notification_channel_general_title),
-                NotificationManager.IMPORTANCE_DEFAULT
+                    getString(string.notification_channel_normal_id),
+                    getString(string.notification_channel_general_title),
+                    NotificationManager.IMPORTANCE_DEFAULT
             )
             // Register the channel with the system; you can't change the importance
             // or other notification behaviors after this
             val notificationManager = getSystemService(
-                NOTIFICATION_SERVICE
+                    NOTIFICATION_SERVICE
             ) as NotificationManager
             notificationManager.createNotificationChannel(normalChannel)
 
             // Create the IMPORTANT channel (used for 2fa auth, for example)
             val importantChannel = NotificationChannel(
-                getString(string.notification_channel_important_id),
-                getString(string.notification_channel_important_title),
-                NotificationManager.IMPORTANCE_HIGH
+                    getString(string.notification_channel_important_id),
+                    getString(string.notification_channel_important_title),
+                    NotificationManager.IMPORTANCE_HIGH
             )
             // Register the channel with the system; you can't change the importance
             // or other notification behaviors after this
@@ -61,9 +58,9 @@ open class Loop : Application(), NotificationTrackerProvider {
 
             // Create the REMINDER channel (used for various reminders, like Quick Start, etc.)
             val reminderChannel = NotificationChannel(
-                getString(string.notification_channel_reminder_id),
-                getString(string.notification_channel_reminder_title),
-                NotificationManager.IMPORTANCE_LOW
+                    getString(string.notification_channel_reminder_id),
+                    getString(string.notification_channel_reminder_title),
+                    NotificationManager.IMPORTANCE_LOW
             )
             // Register the channel with the system; you can't change the importance
             // or other notification behaviors after this
@@ -72,9 +69,9 @@ open class Loop : Application(), NotificationTrackerProvider {
             // Create the TRANSIENT channel (used for short-lived notifications such as processing a Like/Approve,
             // or media upload)
             val transientChannel = NotificationChannel(
-                getString(string.notification_channel_transient_id),
-                getString(string.notification_channel_transient_title),
-                NotificationManager.IMPORTANCE_DEFAULT
+                    getString(string.notification_channel_transient_id),
+                    getString(string.notification_channel_transient_title),
+                    NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
                 setSound(null, null)
                 enableVibration(false)
@@ -91,10 +88,10 @@ open class Loop : Application(), NotificationTrackerProvider {
 
         // Use a downloadable font for EmojiCompat
         val fontRequest = FontRequest(
-            "com.google.android.gms.fonts",
-            "com.google.android.gms",
-            "Noto Color Emoji Compat",
-            array.com_google_android_gms_fonts_certs
+                "com.google.android.gms.fonts",
+                "com.google.android.gms",
+                "Noto Color Emoji Compat",
+                array.com_google_android_gms_fonts_certs
         )
         config = FontRequestEmojiCompatConfig(applicationContext, fontRequest)
         config.setReplaceAll(true)
@@ -138,11 +135,5 @@ open class Loop : Application(), NotificationTrackerProvider {
     override fun trackDismissedNotification(storyNotificationType: StoryNotificationType) {
         // example
         Toast.makeText(this, "Notification dismissed! : " + storyNotificationType, Toast.LENGTH_LONG).show()
-    }
-
-    class ExceptionHandler: Thread.UncaughtExceptionHandler {
-        override fun uncaughtException(t: Thread?, e: Throwable?) {
-            Log.e(LOG_TAG, "", e)
-        }
     }
 }
