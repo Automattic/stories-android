@@ -350,9 +350,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             photoEditor.updateWorkAreaRect(workingAreaRect)
             contentComposerBinding.deleteView.addBottomOffset(bottomNavigationBarMargin)
             contentComposerBinding.deleteSlideView.addBottomOffset(bottomNavigationBarMargin)
-            (supportFragmentManager.findFragmentById(R.id.bottom_strip_view) as? StoryFrameSelectorFragment)?.setBottomOffset(
-                    bottomNavigationBarMargin
-            )
+            (supportFragmentManager.findFragmentById(R.id.bottom_strip_view)
+                    as? StoryFrameSelectorFragment)?.setBottomOffset(bottomNavigationBarMargin)
             insets
         }
 
@@ -905,23 +904,27 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
                                         override fun onHoldingGestureStart() {
                                             timesUpHandler.removeCallbacksAndMessages(null)
-                                            if (PermissionUtils.allVideoPermissionsGranted(this@ComposeLoopFrameActivity)) {
+                                            if (PermissionUtils.allVideoPermissionsGranted(
+                                                            this@ComposeLoopFrameActivity)
+                                            ) {
                                                 // if we at least have
                                                 startRecordingVideoAfterVibrationIndication()
                                             } else {
                                                 // request permissions including audio for video
-                                                val permissionName = PermissionUtils.anyVideoNeededPermissionPermanentlyDenied(
-                                                        this@ComposeLoopFrameActivity
-                                                )
+                                                val permissionName =
+                                                        PermissionUtils.anyVideoNeededPermissionPermanentlyDenied(
+                                                                this@ComposeLoopFrameActivity
+                                                        )
 
                                                 permissionName?.let {
                                                     showPermissionPermanentlyDeniedDialog(it)
                                                 }
-                                                        ?: PermissionUtils.requestAllRequiredPermissionsIncludingAudioForVideo(
-                                                                this@ComposeLoopFrameActivity
-                                                        ).also {
-                                                            permissionsRequestForCameraInProgress = true
-                                                        }
+                                                        ?: PermissionUtils
+                                                                .requestAllRequiredPermissionsIncludingAudioForVideo(
+                                                                        this@ComposeLoopFrameActivity
+                                                                ).also {
+                                                                    permissionsRequestForCameraInProgress = true
+                                                                }
                                             }
                                         }
 
@@ -1689,7 +1692,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         val originallyErrored = anyOfOriginalIntentResultsIsError()
         val currentlyErrored = storyViewModel.anyOfCurrentStoryFramesIsErrored()
 
-        val storyFrameSelectorFragment = supportFragmentManager.findFragmentById(R.id.bottom_strip_view) as? StoryFrameSelectorFragment
+        val storyFrameSelectorFragment = supportFragmentManager.findFragmentById(R.id.bottom_strip_view)
+                as? StoryFrameSelectorFragment
         contentComposerBinding.run {
             when {
                 // if we were in an error-handling situation but now all pages are OK we're ready to go

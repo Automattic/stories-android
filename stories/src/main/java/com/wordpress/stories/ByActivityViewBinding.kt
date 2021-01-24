@@ -19,7 +19,8 @@ fun <T : ViewBinding> AppCompatActivity.viewBinding(initializer: (LayoutInflater
         ViewBindingPropertyDelegate(this, initializer)
 
 class ViewBindingPropertyDelegate<T : ViewBinding>(
-    private val activity: AppCompatActivity, private val initializer: (LayoutInflater) -> T
+    private val activity: AppCompatActivity,
+    private val initializer: (LayoutInflater) -> T
 ) : ReadOnlyProperty<AppCompatActivity, T>, LifecycleObserver {
     private var binding: T? = null
 
@@ -42,7 +43,9 @@ class ViewBindingPropertyDelegate<T : ViewBinding>(
         if (binding == null) {
             // This must be on the main thread only
             if (Looper.myLooper() != Looper.getMainLooper()) {
-                throw IllegalThreadStateException("This cannot be called from other threads. It should be on the main thread only.")
+                throw IllegalThreadStateException(
+                        "This cannot be called from other threads. It should be on the main thread only."
+                )
             }
 
             binding = initializer(thisRef.layoutInflater)

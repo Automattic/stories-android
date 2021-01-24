@@ -41,7 +41,11 @@ class TextColorPickerAdapter internal constructor(private val context: Context, 
                 background.color = colorPickerColors[position]
             }
 
-            holder.binding.colorPickerSelectedCheckmarkView.visibility = if (holder.itemView.isSelected) View.VISIBLE else View.GONE
+            holder.binding.colorPickerSelectedCheckmarkView.visibility = if (holder.itemView.isSelected) {
+                View.VISIBLE
+            } else {
+                View.GONE
+            }
         }
     }
 
