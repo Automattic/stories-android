@@ -7,7 +7,6 @@ import androidx.fragment.app.Fragment
 import com.automattic.loop.R
 import com.automattic.loop.databinding.FragmentIntroBinding
 import com.wordpress.stories.viewBinding
-import kotlinx.android.synthetic.main.fragment_intro.*
 
 class IntroFragment : Fragment(R.layout.fragment_intro) {
     interface OnFragmentInteractionListener {
@@ -29,7 +28,7 @@ class IntroFragment : Fragment(R.layout.fragment_intro) {
             introPager.adapter = IntroPagerAdapter(childFragmentManager)
 
             // Using a TabLayout for simulating a page indicator strip
-            tabLayoutIndicator.setupWithViewPager(intro_pager, true)
+            tabLayoutIndicator.setupWithViewPager(binding.introPager, true)
         }
     }
 

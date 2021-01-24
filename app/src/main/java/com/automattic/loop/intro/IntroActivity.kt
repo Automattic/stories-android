@@ -9,10 +9,14 @@ import androidx.navigation.Navigation
 import com.automattic.loop.AppPrefs
 import com.automattic.loop.MainActivity
 import com.automattic.loop.R
+import com.automattic.loop.databinding.ActivityIntroBinding
 import com.automattic.photoeditor.util.PermissionUtils
+import com.wordpress.stories.viewBinding
 
 class IntroActivity : AppCompatActivity(), IntroFragment.OnFragmentInteractionListener,
         PermissionRequestFragment.OnFragmentInteractionListener {
+    private val binding by viewBinding(ActivityIntroBinding::inflate)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

@@ -14,6 +14,7 @@ import com.automattic.loop.R.string
 import com.automattic.loop.util.CrashLoggingUtils
 import com.wordpress.stories.compose.NotificationTrackerProvider
 import com.wordpress.stories.compose.frame.StoryNotificationType
+import com.wordpress.stories.util.LOG_TAG
 
 open class Loop : Application(), NotificationTrackerProvider {
     private var statusBarHeight: Int = 0
@@ -21,6 +22,8 @@ open class Loop : Application(), NotificationTrackerProvider {
     override fun onCreate() {
         super.onCreate()
         AppPrefs.init(this)
+
+        Thread.setDefaultUncaughtExceptionHandler(ExceptionHandler())
 
         CrashLoggingUtils.startCrashLogging(this)
 
@@ -135,5 +138,11 @@ open class Loop : Application(), NotificationTrackerProvider {
     override fun trackDismissedNotification(storyNotificationType: StoryNotificationType) {
         // example
         Toast.makeText(this, "Notification dismissed! : " + storyNotificationType, Toast.LENGTH_LONG).show()
+    }
+
+    class ExceptionHandler: Thread.UncaughtExceptionHandler {
+        override fun uncaughtException(t: Thread?, e: Throwable?) {
+            Log.e(LOG_TAG, "", e)
+        }
     }
 }
