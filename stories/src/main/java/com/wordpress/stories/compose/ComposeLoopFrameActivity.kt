@@ -131,9 +131,11 @@ enum class ScreenTouchBlockMode {
     BLOCK_TOUCH_MODE_NONE,
     BLOCK_TOUCH_MODE_FULL_SCREEN, // used when saving - user is not allowed to touch anything
     BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION, // used when in error resolution mode: user needs to take
+
     // action, so we allow them to use the StoryFrameSelector and menu, but no edits on
     // the Photo Editor canvas are allowed at this stage
     BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY, // used when errors have been sorted out by the user - no edits allowed,
+
     // but they should be good to upload the Story now
     BLOCK_TOUCH_MODE_DELETE_SLIDE // Used in delete slide mode, tapping the screen releases the block
 }
@@ -329,19 +331,19 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         ViewCompat.setOnApplyWindowInsetsListener(binding.composeLoopFrameLayout) { _, insets ->
             // set insetTop as margin to all controls appearing at the top of the screen
             addInsetTopMargin(
-                    contentComposerBinding.nextButton.layoutParams,
-                    nextButtonBaseTopMargin,
-                    insets.systemWindowInsetTop
+                contentComposerBinding.nextButton.layoutParams,
+                nextButtonBaseTopMargin,
+                insets.systemWindowInsetTop
             )
             addInsetTopMargin(
-                    contentComposerBinding.closeButton.layoutParams,
-                    topControlsBaseTopMargin,
-                    insets.systemWindowInsetTop
+                contentComposerBinding.closeButton.layoutParams,
+                topControlsBaseTopMargin,
+                insets.systemWindowInsetTop
             )
             addInsetTopMargin(
-                    contentComposerBinding.controlFlashGroup.layoutParams,
-                    topControlsBaseTopMargin,
-                    insets.systemWindowInsetTop
+                contentComposerBinding.controlFlashGroup.layoutParams,
+                topControlsBaseTopMargin,
+                insets.systemWindowInsetTop
             )
             bottomNavigationBarMargin = insets.systemWindowInsetBottom
             workingAreaRect = calculateWorkingArea()
@@ -349,7 +351,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             contentComposerBinding.deleteView.addBottomOffset(bottomNavigationBarMargin)
             contentComposerBinding.deleteSlideView.addBottomOffset(bottomNavigationBarMargin)
             (supportFragmentManager.findFragmentById(R.id.bottom_strip_view)
-                    as? StoryFrameSelectorFragment)?.setBottomOffset(bottomNavigationBarMargin)
+                as? StoryFrameSelectorFragment)?.setBottomOffset(bottomNavigationBarMargin)
             insets
         }
 
@@ -361,11 +363,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
         workingAreaRect = calculateWorkingArea()
         photoEditor = PhotoEditor.Builder(this, contentComposerBinding.photoEditorView)
-                .setPinchTextScalable(true) // set flag to make text scalable when pinch
-                .setDeleteView(contentComposerBinding.deleteView)
-                .setWorkAreaRect(workingAreaRect)
-                .setAuthenticatitonHeaderInterface(authHeaderInterfaceBridge)
-                .build() // build photo editor sdk
+            .setPinchTextScalable(true) // set flag to make text scalable when pinch
+            .setDeleteView(contentComposerBinding.deleteView)
+            .setWorkAreaRect(workingAreaRect)
+            .setAuthenticatitonHeaderInterface(authHeaderInterfaceBridge)
+            .build() // build photo editor sdk
 
         photoEditor.setOnPhotoEditorListener(object : OnPhotoEditorListener {
             override fun onEditTextChangeListener(
@@ -383,9 +385,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 rootView.visibility = View.INVISIBLE
 
                 val textEditorDialogFragment = TextEditorDialogFragment.show(
-                        this@ComposeLoopFrameActivity,
-                        text,
-                        textStyler
+                    this@ComposeLoopFrameActivity,
+                    text,
+                    textStyler
                 )
                 textEditorDialogFragment.setOnTextEditorListener(object : TextEditorDialogFragment.TextEditor {
                     override fun onDone(inputText: String, textStyler: TextStyler) {
@@ -451,40 +453,40 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         })
 
         backgroundSurfaceManager = BackgroundSurfaceManager(
-                savedInstanceState,
-                lifecycle,
-                contentComposerBinding.photoEditorView,
-                supportFragmentManager,
-                object : FlashSupportChangeListener {
-                    override fun onFlashSupportChanged(isSupported: Boolean) {
-                        if (isSupported) {
-                            contentComposerBinding.cameraFlashButton.visibility = View.VISIBLE
-                            contentComposerBinding.labelFlash.visibility = View.VISIBLE
-                        } else {
-                            contentComposerBinding.cameraFlashButton.visibility = View.INVISIBLE
-                            contentComposerBinding.labelFlash.visibility = View.INVISIBLE
-                        }
+            savedInstanceState,
+            lifecycle,
+            contentComposerBinding.photoEditorView,
+            supportFragmentManager,
+            object : FlashSupportChangeListener {
+                override fun onFlashSupportChanged(isSupported: Boolean) {
+                    if (isSupported) {
+                        contentComposerBinding.cameraFlashButton.visibility = View.VISIBLE
+                        contentComposerBinding.labelFlash.visibility = View.VISIBLE
+                    } else {
+                        contentComposerBinding.cameraFlashButton.visibility = View.INVISIBLE
+                        contentComposerBinding.labelFlash.visibility = View.INVISIBLE
                     }
-                },
-                BuildConfig.USE_CAMERAX,
-                object : BackgroundSurfaceManagerReadyListener {
-                    override fun onBackgroundSurfaceManagerReady() {
-                        if (savedInstanceState == null && !firstIntentLoaded) {
-                            onLoadFromIntent(intent)
-                            firstIntentLoaded = true
-                        }
+                }
+            },
+            BuildConfig.USE_CAMERAX,
+            object : BackgroundSurfaceManagerReadyListener {
+                override fun onBackgroundSurfaceManagerReady() {
+                    if (savedInstanceState == null && !firstIntentLoaded) {
+                        onLoadFromIntent(intent)
+                        firstIntentLoaded = true
+                    }
 
-                        if (launchCameraRequestPending) {
-                            launchCameraRequestPending = false
-                            launchCameraPreviewWithSurfaceSafeguard()
-                        } else if (launchVideoPlayerRequestPending) {
-                            launchVideoPlayerRequestPending = false
-                            showPlayVideoWithSurfaceSafeguard(launchVideoPlayerRequestPendingSource)
-                        }
+                    if (launchCameraRequestPending) {
+                        launchCameraRequestPending = false
+                        launchCameraPreviewWithSurfaceSafeguard()
+                    } else if (launchVideoPlayerRequestPending) {
+                        launchVideoPlayerRequestPending = false
+                        showPlayVideoWithSurfaceSafeguard(launchVideoPlayerRequestPendingSource)
                     }
-                },
-                authHeaderInterfaceBridge,
-                useTempCaptureFile
+                }
+            },
+            authHeaderInterfaceBridge,
+            useTempCaptureFile
         )
 
         lifecycle.addObserver(backgroundSurfaceManager)
@@ -508,8 +510,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         storyIndexToSelect = getStoryIndexFromIntentOrBundle(savedInstanceState, intent)
 
         storyViewModel = ViewModelProvider(
-                this,
-                StoryViewModelFactory(StoryRepository, storyIndexToSelect)
+            this,
+            StoryViewModelFactory(StoryRepository, storyIndexToSelect)
         )[StoryViewModel::class.java]
 
         // request the BackgroundSurfaceManager to prime the textureView so it's ready when needed.
@@ -517,12 +519,12 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
         // check camera selection, flash state from preferences
         CameraSelection.valueOf(
-                getPreferences(Context.MODE_PRIVATE).getInt(getString(R.string.pref_camera_selection), 0)
+            getPreferences(Context.MODE_PRIVATE).getInt(getString(R.string.pref_camera_selection), 0)
         )?.let {
             cameraSelection = it
         }
         FlashIndicatorState.valueOf(
-                getPreferences(Context.MODE_PRIVATE).getInt(getString(R.string.pref_flash_mode_selection), 0)
+            getPreferences(Context.MODE_PRIVATE).getInt(getString(R.string.pref_flash_mode_selection), 0)
         )?.let {
             flashModeSelection = it
         }
@@ -538,7 +540,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
         if (savedInstanceState != null) {
             currentOriginalCapturedFile =
-                    savedInstanceState.getSerializable(STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE) as File?
+                savedInstanceState.getSerializable(STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE) as File?
             preHookRun = savedInstanceState.getBoolean(STATE_KEY_PREHOOK_RUN)
 
             firstIntentLoaded = savedInstanceState.getBoolean(STATE_KEY_FIRST_INTENT_LOADED)
@@ -546,7 +548,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
             storyViewModel.replaceCurrentStory(
                 StorySerializerUtils.deserializeStory(
-                        requireNotNull(savedInstanceState.getString(STATE_KEY_STORY_SAVE_STATE))
+                    requireNotNull(savedInstanceState.getString(STATE_KEY_STORY_SAVE_STATE))
                 )
             )
 
@@ -563,7 +565,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         super.onStart()
         val selectedFrameIndex = storyViewModel.getSelectedFrameIndex()
         if (!launchCameraRequestPending && !launchVideoPlayerRequestPending &&
-                selectedFrameIndex < storyViewModel.getCurrentStorySize()) {
+            selectedFrameIndex < storyViewModel.getCurrentStorySize()) {
             updateBackgroundSurfaceUIWithStoryFrame(selectedFrameIndex)
         }
         // upon loading an existing Story, show the generic announcement dialog if present
@@ -579,7 +581,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             // note momentarily there will be times when this LiveData is triggered while permissions are
             // being requested so, don't proceed if that is the case
             if (storyViewModel.getCurrentStorySize() == 0 &&
-                    firstIntentLoaded && !permissionsRequestForCameraInProgress) {
+                firstIntentLoaded && !permissionsRequestForCameraInProgress) {
                 // finally, delete the captured media
                 deleteCapturedMedia()
                 finish()
@@ -639,8 +641,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
         // select the first errored frame
         onStoryFrameSelected(
-                oldIndex = StoryRepository.DEFAULT_FRAME_NONE_SELECTED,
-                newIndex = minIndexToSelect!!.frameIndex
+            oldIndex = StoryRepository.DEFAULT_FRAME_NONE_SELECTED,
+            newIndex = minIndexToSelect!!.frameIndex
         )
 
         // show dialog
@@ -651,9 +653,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         val errorDialogTitle = String.format(stringSingularOrPlural, errors.size)
 
         FrameSaveErrorDialog.newInstance(
-                errorDialogTitle,
-                getString(R.string.dialog_story_saving_error_message),
-                getString(android.R.string.ok)
+            errorDialogTitle,
+            getString(R.string.dialog_story_saving_error_message),
+            getString(android.R.string.ok)
         ).show(supportFragmentManager, FRAGMENT_DIALOG)
     }
 
@@ -662,22 +664,22 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             val intent = Intent(Settings.ACTION_INTERNAL_STORAGE_SETTINGS)
             if (intent.resolveActivity(packageManager) != null) {
                 FrameSaveErrorDialog.newInstance(
-                        title = getString(R.string.dialog_insufficient_device_storage_error_title),
-                        message = getString(R.string.dialog_insufficient_device_storage_error_message),
-                        okButtonLabel = getString(R.string.dialog_insufficient_device_storage_error_ok_button),
-                        listener = object : FrameSaveErrorDialogOk {
-                            override fun OnOkClicked(dialog: DialogFragment) {
-                                dialog.dismiss()
-                                val settingsIntent = Intent(Settings.ACTION_INTERNAL_STORAGE_SETTINGS)
-                                if (settingsIntent.resolveActivity(packageManager) != null) {
-                                    startActivity(settingsIntent)
-                                }
+                    title = getString(R.string.dialog_insufficient_device_storage_error_title),
+                    message = getString(R.string.dialog_insufficient_device_storage_error_message),
+                    okButtonLabel = getString(R.string.dialog_insufficient_device_storage_error_ok_button),
+                    listener = object : FrameSaveErrorDialogOk {
+                        override fun OnOkClicked(dialog: DialogFragment) {
+                            dialog.dismiss()
+                            val settingsIntent = Intent(Settings.ACTION_INTERNAL_STORAGE_SETTINGS)
+                            if (settingsIntent.resolveActivity(packageManager) != null) {
+                                startActivity(settingsIntent)
                             }
-                        }).show(supportFragmentManager, FRAGMENT_DIALOG)
+                        }
+                    }).show(supportFragmentManager, FRAGMENT_DIALOG)
             } else {
                 FrameSaveErrorDialog.newInstance(
-                        title = getString(R.string.dialog_insufficient_device_storage_error_title),
-                        message = getString(R.string.dialog_insufficient_device_storage_error_message)
+                    title = getString(R.string.dialog_insufficient_device_storage_error_title),
+                    message = getString(R.string.dialog_insufficient_device_storage_error_message)
                 ).show(supportFragmentManager, FRAGMENT_DIALOG)
             }
         }
@@ -692,13 +694,13 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     protected open fun onLoadFromIntent(intent: Intent) {
         val partialCameraOperationInProgress = intent.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED) ||
-                permissionsRequestForCameraInProgress
+            permissionsRequestForCameraInProgress
 
         if (storyViewModel.getCurrentStoryIndex() == StoryRepository.DEFAULT_NONE_SELECTED) {
             storyViewModel.loadStory(storyIndexToSelect)
             storyIndexToSelect = storyViewModel.getCurrentStoryIndex()
         } else if (!partialCameraOperationInProgress && storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED &&
-                StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.isNotEmpty()) {
+            StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.isNotEmpty()) {
             storyViewModel.loadStory(storyIndexToSelect)
             showGenericAnnouncementDialogWhenReady = true
             return
@@ -710,7 +712,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         } else if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
             val storySaveResult = intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
             if (storySaveResult != null &&
-                    StoryRepository.getStoryAtIndex(storySaveResult.storyIndex).frames.isNotEmpty()) {
+                StoryRepository.getStoryAtIndex(storySaveResult.storyIndex).frames.isNotEmpty()) {
                 // dismiss the error notification
                 intent.action?.let {
                     val notificationManager = NotificationManagerCompat.from(this)
@@ -728,7 +730,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             }
         } else if (intent.hasExtra(requestCodes.EXTRA_MEDIA_URIS)) {
             val uriList: List<Uri> = convertStringArrayIntoUrisList(
-                    intent.getStringArrayExtra(requestCodes.EXTRA_MEDIA_URIS)
+                intent.getStringArrayExtra(requestCodes.EXTRA_MEDIA_URIS)
             )
             addFramesToStoryFromMediaUriList(uriList)
             setDefaultSelectionAndUpdateBackgroundSurfaceUI(uriList)
@@ -768,8 +770,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // save Story slide (frame) state
         addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
         outState.putString(
-                STATE_KEY_STORY_SAVE_STATE, StorySerializerUtils.serializeStory(
-                storyViewModel.getStoryAtIndex(storyViewModel.getCurrentStoryIndex())
+            STATE_KEY_STORY_SAVE_STATE, StorySerializerUtils.serializeStory(
+            storyViewModel.getStoryAtIndex(storyViewModel.getCurrentStoryIndex())
         )
         )
         outState.putInt(STATE_KEY_STORY_SAVE_STATE_SELECTED_FRAME, storyViewModel.getSelectedFrameIndex())
@@ -827,7 +829,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 val providerHandlesMediaPickerResult = mediaPickerProvider?.providerHandlesOnActivityResult() ?: false
                 if (data.hasExtra(requestCodes.EXTRA_MEDIA_URIS) && !providerHandlesMediaPickerResult) {
                     val uriList: List<Uri> = convertStringArrayIntoUrisList(
-                            data.getStringArrayExtra(requestCodes.EXTRA_MEDIA_URIS)
+                        data.getStringArrayExtra(requestCodes.EXTRA_MEDIA_URIS)
                     )
                     addFramesToStoryFromMediaUriList(uriList)
                     setDefaultSelectionAndUpdateBackgroundSurfaceUI(uriList)
@@ -869,12 +871,12 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     protected fun addFrameToStoryFromMediaUri(mediaUri: Uri) {
         storyViewModel
-                .addStoryFrameItemToCurrentStory(
-                        StoryFrameItem(
-                                UriBackgroundSource(contentUri = mediaUri),
-                                frameItemType = if (isVideo(mediaUri.toString())) VIDEO() else IMAGE
-                        )
+            .addStoryFrameItemToCurrentStory(
+                StoryFrameItem(
+                    UriBackgroundSource(contentUri = mediaUri),
+                    frameItemType = if (isVideo(mediaUri.toString())) VIDEO() else IMAGE
                 )
+            )
     }
 
     private fun updateBackgroundSurfaceUIWithStoryFrame(
@@ -887,82 +889,83 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private fun addClickListeners() {
         contentComposerBinding.run {
             cameraCaptureButton
-                    .setOnTouchListener(
-                            PressAndHoldGestureHelper(
-                                    PressAndHoldGestureHelper.CLICK_LENGTH,
-                                    object : PressAndHoldGestureListener {
-                                        override fun onClickGesture() {
-                                            if (cameraOperationInCourse) {
-                                                showToast(getString(R.string.toast_capture_operation_in_progress))
-                                                return
+                .setOnTouchListener(
+                    PressAndHoldGestureHelper(
+                        PressAndHoldGestureHelper.CLICK_LENGTH,
+                        object : PressAndHoldGestureListener {
+                            override fun onClickGesture() {
+                                if (cameraOperationInCourse) {
+                                    showToast(getString(R.string.toast_capture_operation_in_progress))
+                                    return
+                                }
+                                timesUpHandler.removeCallbacksAndMessages(null)
+                                takeStillPicture()
+                            }
+
+                            override fun onHoldingGestureStart() {
+                                timesUpHandler.removeCallbacksAndMessages(null)
+                                if (PermissionUtils.allVideoPermissionsGranted(
+                                        this@ComposeLoopFrameActivity
+                                    )
+                                ) {
+                                    // if we at least have
+                                    startRecordingVideoAfterVibrationIndication()
+                                } else {
+                                    // request permissions including audio for video
+                                    val permissionName =
+                                        PermissionUtils.anyVideoNeededPermissionPermanentlyDenied(
+                                            this@ComposeLoopFrameActivity
+                                        )
+
+                                    permissionName?.let {
+                                        showPermissionPermanentlyDeniedDialog(it)
+                                    }
+                                        ?: PermissionUtils
+                                            .requestAllRequiredPermissionsIncludingAudioForVideo(
+                                                this@ComposeLoopFrameActivity
+                                            ).also {
+                                                permissionsRequestForCameraInProgress = true
                                             }
-                                            timesUpHandler.removeCallbacksAndMessages(null)
-                                            takeStillPicture()
-                                        }
+                                }
+                            }
 
-                                        override fun onHoldingGestureStart() {
-                                            timesUpHandler.removeCallbacksAndMessages(null)
-                                            if (PermissionUtils.allVideoPermissionsGranted(
-                                                            this@ComposeLoopFrameActivity)
-                                            ) {
-                                                // if we at least have
-                                                startRecordingVideoAfterVibrationIndication()
-                                            } else {
-                                                // request permissions including audio for video
-                                                val permissionName =
-                                                        PermissionUtils.anyVideoNeededPermissionPermanentlyDenied(
-                                                                this@ComposeLoopFrameActivity
-                                                        )
+                            override fun onHoldingGestureEnd() {
+                                stopRecordingVideo(false)
+                            }
 
-                                                permissionName?.let {
-                                                    showPermissionPermanentlyDeniedDialog(it)
-                                                }
-                                                        ?: PermissionUtils
-                                                                .requestAllRequiredPermissionsIncludingAudioForVideo(
-                                                                        this@ComposeLoopFrameActivity
-                                                                ).also {
-                                                                    permissionsRequestForCameraInProgress = true
-                                                                }
-                                            }
-                                        }
+                            override fun onHoldingGestureCanceled() {
+                                stopRecordingVideo(true)
+                            }
 
-                                        override fun onHoldingGestureEnd() {
-                                            stopRecordingVideo(false)
-                                        }
+                            override fun onStartDetectionWait() {
+                                if (cameraOperationInCourse) {
+                                    showToast(getString(R.string.toast_capture_operation_in_progress))
+                                    return
+                                }
+                                // when the wait to see whether this is a "press and hold" gesture starts,
+                                // start the animation to grow the capture button radius
+                                cameraCaptureButton
+                                    .animate()
+                                    .scaleXBy(0.3f) // scale up by 30%
+                                    .scaleYBy(0.3f)
+                                    .duration = PressAndHoldGestureHelper.CLICK_LENGTH
+                            }
 
-                                        override fun onHoldingGestureCanceled() {
-                                            stopRecordingVideo(true)
-                                        }
-
-                                        override fun onStartDetectionWait() {
-                                            if (cameraOperationInCourse) {
-                                                showToast(getString(R.string.toast_capture_operation_in_progress))
-                                                return
-                                            }
-                                            // when the wait to see whether this is a "press and hold" gesture starts,
-                                            // start the animation to grow the capture button radius
-                                            cameraCaptureButton
-                                                    .animate()
-                                                    .scaleXBy(0.3f) // scale up by 30%
-                                                    .scaleYBy(0.3f)
-                                                    .duration = PressAndHoldGestureHelper.CLICK_LENGTH
-                                        }
-
-                                        override fun onTouchEventDetectionEnd() {
-                                            if (cameraOperationInCourse) {
-                                                return
-                                            }
-                                            // when gesture detection ends, we're good to
-                                            // get the capture button shape as it originally was (idle state)
-                                            cameraCaptureButton.clearAnimation()
-                                            cameraCaptureButton
-                                                    .animate()
-                                                    .scaleX(1.0f)
-                                                    .scaleY(1.0f)
-                                                    .duration = PressAndHoldGestureHelper.CLICK_LENGTH / 4
-                                        }
-                                    })
-                    )
+                            override fun onTouchEventDetectionEnd() {
+                                if (cameraOperationInCourse) {
+                                    return
+                                }
+                                // when gesture detection ends, we're good to
+                                // get the capture button shape as it originally was (idle state)
+                                cameraCaptureButton.clearAnimation()
+                                cameraCaptureButton
+                                    .animate()
+                                    .scaleX(1.0f)
+                                    .scaleY(1.0f)
+                                    .duration = PressAndHoldGestureHelper.CLICK_LENGTH / 4
+                            }
+                        })
+                )
 
             containerGalleryUpload.setOnClickListener {
                 showMediaPicker()
@@ -998,18 +1001,18 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                             discardOkButton = getString(R.string.dialog_discard_story_ok_button_edit)
                         }
                         FrameSaveErrorDialog.newInstance(
-                                title = discardTitle,
-                                message = discardMessage,
-                                okButtonLabel = discardOkButton,
-                                listener = object : FrameSaveErrorDialogOk {
-                                    override fun OnOkClicked(dialog: DialogFragment) {
-                                        addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
-                                        dialog.dismiss()
-                                        // discard the whole story
-                                        safelyDiscardCurrentStoryAndCleanUpIntent()
-                                        storyDiscardListener?.onStoryDiscarded()
-                                    }
-                                }).show(supportFragmentManager, FRAGMENT_DIALOG)
+                            title = discardTitle,
+                            message = discardMessage,
+                            okButtonLabel = discardOkButton,
+                            listener = object : FrameSaveErrorDialogOk {
+                                override fun OnOkClicked(dialog: DialogFragment) {
+                                    addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
+                                    dialog.dismiss()
+                                    // discard the whole story
+                                    safelyDiscardCurrentStoryAndCleanUpIntent()
+                                    storyDiscardListener?.onStoryDiscarded()
+                                }
+                            }).show(supportFragmentManager, FRAGMENT_DIALOG)
                     }
                 }
             }
@@ -1049,29 +1052,29 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 }
                 // show dialog
                 FrameSaveErrorDialog.newInstance(
-                        title = getString(R.string.dialog_discard_page_title),
-                        message = messageToUse,
-                        okButtonLabel = getString(R.string.dialog_discard_page_ok_button),
-                        listener = object : FrameSaveErrorDialogOk {
-                            override fun OnOkClicked(dialog: DialogFragment) {
-                                dialog.dismiss()
-                                if (storyViewModel.getCurrentStorySize() == 1) {
-                                    // discard the whole story
-                                    safelyDiscardCurrentStoryAndCleanUpIntent()
-                                    storyDiscardListener?.onStoryDiscarded()
-                                } else {
-                                    // get currentFrame value as it will change after calling onAboutToDeleteStoryFrame
-                                    val currentFrameToDeleteIndex = storyViewModel.getSelectedFrameIndex()
-                                    onAboutToDeleteStoryFrame(currentFrameToDeleteIndex)
-                                    storyDiscardListener?.onFrameRemove(
-                                            storyViewModel.getCurrentStoryIndex(),
-                                            currentFrameToDeleteIndex
-                                    )
-                                    // now discard it from the viewModel
-                                    storyViewModel.removeFrameAt(currentFrameToDeleteIndex)
-                                }
+                    title = getString(R.string.dialog_discard_page_title),
+                    message = messageToUse,
+                    okButtonLabel = getString(R.string.dialog_discard_page_ok_button),
+                    listener = object : FrameSaveErrorDialogOk {
+                        override fun OnOkClicked(dialog: DialogFragment) {
+                            dialog.dismiss()
+                            if (storyViewModel.getCurrentStorySize() == 1) {
+                                // discard the whole story
+                                safelyDiscardCurrentStoryAndCleanUpIntent()
+                                storyDiscardListener?.onStoryDiscarded()
+                            } else {
+                                // get currentFrame value as it will change after calling onAboutToDeleteStoryFrame
+                                val currentFrameToDeleteIndex = storyViewModel.getSelectedFrameIndex()
+                                onAboutToDeleteStoryFrame(currentFrameToDeleteIndex)
+                                storyDiscardListener?.onFrameRemove(
+                                    storyViewModel.getCurrentStoryIndex(),
+                                    currentFrameToDeleteIndex
+                                )
+                                // now discard it from the viewModel
+                                storyViewModel.removeFrameAt(currentFrameToDeleteIndex)
                             }
-                        }).show(supportFragmentManager, FRAGMENT_DIALOG)
+                        }
+                    }).show(supportFragmentManager, FRAGMENT_DIALOG)
                 disableDeleteSlideMode()
             }
         }
@@ -1101,7 +1104,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private fun anyOfOriginalIntentResultsIsError(): Boolean {
         if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
             val storySaveResult =
-                    intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
+                intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
             storySaveResult?.let {
                 // where there any errors when we opened the Activity to handle those errors?
                 return storySaveResult.isSuccess()
@@ -1162,7 +1165,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     checkForLowSpaceAndShowDialog()
                 }
                 storyViewModel.updateCurrentSelectedFrameOnRetryResult(
-                        result.frameSaveResult[0]
+                    result.frameSaveResult[0]
                 )
                 // need to do this so AddedViews get properly placed on the PhotoEditor
                 refreshStoryFrameSelection()
@@ -1335,19 +1338,19 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 override fun onImageSaved(file: File) {
                     runOnUiThread {
                         Glide.with(this@ComposeLoopFrameActivity)
-                                .load(file)
-                                .transform(CenterCrop(), RoundedCorners(16))
-                                .into(galleryUploadImg)
+                            .load(file)
+                            .transform(CenterCrop(), RoundedCorners(16))
+                            .into(galleryUploadImg)
                         Glide.with(this@ComposeLoopFrameActivity)
-                                .load(file)
-                                .transform(CenterCrop())
-                                .into(photoEditorView.source)
+                            .load(file)
+                            .transform(CenterCrop())
+                            .into(photoEditorView.source)
                         storyViewModel.apply {
                             addStoryFrameItemToCurrentStory(
-                                    StoryFrameItem(
-                                            FileBackgroundSource(file = file),
-                                            frameItemType = StoryFrameItemType.IMAGE
-                                    )
+                                StoryFrameItem(
+                                    FileBackgroundSource(file = file),
+                                    frameItemType = StoryFrameItemType.IMAGE
+                                )
                             )
                             setSelectedFrame(storyViewModel.getLastFrameIndexInCurrentStory())
                         }
@@ -1396,10 +1399,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     runOnUiThread {
                         storyViewModel.apply {
                             addStoryFrameItemToCurrentStory(
-                                    StoryFrameItem(
-                                            FileBackgroundSource(file = it),
-                                            frameItemType = VIDEO()
-                                    )
+                                StoryFrameItem(
+                                    FileBackgroundSource(file = it),
+                                    frameItemType = VIDEO()
+                                )
                             )
                             setSelectedFrame(storyViewModel.getLastFrameIndexInCurrentStory())
                         }
@@ -1426,9 +1429,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // Vibrate for 100 milliseconds
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             vibrator.vibrate(
-                    VibrationEffect.createOneShot(
-                            VIBRATION_INDICATION_LENGTH_MS, VibrationEffect.DEFAULT_AMPLITUDE
-                    )
+                VibrationEffect.createOneShot(
+                    VIBRATION_INDICATION_LENGTH_MS, VibrationEffect.DEFAULT_AMPLITUDE
+                )
             )
         } else {
             // deprecated in API 26
@@ -1448,10 +1451,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 cameraCaptureButton.stopProgressingAnimation()
                 cameraCaptureButton.clearAnimation()
                 cameraCaptureButton
-                        .animate()
-                        .scaleX(1.0f)
-                        .scaleY(1.0f)
-                        .duration = PressAndHoldGestureHelper.CLICK_LENGTH / 4
+                    .animate()
+                    .scaleX(1.0f)
+                    .scaleY(1.0f)
+                    .duration = PressAndHoldGestureHelper.CLICK_LENGTH / 4
                 backgroundSurfaceManager.stopRecordingVideo()
                 showVideoUIControls()
             }
@@ -1474,44 +1477,44 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 file.createNewFile()
 
                 photoEditor.saveVideoAsFile(
-                        inputFile,
-                        file.absolutePath,
-                        storyViewModel.isSelectedFrameAudioMuted(),
-                        object : PhotoEditor.OnSaveWithCancelAndProgressListener {
-                            override fun onProgress(progress: Double) {
-                                // TODO implement progress
-                            }
+                    inputFile,
+                    file.absolutePath,
+                    storyViewModel.isSelectedFrameAudioMuted(),
+                    object : PhotoEditor.OnSaveWithCancelAndProgressListener {
+                        override fun onProgress(progress: Double) {
+                            // TODO implement progress
+                        }
 
-                            override fun onCancel(noAddedViews: Boolean) {
-                                runOnUiThread {
-                                    hideLoading()
-                                    showSnackbar("No views added - original video saved")
-                                }
+                        override fun onCancel(noAddedViews: Boolean) {
+                            runOnUiThread {
+                                hideLoading()
+                                showSnackbar("No views added - original video saved")
                             }
+                        }
 
-                            override fun onSuccess(filePath: String) {
-                                runOnUiThread {
-                                    hideLoading()
-                                    deleteCapturedMedia()
-                                    photoEditor.clearAllViews()
-                                    sendNewStoryFrameReadyBroadcast(file)
-                                    showSnackbar(
-                                            getString(R.string.label_snackbar_loop_frame_saved),
-                                            getString(R.string.label_snackbar_share),
-                                            OnClickListener { shareAction(file) }
-                                    )
-                                    hideEditModeUIControls()
-                                    switchCameraPreviewOn()
-                                }
+                        override fun onSuccess(filePath: String) {
+                            runOnUiThread {
+                                hideLoading()
+                                deleteCapturedMedia()
+                                photoEditor.clearAllViews()
+                                sendNewStoryFrameReadyBroadcast(file)
+                                showSnackbar(
+                                    getString(R.string.label_snackbar_loop_frame_saved),
+                                    getString(R.string.label_snackbar_share),
+                                    OnClickListener { shareAction(file) }
+                                )
+                                hideEditModeUIControls()
+                                switchCameraPreviewOn()
                             }
+                        }
 
-                            override fun onFailure(exception: Exception) {
-                                runOnUiThread {
-                                    hideLoading()
-                                    showSnackbar("Failed to save Video")
-                                }
+                        override fun onFailure(exception: Exception) {
+                            runOnUiThread {
+                                hideLoading()
+                                showSnackbar("Failed to save Video")
                             }
-                        })
+                        }
+                    })
             } catch (e: IOException) {
                 e.printStackTrace()
                 hideLoading()
@@ -1531,30 +1534,30 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 file.createNewFile()
 
                 val saveSettings = SaveSettings.Builder()
-                        .setClearViewsEnabled(true)
-                        .setTransparencyEnabled(true)
-                        .build()
+                    .setClearViewsEnabled(true)
+                    .setTransparencyEnabled(true)
+                    .build()
 
                 photoEditor.saveVideoFromStaticBackgroundAsFile(
-                        file.absolutePath,
-                        saveSettings,
-                        object : PhotoEditor.OnSaveWithCancelListener {
-                            override fun onCancel(noAddedViews: Boolean) {
-                                // TODO not implemented
-                            }
+                    file.absolutePath,
+                    saveSettings,
+                    object : PhotoEditor.OnSaveWithCancelListener {
+                        override fun onCancel(noAddedViews: Boolean) {
+                            // TODO not implemented
+                        }
 
-                            override fun onSuccess(filePath: String) {
-                                // now save the video with emoji, but using the previously saved video as input
-                                hideLoading()
-                                saveVideo(Uri.parse(filePath))
-                                // TODO: delete the temporal video produced originally
-                            }
+                        override fun onSuccess(filePath: String) {
+                            // now save the video with emoji, but using the previously saved video as input
+                            hideLoading()
+                            saveVideo(Uri.parse(filePath))
+                            // TODO: delete the temporal video produced originally
+                        }
 
-                            override fun onFailure(exception: Exception) {
-                                hideLoading()
-                                showSnackbar("Failed to save Video")
-                            }
-                        })
+                        override fun onFailure(exception: Exception) {
+                            hideLoading()
+                            showSnackbar("Failed to save Video")
+                        }
+                    })
             } catch (e: IOException) {
                 e.printStackTrace()
                 hideLoading()
@@ -1585,7 +1588,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     private fun showPermissionPermanentlyDeniedDialog(permission: String) {
         permissionDenialDialogProvider?.showPermissionPermanentlyDeniedDialog(permission)
-                ?: showToast(getString(R.string.toast_capture_operation_permission_needed))
+            ?: showToast(getString(R.string.toast_capture_operation_permission_needed))
     }
 
     private fun showToast(message: String) {
@@ -1691,7 +1694,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         val currentlyErrored = storyViewModel.anyOfCurrentStoryFramesIsErrored()
 
         val storyFrameSelectorFragment = supportFragmentManager.findFragmentById(R.id.bottom_strip_view)
-                as? StoryFrameSelectorFragment
+            as? StoryFrameSelectorFragment
         contentComposerBinding.run {
             when {
                 // if we were in an error-handling situation but now all pages are OK we're ready to go
@@ -1769,8 +1772,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     private fun shareAction(mediaFile: File) {
         val apkURI = FileProvider.getUriForFile(
-                this,
-                applicationContext.packageName + ".provider", mediaFile
+            this,
+            applicationContext.packageName + ".provider", mediaFile
         )
         val shareIntent: Intent = Intent().apply {
             action = Intent.ACTION_SEND
@@ -1797,9 +1800,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // but otherwise other apps will not be able to access our images unless we
         // scan them using [MediaScannerConnection]
         val mimeType = MimeTypeMap.getSingleton()
-                .getMimeTypeFromExtension(mediaFile.extension)
+            .getMimeTypeFromExtension(mediaFile.extension)
         MediaScannerConnection.scanFile(
-                this, arrayOf(mediaFile.absolutePath), arrayOf(mimeType), null
+            this, arrayOf(mediaFile.absolutePath), arrayOf(mimeType), null
         )
     }
 
@@ -1822,7 +1825,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         val arrayOfPaths = arrayOfNulls<String>(mediaFileList.size)
         for ((index, mediaFile) in mediaFileList.withIndex()) {
             arrayOfmimeTypes[index] = MimeTypeMap.getSingleton()
-                    .getMimeTypeFromExtension(mediaFile.extension)
+                .getMimeTypeFromExtension(mediaFile.extension)
             arrayOfPaths[index] = mediaFile.absolutePath
         }
 
@@ -1830,7 +1833,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // but otherwise other apps will not be able to access our images unless we
         // scan them using [MediaScannerConnection]
         MediaScannerConnection.scanFile(
-                this, arrayOfPaths, arrayOfmimeTypes, null
+            this, arrayOfPaths, arrayOfmimeTypes, null
         )
     }
 
@@ -1850,7 +1853,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     translucentView.visibility = View.GONE
                     translucentErrorView.visibility = View.VISIBLE
                     translucentErrorView.background = ColorDrawable(
-                            ContextCompat.getColor(root.context, R.color.black_transp_error_scrim)
+                        ContextCompat.getColor(root.context, R.color.black_transp_error_scrim)
                     )
                     translucentErrorView.setOnTouchListener { _, _ ->
                         // no op
@@ -1862,7 +1865,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     translucentView.visibility = View.GONE
                     translucentErrorView.visibility = View.VISIBLE
                     translucentErrorView.background = ColorDrawable(
-                            ContextCompat.getColor(root.context, android.R.color.transparent)
+                        ContextCompat.getColor(root.context, android.R.color.transparent)
                     )
                     translucentErrorView.setOnTouchListener { _, _ ->
                         // no op
@@ -1874,7 +1877,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     translucentView.visibility = View.GONE
                     translucentErrorView.visibility = View.VISIBLE
                     translucentErrorView.background = ColorDrawable(
-                            ContextCompat.getColor(root.context, android.R.color.transparent)
+                        ContextCompat.getColor(root.context, android.R.color.transparent)
                     )
                     translucentErrorView.setOnTouchListener { _, _ ->
                         // If the error view is tapped, dismiss it and cancel delete slide mode
@@ -1970,9 +1973,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         } else {
             val model = (source as? FileBackgroundSource)?.file ?: (source as UriBackgroundSource).contentUri
             Glide.with(this@ComposeLoopFrameActivity)
-                    .load(model)
-                    .transform(CenterCrop())
-                    .into(contentComposerBinding.photoEditorView.source)
+                .load(model)
+                .transform(CenterCrop())
+                .into(contentComposerBinding.photoEditorView.source)
             showStaticBackground()
         }
 
@@ -2074,7 +2077,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                         }
                         return false
                     } else if (e2.y - e1.y > SWIPE_MIN_DISTANCE &&
-                            abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
+                        abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
                         // Top to bottom
                         return false
                     }
