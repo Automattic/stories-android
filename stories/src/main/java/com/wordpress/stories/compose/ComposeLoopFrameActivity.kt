@@ -131,11 +131,9 @@ enum class ScreenTouchBlockMode {
     BLOCK_TOUCH_MODE_NONE,
     BLOCK_TOUCH_MODE_FULL_SCREEN, // used when saving - user is not allowed to touch anything
     BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION, // used when in error resolution mode: user needs to take
-
     // action, so we allow them to use the StoryFrameSelector and menu, but no edits on
     // the Photo Editor canvas are allowed at this stage
     BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY, // used when errors have been sorted out by the user - no edits allowed,
-
     // but they should be good to upload the Story now
     BLOCK_TOUCH_MODE_DELETE_SLIDE // Used in delete slide mode, tapping the screen releases the block
 }
@@ -260,17 +258,17 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 // notifications the host app may have
                 // IMPORTANT: this needs to be the first call in the methods linedup for NotificationIntentLoader
                 frameSaveService.setNotificationErrorBaseId(
-                        it.setupErrorNotificationBaseId()
+                    it.setupErrorNotificationBaseId()
                 )
 
                 frameSaveService.setNotificationIntent(it.loadIntentForErrorNotification())
                 val notificationId = FrameSaveNotifier.getNotificationIdForError(
-                        frameSaveService.getNotificationErrorBaseId(),
-                        storyIndex
+                    frameSaveService.getNotificationErrorBaseId(),
+                    storyIndex
                 )
 
                 frameSaveService.setDeleteNotificationPendingIntent(
-                        it.loadPendingIntentForErrorNotificationDeletion(notificationId)
+                    it.loadPendingIntentForErrorNotificationDeletion(notificationId)
                 )
             }
 
@@ -313,10 +311,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         val topAreaHeight = resources.getDimensionPixelSize(R.dimen.edit_mode_button_size)
 
         return Rect(
-                xCoord,
-                yCoord + topAreaHeight,
-                xCoord + width,
-                yCoord + height - bottomAreaHeight
+            xCoord,
+            yCoord + topAreaHeight,
+            xCoord + width,
+            yCoord + height - bottomAreaHeight
         )
     }
 
@@ -546,10 +544,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             firstIntentLoaded = savedInstanceState.getBoolean(STATE_KEY_FIRST_INTENT_LOADED)
             permissionsRequestForCameraInProgress = savedInstanceState.getBoolean(STATE_KEY_PERMISSION_REQ_IN_PROGRESS)
 
-            storyViewModel.loadStory(
-                    StorySerializerUtils.deserializeStory(
-                            requireNotNull(savedInstanceState.getString(STATE_KEY_STORY_SAVE_STATE))
-                    )
+            storyViewModel.replaceCurrentStory(
+                StorySerializerUtils.deserializeStory(
+                        requireNotNull(savedInstanceState.getString(STATE_KEY_STORY_SAVE_STATE))
+                )
             )
 
             val selectedFrameIndex = savedInstanceState.getInt(STATE_KEY_STORY_SAVE_STATE_SELECTED_FRAME)

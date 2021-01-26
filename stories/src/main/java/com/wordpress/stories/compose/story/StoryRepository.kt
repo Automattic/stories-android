@@ -45,6 +45,15 @@ object StoryRepository {
         return currentStoryIndex
     }
 
+    fun replaceCurrentStory(story: Story): StoryIndex {
+        if (isStoryIndexValid(currentStoryIndex)) {
+            stories[currentStoryIndex] = story
+            return currentStoryIndex
+        } else {
+            return loadStory(story)
+        }
+    }
+
     private fun isStoryIndexValid(storyIndex: StoryIndex): Boolean {
         return storyIndex > DEFAULT_NONE_SELECTED && stories.size > storyIndex
     }

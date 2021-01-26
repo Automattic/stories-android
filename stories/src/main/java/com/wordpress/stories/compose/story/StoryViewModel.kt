@@ -65,8 +65,8 @@ class StoryViewModel(private val repository: StoryRepository, val storyIndex: St
         }
     }
 
-    fun loadStory(story: Story) {
-        repository.loadStory(story).let {
+    fun replaceCurrentStory(story: Story) {
+        repository.replaceCurrentStory(story).let {
             updateUiState(createUiStateFromModelState(repository.getImmutableCurrentStoryFrames()))
             // default selected frame when loading a new Story
             _onSelectedFrameIndex.value = Pair(DEFAULT_SELECTION, DEFAULT_SELECTION)
