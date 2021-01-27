@@ -54,11 +54,6 @@ jobs:
       api-version: "29"
     steps:
       - checkout
-      - bundle-install/bundle-install:
-          cache_key_prefix: installable-build
-      - run:
-          name: Copy Secrets
-          command: bundle exec fastlane run configure_apply
       - android/restore-gradle-cache
       - run:
           name: Build APK
