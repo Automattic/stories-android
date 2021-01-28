@@ -7,6 +7,23 @@ apply plugin: 'io.sentry.android.gradle'
 android {
     compileSdkVersion rootProject.compileSdkVersion
 
+    signingConfigs {
+        release {
+
+            if (!rootProject.gradleProperties.exists()) {
+                println "Unable to read ${gradleProperties}"
+                return
+            }
+
+            def properties = loadPropertiesFromFile(rootProject.gradleProperties)
+
+            storeFile file("${rootDir}/${properties.storeFile}")
+            storePassword properties.storePassword
+            keyAlias = properties.keyAlias
+            keyPassword properties.keyPassword
+        }
+    }
+
     defaultConfig {
         applicationId "com.automattic.loop"
         minSdkVersion rootProject.minSdkVersion
@@ -19,6 +36,7 @@ android {
             versionName "1.0.0.14-prealpha"
         }
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        signingConfig signingConfigs.release
     }
     buildTypes {
         release {
@@ -110,19 +128,4 @@ static def loadPropertiesFromFile(inputFile) {
         properties.load(stream)
     }
     return properties
-}
-
-// For app signing
-if (["storeFile", "storePassword", "keyAlias", "keyPassword"].count { !project.hasProperty(it) } == 0) {
-    android {
-        signingConfigs {
-            release {
-                storeFile = rootProject.file(project.storeFile)
-                storePassword = project.storePassword
-                keyAlias = project.keyAlias
-                keyPassword = project.keyPassword
-            }
-        }
-    }
-    android.buildTypes.release.signingConfig = android.signingConfigs.release
 }
