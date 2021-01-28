@@ -54,6 +54,9 @@ jobs:
       api-version: "29"
     steps:
       - checkout
+      - run:
+          name: Apply Configuration
+          command: ./gradlew applyConfiguration
       - android/restore-gradle-cache
       - run:
           name: Build APK

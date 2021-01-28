@@ -1,16 +1,16 @@
 {
   "project_name": "stories-android",
   "branch": "master",
-  "pinned_hash": "746c07fd89399e5951493a32f2e853e804ca7fca",
+  "pinned_hash": "f97cfd2e1b6ed310c8a5a0e7caeb43658185f292",
   "files_to_copy": [
     {
       "file": "android/Loop/gradle.properties",
-      "destination": "gradle.properties",
+      "destination": ".configure-files/gradle.properties",
       "encrypt": true
     },
     {
       "file": "android/automattic.jks",
-      "destination": "app/release.jks",
+      "destination": ".configure-files/release.jks",
       "encrypt": true
     }
   ],
