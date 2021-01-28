@@ -96,8 +96,22 @@ ext {
     appCompatVersion = '1.0.2'
     coreVersion = '1.2.0'
     navComponentVersion = '2.0.0'
+
+    gradleProperties = findGradlePropertiesFile()
 }
 
 task clean(type: Delete) {
     delete rootProject.buildDir
+}
+
+// Find the gradle.properties file, preferring the one in `.configure-files`, but falling back to one in the project
+// root for anyone without access to production secrets.
+def findGradlePropertiesFile() {
+
+    def configurePath = file("${rootDir}/.configure-files/gradle.properties")
+    if (configurePath.exists()) {
+        return configurePath
+    }
+
+    return file("${rootDir}/gradle.properties")
 }

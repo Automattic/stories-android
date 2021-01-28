@@ -73,8 +73,11 @@ dependencies {
 
 android.buildTypes.all { buildType ->
     // Add properties named "loop.xxx" to our BuildConfig
-    def inputFile = checkGradlePropertiesFile()
-    def properties = loadPropertiesFromFile(inputFile)
+    if (!rootProject.gradleProperties.exists()) {
+        return
+    }
+
+    def properties = loadPropertiesFromFile(rootProject.gradleProperties)
     properties.any { property ->
         if (property.key.toLowerCase().startsWith("wp.stories.use.")) {
             buildType.buildConfigField "boolean", property.key.replace("wp.stories.", "").replace(".", "_").toUpperCase(),
@@ -94,14 +97,6 @@ android.buildTypes.all { buildType ->
         // use cameraX implementation by default if no gradle.properties set
         buildType.buildConfigField "boolean", "USE_CAMERAX", "true"
     }
-}
-
-def checkGradlePropertiesFile() {
-    def inputFile = file("${rootDir}/gradle.properties")
-    if (!inputFile.exists()) {
-        throw new StopActionException("Build configuration file gradle.properties doesn't exist, follow README instructions")
-    }
-    return inputFile
 }
 
 static def loadPropertiesFromFile(inputFile) {

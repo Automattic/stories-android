@@ -84,8 +84,10 @@ dependencies {
 
 android.buildTypes.all { buildType ->
     // Add properties named "loop.xxx" to our BuildConfig
-    def inputFile = checkGradlePropertiesFile()
-    def properties = loadPropertiesFromFile(inputFile)
+    if (!rootProject.gradleProperties.exists()) {
+        return
+    }
+    def properties = loadPropertiesFromFile(rootProject.gradleProperties)
     properties.any { property ->
     if (property.key.toLowerCase().startsWith("loop.")) {
             buildType.buildConfigField "String", property.key.replace("loop.", "").replace(".", "_").toUpperCase(),
@@ -100,14 +102,6 @@ android.buildTypes.all { buildType ->
                     "${property.value}"
         }
     }
-}
-
-def checkGradlePropertiesFile() {
-    def inputFile = file("${rootDir}/gradle.properties")
-    if (!inputFile.exists()) {
-        throw new StopActionException("Build configuration file gradle.properties doesn't exist, follow README instructions")
-    }
-    return inputFile
 }
 
 static def loadPropertiesFromFile(inputFile) {
