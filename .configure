@@ -5,7 +5,7 @@
   "files_to_copy": [
     {
       "file": "android/Loop/gradle.properties",
-      "destination": ".configure-files/gradle.properties",
+      "destination": "gradle.properties",
       "encrypt": true
     },
     {
