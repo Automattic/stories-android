@@ -9,10 +9,16 @@ android {
 
     signingConfigs {
         release {
-            storeFile file("${rootDir}/${rootProject.storeFile}")
-            storePassword rootProject.storePassword
-            keyAlias rootProject.keyAlias
-            keyPassword rootProject.keyPassword
+            if (rootProject.hasProperty("storeFile") 
+                && rootProject.hasProperty("storePassword") 
+                && rootProject.hasProperty("keyAlias") 
+                && rootProject.hasProperty("keyPassword")
+            ) { 
+                storeFile file("${rootDir}/${rootProject.storeFile}")
+                storePassword rootProject.storePassword
+                keyAlias rootProject.keyAlias
+                keyPassword rootProject.keyPassword
+            }
         }
     }
 
@@ -92,22 +98,26 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 }
 
-android.buildTypes.all { buildType ->
+tasks.register('createBuildConfigFieldsFromProperties') {
     // Add properties named "loop.xxx" to our BuildConfig
-    def properties = rootProject.loadGradleProperties()
-    properties.any { property ->
-    if (property.key.toLowerCase().startsWith("loop.")) {
-            buildType.buildConfigField "String", property.key.replace("loop.", "").replace(".", "_").toUpperCase(),
-                    "\"${property.value}\""
-        }
-        else if (property.key.toLowerCase().startsWith("sentry.dsn")) {
-            buildType.buildConfigField "String", property.key.replace(".", "_").toUpperCase(),
-                    "\"${property.value}\""
-        }
-        else if (property.key.toLowerCase().startsWith("loop.res.")) {
-            buildType.resValue "string", property.key.replace("loop.res.", "").replace(".", "_").toLowerCase(),
-                    "${property.value}"
+    android.buildTypes.all { buildType ->
+        def properties = rootProject.loadGradleProperties()
+        properties.any { property ->
+        if (property.key.toLowerCase().startsWith("loop.")) {
+                buildType.buildConfigField "String", property.key.replace("loop.", "").replace(".", "_").toUpperCase(),
+                        "\"${property.value}\""
+            }
+            else if (property.key.toLowerCase().startsWith("sentry.dsn")) {
+                buildType.buildConfigField "String", property.key.replace(".", "_").toUpperCase(),
+                        "\"${property.value}\""
+            }
+            else if (property.key.toLowerCase().startsWith("loop.res.")) {
+                buildType.resValue "string", property.key.replace("loop.res.", "").replace(".", "_").toLowerCase(),
+                        "${property.value}"
+            }
         }
     }
 }
+
+preBuild.dependsOn(tasks.named("createBuildConfigFieldsFromProperties"))
 
