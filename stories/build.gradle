@@ -73,11 +73,7 @@ dependencies {
 
 android.buildTypes.all { buildType ->
     // Add properties named "loop.xxx" to our BuildConfig
-    if (!rootProject.gradleProperties.exists()) {
-        return
-    }
-
-    def properties = loadPropertiesFromFile(rootProject.gradleProperties)
+    def properties = rootProject.loadGradleProperties()
     properties.any { property ->
         if (property.key.toLowerCase().startsWith("wp.stories.use.")) {
             buildType.buildConfigField "boolean", property.key.replace("wp.stories.", "").replace(".", "_").toUpperCase(),
@@ -99,10 +95,3 @@ android.buildTypes.all { buildType ->
     }
 }
 
-static def loadPropertiesFromFile(inputFile) {
-    def properties = new Properties()
-    inputFile.withInputStream { stream ->
-        properties.load(stream)
-    }
-    return properties
-}
