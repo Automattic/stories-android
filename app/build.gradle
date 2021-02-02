@@ -9,18 +9,16 @@ android {
 
     signingConfigs {
         release {
-
-            if (!rootProject.gradleProperties.exists()) {
-                println "Unable to read ${gradleProperties}"
-                return
+            if (rootProject.hasProperty("storeFile") 
+                && rootProject.hasProperty("storePassword") 
+                && rootProject.hasProperty("keyAlias") 
+                && rootProject.hasProperty("keyPassword")
+            ) { 
+                storeFile file("${rootDir}/${rootProject.storeFile}")
+                storePassword rootProject.storePassword
+                keyAlias rootProject.keyAlias
+                keyPassword rootProject.keyPassword
             }
-
-            def properties = loadPropertiesFromFile(rootProject.gradleProperties)
-
-            storeFile file("${rootDir}/${properties.storeFile}")
-            storePassword properties.storePassword
-            keyAlias = properties.keyAlias
-            keyPassword properties.keyPassword
         }
     }
 
@@ -100,32 +98,26 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 }
 
-android.buildTypes.all { buildType ->
+tasks.register('createBuildConfigFieldsFromProperties') {
     // Add properties named "loop.xxx" to our BuildConfig
-    if (!rootProject.gradleProperties.exists()) {
-        return
-    }
-    def properties = loadPropertiesFromFile(rootProject.gradleProperties)
-    properties.any { property ->
-    if (property.key.toLowerCase().startsWith("loop.")) {
-            buildType.buildConfigField "String", property.key.replace("loop.", "").replace(".", "_").toUpperCase(),
-                    "\"${property.value}\""
-        }
-        else if (property.key.toLowerCase().startsWith("sentry.dsn")) {
-            buildType.buildConfigField "String", property.key.replace(".", "_").toUpperCase(),
-                    "\"${property.value}\""
-        }
-        else if (property.key.toLowerCase().startsWith("loop.res.")) {
-            buildType.resValue "string", property.key.replace("loop.res.", "").replace(".", "_").toLowerCase(),
-                    "${property.value}"
+    android.buildTypes.all { buildType ->
+        def properties = rootProject.loadGradleProperties()
+        properties.any { property ->
+        if (property.key.toLowerCase().startsWith("loop.")) {
+                buildType.buildConfigField "String", property.key.replace("loop.", "").replace(".", "_").toUpperCase(),
+                        "\"${property.value}\""
+            }
+            else if (property.key.toLowerCase().startsWith("sentry.dsn")) {
+                buildType.buildConfigField "String", property.key.replace(".", "_").toUpperCase(),
+                        "\"${property.value}\""
+            }
+            else if (property.key.toLowerCase().startsWith("loop.res.")) {
+                buildType.resValue "string", property.key.replace("loop.res.", "").replace(".", "_").toLowerCase(),
+                        "${property.value}"
+            }
         }
     }
 }
 
-static def loadPropertiesFromFile(inputFile) {
-    def properties = new Properties()
-    inputFile.withInputStream { stream ->
-        properties.load(stream)
-    }
-    return properties
-}
+preBuild.dependsOn(tasks.named("createBuildConfigFieldsFromProperties"))
+

@@ -96,10 +96,20 @@ ext {
     appCompatVersion = '1.0.2'
     coreVersion = '1.2.0'
     navComponentVersion = '2.0.0'
-
-    gradleProperties = file("${rootDir}/gradle.properties")
 }
 
 task clean(type: Delete) {
     delete rootProject.buildDir
+}
+
+def loadGradleProperties() {
+    def inputFile = file("${rootDir}/gradle.properties")
+    if (!inputFile.exists()) {
+        throw new StopActionException("Build configuration file gradle.properties doesn't exist, follow README instructions")
+    }
+    def properties = new Properties()
+    inputFile.withInputStream { stream ->
+        properties.load(stream)
+    }
+    return properties
 }
