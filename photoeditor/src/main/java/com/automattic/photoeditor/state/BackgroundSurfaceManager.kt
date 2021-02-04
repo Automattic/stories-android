@@ -372,6 +372,8 @@ class BackgroundSurfaceManager(
                     cameraBasicHandler.flashSupportChangeListener = flashSupportChangeListener
                     cameraBasicHandler.useTempCaptureFile = useTempCaptureFile
                 }
+                // add camera handling texture listener
+                photoEditorView.listeners.add((cameraBasicHandler as CameraXBasicHandling).surfaceTextureListener)
             }
             CAMERA2 -> {
                 // ask FragmentManager to add the headless fragment so it receives the Activity's lifecycle callback calls

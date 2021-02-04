@@ -2,25 +2,34 @@ package com.automattic.photoeditor.camera
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.os.AsyncTask
 import android.os.Bundle
+import android.os.Handler
 import android.util.DisplayMetrics
 import android.util.Log
 import android.util.Rational
 import android.util.Size
+import android.view.Surface
+import android.view.TextureView
 import android.view.ViewGroup
+import androidx.camera.core.CameraSelector
 import androidx.camera.core.CameraX
 import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCapture.CaptureMode
-import androidx.camera.core.ImageCapture.ImageCaptureError
 import androidx.camera.core.ImageCapture.Metadata
-import androidx.camera.core.ImageCaptureConfig
+import androidx.camera.core.ImageCapture.OutputFileOptions
+import androidx.camera.core.ImageCapture.OutputFileResults
+import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
-import androidx.camera.core.PreviewConfig
+import androidx.camera.core.Preview.SurfaceProvider
+import androidx.camera.core.SurfaceRequest
 import androidx.camera.core.VideoCapture
-import androidx.camera.core.VideoCaptureConfig
+import androidx.camera.core.impl.VideoCaptureConfig
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.LifecycleOwner
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
@@ -31,25 +40,57 @@ import com.automattic.photoeditor.camera.interfaces.cameraXflashModeFromStoriesF
 import com.automattic.photoeditor.camera.interfaces.storiesCameraSelectionFromCameraXLensFacing
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
+import com.google.common.util.concurrent.ListenableFuture
 import java.io.File
 
 class CameraXBasicHandling : VideoRecorderFragment() {
     private var videoCapture: VideoCapture? = null
     private lateinit var videoPreview: Preview
     private var imageCapture: ImageCapture? = null
-    private var lensFacing = CameraX.LensFacing.BACK
+    private var lensFacing = CameraSelector.LENS_FACING_BACK
     private var screenAspectRatio = Rational(9, 16)
+    private lateinit var cameraProviderFuture : ListenableFuture<ProcessCameraProvider>
+    private lateinit var cameraProvider: ProcessCameraProvider
+    private var cameraProviderInitialized = false
+    private var surfaceRequest: SurfaceRequest? = null
+    private var surfaceReleaseFuture: ListenableFuture<Void>? = null
+    private var resolution: Size? = null
+
+    val surfaceTextureListener = object : TextureView.SurfaceTextureListener {
+        override fun onSurfaceTextureAvailable(texture: SurfaceTexture, width: Int, height: Int) {
+            resetTextureView(texture)
+        }
+
+        override fun onSurfaceTextureSizeChanged(texture: SurfaceTexture, width: Int, height: Int) {
+            resetTextureView(texture)
+        }
+
+        override fun onSurfaceTextureDestroyed(texture: SurfaceTexture) = true
+
+        override fun onSurfaceTextureUpdated(texture: SurfaceTexture) = Unit
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
+        cameraProviderFuture.addListener(Runnable {
+            cameraProvider = cameraProviderFuture.get()
+            cameraProviderInitialized = true
+            activate()
+        }, ContextCompat.getMainExecutor(context))
         retainInstance = true
     }
 
     override fun activate() {
-        if (!active) {
-            CameraX.unbindAll()
-            active = true
-            startUp()
+        // either activates the Camera or hold a short wait to retry until cameraProvider is set on next run
+        if (cameraProviderInitialized) {
+            if (!active) {
+                cameraProvider.unbindAll()
+                active = true
+                startUp()
+            }
+        } else {
+            Handler().postDelayed({ activate() }, 300)
         }
     }
 
@@ -75,7 +116,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         videoPreview.clear()
         videoCapture?.clear()
         imageCapture?.clear()
-        CameraX.unbindAll()
+        cameraProvider.unbindAll()
     }
 
     // TODO remove this RestrictedApi annotation once androidx.camera:camera moves out of alpha
@@ -91,74 +132,135 @@ class CameraXBasicHandling : VideoRecorderFragment() {
             updateFlashSupported(it)
         }
 
-        // Create configuration object for the preview use case
-        val previewConfig = PreviewConfig.Builder().apply {
-            setLensFacing(lensFacing)
-            /*  From https://developer.android.com/jetpack/androidx/releases/camera#camera2-core-1.0.0-alpha06
-                Aspect Ratios: For each use case, applications should call only one of setTargetResolution() or
-                setTargetAspectRatio(). Calling both on the same builder will return an error.
-                In general it’s recommended to use setTargetAspectRatio() based on the application’s UI design.
-                Specific resolutions will be based on the use case. For example, preview will be near screen resolutions
-                and image capture will provide high resolution stills. See the automatic resolutions table for more
-                information. https://developer.android.com/training/camerax/configuration#automatic-resolution
-                Use setTargetResolution() for more specific cases, such as when minimum (to save computation) or
-                maximum resolutions (for processing details) are required.
-             */
-            // for now, we're calling setTargetAspectRatioCustom() with this device's screen aspect ratio, given
-            // setting an aspect ratio of 4:3 would show undesired effects on alpha06 such as a stretched preview
-            setTargetAspectRatioCustom(screenAspectRatio)
-            // Set initial target rotation, we will have to call this again if rotation changes
-            // during the lifecycle of this use case
-            setTargetRotation(textureView.display.rotation)
-        }.build()
-
-        videoPreview = Preview(previewConfig)
+        videoPreview = Preview.Builder()
+                /*  From https://developer.android.com/jetpack/androidx/releases/camera#camera2-core-1.0.0-alpha06
+                    Aspect Ratios: For each use case, applications should call only one of setTargetResolution() or
+                    setTargetAspectRatio(). Calling both on the same builder will return an error.
+                    In general it’s recommended to use setTargetAspectRatio() based on the application’s UI design.
+                    Specific resolutions will be based on the use case. For example, preview will be near screen resolutions
+                    and image capture will provide high resolution stills. See the automatic resolutions table for more
+                    information. https://developer.android.com/training/camerax/configuration#automatic-resolution
+                    Use setTargetResolution() for more specific cases, such as when minimum (to save computation) or
+                    maximum resolutions (for processing details) are required.
+                 */
+                // for now, we're calling setTargetAspectRatioCustom() with this device's screen aspect ratio, given
+                // setting an aspect ratio of 4:3 would show undesired effects on alpha06 such as a stretched preview
+                .setTargetAspectRatioCustom(screenAspectRatio)
+                // Set initial target rotation, we will have to call this again if rotation changes
+                // during the lifecycle of this use case
+                .setTargetRotation(textureView.display.rotation)
+                .build()
 
         // Set up the capture use case to allow users to take photos
-        val imageCaptureConfig = ImageCaptureConfig.Builder().apply {
-            setLensFacing(lensFacing)
-            setFlashMode(cameraXflashModeFromStoriesFlashState(currentFlashState.currentFlashState()))
-            setCaptureMode(CaptureMode.MIN_LATENCY)
-            // We request aspect ratio but no resolution to match preview config but letting
-            // CameraX optimize for whatever specific resolution best fits requested capture mode
-            // setTargetAspectRatio(RATIO_4_3)
-            setTargetAspectRatioCustom(screenAspectRatio)
-            // Set initial target rotation, we will have to call this again if rotation changes
-            // during the lifecycle of this use case
-            setTargetRotation(textureView.display.rotation)
-        }.build()
+        imageCapture = ImageCapture.Builder()
+                .setFlashMode(cameraXflashModeFromStoriesFlashState(currentFlashState.currentFlashState()))
+                .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+                // We request aspect ratio but no resolution to match preview config but letting
+                // CameraX optimize for whatever specific resolution best fits requested capture mode
+                // setTargetAspectRatio(RATIO_4_3)
+                .setTargetAspectRatioCustom(screenAspectRatio)
+                // Set initial target rotation, we will have to call this again if rotation changes
+                // during the lifecycle of this use case
+                .setTargetRotation(textureView.display.rotation)
+                .build()
 
-        imageCapture = ImageCapture(imageCaptureConfig)
+        videoPreview.setSurfaceProvider(object: SurfaceProvider {
+            override fun onSurfaceRequested(request: SurfaceRequest) {
+                resolution = request.resolution
+                // initInternal()
+                // resetTextureView()
+                surfaceRequest?.setWillNotComplete()
 
-        videoPreview.setOnPreviewOutputUpdateListener {
-            // if, for whatever reason a pre-existing surfaceTexture was being used,
-            // then call `release()`  on it, as per docs
-            // https://developer.android.com/reference/androidx/camera/core/Preview.html#setOnPreviewOutputUpdateListener(androidx.camera.core.Preview.OnPreviewOutputUpdateListener)
-            // * <p>Once {@link OnPreviewOutputUpdateListener#onUpdated(PreviewOutput)}  is called,
-            //     * ownership of the {@link PreviewOutput} and its contents is transferred to the application. It
-            //     * is the application's responsibility to release the last {@link SurfaceTexture} returned by
-            //     * {@link PreviewOutput#getSurfaceTexture()} when a new SurfaceTexture is provided via an update
-            //     * or when the user is finished with the use case.  A SurfaceTexture is created each time the
-            //     * use case becomes active and no previous SurfaceTexture exists.
-            textureView.surfaceTexture?.release()
+                surfaceRequest = request
+                surfaceRequest?.addRequestCancellationListener(
+                        ContextCompat.getMainExecutor(textureView.getContext()),
+                        Runnable {
+                            if (surfaceRequest == request) {
+                                surfaceRequest = null
+                                surfaceReleaseFuture = null
+                            }
+                        }
+                )
+            }
+        })
 
-            // Also removing and re-adding the TextureView here, due to the following reasons:
-            // https://developer.android.com/reference/androidx/camera/core/Preview.html#setOnPreviewOutputUpdateListener(androidx.camera.core.Preview.OnPreviewOutputUpdateListener)
-            // * Calling TextureView.setSurfaceTexture(SurfaceTexture) when the TextureView's SurfaceTexture is already
-            // * created, should be preceded by calling ViewGroup.removeView(View) and ViewGroup.addView(View) on the
-            // * parent view of the TextureView to ensure the setSurfaceTexture() call succeeds.
-            val parent = textureView.parent as ViewGroup
-            parent.removeView(textureView)
-            parent.addView(textureView, 0)
-            textureView.surfaceTexture = it.surfaceTexture
-        }
+//        videoPreview.setOnPreviewOutputUpdateListener {
+//            // if, for whatever reason a pre-existing surfaceTexture was being used,
+//            // then call `release()`  on it, as per docs
+//            // https://developer.android.com/reference/androidx/camera/core/Preview.html#setOnPreviewOutputUpdateListener(androidx.camera.core.Preview.OnPreviewOutputUpdateListener)
+//            // * <p>Once {@link OnPreviewOutputUpdateListener#onUpdated(PreviewOutput)}  is called,
+//            //     * ownership of the {@link PreviewOutput} and its contents is transferred to the application. It
+//            //     * is the application's responsibility to release the last {@link SurfaceTexture} returned by
+//            //     * {@link PreviewOutput#getSurfaceTexture()} when a new SurfaceTexture is provided via an update
+//            //     * or when the user is finished with the use case.  A SurfaceTexture is created each time the
+//            //     * use case becomes active and no previous SurfaceTexture exists.
+//            textureView.surfaceTexture?.release()
+//
+//            // Also removing and re-adding the TextureView here, due to the following reasons:
+//            // https://developer.android.com/reference/androidx/camera/core/Preview.html#setOnPreviewOutputUpdateListener(androidx.camera.core.Preview.OnPreviewOutputUpdateListener)
+//            // * Calling TextureView.setSurfaceTexture(SurfaceTexture) when the TextureView's SurfaceTexture is already
+//            // * created, should be preceded by calling ViewGroup.removeView(View) and ViewGroup.addView(View) on the
+//            // * parent view of the TextureView to ensure the setSurfaceTexture() call succeeds.
+//            val parent = textureView.parent as ViewGroup
+//            parent.removeView(textureView)
+//            parent.addView(textureView, 0)
+//            textureView.surfaceTexture = it.surfaceTexture
+//        }
 
         // we used to bind all use cases to lifecycle on start
         // DON'T do this, may end up with this: https://github.com/Automattic/stories-android/issues/50
         // CameraX.bindToLifecycle(activity, videoPreview, videoCapture, imageCapture)
 
         // image capture only
-        CameraX.bindToLifecycle(activity, videoPreview, imageCapture)
+        val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
+        cameraProvider.bindToLifecycle(activity as LifecycleOwner, cameraSelector, videoPreview, imageCapture)
+    }
+
+    private fun resetTextureView(surface: SurfaceTexture) {
+        if (!active) {
+            return
+        }
+        // if, for whatever reason a pre-existing surfaceTexture was being used,
+        // then call `release()`  on it, as per docs
+        // https://developer.android.com/reference/androidx/camera/core/Preview.html#setOnPreviewOutputUpdateListener(androidx.camera.core.Preview.OnPreviewOutputUpdateListener)
+        // * <p>Once {@link OnPreviewOutputUpdateListener#onUpdated(PreviewOutput)}  is called,
+        //     * ownership of the {@link PreviewOutput} and its contents is transferred to the application. It
+        //     * is the application's responsibility to release the last {@link SurfaceTexture} returned by
+        //     * {@link PreviewOutput#getSurfaceTexture()} when a new SurfaceTexture is provided via an update
+        //     * or when the user is finished with the use case.  A SurfaceTexture is created each time the
+        //     * use case becomes active and no previous SurfaceTexture exists.
+        if (surface != textureView.surfaceTexture) {
+            textureView.surfaceTexture?.release()
+        }
+
+        // Also removing and re-adding the TextureView here, due to the following reasons:
+        // https://developer.android.com/reference/androidx/camera/core/Preview.html#setOnPreviewOutputUpdateListener(androidx.camera.core.Preview.OnPreviewOutputUpdateListener)
+        // * Calling TextureView.setSurfaceTexture(SurfaceTexture) when the TextureView's SurfaceTexture is already
+        // * created, should be preceded by calling ViewGroup.removeView(View) and ViewGroup.addView(View) on the
+        // * parent view of the TextureView to ensure the setSurfaceTexture() call succeeds.
+        val parent = textureView.parent as ViewGroup
+        parent.removeView(textureView)
+        parent.addView(textureView, 0)
+        textureView.surfaceTexture = surface
+
+
+        resolution?.let {
+            surface.setDefaultBufferSize(it.getWidth(), it.getHeight())
+        }
+
+        val surface = Surface(surface)
+        val surfaceReleaseFutureLocal = surfaceRequest?.setSurface(
+                surface
+        )
+        surfaceReleaseFuture = surfaceReleaseFutureLocal
+        surfaceReleaseFuture?.addListener(Runnable {
+            surface.release()
+            if (surfaceReleaseFuture === surfaceReleaseFutureLocal) {
+                surfaceReleaseFuture = null
+            }
+        }, ContextCompat.getMainExecutor(textureView.getContext()))
+
+        surfaceRequest = null
     }
 
     @SuppressLint("RestrictedApi")
@@ -176,45 +278,42 @@ class CameraXBasicHandling : VideoRecorderFragment() {
 
             // unbind this use case for now, we'll re-bind later
             imageCapture?.let {
-                imageCapture?.clear()
-                if (CameraX.isBound(imageCapture)) {
-                    CameraX.unbind(imageCapture)
+                it.clear()
+                if (cameraProvider.isBound(it)) {
+                    cameraProvider.unbind(it)
                 }
             }
 
             // if a previous instance exists, request to release muxer and buffers
             videoCapture?.let {
-                if (CameraX.isBound(videoCapture)) {
-                    CameraX.unbind(videoCapture)
+                if (cameraProvider.isBound(it)) {
+                    cameraProvider.unbind(it)
                 }
                 videoCapture?.clear()
             }
 
             val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
 
-            val videoCaptureConfig = VideoCaptureConfig.Builder().apply {
-                setLensFacing(lensFacing)
+            videoCapture = VideoCaptureConfig.Builder().apply {
                 setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
                 setTargetRotation(textureView.display.rotation)
             }.build()
-            videoCapture = VideoCapture(videoCaptureConfig)
+//            videoCapture = VideoCapture(videoCaptureConfig)
 
             // video capture only
-            CameraX.bindToLifecycle(activity, videoCapture)
+            val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
+            cameraProvider.bindToLifecycle(activity as LifecycleOwner, cameraSelector, videoCapture)
 
             videoCapture?.startRecording(
                 it,
                 AsyncTask.THREAD_POOL_EXECUTOR,
-                object : VideoCapture.OnVideoSavedListener {
+                object : VideoCapture.OnVideoSavedCallback {
                     override fun onVideoSaved(file: File) {
                         Log.i(tag, "Video File : $file")
                         finishedListener?.onVideoSaved(file)
                     }
-                    override fun onError(
-                        useCaseError: VideoCapture.VideoCaptureError,
-                        message: String,
-                        cause: Throwable?
-                    ) {
+
+                    override fun onError(videoCaptureError: Int, message: String, cause: Throwable?) {
                         Log.i(tag, "Video Error: $message")
                         finishedListener?.onError(message, cause)
                     }
@@ -240,38 +339,43 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                 // Setup image capture metadata
                 val metadata = Metadata().apply {
                     // Mirror image when using the front camera
-                    isReversedHorizontal = lensFacing == CameraX.LensFacing.FRONT
+                    isReversedHorizontal = lensFacing == CameraSelector.LENS_FACING_FRONT
                 }
 
                 // image capture only
-                if (!CameraX.isBound(imageCapture)) {
-                    CameraX.bindToLifecycle(activity, imageCapture)
+                imageCapture?.let {
+                    if (!cameraProvider.isBound(it)) {
+                        val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
+                        cameraProvider.bindToLifecycle(activity as LifecycleOwner, cameraSelector, it)
+                    }
                 }
 
                 // Setup image capture listener which is triggered after photo has been taken
+                OutputFileOptions.Builder(it)
                 imageCapture?.takePicture(
-                    it,
-                    metadata,
-                    AsyncTask.THREAD_POOL_EXECUTOR,
-                    object : ImageCapture.OnImageSavedListener {
-                        override fun onImageSaved(file: File) {
-                            onImageCapturedListener.onImageSaved(file)
-                        }
+                        OutputFileOptions.Builder(it).build(),
+                        ContextCompat.getMainExecutor(context),
+                        object : ImageCapture.OnImageSavedCallback {
+                            override fun onImageSaved(outputFileResults: OutputFileResults) {
+                                // FIXME: adapt File to Uri
+                                // onImageCapturedListener.onImageSaved(outputFileResults.savedUri)
+                            }
 
-                        override fun onError(useCaseError: ImageCaptureError, message: String, cause: Throwable?) {
-                            onImageCapturedListener.onError(message, cause)
+                            override fun onError(exception: ImageCaptureException) {
+                                onImageCapturedListener.onError(exception.message ?: "", exception)
+                            }
                         }
-                })
+                )
             }
         }
     }
 
     @SuppressLint("RestrictedApi")
     override fun flipCamera(): CameraSelection {
-        lensFacing = if (CameraX.LensFacing.FRONT == lensFacing) {
-            CameraX.LensFacing.BACK
+        lensFacing = if (CameraSelector.LENS_FACING_FRONT == lensFacing) {
+            CameraSelector.LENS_FACING_BACK
         } else {
-            CameraX.LensFacing.FRONT
+            CameraSelector.LENS_FACING_FRONT
         }
         if (active) {
             try {
@@ -284,7 +388,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                 }
 
                 // Unbind all use cases and bind them again with the new lens facing configuration
-                CameraX.unbindAll()
+                cameraProvider.unbindAll()
                 startCamera()
             } catch (exc: Exception) {
                 // no op - they can most probably just tap the flip switch again and it'll work

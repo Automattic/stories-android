@@ -2,7 +2,7 @@
 package com.automattic.photoeditor.camera.interfaces
 
 import android.hardware.camera2.CameraMetadata
-import androidx.camera.core.CameraX.LensFacing
+import androidx.camera.core.CameraSelector
 
 interface CameraSelectionHandler {
     fun flipCamera(): CameraSelection
@@ -20,18 +20,19 @@ enum class CameraSelection(val id: Int) {
 }
 
 // helper method to get CameraX lens facing from stories' CameraSelection
-fun cameraXLensFacingFromStoriesCameraSelection(cameraSelection: CameraSelection): LensFacing {
+fun cameraXLensFacingFromStoriesCameraSelection(cameraSelection: CameraSelection): Int {
     return when (cameraSelection) {
-        CameraSelection.BACK -> LensFacing.BACK
-        CameraSelection.FRONT -> LensFacing.FRONT
+        CameraSelection.BACK -> CameraSelector.LENS_FACING_BACK
+        CameraSelection.FRONT -> CameraSelector.LENS_FACING_FRONT
     }
 }
 
 // helper method to get stories' CameraSelection from CameraX lens facing
-fun storiesCameraSelectionFromCameraXLensFacing(lensFacing: LensFacing): CameraSelection {
+fun storiesCameraSelectionFromCameraXLensFacing(lensFacing: Int): CameraSelection {
     return when (lensFacing) {
-        LensFacing.BACK -> CameraSelection.BACK
-        LensFacing.FRONT -> CameraSelection.FRONT
+        CameraSelector.LENS_FACING_BACK -> CameraSelection.BACK
+        CameraSelector.LENS_FACING_FRONT -> CameraSelection.FRONT
+        else -> CameraSelection.BACK // default
     }
 }
 
