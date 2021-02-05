@@ -13,6 +13,7 @@ import android.util.Size
 import android.view.Surface
 import android.view.TextureView
 import android.view.ViewGroup
+import androidx.camera.camera2.interop.Camera2CameraInfo
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -41,6 +42,7 @@ import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
 import com.automattic.photoeditor.camera.interfaces.cameraXLensFacingFromStoriesCameraSelection
 import com.automattic.photoeditor.camera.interfaces.cameraXflashModeFromStoriesFlashState
 import com.automattic.photoeditor.camera.interfaces.storiesCameraSelectionFromCameraXLensFacing
+import com.automattic.photoeditor.util.CameraUtils
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import com.google.common.util.concurrent.ListenableFuture
@@ -55,25 +57,28 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     private lateinit var cameraProvider: ProcessCameraProvider
     private var cameraProviderInitialized = false
     private lateinit var currentCamera: Camera
-    private var resolution: Size? = null
     private var surfaceRequest: SurfaceRequest? = null
 
     val surfaceTextureListener = object : TextureView.SurfaceTextureListener {
         override fun onSurfaceTextureAvailable(texture: SurfaceTexture, width: Int, height: Int) {
             if (active) {
-                surfaceRequest?.provideSurface(
-                        Surface(texture),
-                        ContextCompat.getMainExecutor(context),
-                        Consumer {
-                            when (it.resultCode) {
-                                RESULT_SURFACE_USED_SUCCESSFULLY -> Log.d("DEBUG", "RESULT_SURFACE_USED_SUCCESSFULLY")
-                                RESULT_REQUEST_CANCELLED -> Log.d("DEBUG", "RESULT_REQUEST_CANCELLED")
-                                RESULT_INVALID_SURFACE -> Log.d("DEBUG", "RESULT_INVALID_SURFACE")
-                                RESULT_SURFACE_ALREADY_PROVIDED -> Log.d("DEBUG", "RESULT_SURFACE_ALREADY_PROVIDED")
-                                RESULT_WILL_NOT_PROVIDE_SURFACE -> Log.d("DEBUG", "RESULT_WILL_NOT_PROVIDE_SURFACE")
+                surfaceRequest?.let {
+                    texture.setDefaultBufferSize(
+                            it.resolution.getWidth(), it.resolution.getHeight());
+                    it.provideSurface(
+                            Surface(texture),
+                            ContextCompat.getMainExecutor(context),
+                            Consumer {
+                                when (it.resultCode) {
+                                    RESULT_SURFACE_USED_SUCCESSFULLY -> Log.d("DEBUG", "RESULT_SURFACE_USED_SUCCESSFULLY")
+                                    RESULT_REQUEST_CANCELLED -> Log.d("DEBUG", "RESULT_REQUEST_CANCELLED")
+                                    RESULT_INVALID_SURFACE -> Log.d("DEBUG", "RESULT_INVALID_SURFACE")
+                                    RESULT_SURFACE_ALREADY_PROVIDED -> Log.d("DEBUG", "RESULT_SURFACE_ALREADY_PROVIDED")
+                                    RESULT_WILL_NOT_PROVIDE_SURFACE -> Log.d("DEBUG", "RESULT_WILL_NOT_PROVIDE_SURFACE")
+                                }
                             }
-                        }
-                )
+                    )
+                }
             } else {
                 surfaceRequest?.willNotProvideSurface()
             }
@@ -135,7 +140,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     }
 
     // TODO remove this RestrictedApi annotation once androidx.camera:camera moves out of alpha
-    @SuppressLint("RestrictedApi")
+    @SuppressLint("RestrictedApi", "UnsafeExperimentalUsageError")
     private fun startCamera() {
         // Get screen metrics used to setup camera for full screen resolution
         val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
@@ -156,6 +161,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                 // setting an aspect ratio of 4:3 would show undesired effects on alpha06 such as a stretched preview
                 // .setTargetAspectRatioCustom(screenAspectRatio)
                 .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
+                // .setTargetAspectRatio(AspectRatio.RATIO_16_9)
                 // Set initial target rotation, we will have to call this again if rotation changes
                 // during the lifecycle of this use case
                 .setTargetRotation(textureView.display.rotation)
@@ -170,6 +176,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                 // setTargetAspectRatio(RATIO_4_3)
                 // .setTargetAspectRatioCustom(screenAspectRatio)
                 .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
+                // .setTargetAspectRatio(AspectRatio.RATIO_16_9)
                 // Set initial target rotation, we will have to call this again if rotation changes
                 // during the lifecycle of this use case
                 .setTargetRotation(textureView.display.rotation)
@@ -178,36 +185,12 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         videoPreview.setSurfaceProvider(object: SurfaceProvider {
             override fun onSurfaceRequested(request: SurfaceRequest) {
                 surfaceRequest = request
-                resolution = request.resolution
                 // initInternal()
                 // resetTextureView()
                 // surfaceRequest?.setWillNotComplete()
                 resetTextureView()
             }
         })
-
-//        videoPreview.setOnPreviewOutputUpdateListener {
-//            // if, for whatever reason a pre-existing surfaceTexture was being used,
-//            // then call `release()`  on it, as per docs
-//            // https://developer.android.com/reference/androidx/camera/core/Preview.html#setOnPreviewOutputUpdateListener(androidx.camera.core.Preview.OnPreviewOutputUpdateListener)
-//            // * <p>Once {@link OnPreviewOutputUpdateListener#onUpdated(PreviewOutput)}  is called,
-//            //     * ownership of the {@link PreviewOutput} and its contents is transferred to the application. It
-//            //     * is the application's responsibility to release the last {@link SurfaceTexture} returned by
-//            //     * {@link PreviewOutput#getSurfaceTexture()} when a new SurfaceTexture is provided via an update
-//            //     * or when the user is finished with the use case.  A SurfaceTexture is created each time the
-//            //     * use case becomes active and no previous SurfaceTexture exists.
-//            textureView.surfaceTexture?.release()
-//
-//            // Also removing and re-adding the TextureView here, due to the following reasons:
-//            // https://developer.android.com/reference/androidx/camera/core/Preview.html#setOnPreviewOutputUpdateListener(androidx.camera.core.Preview.OnPreviewOutputUpdateListener)
-//            // * Calling TextureView.setSurfaceTexture(SurfaceTexture) when the TextureView's SurfaceTexture is already
-//            // * created, should be preceded by calling ViewGroup.removeView(View) and ViewGroup.addView(View) on the
-//            // * parent view of the TextureView to ensure the setSurfaceTexture() call succeeds.
-//            val parent = textureView.parent as ViewGroup
-//            parent.removeView(textureView)
-//            parent.addView(textureView, 0)
-//            textureView.surfaceTexture = it.surfaceTexture
-//        }
 
         // we used to bind all use cases to lifecycle on start
         // DON'T do this, may end up with this: https://github.com/Automattic/stories-android/issues/50
@@ -218,6 +201,17 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         currentCamera = cameraProvider.bindToLifecycle(activity as LifecycleOwner, cameraSelector, videoPreview, imageCapture)
         // retrieve flash availability for this camera
         flashSupported = currentCamera.cameraInfo.hasFlashUnit()
+
+        val previewSize = CameraUtils.calculateOptimalCameraPreviewSize(
+                requireActivity(),
+                textureView,
+                Camera2CameraInfo.from(currentCamera.cameraInfo).cameraId
+        )
+        CameraUtils.configureTransform(
+                textureView.display.rotation,
+                textureView,
+                previewSize
+        )
     }
 
     private fun resetTextureView() {
@@ -243,7 +237,6 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         val parent = textureView.parent as ViewGroup
         parent.removeView(textureView)
         parent.addView(textureView, 0)
-        // textureView.surfaceTexture = surface
     }
 
     @SuppressLint("RestrictedApi")

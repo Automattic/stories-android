@@ -3,7 +3,9 @@ package com.automattic.photoeditor.util
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.ImageFormat
+import android.graphics.Matrix
 import android.graphics.Point
+import android.graphics.RectF
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
@@ -11,11 +13,13 @@ import android.util.DisplayMetrics
 import android.util.Log
 import android.util.Size
 import android.view.Surface
+import android.view.TextureView
 import androidx.fragment.app.FragmentActivity
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.lang.Long.signum
 import java.util.Collections
 import java.util.Comparator
+import kotlin.math.max
 
 class CameraUtils {
     companion object {
@@ -110,7 +114,7 @@ class CameraUtils {
             return swappedDimensions
         }
 
-        fun setupOptimalCameraPreviewSize(
+        fun calculateOptimalCameraPreviewSize(
             activity: FragmentActivity,
             textureView: AutoFitTextureView,
             cameraId: String
@@ -156,15 +160,52 @@ class CameraUtils {
                 maxPreviewWidth, maxPreviewHeight,
                 largest
             )
-
-            // We fit the aspect ratio of TextureView to the size of preview we picked.
-            if (activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                textureView.setAspectRatio(optimalPreviewSize.width, optimalPreviewSize.height)
-            } else {
-                textureView.setAspectRatio(optimalPreviewSize.height, optimalPreviewSize.width)
-            }
             return optimalPreviewSize
         }
+
+        /**
+         * Configures the necessary [android.graphics.Matrix] transformation to `textureView`.
+         * This method should be called after the camera preview size is determined in
+         * either with setUpCameraOutputs in Camera2BasicHandling or after CameraX preview use case has been bound,
+         * and also the size of `textureView` is fixed.
+         *
+         * @param displayRotation current display rotation - any of Surface.ROTATION_0,
+         *                                  Surface.ROTATION_90, Surface.ROTATION_270, Surface.ROTATION_180
+         * @param textureView       the TextureView to which the transformation witll be applied
+         * @param previewSize       the Size of the Preview output by the Cameras
+         */
+        fun configureTransform(displayRotation: Int, textureView: AutoFitTextureView, previewSize: Size) {
+            val matrix = Matrix()
+            val viewRect = RectF(0f, 0f, textureView.width.toFloat(), textureView.height.toFloat())
+            val bufferRect = RectF(0f, 0f, previewSize.height.toFloat(), previewSize.width.toFloat())
+            val centerX = viewRect.centerX()
+            val centerY = viewRect.centerY()
+
+            if (Surface.ROTATION_90 == displayRotation || Surface.ROTATION_270 == displayRotation) {
+                bufferRect.offset(centerX - bufferRect.centerX(), centerY - bufferRect.centerY())
+                val scale = max(
+                        textureView.height.toFloat() / previewSize.height,
+                        textureView.width.toFloat() / previewSize.width)
+                with(matrix) {
+                    setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL)
+                    postScale(scale, scale, centerX, centerY)
+                    postRotate((90 * (displayRotation - 2)).toFloat(), centerX, centerY)
+                }
+            } else if (Surface.ROTATION_180 == displayRotation) {
+                matrix.postRotate(180f, centerX, centerY)
+            }
+
+            // We fit the aspect ratio of TextureView to the size of preview we picked.
+            if (Surface.ROTATION_90 == displayRotation || Surface.ROTATION_270 == displayRotation) {
+                textureView.setAspectRatio(previewSize.width, previewSize.height)
+            } else {
+                textureView.setAspectRatio(previewSize.height, previewSize.width)
+            }
+
+            // finally apply the transform
+            textureView.setTransform(matrix)
+        }
+        
     }
 
     internal class CompareSizesByArea : Comparator<Size> {
