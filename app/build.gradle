@@ -102,21 +102,21 @@ tasks.register('createBuildConfigFieldsFromProperties') {
             }
         }
     }
+
+    // For app signing
+    if (["storeFile", "storePassword", "keyAlias", "keyPassword"].count { !project.hasProperty(it) } == 0) {
+        android {
+            signingConfigs {
+                release {
+                    storeFile = rootProject.file(project.storeFile)
+                    storePassword = project.storePassword
+                    keyAlias = project.keyAlias
+                    keyPassword = project.keyPassword
+                }
+            }
+        }
+        android.buildTypes.release.signingConfig = android.signingConfigs.release
+    }
 }
 
 preBuild.dependsOn(tasks.named("createBuildConfigFieldsFromProperties"))
-
-// For app signing
-if (["storeFile", "storePassword", "keyAlias", "keyPassword"].count { !project.hasProperty(it) } == 0) {
-    android {
-        signingConfigs {
-            release {
-                storeFile = rootProject.file(project.storeFile)
-                storePassword = project.storePassword
-                keyAlias = project.keyAlias
-                keyPassword = project.keyPassword
-            }
-        }
-    }
-    android.buildTypes.release.signingConfig = android.signingConfigs.release
-}
