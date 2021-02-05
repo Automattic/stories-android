@@ -5,18 +5,16 @@ import android.content.Context
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
-import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Handler
 import android.util.DisplayMetrics
 import android.util.Log
-import android.util.Rational
 import android.util.Size
 import android.view.Surface
 import android.view.TextureView
 import android.view.ViewGroup
+import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
-import androidx.camera.core.CameraX
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCapture.Metadata
 import androidx.camera.core.ImageCapture.OutputFileOptions
@@ -25,10 +23,15 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.core.Preview.SurfaceProvider
 import androidx.camera.core.SurfaceRequest
+import androidx.camera.core.SurfaceRequest.Result.RESULT_INVALID_SURFACE
+import androidx.camera.core.SurfaceRequest.Result.RESULT_REQUEST_CANCELLED
+import androidx.camera.core.SurfaceRequest.Result.RESULT_SURFACE_ALREADY_PROVIDED
+import androidx.camera.core.SurfaceRequest.Result.RESULT_SURFACE_USED_SUCCESSFULLY
+import androidx.camera.core.SurfaceRequest.Result.RESULT_WILL_NOT_PROVIDE_SURFACE
 import androidx.camera.core.VideoCapture
-import androidx.camera.core.impl.VideoCaptureConfig
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import androidx.core.util.Consumer
 import androidx.lifecycle.LifecycleOwner
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState
@@ -41,30 +44,45 @@ import com.automattic.photoeditor.camera.interfaces.storiesCameraSelectionFromCa
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import com.google.common.util.concurrent.ListenableFuture
-import java.io.File
 
 class CameraXBasicHandling : VideoRecorderFragment() {
     private var videoCapture: VideoCapture? = null
     private lateinit var videoPreview: Preview
     private var imageCapture: ImageCapture? = null
     private var lensFacing = CameraSelector.LENS_FACING_BACK
-    private var screenAspectRatio = Rational(9, 16)
+    // private var screenAspectRatio = Rational(9, 16)
     private lateinit var cameraProviderFuture : ListenableFuture<ProcessCameraProvider>
     private lateinit var cameraProvider: ProcessCameraProvider
     private var cameraProviderInitialized = false
-    private var surfaceRequest: SurfaceRequest? = null
-    private var surfaceReleaseFuture: ListenableFuture<Void>? = null
+    private lateinit var currentCamera: Camera
     private var resolution: Size? = null
+    private var surfaceRequest: SurfaceRequest? = null
 
     val surfaceTextureListener = object : TextureView.SurfaceTextureListener {
         override fun onSurfaceTextureAvailable(texture: SurfaceTexture, width: Int, height: Int) {
-            resetTextureView(texture)
+            if (active) {
+                surfaceRequest?.provideSurface(
+                        Surface(texture),
+                        ContextCompat.getMainExecutor(context),
+                        Consumer {
+                            when (it.resultCode) {
+                                RESULT_SURFACE_USED_SUCCESSFULLY -> Log.d("DEBUG", "RESULT_SURFACE_USED_SUCCESSFULLY")
+                                RESULT_REQUEST_CANCELLED -> Log.d("DEBUG", "RESULT_REQUEST_CANCELLED")
+                                RESULT_INVALID_SURFACE -> Log.d("DEBUG", "RESULT_INVALID_SURFACE")
+                                RESULT_SURFACE_ALREADY_PROVIDED -> Log.d("DEBUG", "RESULT_SURFACE_ALREADY_PROVIDED")
+                                RESULT_WILL_NOT_PROVIDE_SURFACE -> Log.d("DEBUG", "RESULT_WILL_NOT_PROVIDE_SURFACE")
+                            }
+                        }
+                )
+            } else {
+                surfaceRequest?.willNotProvideSurface()
+            }
         }
 
         override fun onSurfaceTextureSizeChanged(texture: SurfaceTexture, width: Int, height: Int) {
-            resetTextureView(texture)
+            // resetTextureView(texture)
         }
-
+    
         override fun onSurfaceTextureDestroyed(texture: SurfaceTexture) = true
 
         override fun onSurfaceTextureUpdated(texture: SurfaceTexture) = Unit
@@ -113,9 +131,6 @@ class CameraXBasicHandling : VideoRecorderFragment() {
 
     @SuppressLint("RestrictedApi")
     private fun windDown() {
-        videoPreview.clear()
-        videoCapture?.clear()
-        imageCapture?.clear()
         cameraProvider.unbindAll()
     }
 
@@ -124,13 +139,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     private fun startCamera() {
         // Get screen metrics used to setup camera for full screen resolution
         val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
-        screenAspectRatio = Rational(metrics.widthPixels, metrics.heightPixels)
-
-        // retrieve flash availability for this camera
-        val cameraId = CameraX.getCameraWithLensFacing(lensFacing)
-        cameraId?.let {
-            updateFlashSupported(it)
-        }
+        // screenAspectRatio = Rational(metrics.widthPixels, metrics.heightPixels)
 
         videoPreview = Preview.Builder()
                 /*  From https://developer.android.com/jetpack/androidx/releases/camera#camera2-core-1.0.0-alpha06
@@ -145,7 +154,8 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                  */
                 // for now, we're calling setTargetAspectRatioCustom() with this device's screen aspect ratio, given
                 // setting an aspect ratio of 4:3 would show undesired effects on alpha06 such as a stretched preview
-                .setTargetAspectRatioCustom(screenAspectRatio)
+                // .setTargetAspectRatioCustom(screenAspectRatio)
+                .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
                 // Set initial target rotation, we will have to call this again if rotation changes
                 // during the lifecycle of this use case
                 .setTargetRotation(textureView.display.rotation)
@@ -158,7 +168,8 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                 // We request aspect ratio but no resolution to match preview config but letting
                 // CameraX optimize for whatever specific resolution best fits requested capture mode
                 // setTargetAspectRatio(RATIO_4_3)
-                .setTargetAspectRatioCustom(screenAspectRatio)
+                // .setTargetAspectRatioCustom(screenAspectRatio)
+                .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
                 // Set initial target rotation, we will have to call this again if rotation changes
                 // during the lifecycle of this use case
                 .setTargetRotation(textureView.display.rotation)
@@ -166,21 +177,12 @@ class CameraXBasicHandling : VideoRecorderFragment() {
 
         videoPreview.setSurfaceProvider(object: SurfaceProvider {
             override fun onSurfaceRequested(request: SurfaceRequest) {
+                surfaceRequest = request
                 resolution = request.resolution
                 // initInternal()
                 // resetTextureView()
-                surfaceRequest?.setWillNotComplete()
-
-                surfaceRequest = request
-                surfaceRequest?.addRequestCancellationListener(
-                        ContextCompat.getMainExecutor(textureView.getContext()),
-                        Runnable {
-                            if (surfaceRequest == request) {
-                                surfaceRequest = null
-                                surfaceReleaseFuture = null
-                            }
-                        }
-                )
+                // surfaceRequest?.setWillNotComplete()
+                resetTextureView()
             }
         })
 
@@ -213,10 +215,12 @@ class CameraXBasicHandling : VideoRecorderFragment() {
 
         // image capture only
         val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
-        cameraProvider.bindToLifecycle(activity as LifecycleOwner, cameraSelector, videoPreview, imageCapture)
+        currentCamera = cameraProvider.bindToLifecycle(activity as LifecycleOwner, cameraSelector, videoPreview, imageCapture)
+        // retrieve flash availability for this camera
+        flashSupported = currentCamera.cameraInfo.hasFlashUnit()
     }
 
-    private fun resetTextureView(surface: SurfaceTexture) {
+    private fun resetTextureView() {
         if (!active) {
             return
         }
@@ -229,9 +233,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         //     * {@link PreviewOutput#getSurfaceTexture()} when a new SurfaceTexture is provided via an update
         //     * or when the user is finished with the use case.  A SurfaceTexture is created each time the
         //     * use case becomes active and no previous SurfaceTexture exists.
-        if (surface != textureView.surfaceTexture) {
-            textureView.surfaceTexture?.release()
-        }
+        textureView.surfaceTexture?.release()
 
         // Also removing and re-adding the TextureView here, due to the following reasons:
         // https://developer.android.com/reference/androidx/camera/core/Preview.html#setOnPreviewOutputUpdateListener(androidx.camera.core.Preview.OnPreviewOutputUpdateListener)
@@ -241,84 +243,65 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         val parent = textureView.parent as ViewGroup
         parent.removeView(textureView)
         parent.addView(textureView, 0)
-        textureView.surfaceTexture = surface
-
-
-        resolution?.let {
-            surface.setDefaultBufferSize(it.getWidth(), it.getHeight())
-        }
-
-        val surface = Surface(surface)
-        val surfaceReleaseFutureLocal = surfaceRequest?.setSurface(
-                surface
-        )
-        surfaceReleaseFuture = surfaceReleaseFutureLocal
-        surfaceReleaseFuture?.addListener(Runnable {
-            surface.release()
-            if (surfaceReleaseFuture === surfaceReleaseFutureLocal) {
-                surfaceReleaseFuture = null
-            }
-        }, ContextCompat.getMainExecutor(textureView.getContext()))
-
-        surfaceRequest = null
+        // textureView.surfaceTexture = surface
     }
 
     @SuppressLint("RestrictedApi")
     override fun startRecordingVideo(finishedListener: VideoRecorderFinished?) {
-        activity?.let {
-            if (useTempCaptureFile) {
-                currentFile = FileUtils.getTempCaptureFile(it, true)
-            } else {
-                currentFile = FileUtils.getLoopFrameFile(it, true)
-            }
-        }
-
-        currentFile?.let {
-            it.createNewFile()
-
-            // unbind this use case for now, we'll re-bind later
-            imageCapture?.let {
-                it.clear()
-                if (cameraProvider.isBound(it)) {
-                    cameraProvider.unbind(it)
-                }
-            }
-
-            // if a previous instance exists, request to release muxer and buffers
-            videoCapture?.let {
-                if (cameraProvider.isBound(it)) {
-                    cameraProvider.unbind(it)
-                }
-                videoCapture?.clear()
-            }
-
-            val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
-
-            videoCapture = VideoCaptureConfig.Builder().apply {
-                setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
-                setTargetRotation(textureView.display.rotation)
-            }.build()
-//            videoCapture = VideoCapture(videoCaptureConfig)
-
-            // video capture only
-            val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
-            cameraProvider.bindToLifecycle(activity as LifecycleOwner, cameraSelector, videoCapture)
-
-            videoCapture?.startRecording(
-                it,
-                AsyncTask.THREAD_POOL_EXECUTOR,
-                object : VideoCapture.OnVideoSavedCallback {
-                    override fun onVideoSaved(file: File) {
-                        Log.i(tag, "Video File : $file")
-                        finishedListener?.onVideoSaved(file)
-                    }
-
-                    override fun onError(videoCaptureError: Int, message: String, cause: Throwable?) {
-                        Log.i(tag, "Video Error: $message")
-                        finishedListener?.onError(message, cause)
-                    }
-            })
-        }
+        // FIXME tackled video recording later
+//        activity?.let {
+//            if (useTempCaptureFile) {
+//                currentFile = FileUtils.getTempCaptureFile(it, true)
+//            } else {
+//                currentFile = FileUtils.getLoopFrameFile(it, true)
+//            }
+//        }
+//
+//        currentFile?.let {
+//            it.createNewFile()
+//
+//            // unbind this use case for now, we'll re-bind later
+//            imageCapture?.let {
+//                if (cameraProvider.isBound(it)) {
+//                    cameraProvider.unbind(it)
+//                }
+//            }
+//
+//            // if a previous instance exists, request to release muxer and buffers
+//            videoCapture?.let {
+//                if (cameraProvider.isBound(it)) {
+//                    cameraProvider.unbind(it)
+//                }
+//                videoCapture?.clear()
+//            }
+//
+//            val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
+//
+//            videoCapture = VideoCaptureConfig.Builder().apply {
+//                setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
+//                setTargetRotation(textureView.display.rotation)
+//            }.build()
+////            videoCapture = VideoCapture(videoCaptureConfig)
+//
+//            // video capture only
+//            val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
+//            cameraProvider.bindToLifecycle(activity as LifecycleOwner, cameraSelector, videoCapture)
+//
+//            videoCapture?.startRecording(
+//                it,
+//                AsyncTask.THREAD_POOL_EXECUTOR,
+//                object : VideoCapture.OnVideoSavedCallback {
+//                    override fun onVideoSaved(file: File) {
+//                        Log.i(tag, "Video File : $file")
+//                        finishedListener?.onVideoSaved(file)
+//                    }
+//
+//                    override fun onError(videoCaptureError: Int, message: String, cause: Throwable?) {
+//                        Log.i(tag, "Video Error: $message")
+//                        finishedListener?.onError(message, cause)
+//                    }
+//            })
+//        }
     }
 
     @SuppressLint("RestrictedApi")
@@ -379,14 +362,6 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         }
         if (active) {
             try {
-                // Only bind use cases if we can query a camera with this orientation
-                val cameraId = CameraX.getCameraWithLensFacing(lensFacing)
-
-                // retrieve flash availability for this camera
-                cameraId?.let {
-                    updateFlashSupported(it)
-                }
-
                 // Unbind all use cases and bind them again with the new lens facing configuration
                 cameraProvider.unbindAll()
                 startCamera()

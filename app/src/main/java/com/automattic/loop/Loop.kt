@@ -6,9 +6,6 @@ import android.app.NotificationManager
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
-import androidx.camera.camera2.Camera2Config
-import androidx.camera.core.CameraXConfig
-import androidx.camera.core.impl.CameraFactory
 import androidx.core.provider.FontRequest
 import androidx.emoji.text.EmojiCompat
 import androidx.emoji.text.FontRequestEmojiCompatConfig
@@ -18,13 +15,8 @@ import com.automattic.loop.util.CrashLoggingUtils
 import com.wordpress.stories.compose.NotificationTrackerProvider
 import com.wordpress.stories.compose.frame.StoryNotificationType
 
-open class Loop : Application(), NotificationTrackerProvider, CameraXConfig.Provider {
+open class Loop : Application(), NotificationTrackerProvider {
     private var statusBarHeight: Int = 0
-    private var test: CameraFactory? = null
-
-    override fun getCameraXConfig(): CameraXConfig {
-        return Camera2Config.defaultConfig(this)
-    }
 
     override fun onCreate() {
         super.onCreate()
