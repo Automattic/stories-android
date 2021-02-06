@@ -16,7 +16,6 @@ import android.widget.ImageView.ScaleType.CENTER_CROP
 import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import androidx.annotation.RequiresApi
-import androidx.camera.view.PreviewView
 import com.automattic.photoeditor.OnSaveBitmap
 import com.automattic.photoeditor.R.styleable
 import com.automattic.photoeditor.views.background.fixed.BackgroundImageView
@@ -40,7 +39,6 @@ import com.automattic.photoeditor.views.filter.PhotoFilter
 
 class PhotoEditorView : RelativeLayout {
     private lateinit var autoFitTextureView: AutoFitTextureView
-    private lateinit var previewViewCameraX: PreviewView
     private lateinit var backgroundImage: BackgroundImageView
     private lateinit var brushDrawingView: BrushDrawingView
     private lateinit var imageFilterView: ImageFilterView
@@ -79,9 +77,6 @@ class PhotoEditorView : RelativeLayout {
 
     val textureView: AutoFitTextureView
         get() = autoFitTextureView
-
-    val previewView: PreviewView
-        get() = previewViewCameraX
 
     val listeners: ArrayList<SurfaceTextureListener>
         get() = surfaceListeners
