@@ -14,6 +14,7 @@ import android.view.Surface
 import android.view.TextureView
 import android.view.ViewGroup
 import androidx.camera.camera2.interop.Camera2CameraInfo
+import androidx.camera.core.AspectRatio
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -58,6 +59,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     private var cameraProviderInitialized = false
     private lateinit var currentCamera: Camera
     private var surfaceRequest: SurfaceRequest? = null
+    private var optimalPreviewSize: Size = Size(9, 16) // using 16:9 aspect ratio as per default
 
     val surfaceTextureListener = object : TextureView.SurfaceTextureListener {
         override fun onSurfaceTextureAvailable(texture: SurfaceTexture, width: Int, height: Int) {
@@ -160,8 +162,8 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                 // for now, we're calling setTargetAspectRatioCustom() with this device's screen aspect ratio, given
                 // setting an aspect ratio of 4:3 would show undesired effects on alpha06 such as a stretched preview
                 // .setTargetAspectRatioCustom(screenAspectRatio)
-                .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
-                // .setTargetAspectRatio(AspectRatio.RATIO_16_9)
+                // .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
+                .setTargetAspectRatio(AspectRatio.RATIO_16_9)
                 // Set initial target rotation, we will have to call this again if rotation changes
                 // during the lifecycle of this use case
                 .setTargetRotation(textureView.display.rotation)
@@ -175,8 +177,8 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                 // CameraX optimize for whatever specific resolution best fits requested capture mode
                 // setTargetAspectRatio(RATIO_4_3)
                 // .setTargetAspectRatioCustom(screenAspectRatio)
-                .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
-                // .setTargetAspectRatio(AspectRatio.RATIO_16_9)
+                // .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
+                .setTargetAspectRatio(AspectRatio.RATIO_16_9)
                 // Set initial target rotation, we will have to call this again if rotation changes
                 // during the lifecycle of this use case
                 .setTargetRotation(textureView.display.rotation)
@@ -185,9 +187,12 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         videoPreview.setSurfaceProvider(object: SurfaceProvider {
             override fun onSurfaceRequested(request: SurfaceRequest) {
                 surfaceRequest = request
-                // initInternal()
-                // resetTextureView()
-                // surfaceRequest?.setWillNotComplete()
+                optimalPreviewSize = CameraUtils.calculateOptimalCameraPreviewSize(
+                        requireActivity(),
+                        textureView,
+                        Camera2CameraInfo.from(currentCamera.cameraInfo).cameraId,
+                        true
+                )
                 resetTextureView()
             }
         })
@@ -201,17 +206,6 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         currentCamera = cameraProvider.bindToLifecycle(activity as LifecycleOwner, cameraSelector, videoPreview, imageCapture)
         // retrieve flash availability for this camera
         flashSupported = currentCamera.cameraInfo.hasFlashUnit()
-
-        val previewSize = CameraUtils.calculateOptimalCameraPreviewSize(
-                requireActivity(),
-                textureView,
-                Camera2CameraInfo.from(currentCamera.cameraInfo).cameraId
-        )
-        CameraUtils.configureTransform(
-                textureView.display.rotation,
-                textureView,
-                previewSize
-        )
     }
 
     private fun resetTextureView() {
@@ -236,6 +230,9 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         // * parent view of the TextureView to ensure the setSurfaceTexture() call succeeds.
         val parent = textureView.parent as ViewGroup
         parent.removeView(textureView)
+        // Important: we need to set the aspect ratio on the TextureView in order for it to be reused
+        // also bear in mind we're passing width/height rotated, given Stories defaults to portrait mode always
+        textureView.setAspectRatio(optimalPreviewSize.height, optimalPreviewSize.width)
         parent.addView(textureView, 0)
     }
 
