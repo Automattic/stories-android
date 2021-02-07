@@ -59,7 +59,6 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     private var cameraProviderInitialized = false
     private lateinit var currentCamera: Camera
     private var surfaceRequest: SurfaceRequest? = null
-    private var optimalPreviewSize: Size = Size(9, 16) // using 16:9 aspect ratio as per default
 
     val surfaceTextureListener = object : TextureView.SurfaceTextureListener {
         override fun onSurfaceTextureAvailable(texture: SurfaceTexture, width: Int, height: Int) {
@@ -187,12 +186,6 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         videoPreview.setSurfaceProvider(object: SurfaceProvider {
             override fun onSurfaceRequested(request: SurfaceRequest) {
                 surfaceRequest = request
-                optimalPreviewSize = CameraUtils.calculateOptimalCameraPreviewSize(
-                        requireActivity(),
-                        textureView,
-                        Camera2CameraInfo.from(currentCamera.cameraInfo).cameraId,
-                        true
-                )
                 resetTextureView()
             }
         })
@@ -231,8 +224,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         val parent = textureView.parent as ViewGroup
         parent.removeView(textureView)
         // Important: we need to set the aspect ratio on the TextureView in order for it to be reused
-        // also bear in mind we're passing width/height rotated, given Stories defaults to portrait mode always
-        textureView.setAspectRatio(optimalPreviewSize.height, optimalPreviewSize.width)
+        textureView.setAspectRatio(9, 16)
         parent.addView(textureView, 0)
     }
 
