@@ -74,11 +74,6 @@ dependencies {
 
     implementation('org.wordpress:utils:1.26')
 
-    def camerax_version = "1.0.0-rc02"
-    implementation "androidx.camera:camera-core:${camerax_version}"
-    implementation "androidx.camera:camera-camera2:${camerax_version}"
-    implementation "androidx.camera:camera-lifecycle:${camerax_version}"
-
     debugImplementation "com.facebook.flipper:flipper:$flipperVersion"
     debugImplementation 'com.facebook.soloader:soloader:0.9.0'
     debugImplementation "com.facebook.flipper:flipper-network-plugin:$flipperVersion"
