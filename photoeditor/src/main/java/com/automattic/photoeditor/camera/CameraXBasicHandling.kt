@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.util.DisplayMetrics
 import android.util.Log
+import android.util.Size
 import android.view.Surface
 import android.view.TextureView
 import android.view.ViewGroup
@@ -142,10 +143,6 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     // TODO remove this RestrictedApi annotation once androidx.camera:camera moves out of alpha
     @SuppressLint("RestrictedApi", "UnsafeExperimentalUsageError")
     private fun startCamera() {
-        // Get screen metrics used to setup camera for full screen resolution
-        val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
-        // screenAspectRatio = Rational(metrics.widthPixels, metrics.heightPixels)
-
         videoPreview = Preview.Builder()
                 /*  From https://developer.android.com/jetpack/androidx/releases/camera#camera2-core-1.0.0-alpha06
                     Aspect Ratios: For each use case, applications should call only one of setTargetResolution() or
@@ -185,7 +182,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         videoPreview.setSurfaceProvider(object : SurfaceProvider {
             override fun onSurfaceRequested(request: SurfaceRequest) {
                 surfaceRequest = request
-                resetTextureView()
+                resetTextureView(request.resolution)
             }
         })
 
@@ -202,7 +199,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         flashSupported = currentCamera.cameraInfo.hasFlashUnit()
     }
 
-    private fun resetTextureView() {
+    private fun resetTextureView(resolution: Size) {
         if (!active) {
             return
         }
@@ -225,7 +222,8 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         val parent = textureView.parent as ViewGroup
         parent.removeView(textureView)
         // Important: we need to set the aspect ratio on the TextureView in order for it to be reused
-        textureView.setAspectRatio(9, 16)
+        // passing the surfaceRequest's requested resolution as calculated by CameraX
+        textureView.setAspectRatio(resolution.height, resolution.width)
         parent.addView(textureView, 0)
     }
 
