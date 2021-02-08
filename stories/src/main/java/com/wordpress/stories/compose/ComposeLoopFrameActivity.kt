@@ -1292,25 +1292,27 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         cameraOperationInCourse = true
         camera_capture_button.startProgressingAnimation(CAMERA_STILL_PICTURE_ANIM_MS)
         backgroundSurfaceManager.takePicture(object : ImageCaptureListener {
-            override fun onImageSaved(file: File) {
-                runOnUiThread {
-                    Glide.with(this@ComposeLoopFrameActivity)
-                        .load(file)
-                        .transform(CenterCrop(), RoundedCorners(16))
-                        .into(gallery_upload_img)
-                    Glide.with(this@ComposeLoopFrameActivity)
-                        .load(file)
-                        .transform(CenterCrop())
-                        .into(photoEditorView.source)
-                    storyViewModel.apply {
-                        addStoryFrameItemToCurrentStory(
-                            StoryFrameItem(FileBackgroundSource(file = file), frameItemType = StoryFrameItemType.IMAGE)
-                        )
-                        setSelectedFrame(storyViewModel.getLastFrameIndexInCurrentStory())
+            override fun onImageSaved(uri: Uri?) {
+                uri?.let {
+                    runOnUiThread {
+                        Glide.with(this@ComposeLoopFrameActivity)
+                            .load(it)
+                            .transform(CenterCrop(), RoundedCorners(16))
+                            .into(gallery_upload_img)
+                        Glide.with(this@ComposeLoopFrameActivity)
+                            .load(it)
+                            .transform(CenterCrop())
+                            .into(photoEditorView.source)
+                        storyViewModel.apply {
+                            addStoryFrameItemToCurrentStory(
+                                StoryFrameItem(UriBackgroundSource(contentUri = it), frameItemType = StoryFrameItemType.IMAGE)
+                            )
+                            setSelectedFrame(storyViewModel.getLastFrameIndexInCurrentStory())
+                        }
+                        showStaticBackground()
+                        currentOriginalCapturedFile = File(it.path)
+                        waitToReenableCapture()
                     }
-                    showStaticBackground()
-                    currentOriginalCapturedFile = file
-                    waitToReenableCapture()
                 }
             }
             override fun onError(message: String, cause: Throwable?) {

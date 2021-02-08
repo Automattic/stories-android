@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.util.DisplayMetrics
@@ -300,12 +301,16 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                 currentFile = FileUtils.getLoopFrameFile(context, false).apply { createNewFile() }
             }
 
-            currentFile?.let {
+            currentFile?.let { captureFile ->
                 // Setup image capture metadata
                 val metadata = Metadata().apply {
                     // Mirror image when using the front camera
                     isReversedHorizontal = lensFacing == CameraSelector.LENS_FACING_FRONT
                 }
+
+                val outputFileOptions = OutputFileOptions.Builder(captureFile)
+                        .setMetadata(metadata)
+                        .build()
 
                 // image capture only
                 imageCapture?.let {
@@ -316,14 +321,13 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                 }
 
                 // Setup image capture listener which is triggered after photo has been taken
-                OutputFileOptions.Builder(it)
                 imageCapture?.takePicture(
-                        OutputFileOptions.Builder(it).build(),
+                        outputFileOptions,
                         ContextCompat.getMainExecutor(context),
                         object : ImageCapture.OnImageSavedCallback {
                             override fun onImageSaved(outputFileResults: OutputFileResults) {
-                                // FIXME: adapt File to Uri
-                                // onImageCapturedListener.onImageSaved(outputFileResults.savedUri)
+                                val savedUri = outputFileResults.savedUri ?: Uri.fromFile(captureFile)
+                                onImageCapturedListener.onImageSaved(savedUri)
                             }
 
                             override fun onError(exception: ImageCaptureException) {
