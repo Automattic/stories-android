@@ -1,10 +1,9 @@
 package com.automattic.photoeditor.util
 
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.ImageFormat
-import android.graphics.Matrix
 import android.graphics.Point
-import android.graphics.RectF
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
@@ -17,7 +16,6 @@ import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import java.lang.Long.signum
 import java.util.Collections
 import java.util.Comparator
-import kotlin.math.max
 
 class CameraUtils {
     companion object {
@@ -54,13 +52,12 @@ class CameraUtils {
             textureViewHeight: Int,
             maxWidth: Int,
             maxHeight: Int,
-            aspectRatio: Size,
-            fitAspectRatioStrictly: Boolean = false
+            aspectRatio: Size
         ): Size {
             // Collect the supported resolutions that are at least as big as the preview Surface
-            var bigEnough = ArrayList<Size>()
+            val bigEnough = ArrayList<Size>()
             // Collect the supported resolutions that are smaller than the preview Surface
-            var notBigEnough = ArrayList<Size>()
+            val notBigEnough = ArrayList<Size>()
             val w = aspectRatio.width
             val h = aspectRatio.height
             for (option in choices) {
@@ -74,11 +71,6 @@ class CameraUtils {
                 }
             }
 
-            if (fitAspectRatioStrictly) {
-                bigEnough = ArrayList(filterOutByAspectRatio(bigEnough, aspectRatio))
-                notBigEnough = ArrayList(filterOutByAspectRatio(notBigEnough, aspectRatio))
-            }
-
             // Pick the smallest of those big enough. If there is no one big enough, pick the
             // largest of those not big enough.
             return when {
@@ -89,11 +81,6 @@ class CameraUtils {
                     choices[0]
                 }
             }
-        }
-
-        fun filterOutByAspectRatio(sizes: List<Size>, aspectRatio: Size): List<Size> {
-            val ratio: Float = aspectRatio.width.toFloat() / aspectRatio.height.toFloat()
-            return sizes.filter { (it.width.toFloat() / it.height.toFloat()) == ratio }
         }
 
         /**
@@ -123,11 +110,10 @@ class CameraUtils {
             return swappedDimensions
         }
 
-        fun calculateOptimalCameraPreviewSize(
+        fun setupOptimalCameraPreviewSize(
             activity: FragmentActivity,
             textureView: AutoFitTextureView,
-            cameraId: String,
-            fitAspectRatio: Boolean
+            cameraId: String
         ): Size {
             // Get screen metrics used to setup camera for full screen resolution
             val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
@@ -159,19 +145,7 @@ class CameraUtils {
             if (maxPreviewHeight > MAX_PREVIEW_HEIGHT) maxPreviewHeight = MAX_PREVIEW_HEIGHT
 
             // For still image captures, we use the largest available size.
-            var largest = Collections.max(listOf(*map.getOutputSizes(ImageFormat.JPEG)), CompareSizesByArea())
-
-            // if we need to fit the aspect ratio of both the preview feed and rendering surface, only choose the
-            // largest value that matches the preview surface's aspect ratio
-            if (fitAspectRatio) {
-                val filteredList = filterOutByAspectRatio(
-                        listOf(*map.getOutputSizes(ImageFormat.JPEG)),
-                        Size(maxPreviewWidth, maxPreviewHeight)
-                )
-                if (filteredList.isNotEmpty()) {
-                    largest = Collections.max(filteredList, CompareSizesByArea())
-                }
-            }
+            val largest = Collections.max(listOf(*map.getOutputSizes(ImageFormat.JPEG)), CompareSizesByArea())
 
             // Danger, W.R.! Attempting to use too large a preview size could  exceed the camera
             // bus' bandwidth limitation, resulting in gorgeous previews but the storage of
@@ -180,52 +154,16 @@ class CameraUtils {
                 map.getOutputSizes(SurfaceTexture::class.java),
                 rotatedPreviewWidth, rotatedPreviewHeight,
                 maxPreviewWidth, maxPreviewHeight,
-                largest,
-                fitAspectRatio
+                largest
             )
-            return optimalPreviewSize
-        }
-
-        /**
-         * Configures the necessary [android.graphics.Matrix] transformation to `textureView`.
-         * This method should be called after the camera preview size is determined in
-         * either with setUpCameraOutputs in Camera2BasicHandling or after CameraX preview use case has been bound,
-         * and also the size of `textureView` is fixed.
-         *
-         * @param textureView the TextureView to which the transformation witll be applied
-         * @param previewSize the Size of the Preview output by the Cameras
-         */
-        fun configureTransform(textureView: AutoFitTextureView, previewSize: Size) {
-            val displayRotation = textureView.display.rotation
-            val matrix = Matrix()
-            val viewRect = RectF(0f, 0f, textureView.width.toFloat(), textureView.height.toFloat())
-            val bufferRect = RectF(0f, 0f, previewSize.height.toFloat(), previewSize.width.toFloat())
-            val centerX = viewRect.centerX()
-            val centerY = viewRect.centerY()
-
-            if (Surface.ROTATION_90 == displayRotation || Surface.ROTATION_270 == displayRotation) {
-                bufferRect.offset(centerX - bufferRect.centerX(), centerY - bufferRect.centerY())
-                val scale = max(
-                        textureView.height.toFloat() / previewSize.height,
-                        textureView.width.toFloat() / previewSize.width)
-                with(matrix) {
-                    setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL)
-                    postScale(scale, scale, centerX, centerY)
-                    postRotate((90 * (displayRotation - 2)).toFloat(), centerX, centerY)
-                }
-            } else if (Surface.ROTATION_180 == displayRotation) {
-                matrix.postRotate(180f, centerX, centerY)
-            }
 
             // We fit the aspect ratio of TextureView to the size of preview we picked.
-            if (Surface.ROTATION_90 == displayRotation || Surface.ROTATION_270 == displayRotation) {
-                textureView.setAspectRatio(previewSize.width, previewSize.height)
+            if (activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                textureView.setAspectRatio(optimalPreviewSize.width, optimalPreviewSize.height)
             } else {
-                textureView.setAspectRatio(previewSize.height, previewSize.width)
+                textureView.setAspectRatio(optimalPreviewSize.height, optimalPreviewSize.width)
             }
-
-            // finally apply the transform
-            textureView.setTransform(matrix)
+            return optimalPreviewSize
         }
     }
 
