@@ -3,7 +3,6 @@ package com.automattic.photoeditor.camera.interfaces
 
 // import androidx.camera.core.FlashMode
 import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCapture.FlashMode
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.AUTO
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.OFF
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.ON

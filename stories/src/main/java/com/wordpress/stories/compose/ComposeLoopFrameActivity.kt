@@ -1305,7 +1305,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                             .into(photoEditorView.source)
                         storyViewModel.apply {
                             addStoryFrameItemToCurrentStory(
-                                StoryFrameItem(UriBackgroundSource(contentUri = it), frameItemType = StoryFrameItemType.IMAGE)
+                                StoryFrameItem(
+                                        UriBackgroundSource(contentUri = it),
+                                        frameItemType = StoryFrameItemType.IMAGE
+                                )
                             )
                             setSelectedFrame(storyViewModel.getLastFrameIndexInCurrentStory())
                         }

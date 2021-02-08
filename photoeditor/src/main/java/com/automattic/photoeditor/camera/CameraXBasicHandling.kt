@@ -10,11 +10,9 @@ import android.os.Bundle
 import android.os.Handler
 import android.util.DisplayMetrics
 import android.util.Log
-import android.util.Size
 import android.view.Surface
 import android.view.TextureView
 import android.view.ViewGroup
-import androidx.camera.camera2.interop.Camera2CameraInfo
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
@@ -44,7 +42,6 @@ import com.automattic.photoeditor.camera.interfaces.VideoRecorderFragment
 import com.automattic.photoeditor.camera.interfaces.cameraXLensFacingFromStoriesCameraSelection
 import com.automattic.photoeditor.camera.interfaces.cameraXflashModeFromStoriesFlashState
 import com.automattic.photoeditor.camera.interfaces.storiesCameraSelectionFromCameraXLensFacing
-import com.automattic.photoeditor.util.CameraUtils
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import com.google.common.util.concurrent.ListenableFuture
@@ -54,8 +51,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     private lateinit var videoPreview: Preview
     private var imageCapture: ImageCapture? = null
     private var lensFacing = CameraSelector.LENS_FACING_BACK
-    // private var screenAspectRatio = Rational(9, 16)
-    private lateinit var cameraProviderFuture : ListenableFuture<ProcessCameraProvider>
+    private lateinit var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
     private lateinit var cameraProvider: ProcessCameraProvider
     private var cameraProviderInitialized = false
     private lateinit var currentCamera: Camera
@@ -66,17 +62,20 @@ class CameraXBasicHandling : VideoRecorderFragment() {
             if (active) {
                 surfaceRequest?.let {
                     texture.setDefaultBufferSize(
-                            it.resolution.getWidth(), it.resolution.getHeight());
+                            it.resolution.getWidth(), it.resolution.getHeight())
                     it.provideSurface(
                             Surface(texture),
                             ContextCompat.getMainExecutor(context),
                             Consumer {
                                 when (it.resultCode) {
-                                    RESULT_SURFACE_USED_SUCCESSFULLY -> Log.d("DEBUG", "RESULT_SURFACE_USED_SUCCESSFULLY")
+                                    RESULT_SURFACE_USED_SUCCESSFULLY ->
+                                        Log.d("DEBUG", "RESULT_SURFACE_USED_SUCCESSFULLY")
                                     RESULT_REQUEST_CANCELLED -> Log.d("DEBUG", "RESULT_REQUEST_CANCELLED")
                                     RESULT_INVALID_SURFACE -> Log.d("DEBUG", "RESULT_INVALID_SURFACE")
-                                    RESULT_SURFACE_ALREADY_PROVIDED -> Log.d("DEBUG", "RESULT_SURFACE_ALREADY_PROVIDED")
-                                    RESULT_WILL_NOT_PROVIDE_SURFACE -> Log.d("DEBUG", "RESULT_WILL_NOT_PROVIDE_SURFACE")
+                                    RESULT_SURFACE_ALREADY_PROVIDED ->
+                                        Log.d("DEBUG", "RESULT_SURFACE_ALREADY_PROVIDED")
+                                    RESULT_WILL_NOT_PROVIDE_SURFACE ->
+                                        Log.d("DEBUG", "RESULT_WILL_NOT_PROVIDE_SURFACE")
                                 }
                             }
                     )
@@ -87,9 +86,8 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         }
 
         override fun onSurfaceTextureSizeChanged(texture: SurfaceTexture, width: Int, height: Int) {
-            // resetTextureView(texture)
         }
-    
+
         override fun onSurfaceTextureDestroyed(texture: SurfaceTexture) = true
 
         override fun onSurfaceTextureUpdated(texture: SurfaceTexture) = Unit
@@ -184,7 +182,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                 .setTargetRotation(textureView.display.rotation)
                 .build()
 
-        videoPreview.setSurfaceProvider(object: SurfaceProvider {
+        videoPreview.setSurfaceProvider(object : SurfaceProvider {
             override fun onSurfaceRequested(request: SurfaceRequest) {
                 surfaceRequest = request
                 resetTextureView()
@@ -197,7 +195,9 @@ class CameraXBasicHandling : VideoRecorderFragment() {
 
         // image capture only
         val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
-        currentCamera = cameraProvider.bindToLifecycle(activity as LifecycleOwner, cameraSelector, videoPreview, imageCapture)
+        currentCamera = cameraProvider.bindToLifecycle(
+                activity as LifecycleOwner, cameraSelector, videoPreview, imageCapture
+        )
         // retrieve flash availability for this camera
         flashSupported = currentCamera.cameraInfo.hasFlashUnit()
     }
@@ -264,7 +264,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
 //                setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
 //                setTargetRotation(textureView.display.rotation)
 //            }.build()
-////            videoCapture = VideoCapture(videoCaptureConfig)
+// //            videoCapture = VideoCapture(videoCaptureConfig)
 //
 //            // video capture only
 //            val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()

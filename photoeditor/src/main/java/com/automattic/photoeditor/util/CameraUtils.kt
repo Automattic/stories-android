@@ -192,10 +192,8 @@ class CameraUtils {
          * either with setUpCameraOutputs in Camera2BasicHandling or after CameraX preview use case has been bound,
          * and also the size of `textureView` is fixed.
          *
-         * @param displayRotation current display rotation - any of Surface.ROTATION_0,
-         *                                  Surface.ROTATION_90, Surface.ROTATION_270, Surface.ROTATION_180
-         * @param textureView       the TextureView to which the transformation witll be applied
-         * @param previewSize       the Size of the Preview output by the Cameras
+         * @param textureView the TextureView to which the transformation witll be applied
+         * @param previewSize the Size of the Preview output by the Cameras
          */
         fun configureTransform(textureView: AutoFitTextureView, previewSize: Size) {
             val displayRotation = textureView.display.rotation
@@ -229,7 +227,6 @@ class CameraUtils {
             // finally apply the transform
             textureView.setTransform(matrix)
         }
-        
     }
 
     internal class CompareSizesByArea : Comparator<Size> {
