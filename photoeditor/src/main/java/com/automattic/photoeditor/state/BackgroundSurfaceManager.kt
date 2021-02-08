@@ -146,6 +146,7 @@ class BackgroundSurfaceManager(
     @OnLifecycleEvent(ON_PAUSE)
     fun onPause(source: LifecycleOwner) {
         // TODO: save state and pause fragments / camera preview?
+        cameraXAwareSurfaceDeactivate()
     }
 
     fun saveStateToBundle(outState: Bundle?) {
