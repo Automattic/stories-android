@@ -30,6 +30,7 @@ import androidx.camera.core.SurfaceRequest.Result.RESULT_SURFACE_ALREADY_PROVIDE
 import androidx.camera.core.SurfaceRequest.Result.RESULT_SURFACE_USED_SUCCESSFULLY
 import androidx.camera.core.SurfaceRequest.Result.RESULT_WILL_NOT_PROVIDE_SURFACE
 import androidx.camera.core.VideoCapture
+import androidx.camera.core.VideoCapture.OnVideoSavedCallback
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.core.util.Consumer
@@ -153,10 +154,6 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                     Use setTargetResolution() for more specific cases, such as when minimum (to save computation) or
                     maximum resolutions (for processing details) are required.
                  */
-                // for now, we're calling setTargetAspectRatioCustom() with this device's screen aspect ratio, given
-                // setting an aspect ratio of 4:3 would show undesired effects on alpha06 such as a stretched preview
-                // .setTargetAspectRatioCustom(screenAspectRatio)
-                // .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
                 .setTargetAspectRatio(AspectRatio.RATIO_16_9)
                 // Set initial target rotation, we will have to call this again if rotation changes
                 // during the lifecycle of this use case
@@ -228,60 +225,63 @@ class CameraXBasicHandling : VideoRecorderFragment() {
 
     @SuppressLint("RestrictedApi")
     override fun startRecordingVideo(finishedListener: VideoRecorderFinished?) {
-        // FIXME tackled video recording later
-//        activity?.let {
-//            if (useTempCaptureFile) {
-//                currentFile = FileUtils.getTempCaptureFile(it, true)
-//            } else {
-//                currentFile = FileUtils.getLoopFrameFile(it, true)
-//            }
-//        }
-//
-//        currentFile?.let {
-//            it.createNewFile()
-//
-//            // unbind this use case for now, we'll re-bind later
-//            imageCapture?.let {
-//                if (cameraProvider.isBound(it)) {
-//                    cameraProvider.unbind(it)
-//                }
-//            }
-//
-//            // if a previous instance exists, request to release muxer and buffers
-//            videoCapture?.let {
-//                if (cameraProvider.isBound(it)) {
-//                    cameraProvider.unbind(it)
-//                }
-//                videoCapture?.clear()
-//            }
-//
-//            val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
-//
-//            videoCapture = VideoCaptureConfig.Builder().apply {
-//                setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
-//                setTargetRotation(textureView.display.rotation)
-//            }.build()
-// //            videoCapture = VideoCapture(videoCaptureConfig)
-//
-//            // video capture only
-//            val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
-//            cameraProvider.bindToLifecycle(activity as LifecycleOwner, cameraSelector, videoCapture)
-//
-//            videoCapture?.startRecording(
-//                it,
-//                AsyncTask.THREAD_POOL_EXECUTOR,
-//                object : VideoCapture.OnVideoSavedCallback {
-//                    override fun onVideoSaved(file: File) {
-//                        Log.i(tag, "Video File : $file")
-//                        finishedListener?.onVideoSaved(file)
-//                    }
-//
-//                    override fun onError(videoCaptureError: Int, message: String, cause: Throwable?) {
-//                        Log.i(tag, "Video Error: $message")
-//                        finishedListener?.onError(message, cause)
-//                    }
-//            })
-//        }
+        activity?.let {
+            if (useTempCaptureFile) {
+                currentFile = FileUtils.getTempCaptureFile(it, true)
+            } else {
+                currentFile = FileUtils.getLoopFrameFile(it, true)
+            }
+        }
+
+        currentFile?.let { captureFile ->
+            captureFile.createNewFile()
+
+            // unbind this use case for now, we'll re-bind later
+            imageCapture?.let {
+                if (cameraProvider.isBound(it)) {
+                    cameraProvider.unbind(it)
+                }
+            }
+
+            // if a previous instance exists, request to release muxer and buffers
+            videoCapture?.let {
+                if (cameraProvider.isBound(it)) {
+                    cameraProvider.unbind(it)
+                }
+            }
+
+            // Set up the capture use case to allow users to take photos
+            videoCapture = VideoCapture.Builder()
+                    // We request aspect ratio but no resolution to match preview config but letting
+                    // CameraX optimize for whatever specific resolution best fits requested capture mode
+                    .setTargetAspectRatio(AspectRatio.RATIO_16_9)
+                    // Set initial target rotation, we will have to call this again if rotation changes
+                    // during the lifecycle of this use case
+                    .setTargetRotation(textureView.display.rotation)
+                    .build()
+
+            // video capture only
+            val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
+            cameraProvider.bindToLifecycle(activity as LifecycleOwner, cameraSelector, videoCapture)
+
+            val outputFileOptions = VideoCapture.OutputFileOptions.Builder(captureFile)
+                    .build()
+
+            videoCapture?.startRecording(
+                    outputFileOptions,
+                    ContextCompat.getMainExecutor(context),
+                    object : OnVideoSavedCallback {
+                        override fun onVideoSaved(outputFileResults: VideoCapture.OutputFileResults) {
+                            Log.i(tag, "Video File : $captureFile")
+                            finishedListener?.onVideoSaved(captureFile)
+                        }
+                        override fun onError(videoCaptureError: Int, message: String, cause: Throwable?) {
+                            Log.i(tag, "Video Error: $message")
+                            finishedListener?.onError(message, cause)
+                        }
+                    }
+            )
+        }
     }
 
     @SuppressLint("RestrictedApi")
