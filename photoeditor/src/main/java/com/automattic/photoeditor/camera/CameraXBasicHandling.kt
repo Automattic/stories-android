@@ -309,6 +309,13 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                         .setMetadata(metadata)
                         .build()
 
+                // if a previous videoCapture use case is bound, unbind it
+                videoCapture?.let {
+                    if (cameraProvider.isBound(it)) {
+                        cameraProvider.unbind(it)
+                    }
+                }
+
                 // image capture only
                 imageCapture?.let {
                     if (!cameraProvider.isBound(it)) {
