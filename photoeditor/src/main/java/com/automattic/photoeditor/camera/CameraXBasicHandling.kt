@@ -351,12 +351,15 @@ class CameraXBasicHandling : VideoRecorderFragment() {
             CameraSelector.LENS_FACING_FRONT
         }
         if (active) {
-            try {
-                // Unbind all use cases and bind them again with the new lens facing configuration
-                cameraProvider.unbindAll()
-                startCamera()
-            } catch (exc: Exception) {
-                // no op - they can most probably just tap the flip switch again and it'll work
+            // Unbind all use cases and bind them again with the new lens facing configuration
+            cameraProvider.unbindAll()
+            // wait for the next cycle to re-bind use cases with the flipped camera
+            Handler().post {
+                try {
+                    startCamera()
+                } catch (exc: Exception) {
+                    // no op - they can most probably just tap the flip switch again and it'll work
+                }
             }
         }
         return storiesCameraSelectionFromCameraXLensFacing(lensFacing)
