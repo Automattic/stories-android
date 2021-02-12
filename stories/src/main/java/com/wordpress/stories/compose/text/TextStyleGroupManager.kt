@@ -103,7 +103,7 @@ class TextStyleGroupManager(val context: Context) {
         )
     }
 
-    private fun getFont(@TypefaceId typefaceId: Int) = resolveTypeface(typefaceId, context)
+    private fun getFont(@TypefaceId typefaceId: Int) = resolveTypeface(typefaceId)
 
     private fun getString(@StringRes stringRes: Int) = context.resources.getString(stringRes)
 
@@ -213,8 +213,8 @@ class TextStyleGroupManager(val context: Context) {
         const val TYPEFACE_ID_SPACE_MONO = 1005
         const val TYPEFACE_ID_SHRIKHAND = 1006
 
-        fun getIdentifiableTypefaceForId(@TypefaceId typefaceId: Int, context: Context): IdentifiableTypeface {
-            return IdentifiableTypeface(typefaceId, resolveTypeface(typefaceId, context))
+        fun getIdentifiableTypefaceForId(@TypefaceId typefaceId: Int): IdentifiableTypeface {
+            return IdentifiableTypeface(typefaceId, resolveTypeface(typefaceId))
         }
 
         /**
@@ -231,19 +231,19 @@ class TextStyleGroupManager(val context: Context) {
             FontRequester.registerFont(context, R.font.shrikhand, Typeface.DEFAULT_BOLD)
         }
 
-        private fun resolveTypeface(@TypefaceId typefaceId: Int, context: Context): Typeface? {
+        private fun resolveTypeface(@TypefaceId typefaceId: Int): Typeface? {
             return when (typefaceId) {
-                TYPEFACE_ID_NUNITO -> getFontWithFallback(context, R.font.nunito_bold, Typeface.SANS_SERIF)
-                TYPEFACE_ID_LIBRE_BASKERVILLE -> getFontWithFallback(context, R.font.libre_baskerville, Typeface.SERIF)
-                TYPEFACE_ID_OSWALD -> getFontWithFallback(context, R.font.oswald_upper, Typeface.SANS_SERIF)
-                TYPEFACE_ID_PACIFICO -> getFontWithFallback(context, R.font.pacifico, Typeface.SERIF)
-                TYPEFACE_ID_SPACE_MONO -> getFontWithFallback(context, R.font.space_mono_bold, Typeface.MONOSPACE)
-                TYPEFACE_ID_SHRIKHAND -> getFontWithFallback(context, R.font.shrikhand, Typeface.DEFAULT_BOLD)
+                TYPEFACE_ID_NUNITO -> getFontWithFallback(R.font.nunito_bold, Typeface.SANS_SERIF)
+                TYPEFACE_ID_LIBRE_BASKERVILLE -> getFontWithFallback(R.font.libre_baskerville, Typeface.SERIF)
+                TYPEFACE_ID_OSWALD -> getFontWithFallback(R.font.oswald_upper, Typeface.SANS_SERIF)
+                TYPEFACE_ID_PACIFICO -> getFontWithFallback(R.font.pacifico, Typeface.SERIF)
+                TYPEFACE_ID_SPACE_MONO -> getFontWithFallback(R.font.space_mono_bold, Typeface.MONOSPACE)
+                TYPEFACE_ID_SHRIKHAND -> getFontWithFallback(R.font.shrikhand, Typeface.DEFAULT_BOLD)
                 else -> null
             }
         }
 
-        private fun getFontWithFallback(context: Context, @FontRes fontRes: Int, fallback: Typeface): Typeface {
+        private fun getFontWithFallback(@FontRes fontRes: Int, fallback: Typeface): Typeface {
             return FontRequester.getFont(fontRes, fallback)
         }
     }

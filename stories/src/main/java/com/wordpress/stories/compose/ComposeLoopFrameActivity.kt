@@ -430,7 +430,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
         photoEditor.setFontResolver(object : FontResolver {
             override fun resolve(@TypefaceId typefaceId: Int): IdentifiableTypeface {
-                return TextStyleGroupManager.getIdentifiableTypefaceForId(typefaceId, this@ComposeLoopFrameActivity)
+                return TextStyleGroupManager.getIdentifiableTypefaceForId(typefaceId)
             }
         })
 
