@@ -341,6 +341,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             }
         }
 
+        // Pre-load the custom fonts if necessary
+        TextStyleGroupManager.preloadFonts(this)
+
         workingAreaRect = calculateWorkingArea()
         photoEditor = PhotoEditor.Builder(this, photoEditorView)
             .setPinchTextScalable(true) // set flag to make text scalable when pinch

@@ -1,7 +1,6 @@
 package com.wordpress.stories.compose.text
 
 import android.content.Context
-import android.content.res.Resources.NotFoundException
 import android.graphics.Typeface
 import android.util.TypedValue
 import android.widget.TextView
@@ -12,7 +11,6 @@ import androidx.annotation.Dimension.SP
 import androidx.annotation.FontRes
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
-import androidx.core.content.res.ResourcesCompat
 import com.automattic.photoeditor.text.IdentifiableTypeface
 import com.automattic.photoeditor.text.IdentifiableTypeface.TypefaceId
 import com.automattic.photoeditor.text.RoundedBackgroundColorSpan
@@ -219,6 +217,20 @@ class TextStyleGroupManager(val context: Context) {
             return IdentifiableTypeface(typefaceId, resolveTypeface(typefaceId, context))
         }
 
+        /**
+         * Initializes the custom fonts, including possibly downloading some of them for the first time.
+         * This is so they're ready when the text editor is eventually opened and we don't have to block
+         * the main thread or use the fallback fonts.
+         */
+        fun preloadFonts(context: Context) {
+            FontRequester.registerFont(context, R.font.nunito_bold, Typeface.SANS_SERIF)
+            FontRequester.registerFont(context, R.font.libre_baskerville, Typeface.SERIF)
+            FontRequester.registerFont(context, R.font.oswald_upper, Typeface.SANS_SERIF)
+            FontRequester.registerFont(context, R.font.pacifico, Typeface.SERIF)
+            FontRequester.registerFont(context, R.font.space_mono_bold, Typeface.MONOSPACE)
+            FontRequester.registerFont(context, R.font.shrikhand, Typeface.DEFAULT_BOLD)
+        }
+
         private fun resolveTypeface(@TypefaceId typefaceId: Int, context: Context): Typeface? {
             return when (typefaceId) {
                 TYPEFACE_ID_NUNITO -> getFontWithFallback(context, R.font.nunito_bold, Typeface.SANS_SERIF)
@@ -231,12 +243,8 @@ class TextStyleGroupManager(val context: Context) {
             }
         }
 
-        private fun getFontWithFallback(context: Context, @FontRes fontRes: Int, fallback: Typeface?): Typeface? {
-            return try {
-                ResourcesCompat.getFont(context, fontRes)
-            } catch (e: NotFoundException) {
-                fallback
-            }
+        private fun getFontWithFallback(context: Context, @FontRes fontRes: Int, fallback: Typeface): Typeface {
+            return FontRequester.getFont(fontRes, fallback)
         }
     }
 }
