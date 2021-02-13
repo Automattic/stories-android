@@ -8,6 +8,7 @@ import androidx.annotation.FontRes
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.content.res.ResourcesCompat.FontCallback
 import androidx.core.provider.FontsContractCompat.FontRequestCallback.FontRequestFailReason
+import java.util.Collections
 
 /**
  * Handles dispatching requests to ResourcesCompat.getFont() asynchronously. These requests can take a long time,
@@ -22,7 +23,7 @@ import androidx.core.provider.FontsContractCompat.FontRequestCallback.FontReques
 object FontRequester {
     private val TAG = FontRequester::class.java.simpleName
 
-    val fontMap = mutableMapOf<Int, Typeface>()
+    val fontMap: MutableMap<Int, Typeface> = Collections.synchronizedMap(mutableMapOf<Int, Typeface>())
 
     fun registerFont(context: Context, @FontRes fontRes: Int, fallback: Typeface) {
         // Set the font to the fallback right away in case it's requested before getFont completes.
