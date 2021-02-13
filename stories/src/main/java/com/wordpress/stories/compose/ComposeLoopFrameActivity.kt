@@ -341,6 +341,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             }
         }
 
+        // Pre-load the custom fonts if necessary
+        TextStyleGroupManager.preloadFonts(this)
+
         workingAreaRect = calculateWorkingArea()
         photoEditor = PhotoEditor.Builder(this, photoEditorView)
             .setPinchTextScalable(true) // set flag to make text scalable when pinch
@@ -427,7 +430,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
         photoEditor.setFontResolver(object : FontResolver {
             override fun resolve(@TypefaceId typefaceId: Int): IdentifiableTypeface {
-                return TextStyleGroupManager.getIdentifiableTypefaceForId(typefaceId, this@ComposeLoopFrameActivity)
+                return TextStyleGroupManager.getIdentifiableTypefaceForId(typefaceId)
             }
         })
 
