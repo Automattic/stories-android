@@ -101,7 +101,8 @@ dependencies {
 tasks.register('createBuildConfigFieldsFromProperties') {
     // Add properties named "loop.xxx" to our BuildConfig
     android.buildTypes.all { buildType ->
-        def properties = rootProject.loadGradleProperties()
+        def inputFile = file("${rootDir}/gradle.properties")
+        def properties = loadGradleProperties(inputFile)
         properties.any { property ->
         if (property.key.toLowerCase().startsWith("loop.")) {
                 buildType.buildConfigField "String", property.key.replace("loop.", "").replace(".", "_").toUpperCase(),

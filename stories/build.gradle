@@ -74,7 +74,8 @@ dependencies {
 tasks.register('createBuildConfigFieldsFromProperties') {
     // Add properties named "loop.xxx" to our BuildConfig
     android.buildTypes.all { buildType ->
-        def properties = rootProject.loadGradleProperties()
+        def inputFile = file("${rootDir}/gradle.properties")
+        def properties = loadGradleProperties(inputFile)
         properties.any { property ->
             if (property.key.toLowerCase().startsWith("wp.stories.use.")) {
                 buildType.buildConfigField "boolean", property.key.replace("wp.stories.", "").replace(".", "_").toUpperCase(), "${property.value}"
