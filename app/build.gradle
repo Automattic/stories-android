@@ -7,6 +7,21 @@ apply plugin: 'io.sentry.android.gradle'
 android {
     compileSdkVersion rootProject.compileSdkVersion
 
+    signingConfigs {
+        release {
+            if (rootProject.hasProperty("storeFile") 
+                && rootProject.hasProperty("storePassword") 
+                && rootProject.hasProperty("keyAlias") 
+                && rootProject.hasProperty("keyPassword")
+            ) { 
+                storeFile file("${rootDir}/${rootProject.storeFile}")
+                storePassword rootProject.storePassword
+                keyAlias rootProject.keyAlias
+                keyPassword rootProject.keyPassword
+            }
+        }
+    }
+
     defaultConfig {
         applicationId "com.automattic.loop"
         minSdkVersion rootProject.minSdkVersion
@@ -19,6 +34,7 @@ android {
             versionName "1.0.0.14-prealpha"
         }
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        signingConfig signingConfigs.release
     }
     buildTypes {
         release {
@@ -82,53 +98,26 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 }
 
-android.buildTypes.all { buildType ->
+tasks.register('createBuildConfigFieldsFromProperties') {
     // Add properties named "loop.xxx" to our BuildConfig
-    def inputFile = checkGradlePropertiesFile()
-    def properties = loadPropertiesFromFile(inputFile)
-    properties.any { property ->
-    if (property.key.toLowerCase().startsWith("loop.")) {
-            buildType.buildConfigField "String", property.key.replace("loop.", "").replace(".", "_").toUpperCase(),
-                    "\"${property.value}\""
-        }
-        else if (property.key.toLowerCase().startsWith("sentry.dsn")) {
-            buildType.buildConfigField "String", property.key.replace(".", "_").toUpperCase(),
-                    "\"${property.value}\""
-        }
-        else if (property.key.toLowerCase().startsWith("loop.res.")) {
-            buildType.resValue "string", property.key.replace("loop.res.", "").replace(".", "_").toLowerCase(),
-                    "${property.value}"
-        }
-    }
-}
-
-def checkGradlePropertiesFile() {
-    def inputFile = file("${rootDir}/gradle.properties")
-    if (!inputFile.exists()) {
-        throw new StopActionException("Build configuration file gradle.properties doesn't exist, follow README instructions")
-    }
-    return inputFile
-}
-
-static def loadPropertiesFromFile(inputFile) {
-    def properties = new Properties()
-    inputFile.withInputStream { stream ->
-        properties.load(stream)
-    }
-    return properties
-}
-
-// For app signing
-if (["storeFile", "storePassword", "keyAlias", "keyPassword"].count { !project.hasProperty(it) } == 0) {
-    android {
-        signingConfigs {
-            release {
-                storeFile = rootProject.file(project.storeFile)
-                storePassword = project.storePassword
-                keyAlias = project.keyAlias
-                keyPassword = project.keyPassword
+    android.buildTypes.all { buildType ->
+        def properties = rootProject.loadGradleProperties()
+        properties.any { property ->
+        if (property.key.toLowerCase().startsWith("loop.")) {
+                buildType.buildConfigField "String", property.key.replace("loop.", "").replace(".", "_").toUpperCase(),
+                        "\"${property.value}\""
+            }
+            else if (property.key.toLowerCase().startsWith("sentry.dsn")) {
+                buildType.buildConfigField "String", property.key.replace(".", "_").toUpperCase(),
+                        "\"${property.value}\""
+            }
+            else if (property.key.toLowerCase().startsWith("loop.res.")) {
+                buildType.resValue "string", property.key.replace("loop.res.", "").replace(".", "_").toLowerCase(),
+                        "${property.value}"
             }
         }
     }
-    android.buildTypes.release.signingConfig = android.signingConfigs.release
 }
+
+preBuild.dependsOn(tasks.named("createBuildConfigFieldsFromProperties"))
+

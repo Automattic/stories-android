@@ -4,7 +4,6 @@ orbs:
   # Using 1.0 of the Orbs means it will use the latest 1.0.x version from https://github.com/wordpress-mobile/circleci-orbs
   android: wordpress-mobile/android@1.0
   git: wordpress-mobile/git@1.0
-  bundle-install: toshimaru/bundle-install@0.3.1
   slack: circleci/slack@3.4.2
 
 commands:
@@ -54,11 +53,9 @@ jobs:
       api-version: "29"
     steps:
       - checkout
-      - bundle-install/bundle-install:
-          cache_key_prefix: installable-build
       - run:
-          name: Copy Secrets
-          command: bundle exec fastlane run configure_apply
+          name: Apply Configuration
+          command: ./gradlew applyConfiguration
       - android/restore-gradle-cache
       - run:
           name: Build APK
