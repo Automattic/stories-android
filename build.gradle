@@ -101,14 +101,3 @@ ext {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
-
-static def loadGradleProperties(inputFile) {
-    if (!inputFile.exists()) {
-        throw new StopActionException("Build configuration file gradle.properties doesn't exist, follow README instructions")
-    }
-    def properties = new Properties()
-    inputFile.withInputStream { stream ->
-        properties.load(stream)
-    }
-    return properties
-}
