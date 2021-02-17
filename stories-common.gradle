@@ -1,4 +1,4 @@
-def loadGradleProperties(inputFile) {
+static def loadGradleProperties(inputFile) {
         if (!inputFile.exists()) {
             throw new StopActionException("Build configuration file gradle.properties doesn't exist, follow README instructions")
         }
