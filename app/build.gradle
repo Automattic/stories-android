@@ -3,6 +3,7 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'io.sentry.android.gradle'
+apply from: "../stories-common.gradle"
 
 android {
     compileSdkVersion rootProject.compileSdkVersion
