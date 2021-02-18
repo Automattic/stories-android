@@ -2,6 +2,9 @@ package com.automattic.photoeditor.camera
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Matrix
+import android.graphics.Matrix.ScaleToFit
+import android.graphics.RectF
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
@@ -9,6 +12,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.util.DisplayMetrics
+import android.util.LayoutDirection.LTR
 import android.util.Log
 import android.util.Rational
 import android.util.Size
@@ -31,14 +35,19 @@ import androidx.camera.core.SurfaceRequest.Result.RESULT_REQUEST_CANCELLED
 import androidx.camera.core.SurfaceRequest.Result.RESULT_SURFACE_ALREADY_PROVIDED
 import androidx.camera.core.SurfaceRequest.Result.RESULT_SURFACE_USED_SUCCESSFULLY
 import androidx.camera.core.SurfaceRequest.Result.RESULT_WILL_NOT_PROVIDE_SURFACE
+import androidx.camera.core.SurfaceRequest.TransformationInfo
+import androidx.camera.core.SurfaceRequest.TransformationInfoListener
 import androidx.camera.core.UseCaseGroup
 import androidx.camera.core.VideoCapture
 import androidx.camera.core.VideoCapture.OnVideoSavedCallback
 import androidx.camera.core.ViewPort
+import androidx.camera.core.ViewPort.LayoutDirection
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import androidx.core.text.TextDirectionHeuristicsCompat.LTR
 import androidx.core.util.Consumer
 import androidx.lifecycle.LifecycleOwner
+import com.automattic.photoeditor.camera.camerax.view.PreviewTransformation
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
@@ -62,13 +71,25 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     private var cameraProviderInitialized = false
     private lateinit var currentCamera: Camera
     private var surfaceRequest: SurfaceRequest? = null
+    private var surfaceTransformationInfo: TransformationInfo? = null
+    private var previewTransform = PreviewTransformation()
 
+    @SuppressLint("UnsafeExperimentalUsageError")
     val surfaceTextureListener = object : TextureView.SurfaceTextureListener {
         override fun onSurfaceTextureAvailable(texture: SurfaceTexture, width: Int, height: Int) {
             if (active) {
                 surfaceRequest?.let {
                     texture.setDefaultBufferSize(
                             it.resolution.getWidth(), it.resolution.getHeight())
+                    it.setTransformationInfoListener(
+                            ContextCompat.getMainExecutor(context),
+                            object : TransformationInfoListener {
+                                override fun onTransformationInfoUpdate(transformationInfo: TransformationInfo) {
+                                    surfaceTransformationInfo = transformationInfo
+                                    applyTransformationInfo(transformationInfo)
+                                }
+                            }
+                    )
                     it.provideSurface(
                             Surface(texture),
                             ContextCompat.getMainExecutor(context),
@@ -260,8 +281,74 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         // Important: we need to set the aspect ratio on the TextureView in order for it to be reused
         // passing the surfaceRequest's requested resolution as calculated by CameraX
         textureView.setAspectRatio(resolution.height, resolution.width)
+        surfaceTransformationInfo?.let {
+            applyTransformationInfo(it)
+        }
         parent.addView(textureView, 0)
     }
+
+    @SuppressLint("UnsafeExperimentalUsageError")
+    private fun applyTransformationInfoOLD(transformationInfo: TransformationInfo) {
+        // set crop rect to textureView
+        // transformationInfo.
+        val transformation = Matrix()
+        transformation.setRectToRect(
+                RectF(transformationInfo.cropRect),
+                RectF(0f, 0f,
+                        textureView.width.toFloat(),
+                        textureView.height.toFloat()
+                ),
+                ScaleToFit.CENTER
+        )
+
+        val transformedRect = RectF(0f, 0f,
+                textureView.width.toFloat(), textureView.height.toFloat())
+        transformation.mapRect(transformedRect) // TODO RE-CHECK
+//        textureView.pivotX = 0f
+//        textureView.pivotY = 0f
+//        textureView.scaleX = 0.5f
+        // transformation.postRotate(90f)
+        // textureView.matrix.set(transformation)
+        textureView.setTransform(transformation)
+
+//        textureView.translationX = transformedRect.left
+//        textureView.translationY = transformedRect.top
+//        textureView.scaleX = transformedRect.width()/transformedRect.width()
+//        textureView.scaleY = transformedRect.height()/transformedRect.height()
+    }
+
+    private fun applyTransformationInfo(transformationInfo: TransformationInfo) {
+        val isFrontCamera = (lensFacing == CameraSelector.LENS_FACING_FRONT)
+        surfaceRequest?.let {
+            previewTransform.setTransformationInfo(
+                    transformationInfo,
+                    it.resolution, isFrontCamera
+            )
+            previewTransform.transformView(it.resolution, android.util.LayoutDirection.LTR, textureView)
+        }
+    }
+
+//    private fun correctPreviewForCenterCrop(
+//        container: View,
+//        textureView: TextureView, bufferSize: Size
+//    ) {
+//        // Scale TextureView to fill PreviewView while respecting sensor output size aspect ratio
+//        val (first, second) = ScaleTypeTransform.getFillScaleWithBufferAspectRatio(
+//                container, textureView,
+//                bufferSize
+//        )
+//        textureView.scaleX = first
+//        textureView.scaleY = second
+//
+//        // Center TextureView inside PreviewView
+//        val newOrigin: Point = getOriginOfCenteredView(container, textureView)
+//        textureView.x = newOrigin.x
+//        textureView.y = newOrigin.y
+//
+//        // Rotate TextureView to correct preview orientation
+//        val rotation: Int = getRotationDegrees(textureView)
+//        textureView.rotation = -rotation.toFloat()
+//    }
 
     @SuppressLint("RestrictedApi")
     override fun startRecordingVideo(finishedListener: VideoRecorderFinished?) {
