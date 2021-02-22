@@ -8,6 +8,7 @@ import android.hardware.camera2.CameraManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
+import android.util.DisplayMetrics
 import android.util.Log
 import android.util.Size
 import android.view.Surface
@@ -44,6 +45,7 @@ import com.automattic.photoeditor.camera.interfaces.cameraXLensFacingFromStories
 import com.automattic.photoeditor.camera.interfaces.cameraXflashModeFromStoriesFlashState
 import com.automattic.photoeditor.camera.interfaces.storiesCameraSelectionFromCameraXLensFacing
 import com.automattic.photoeditor.util.FileUtils
+import com.automattic.photoeditor.util.VideoUtils
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
 import com.google.common.util.concurrent.ListenableFuture
 
@@ -250,11 +252,14 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                 }
             }
 
+            val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
+            val videoTargetResolution = VideoUtils.normalizeTargetVideoSize(metrics.widthPixels, metrics.heightPixels)
             // Set up the capture use case to allow users to take photos
             videoCapture = VideoCapture.Builder()
                     // We request aspect ratio but no resolution to match preview config but letting
                     // CameraX optimize for whatever specific resolution best fits requested capture mode
-                    .setTargetAspectRatio(AspectRatio.RATIO_16_9)
+                    // .setTargetAspectRatio(AspectRatio.RATIO_16_9)
+                    .setTargetResolution(videoTargetResolution)
                     // Set initial target rotation, we will have to call this again if rotation changes
                     // during the lifecycle of this use case
                     .setTargetRotation(textureView.display.rotation)
