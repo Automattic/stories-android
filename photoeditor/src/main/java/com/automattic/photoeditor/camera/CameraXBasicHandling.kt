@@ -8,6 +8,7 @@ import android.hardware.camera2.CameraManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
+import android.util.DisplayMetrics
 import android.util.Log
 import android.util.Size
 import android.view.Surface
@@ -182,14 +183,34 @@ class CameraXBasicHandling : VideoRecorderFragment() {
             }
         })
 
+        // Set up the capture use case to allow users to take photos
+        // don't bind it to lifecycle just yet, but leave it prepared
+        val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
+//            var targetResolution = surfaceRequest?.resolution ?: Size(metrics.widthPixels, metrics.heightPixels)
+//            // now swap
+//            targetResolution = Size(targetResolution.height, targetResolution.width)
+        videoCapture = VideoCapture.Builder()
+                // We request aspect ratio but no resolution to match preview config but letting
+                // CameraX optimize for whatever specific resolution best fits requested capture mode
+                // .setTargetAspectRatio(AspectRatio.RATIO_16_9)
+                .setTargetResolution(Size(metrics.heightPixels, metrics.widthPixels))
+                // .setTargetResolution(targetResolution)
+                // Set initial target rotation, we will have to call this again if rotation changes
+                // during the lifecycle of this use case
+                .setTargetRotation(textureView.display.rotation)
+                .build()
+
         // we used to bind all use cases to lifecycle on start
         // DON'T do this, may end up with this: https://github.com/Automattic/stories-android/issues/50
         // CameraX.bindToLifecycle(activity, videoPreview, videoCapture, imageCapture)
 
         // image capture only
         val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
+//        currentCamera = cameraProvider.bindToLifecycle(
+//                activity as LifecycleOwner, cameraSelector, videoPreview, imageCapture
+//        )
         currentCamera = cameraProvider.bindToLifecycle(
-                activity as LifecycleOwner, cameraSelector, videoPreview, imageCapture
+                activity as LifecycleOwner, cameraSelector, videoPreview //, imageCapture
         )
         // retrieve flash availability for this camera
         flashSupported = currentCamera.cameraInfo.hasFlashUnit()
@@ -243,25 +264,24 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                 }
             }
 
-            // if a previous instance exists, request to release muxer and buffers
-            videoCapture?.let {
-                if (cameraProvider.isBound(it)) {
-                    cameraProvider.unbind(it)
-                }
-            }
+//            // video capture only
+//            videoCapture?.let {
+//                if (!cameraProvider.isBound(it)) {
+//                    val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
+//                    cameraProvider.bindToLifecycle(activity as LifecycleOwner, cameraSelector, it)
+//                }
+//            }
 
-            // Set up the capture use case to allow users to take photos
-            videoCapture = VideoCapture.Builder()
-                    // We request aspect ratio but no resolution to match preview config but letting
-                    // CameraX optimize for whatever specific resolution best fits requested capture mode
-                    .setTargetAspectRatio(AspectRatio.RATIO_16_9)
-                    // Set initial target rotation, we will have to call this again if rotation changes
-                    // during the lifecycle of this use case
-                    .setTargetRotation(textureView.display.rotation)
-                    .build()
+            // if a previous instance exists, request to release muxer and buffers
+//            videoCapture?.let {
+//                if (cameraProvider.isBound(it)) {
+//                    cameraProvider.unbind(it)
+//                }
+//            }
 
             // video capture only
             val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
+//            cameraProvider.bindToLifecycle(activity as LifecycleOwner, cameraSelector, videoPreview, videoCapture)
             cameraProvider.bindToLifecycle(activity as LifecycleOwner, cameraSelector, videoCapture)
 
             val outputFileOptions = VideoCapture.OutputFileOptions.Builder(captureFile)
@@ -305,9 +325,11 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                     isReversedHorizontal = lensFacing == CameraSelector.LENS_FACING_FRONT
                 }
 
-                val outputFileOptions = OutputFileOptions.Builder(captureFile)
-                        .setMetadata(metadata)
-                        .build()
+                videoCapture?.let {
+                    if (cameraProvider.isBound(it)) {
+                        cameraProvider.unbind(it)
+                    }
+                }
 
                 // if a previous videoCapture use case is bound, unbind it
                 videoCapture?.let {
@@ -324,6 +346,9 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                     }
                 }
 
+                val outputFileOptions = OutputFileOptions.Builder(captureFile)
+                        .setMetadata(metadata)
+                        .build()
                 // Setup image capture listener which is triggered after photo has been taken
                 imageCapture?.takePicture(
                         outputFileOptions,
