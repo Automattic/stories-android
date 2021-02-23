@@ -10,14 +10,14 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.Icon
 import android.net.Uri
 import android.util.AttributeSet
-import androidx.appcompat.widget.AppCompatImageView
+import com.github.chrisbanes.photoview.PhotoView
 
 /**
  * @author [Burhanuddin Rashid](https://github.com/burhanrashid52)
  * @version 0.1.2
  * @since 5/21/2018
  */
-internal class BackgroundImageView : AppCompatImageView {
+internal class BackgroundImageView : PhotoView {
     private var mOnImageChangedListener: OnImageChangedListener? = null
 
     val bitmap: Bitmap?
