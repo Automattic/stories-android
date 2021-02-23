@@ -3,6 +3,7 @@ package com.wordpress.stories.compose.frame
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.Matrix
 import android.net.Uri
 import android.view.View
 import android.view.ViewGroup.LayoutParams
@@ -142,8 +143,9 @@ class FrameSaveManager(
                 } else {
                     try {
                         // create ghost PhotoEditorView to be used for saving off-screen
+                        val originalMatrix = photoEditor.composedCanvas.source.imageMatrix
                         val ghostPhotoEditorView = createGhostPhotoEditor(context, photoEditor.composedCanvas)
-                        frameFile = saveImageFrame(context, frame, ghostPhotoEditorView, frameIndex)
+                        frameFile = saveImageFrame(context, frame, ghostPhotoEditorView, originalMatrix, frameIndex)
                         frame.composedFrameFile = frameFile
                         saveProgressListener?.onFrameSaveCompleted(frameIndex, frame)
                     } catch (ex: Exception) {
@@ -167,10 +169,11 @@ class FrameSaveManager(
         context: Context,
         frame: StoryFrameItem,
         ghostPhotoEditorView: PhotoEditorView,
+        originalMatrix: Matrix,
         frameIndex: FrameIndex
     ): File {
         // prepare the ghostview with its background image and the AddedViews on top of it
-        val futureTarget = preparePhotoEditorViewForSnapshot(context, frame, ghostPhotoEditorView)
+        val futureTarget = preparePhotoEditorViewForSnapshot(context, frame, originalMatrix, ghostPhotoEditorView)
 
         val file = withContext(Dispatchers.IO) {
             if (normalizeTo916 && !isSizeRatio916(ghostPhotoEditorView.width, ghostPhotoEditorView.height)) {
@@ -276,11 +279,14 @@ class FrameSaveManager(
     private suspend fun preparePhotoEditorViewForSnapshot(
         context: Context,
         frame: StoryFrameItem,
+        originalMatrix: Matrix,
         ghostPhotoEditorView: PhotoEditorView
     ): FutureTarget<Bitmap> {
         // prepare background
         val uri = (frame.source as? UriBackgroundSource)?.contentUri
             ?: (frame.source as FileBackgroundSource).file
+
+        val targetView = ghostPhotoEditorView.source
 
         // making use of Glide to decode bitmap and get the right orientation automatically
         // http://bumptech.github.io/glide/doc/getting-started.html#background-threads
@@ -288,9 +294,11 @@ class FrameSaveManager(
             .asBitmap()
             .load(uri)
             .transform(CenterCrop()) // also use CenterCrop as it's the same the user was seeing as per WYSIWYG
-            .submit(ghostPhotoEditorView.source.measuredWidth, ghostPhotoEditorView.source.measuredHeight)
+            .submit(targetView.measuredWidth, targetView.measuredHeight)
         val bitmap = futureTarget.get()
-        ghostPhotoEditorView.source.setImageBitmap(bitmap)
+        targetView.setImageBitmap(bitmap)
+
+        targetView.imageMatrix = originalMatrix // reset old matrix
 
         // removeViewFromParent for views that were added in the UI thread need to also run on the main thread
         // otherwise we'd get a android.view.ViewRootImpl$CalledFromWrongThreadException:
