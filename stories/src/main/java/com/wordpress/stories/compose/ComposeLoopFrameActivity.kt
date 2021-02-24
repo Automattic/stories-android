@@ -1882,7 +1882,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         }
 
         // save current imageMatrix as the background image may have been resized
-        val oldSelectedFrame = storyViewModel.getSelectedFrame()
+        val oldSelectedFrame = storyViewModel.getCurrentStoryFrameAt(oldIndex)
         if (oldSelectedFrame?.frameItemType is IMAGE) {
             val backgroundImageSource = photoEditor.composedCanvas.source as PhotoView
             val matrixValues = FloatArray(9)
