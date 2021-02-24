@@ -27,7 +27,6 @@ data class StoryFrameItem(
     var composedFrameFile: File? = null,
     var id: String? = null
 ) {
-
     @Serializable
     data class BackgroundViewInfo(
         val imageMatrixValues: FloatArray
