@@ -27,8 +27,15 @@ data class StoryFrameItem(
     var composedFrameFile: File? = null,
     var id: String? = null
 ) {
+
+    @Serializable
+    data class BackgroundViewInfo(
+        val imageMatrixValues: FloatArray
+    )
+
     @Serializable
     sealed class BackgroundSource {
+        var backgroundViewInfo: BackgroundViewInfo? = null
         @Serializable
         data class UriBackgroundSource(
             @Serializable(with = UriSerializer::class)

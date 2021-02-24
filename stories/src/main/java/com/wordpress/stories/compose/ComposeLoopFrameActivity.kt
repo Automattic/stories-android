@@ -9,8 +9,10 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.graphics.drawable.Drawable
 import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
+import android.graphics.Matrix
 import android.hardware.Camera
 import android.media.MediaScannerConnection
 import android.net.Uri
@@ -63,8 +65,13 @@ import com.automattic.photoeditor.views.ViewType
 import com.automattic.photoeditor.views.ViewType.TEXT
 import com.automattic.photoeditor.views.added.AddedViewList
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
+import com.github.chrisbanes.photoview.PhotoView
 import com.wordpress.stories.BuildConfig
 import com.wordpress.stories.R
 import com.wordpress.stories.compose.ComposeLoopFrameActivity.ExternalMediaPickerRequestCodesAndExtraKeys
@@ -90,6 +97,7 @@ import com.wordpress.stories.compose.story.StoryFrameItem
 import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource
 import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.FileBackgroundSource
 import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.UriBackgroundSource
+import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundViewInfo
 import com.wordpress.stories.compose.story.StoryFrameItemType
 import com.wordpress.stories.compose.story.StoryFrameItemType.IMAGE
 import com.wordpress.stories.compose.story.StoryFrameItemType.VIDEO
@@ -1873,6 +1881,22 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             addCurrentViewsToFrameAtIndex(oldIndex)
         }
 
+        // save current imageMatrix as the background image may have been resized
+        val oldSelectedFrame = storyViewModel.getSelectedFrame()
+        if (oldSelectedFrame?.frameItemType is IMAGE) {
+            val backgroundImageSource = photoEditor.composedCanvas.source as PhotoView
+            val matrixValues = FloatArray(9)
+            // backgroundImageSource.imageMatrix.getValues(matrixValues)
+            val matrix = Matrix()
+            // fill in matrix with PhotoView Support matrix
+            backgroundImageSource.getSuppMatrix(matrix)
+            // extract matrix to float array matrixValues
+            matrix.getValues(matrixValues)
+            oldSelectedFrame.source.backgroundViewInfo = BackgroundViewInfo(
+                    imageMatrixValues = matrixValues
+            )
+        } // TODO add else clause and handle VIDEO frameItemType
+
         // This is tricky. See https://stackoverflow.com/questions/45860434/cant-remove-view-from-root-view
         // we need to disable layout transition animations so changes in views' parent are set
         // immediately. Otherwise a view's parent will only change once the animation ends, and hence
@@ -1903,7 +1927,51 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             Glide.with(this@ComposeLoopFrameActivity)
                 .load(model)
                 .transform(CenterCrop())
+                    .listener(object : RequestListener<Drawable> {
+                        override fun onLoadFailed(
+                            e: GlideException?,
+                            model: Any?,
+                            target: Target<Drawable>?,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            // let the default implementation run
+                            return false
+                        }
+
+                        override fun onResourceReady(
+                            resource: Drawable?,
+                            model: Any?,
+                            target: Target<Drawable>?,
+                            dataSource: DataSource?,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            // here setup the PhotoView support matrix
+                            val handler = Handler()
+                            // we use a handler because we need to set the support matrix only once the drawable
+                            // has been set on the PhotoView, otherwise the matrix is not applied
+                            // see
+                            // https://github.com/Baseflow/PhotoView/blob/139a9ffeaf70bd628b015374cb6530fcf7d0bcb7/photoview/src/main/java/com/github/chrisbanes/photoview/PhotoViewAttacher.java#L279-L289
+                            handler.post {
+                                val backgroundImageSource = photoEditor.composedCanvas.source as PhotoView
+                                val backgroundViewInfo = newSelectedFrame.source.backgroundViewInfo
+                                // load image matrix from data if it exists
+                                backgroundViewInfo?.let {
+                                    val matrix = Matrix()
+                                    matrix.setValues(it.imageMatrixValues)
+                                    backgroundImageSource.apply {
+                                        // imageMatrix.setValues(it.imageMatrixValues)
+                                        setSuppMatrix(matrix)
+                                        // setDisplayMatrix(matrix)
+                                        // invalidate()
+                                    }
+                                }
+                            }
+                            // return false to let Glide proceed and set the drawable
+                            return false
+                        }
+                    })
                 .into(photoEditorView.source)
+
             showStaticBackground()
         }
 
