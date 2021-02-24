@@ -1958,7 +1958,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         showRetryButtonAndHideEditControlsForErroredFrame(newSelectedFrame.saveResultReason !is SaveSuccess)
     }
 
-    private fun provideGlideRequestListenerWithHandler(setupPhotoViewMatrix: Runnable) : RequestListener<Drawable> {
+    private fun provideGlideRequestListenerWithHandler(setupPhotoViewMatrix: Runnable): RequestListener<Drawable> {
         return object : RequestListener<Drawable> {
             override fun onLoadFailed(
                 e: GlideException?,
