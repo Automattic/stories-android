@@ -1886,7 +1886,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         if (oldSelectedFrame?.frameItemType is IMAGE) {
             val backgroundImageSource = photoEditor.composedCanvas.source as PhotoView
             val matrixValues = FloatArray(9)
-            // backgroundImageSource.imageMatrix.getValues(matrixValues)
             val matrix = Matrix()
             // fill in matrix with PhotoView Support matrix
             backgroundImageSource.getSuppMatrix(matrix)
