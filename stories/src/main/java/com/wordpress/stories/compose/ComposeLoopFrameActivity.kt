@@ -1879,16 +1879,16 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         if (oldIndex >= 0) {
             // only remember added views for frame if current index is valid
             addCurrentViewsToFrameAtIndex(oldIndex)
-        }
 
-        // save current imageMatrix as the background image may have been resized
-        val oldSelectedFrame = storyViewModel.getCurrentStoryFrameAt(oldIndex)
-        if (oldSelectedFrame?.frameItemType is IMAGE) {
-            setBackgroundViewInfoOnFrame(
-                    oldSelectedFrame,
-                    photoEditor.composedCanvas.source as PhotoView
-            )
-        } // TODO add else clause and handle VIDEO frameItemType
+            // save current imageMatrix as the background image may have been resized
+            val oldSelectedFrame = storyViewModel.getCurrentStoryFrameAt(oldIndex)
+            if (oldSelectedFrame?.frameItemType is IMAGE) {
+                setBackgroundViewInfoOnFrame(
+                        oldSelectedFrame,
+                        photoEditor.composedCanvas.source as PhotoView
+                )
+            } // TODO add else clause and handle VIDEO frameItemType
+        }
 
         // This is tricky. See https://stackoverflow.com/questions/45860434/cant-remove-view-from-root-view
         // we need to disable layout transition animations so changes in views' parent are set
