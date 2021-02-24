@@ -1884,15 +1884,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // save current imageMatrix as the background image may have been resized
         val oldSelectedFrame = storyViewModel.getCurrentStoryFrameAt(oldIndex)
         if (oldSelectedFrame?.frameItemType is IMAGE) {
-            val backgroundImageSource = photoEditor.composedCanvas.source as PhotoView
-            val matrixValues = FloatArray(9)
-            val matrix = Matrix()
-            // fill in matrix with PhotoView Support matrix
-            backgroundImageSource.getSuppMatrix(matrix)
-            // extract matrix to float array matrixValues
-            matrix.getValues(matrixValues)
-            oldSelectedFrame.source.backgroundViewInfo = BackgroundViewInfo(
-                    imageMatrixValues = matrixValues
+            setBackgroundViewInfoOnFrame(
+                    oldSelectedFrame,
+                    photoEditor.composedCanvas.source as PhotoView
             )
         } // TODO add else clause and handle VIDEO frameItemType
 
@@ -1927,16 +1921,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     .load(model)
                     .transform(CenterCrop())
                     .listener(provideGlideRequestListenerWithHandler {
-                        val backgroundImageSource = photoEditor.composedCanvas.source as PhotoView
-                        val backgroundViewInfo = newSelectedFrame.source.backgroundViewInfo
-                        // load image matrix from data if it exists
-                        backgroundViewInfo?.let {
-                            val matrix = Matrix()
-                            matrix.setValues(it.imageMatrixValues)
-                            backgroundImageSource.apply {
-                                setSuppMatrix(matrix)
-                            }
-                        }
+                        setBackgroundViewInfoOnPhotoView(
+                                newSelectedFrame,
+                                photoEditor.composedCanvas.source as PhotoView
+                        )
                     })
                     .into(photoEditorView.source)
 
@@ -1956,6 +1944,30 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         photoEditor.composedCanvas.layoutTransition = transition
 
         showRetryButtonAndHideEditControlsForErroredFrame(newSelectedFrame.saveResultReason !is SaveSuccess)
+    }
+
+    private fun setBackgroundViewInfoOnFrame(frame: StoryFrameItem, backgroundImageSource: PhotoView) {
+        val matrixValues = FloatArray(9)
+        val matrix = Matrix()
+        // fill in matrix with PhotoView Support matrix
+        backgroundImageSource.getSuppMatrix(matrix)
+        // extract matrix to float array matrixValues
+        matrix.getValues(matrixValues)
+        frame.source.backgroundViewInfo = BackgroundViewInfo(
+                imageMatrixValues = matrixValues
+        )
+    }
+
+    private fun setBackgroundViewInfoOnPhotoView(frame: StoryFrameItem, backgroundImageSource: PhotoView) {
+        val backgroundViewInfo = frame.source.backgroundViewInfo
+        // load image matrix from data if it exists
+        backgroundViewInfo?.let {
+            val matrix = Matrix()
+            matrix.setValues(it.imageMatrixValues)
+            backgroundImageSource.apply {
+                setSuppMatrix(matrix)
+            }
+        }
     }
 
     private fun provideGlideRequestListenerWithHandler(setupPhotoViewMatrix: Runnable): RequestListener<Drawable> {
