@@ -143,7 +143,11 @@ class FrameSaveManager(
                 } else {
                     try {
                         // create ghost PhotoEditorView to be used for saving off-screen
-                        val originalMatrix = photoEditor.composedCanvas.source.imageMatrix
+                        val originalMatrix = Matrix()
+                        frame.source.backgroundViewInfo?.let {
+                            originalMatrix.setValues(it.imageMatrixValues)
+                        }
+
                         val ghostPhotoEditorView = createGhostPhotoEditor(context, photoEditor.composedCanvas)
                         frameFile = saveImageFrame(context, frame, ghostPhotoEditorView, originalMatrix, frameIndex)
                         frame.composedFrameFile = frameFile
