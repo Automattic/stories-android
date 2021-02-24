@@ -1925,52 +1925,21 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         } else {
             val model = (source as? FileBackgroundSource)?.file ?: (source as UriBackgroundSource).contentUri
             Glide.with(this@ComposeLoopFrameActivity)
-                .load(model)
-                .transform(CenterCrop())
-                    .listener(object : RequestListener<Drawable> {
-                        override fun onLoadFailed(
-                            e: GlideException?,
-                            model: Any?,
-                            target: Target<Drawable>?,
-                            isFirstResource: Boolean
-                        ): Boolean {
-                            // let the default implementation run
-                            return false
-                        }
-
-                        override fun onResourceReady(
-                            resource: Drawable?,
-                            model: Any?,
-                            target: Target<Drawable>?,
-                            dataSource: DataSource?,
-                            isFirstResource: Boolean
-                        ): Boolean {
-                            // here setup the PhotoView support matrix
-                            val handler = Handler()
-                            // we use a handler because we need to set the support matrix only once the drawable
-                            // has been set on the PhotoView, otherwise the matrix is not applied
-                            // see
-                            // https://github.com/Baseflow/PhotoView/blob/139a9ffeaf70bd628b015374cb6530fcf7d0bcb7/photoview/src/main/java/com/github/chrisbanes/photoview/PhotoViewAttacher.java#L279-L289
-                            handler.post {
-                                val backgroundImageSource = photoEditor.composedCanvas.source as PhotoView
-                                val backgroundViewInfo = newSelectedFrame.source.backgroundViewInfo
-                                // load image matrix from data if it exists
-                                backgroundViewInfo?.let {
-                                    val matrix = Matrix()
-                                    matrix.setValues(it.imageMatrixValues)
-                                    backgroundImageSource.apply {
-                                        // imageMatrix.setValues(it.imageMatrixValues)
-                                        setSuppMatrix(matrix)
-                                        // setDisplayMatrix(matrix)
-                                        // invalidate()
-                                    }
-                                }
+                    .load(model)
+                    .transform(CenterCrop())
+                    .listener(provideGlideRequestListenerWithHandler {
+                        val backgroundImageSource = photoEditor.composedCanvas.source as PhotoView
+                        val backgroundViewInfo = newSelectedFrame.source.backgroundViewInfo
+                        // load image matrix from data if it exists
+                        backgroundViewInfo?.let {
+                            val matrix = Matrix()
+                            matrix.setValues(it.imageMatrixValues)
+                            backgroundImageSource.apply {
+                                setSuppMatrix(matrix)
                             }
-                            // return false to let Glide proceed and set the drawable
-                            return false
                         }
                     })
-                .into(photoEditorView.source)
+                    .into(photoEditorView.source)
 
             showStaticBackground()
         }
@@ -1988,6 +1957,37 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         photoEditor.composedCanvas.layoutTransition = transition
 
         showRetryButtonAndHideEditControlsForErroredFrame(newSelectedFrame.saveResultReason !is SaveSuccess)
+    }
+
+    private fun provideGlideRequestListenerWithHandler(setupPhotoViewMatrix: Runnable) : RequestListener<Drawable> {
+        return object : RequestListener<Drawable> {
+            override fun onLoadFailed(
+                e: GlideException?,
+                model: Any?,
+                target: Target<Drawable>?,
+                isFirstResource: Boolean
+            ): Boolean {
+                // let the default implementation run
+                return false
+            }
+
+            override fun onResourceReady(
+                resource: Drawable?,
+                model: Any?,
+                target: Target<Drawable>?,
+                dataSource: DataSource?,
+                isFirstResource: Boolean
+            ): Boolean {
+                // here setup the PhotoView support matrix
+                // we use a handler because we need to set the support matrix only once the drawable
+                // has been set on the PhotoView, otherwise the matrix is not applied
+                // see
+                // https://github.com/Baseflow/PhotoView/blob/139a9ffeaf70bd628b015374cb6530fcf7d0bcb7/photoview/src/main/java/com/github/chrisbanes/photoview/PhotoViewAttacher.java#L279-L289
+                Handler().post(setupPhotoViewMatrix)
+                // return false to let Glide proceed and set the drawable
+                return false
+            }
+        }
     }
 
     override fun onStoryFrameAddTapped() {
