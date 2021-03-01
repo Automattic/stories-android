@@ -7,11 +7,13 @@ import android.graphics.Matrix
 import android.net.Uri
 import android.view.View
 import android.view.ViewGroup.LayoutParams
+import android.widget.ImageView.ScaleType.FIT_CENTER
 import android.widget.RelativeLayout
 import com.automattic.photoeditor.PhotoEditor
 import com.automattic.photoeditor.PhotoEditor.OnSaveWithCancelAndProgressListener
 import com.automattic.photoeditor.views.PhotoEditorView
 import com.automattic.photoeditor.views.ViewType.STICKER_ANIMATED
+import com.automattic.photoeditor.views.background.fixed.BackgroundImageView
 import com.wordpress.stories.compose.story.StoryFrameItem
 import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.FileBackgroundSource
 import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.UriBackgroundSource
@@ -22,6 +24,7 @@ import com.wordpress.stories.util.cloneViewSpecs
 import com.wordpress.stories.util.removeViewFromParent
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.FitCenter
 import com.bumptech.glide.request.FutureTarget
 import com.wordpress.stories.util.isSizeRatio916
 import com.wordpress.stories.util.normalizeSizeExportTo916
@@ -297,12 +300,14 @@ class FrameSaveManager(
         val futureTarget = Glide.with(context)
             .asBitmap()
             .load(uri)
-            .transform(CenterCrop()) // also use CenterCrop as it's the same the user was seeing as per WYSIWYG
             .submit(targetView.measuredWidth, targetView.measuredHeight)
         val bitmap = futureTarget.get()
         targetView.setImageBitmap(bitmap)
 
-        targetView.imageMatrix = originalMatrix // reset old matrix
+        (targetView as BackgroundImageView).apply {
+            scaleType = FIT_CENTER
+            setSuppMatrix(originalMatrix)
+        }
 
         // removeViewFromParent for views that were added in the UI thread need to also run on the main thread
         // otherwise we'd get a android.view.ViewRootImpl$CalledFromWrongThreadException:

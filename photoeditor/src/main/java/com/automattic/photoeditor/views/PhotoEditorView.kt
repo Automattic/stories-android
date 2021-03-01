@@ -12,7 +12,7 @@ import android.view.TextureView.SurfaceTextureListener
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.ImageView.ScaleType.CENTER_CROP
+import android.widget.ImageView.ScaleType.FIT_CENTER
 import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import androidx.annotation.RequiresApi
@@ -109,7 +109,7 @@ class PhotoEditorView : RelativeLayout {
         backgroundImage = BackgroundImageView(context).apply {
             id = imgSrcId
             adjustViewBounds = true
-            scaleType = CENTER_CROP
+            scaleType = FIT_CENTER
         }
 
         val imgSrcParam = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT).apply {

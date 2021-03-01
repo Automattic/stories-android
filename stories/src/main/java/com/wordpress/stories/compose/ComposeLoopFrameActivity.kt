@@ -67,6 +67,7 @@ import com.automattic.photoeditor.views.added.AddedViewList
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.load.resource.bitmap.FitCenter
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestListener
@@ -1116,12 +1117,22 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     private fun saveStoryPreHook() {
         showLoading()
+        refreshBackgroundViewInfoOnSelectedFrame()
         // disable layout change animations, we need this to make added views immediately visible, otherwise
         // we may end up capturing a Bitmap of a backing drawable that still has not been updated
         // (i.e. no visible added Views)
         transition = photoEditorView.getLayoutTransition()
         photoEditorView.layoutTransition = null
         preHookRun = true
+    }
+
+    private fun refreshBackgroundViewInfoOnSelectedFrame() {
+        storyViewModel.getSelectedFrame()?.let {
+            setBackgroundViewInfoOnFrame(
+                    it,
+                    photoEditor.composedCanvas.source as PhotoView
+            )
+        }
     }
 
     private fun saveStoryPostHook(result: StorySaveResult) {
@@ -1919,7 +1930,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             val model = (source as? FileBackgroundSource)?.file ?: (source as UriBackgroundSource).contentUri
             Glide.with(this@ComposeLoopFrameActivity)
                     .load(model)
-                    .transform(CenterCrop())
+                    .transform(FitCenter())
                     .listener(provideGlideRequestListenerWithHandler {
                         setBackgroundViewInfoOnPhotoView(
                                 newSelectedFrame,
@@ -2003,6 +2014,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     override fun onStoryFrameAddTapped() {
         addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
+        refreshBackgroundViewInfoOnSelectedFrame()
         showMediaPicker()
     }
 
