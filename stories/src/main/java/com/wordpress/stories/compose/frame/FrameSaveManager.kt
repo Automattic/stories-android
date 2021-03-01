@@ -23,8 +23,6 @@ import com.wordpress.stories.compose.story.StoryFrameItemType.VIDEO
 import com.wordpress.stories.util.cloneViewSpecs
 import com.wordpress.stories.util.removeViewFromParent
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.CenterCrop
-import com.bumptech.glide.load.resource.bitmap.FitCenter
 import com.bumptech.glide.request.FutureTarget
 import com.wordpress.stories.util.isSizeRatio916
 import com.wordpress.stories.util.normalizeSizeExportTo916
@@ -304,6 +302,8 @@ class FrameSaveManager(
         val bitmap = futureTarget.get()
         targetView.setImageBitmap(bitmap)
 
+        // IMPORTANT: scaleType and setSuppMatrix should only be called _after_ the bitmap is set on the targetView
+        // by means of targetView.setImageBitmap(). Calling this before will have no effect due to PhotoView's checks.
         (targetView as BackgroundImageView).apply {
             scaleType = FIT_CENTER
             setSuppMatrix(originalMatrix)
