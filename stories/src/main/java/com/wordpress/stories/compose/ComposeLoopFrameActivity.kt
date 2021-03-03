@@ -577,9 +577,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         val screenWidth = resources.displayMetrics.widthPixels
         val screenHeight = resources.displayMetrics.heightPixels
         if (isScreenTallerThan916(screenWidth, screenHeight)) {
-            (bottom_strip_view as StoryFrameSelectorFragment).setBackgroundColor(R.color.black_opaque_story_frame_selector)
+            (bottom_strip_view as StoryFrameSelectorFragment)
+                    .setBackgroundColor(R.color.black_opaque_story_frame_selector)
         } else {
-            (bottom_strip_view as StoryFrameSelectorFragment).setBackgroundColor(R.color.black_transp_story_frame_selector)
+            (bottom_strip_view as StoryFrameSelectorFragment)
+                    .setBackgroundColor(R.color.black_transp_story_frame_selector)
         }
     }
 
