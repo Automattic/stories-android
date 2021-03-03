@@ -24,6 +24,7 @@ import com.wordpress.stories.util.cloneViewSpecs
 import com.wordpress.stories.util.removeViewFromParent
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.FutureTarget
+import com.bumptech.glide.request.RequestOptions
 import com.wordpress.stories.util.isSizeRatio916
 import com.wordpress.stories.util.normalizeSizeExportTo916
 import kotlinx.coroutines.CoroutineScope
@@ -38,6 +39,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import java.io.File
 import kotlin.coroutines.CoroutineContext
+import jp.wasabeef.glide.transformations.BlurTransformation
 
 typealias FrameIndex = Int
 
@@ -178,7 +180,7 @@ class FrameSaveManager(
         frameIndex: FrameIndex
     ): File {
         // prepare the ghostview with its background image and the AddedViews on top of it
-        val futureTarget = preparePhotoEditorViewForSnapshot(context, frame, originalMatrix, ghostPhotoEditorView)
+        val futureTargetPair = preparePhotoEditorViewForSnapshot(context, frame, originalMatrix, ghostPhotoEditorView)
 
         val file = withContext(Dispatchers.IO) {
             if (normalizeTo916 && !isSizeRatio916(ghostPhotoEditorView.width, ghostPhotoEditorView.height)) {
@@ -196,7 +198,8 @@ class FrameSaveManager(
         }
 
         releaseAddedViewsAfterSnapshot(frame)
-        Glide.with(context).clear(futureTarget)
+        Glide.with(context).clear(futureTargetPair.first)
+        Glide.with(context).clear(futureTargetPair.second)
 
         return file
     }
@@ -286,11 +289,26 @@ class FrameSaveManager(
         frame: StoryFrameItem,
         originalMatrix: Matrix,
         ghostPhotoEditorView: PhotoEditorView
-    ): FutureTarget<Bitmap> {
+    ): Pair<FutureTarget<Bitmap>, FutureTarget<Bitmap>>  {
         // prepare background
         val uri = (frame.source as? UriBackgroundSource)?.contentUri
             ?: (frame.source as FileBackgroundSource).file
 
+        // -----------------------------------
+        // first set the background blurred image
+        val targetBlurredView = ghostPhotoEditorView.sourceBlurredBkg
+
+        // making use of Glide to decode bitmap and get the right orientation automatically
+        // http://bumptech.github.io/glide/doc/getting-started.html#background-threads
+        val futureBlurredTarget = Glide.with(context)
+                .asBitmap()
+                .load(uri)
+                .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 3)))
+                .submit(targetBlurredView.measuredWidth, targetBlurredView.measuredHeight)
+        targetBlurredView.setImageBitmap(futureBlurredTarget.get())
+
+        // -----------------------------------
+        // now set the actual background image
         val targetView = ghostPhotoEditorView.source
 
         // making use of Glide to decode bitmap and get the right orientation automatically
@@ -299,8 +317,7 @@ class FrameSaveManager(
             .asBitmap()
             .load(uri)
             .submit(targetView.measuredWidth, targetView.measuredHeight)
-        val bitmap = futureTarget.get()
-        targetView.setImageBitmap(bitmap)
+        targetView.setImageBitmap(futureTarget.get())
 
         // IMPORTANT: scaleType and setSuppMatrix should only be called _after_ the bitmap is set on the targetView
         // by means of targetView.setImageBitmap(). Calling this before will have no effect due to PhotoView's checks.
@@ -325,7 +342,7 @@ class FrameSaveManager(
                 }
             }
         }
-        return futureTarget
+        return Pair<FutureTarget<Bitmap>, FutureTarget<Bitmap>>(futureTarget, futureBlurredTarget)
     }
 
     private fun getViewLayoutParams(): LayoutParams {
