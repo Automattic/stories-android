@@ -573,7 +573,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun setOpaqueBarHeightAndStoryFrameSelectorBackgroundColor() {
-        photoEditorView.setOpaqueBarHeight(bottomOpaqueBarHeight)
+        if (bottomOpaqueBarHeight > 0) {
+            bottom_opaque_bar.layoutParams.height = bottomOpaqueBarHeight
+        } else {
+            bottom_opaque_bar.visibility = View.GONE
+        }
         val screenWidth = resources.displayMetrics.widthPixels
         val screenHeight = resources.displayMetrics.heightPixels
         if (isScreenTallerThan916(screenWidth, screenHeight)) {
@@ -1630,13 +1634,13 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     private fun hideStoryFrameSelector() {
         (bottom_strip_view as StoryFrameSelectorFragment).hide()
-        photoEditorView.hideOpaqueBar()
+        bottom_opaque_bar.visibility = View.INVISIBLE
     }
 
     private fun showStoryFrameSelector() {
         setOpaqueBarHeightAndStoryFrameSelectorBackgroundColor()
+        bottom_opaque_bar.visibility = View.VISIBLE
         (bottom_strip_view as StoryFrameSelectorFragment).show()
-        photoEditorView.showOpaqueBar()
     }
 
     private fun hideEditModeUIControls() {

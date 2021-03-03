@@ -40,7 +40,6 @@ import com.automattic.photoeditor.views.filter.PhotoFilter
 
 class PhotoEditorView : RelativeLayout {
     private lateinit var autoFitTextureView: AutoFitTextureView
-    private lateinit var bottomOpaqueBar: View
     private lateinit var backgroundImage: BackgroundImageView
     private lateinit var brushDrawingView: BrushDrawingView
     private lateinit var imageFilterView: ImageFilterView
@@ -178,16 +177,6 @@ class PhotoEditorView : RelativeLayout {
             addRule(ALIGN_BOTTOM, imgSrcId)
         }
 
-        // Setup image attributes
-        bottomOpaqueBar = View(context).apply {
-            id = bottomOpaqueBarId
-            setBackgroundColor(Color.parseColor("#000000"))
-        }
-
-        val bottomOpaqueBarParams = LayoutParams(LayoutParams.MATCH_PARENT, 0).apply {
-            addRule(ALIGN_PARENT_BOTTOM, TRUE)
-        }
-
         // Add camera preview
         addView(autoFitTextureView, cameraParam)
 
@@ -202,9 +191,6 @@ class PhotoEditorView : RelativeLayout {
 
         // Add progress view
         addView(progressBar, progressBarParam)
-
-        // finally add the opaque bar that will be drawn for FIT_SCALE positioning on taller than 9:16 screens
-        addView(bottomOpaqueBar, bottomOpaqueBarParams)
     }
 
     // added this method as a helper due to the reasons outlined here:
@@ -225,18 +211,6 @@ class PhotoEditorView : RelativeLayout {
 
         // Add camera preview
         parent.addView(textureView, index, cameraParam)
-    }
-
-    fun setOpaqueBarHeight(height: Int) {
-        bottomOpaqueBar.layoutParams.height = height
-    }
-
-    fun hideOpaqueBar() {
-        bottomOpaqueBar.visibility = View.INVISIBLE
-    }
-
-    fun showOpaqueBar() {
-        bottomOpaqueBar.visibility = View.VISIBLE
     }
 
     internal fun saveFilter(onSaveBitmap: OnSaveBitmap) {
@@ -313,7 +287,6 @@ class PhotoEditorView : RelativeLayout {
 
     companion object {
         private val TAG = "PhotoEditorView"
-        private val bottomOpaqueBarId = 6
         private val imgSrcId = 1
         private val brushSrcId = 2
         private val glFilterId = 3
