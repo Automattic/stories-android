@@ -289,7 +289,7 @@ class FrameSaveManager(
         frame: StoryFrameItem,
         originalMatrix: Matrix,
         ghostPhotoEditorView: PhotoEditorView
-    ): Pair<FutureTarget<Bitmap>, FutureTarget<Bitmap>>  {
+    ): Pair<FutureTarget<Bitmap>, FutureTarget<Bitmap>> {
         // prepare background
         val uri = (frame.source as? UriBackgroundSource)?.contentUri
             ?: (frame.source as FileBackgroundSource).file
