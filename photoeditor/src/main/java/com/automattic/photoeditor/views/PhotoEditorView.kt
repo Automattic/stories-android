@@ -3,7 +3,6 @@ package com.automattic.photoeditor.views
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.Color
 import android.graphics.SurfaceTexture
 import android.os.Build
 import android.util.AttributeSet
