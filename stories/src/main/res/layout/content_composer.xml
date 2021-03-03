@@ -20,6 +20,15 @@
         android:animateLayoutChanges="true"
         android:background="@color/black" />
 
+    <View
+        android:id="@+id/bottom_opaque_bar"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:background="@color/black_opaque_story_frame_selector"
+        />
+
     <FrameLayout
         android:id="@+id/translucent_error_view"
         android:visibility="gone"
