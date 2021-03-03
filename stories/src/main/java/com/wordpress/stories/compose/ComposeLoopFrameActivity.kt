@@ -25,6 +25,7 @@ import android.os.Vibrator
 import android.provider.Settings
 import android.text.TextUtils
 import android.util.Log
+import android.util.TypedValue
 import android.view.GestureDetector
 import android.view.Gravity
 import android.view.MotionEvent
@@ -116,10 +117,12 @@ import com.wordpress.stories.util.KEY_STORY_SAVE_RESULT
 import com.wordpress.stories.util.STATE_KEY_CURRENT_STORY_INDEX
 import com.wordpress.stories.util.getDisplayPixelSize
 import com.wordpress.stories.util.getStoryIndexFromIntentOrBundle
+import com.wordpress.stories.util.isScreenTallerThan916
 import com.wordpress.stories.util.isVideo
 import com.wordpress.stories.util.normalizeSizeExportTo916
 import kotlinx.android.synthetic.main.activity_composer.*
 import kotlinx.android.synthetic.main.content_composer.*
+import kotlinx.android.synthetic.main.fragment_story_frame_selector.view.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -200,6 +203,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private lateinit var backgroundSurfaceManager: BackgroundSurfaceManager
     private var currentOriginalCapturedFile: File? = null
     private lateinit var workingAreaRect: Rect
+    private var bottomOpaqueBarHeight: Int = 0 // default: no opaque bottom bar
 
     private val timesUpRunnable = Runnable {
         stopRecordingVideo(false) // time's up, it's not a cancellation
@@ -341,6 +345,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             bottomNavigationBarMargin = insets.systemWindowInsetBottom
             workingAreaRect = calculateWorkingArea()
             photoEditor.updateWorkAreaRect(workingAreaRect)
+            bottomOpaqueBarHeight = preCalculateOpaqueBarHeight()
             delete_view.addBottomOffset(bottomNavigationBarMargin)
             delete_slide_view.addBottomOffset(bottomNavigationBarMargin)
             (bottom_strip_view as StoryFrameSelectorFragment).setBottomOffset(bottomNavigationBarMargin)
@@ -549,6 +554,32 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             }
         } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED) {
             onLoadFromIntent(intent)
+        }
+    }
+
+    private fun preCalculateOpaqueBarHeight(): Int {
+        val width = resources.displayMetrics.widthPixels
+        val height = resources.displayMetrics.heightPixels
+        if (isScreenTallerThan916(width, height)) {
+            val normalizedSize = normalizeSizeExportTo916(width, height).toSize()
+            val normalizedHeightDp = TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP, normalizedSize.height.toFloat(), resources.displayMetrics)
+            val screenHeightDp = TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP, height.toFloat(), resources.displayMetrics)
+            return Math.round(screenHeightDp - normalizedHeightDp) //  / 2
+        } else {
+            return 0
+        }
+    }
+
+    private fun setOpaqueBarHeightAndStoryFrameSelectorBackgroundColor() {
+        photoEditorView.setOpaqueBarHeight(bottomOpaqueBarHeight)
+        val screenWidth = resources.displayMetrics.widthPixels
+        val screenHeight = resources.displayMetrics.heightPixels
+        if (isScreenTallerThan916(screenWidth, screenHeight)) {
+            (bottom_strip_view as StoryFrameSelectorFragment).setBackgroundColor(R.color.black_opaque_story_frame_selector)
+        } else {
+            (bottom_strip_view as StoryFrameSelectorFragment).setBackgroundColor(R.color.black_transp_story_frame_selector)
         }
     }
 
@@ -1597,10 +1628,13 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     private fun hideStoryFrameSelector() {
         (bottom_strip_view as StoryFrameSelectorFragment).hide()
+        photoEditorView.hideOpaqueBar()
     }
 
     private fun showStoryFrameSelector() {
+        setOpaqueBarHeightAndStoryFrameSelectorBackgroundColor()
         (bottom_strip_view as StoryFrameSelectorFragment).show()
+        photoEditorView.showOpaqueBar()
     }
 
     private fun hideEditModeUIControls() {

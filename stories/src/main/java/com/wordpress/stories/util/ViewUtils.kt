@@ -39,6 +39,10 @@ fun isSizeRatio916(originalWidth: Int, originalHeight: Int): Boolean {
     return (originalWidth.toFloat() / originalHeight.toFloat()) == TARGET_RATIO_9_16
 }
 
+fun isScreenTallerThan916(originalWidth: Int, originalHeight: Int): Boolean {
+    return (originalWidth.toFloat() / originalHeight.toFloat()) < TARGET_RATIO_9_16
+}
+
 fun normalizeSizeExportTo916(originalWidth: Int, originalHeight: Int): ScreenSize {
     /*
         1. if the screen is 16:9, we're OK
