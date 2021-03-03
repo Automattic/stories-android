@@ -18,7 +18,6 @@ import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import androidx.annotation.RequiresApi
 import com.automattic.photoeditor.OnSaveBitmap
-import com.automattic.photoeditor.R
 import com.automattic.photoeditor.R.styleable
 import com.automattic.photoeditor.views.background.fixed.BackgroundImageView
 import com.automattic.photoeditor.views.background.video.AutoFitTextureView
