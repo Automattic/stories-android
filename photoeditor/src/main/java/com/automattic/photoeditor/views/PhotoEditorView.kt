@@ -79,6 +79,9 @@ class PhotoEditorView : RelativeLayout {
     val source: ImageView
         get() = backgroundImage
 
+    val sourceBlurredBkg: ImageView
+        get() = backgroundImageBlurred
+
     val brush: BrushDrawingView
         get() = brushDrawingView
 
@@ -118,6 +121,10 @@ class PhotoEditorView : RelativeLayout {
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         attachedToWindow = true
+    }
+
+    fun onComposerDestroyed() {
+        attachedToWindow = false
     }
 
     @SuppressLint("Recycle")
