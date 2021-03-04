@@ -118,7 +118,6 @@ import com.wordpress.stories.util.getDisplayPixelSize
 import com.wordpress.stories.util.getStoryIndexFromIntentOrBundle
 import com.wordpress.stories.util.isScreenTallerThan916
 import com.wordpress.stories.util.isVideo
-import com.wordpress.stories.util.normalizeSizeExportTo916
 import kotlinx.android.synthetic.main.activity_composer.*
 import kotlinx.android.synthetic.main.content_composer.*
 import kotlinx.android.synthetic.main.fragment_story_frame_selector.view.*
@@ -316,16 +315,14 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         val width = photoEditorView.measuredWidth
         val height = photoEditorView.measuredHeight
 
-        val normalizedScreenSize = normalizeSizeExportTo916(width, height).toSize()
-
         val bottomAreaHeight = resources.getDimensionPixelSize(R.dimen.bottom_strip_height) + bottomNavigationBarMargin
         val topAreaHeight = resources.getDimensionPixelSize(R.dimen.edit_mode_button_size)
 
         return Rect(
             xCoord,
             yCoord + topAreaHeight,
-            xCoord + normalizedScreenSize.width,
-            yCoord + normalizedScreenSize.height - bottomAreaHeight
+            xCoord + width,
+            yCoord + height - bottomAreaHeight
         )
     }
 
