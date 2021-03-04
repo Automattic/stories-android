@@ -562,11 +562,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         val height = resources.displayMetrics.heightPixels
         if (isScreenTallerThan916(width, height)) {
             val normalizedSize = normalizeSizeExportTo916(width, height).toSize()
-            val normalizedHeightDp = TypedValue.applyDimension(
-                    TypedValue.COMPLEX_UNIT_DIP, normalizedSize.height.toFloat(), resources.displayMetrics)
-            val screenHeightDp = TypedValue.applyDimension(
-                    TypedValue.COMPLEX_UNIT_DIP, height.toFloat(), resources.displayMetrics)
-            return Math.round(screenHeightDp - normalizedHeightDp) //  / 2
+            return (height - normalizedSize.height)
         } else {
             return 0
         }
