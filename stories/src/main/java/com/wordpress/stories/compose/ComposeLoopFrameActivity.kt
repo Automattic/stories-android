@@ -25,7 +25,6 @@ import android.os.Vibrator
 import android.provider.Settings
 import android.text.TextUtils
 import android.util.Log
-import android.util.TypedValue
 import android.view.GestureDetector
 import android.view.Gravity
 import android.view.MotionEvent
