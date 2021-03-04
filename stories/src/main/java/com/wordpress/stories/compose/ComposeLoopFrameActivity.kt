@@ -118,6 +118,7 @@ import com.wordpress.stories.util.getDisplayPixelSize
 import com.wordpress.stories.util.getStoryIndexFromIntentOrBundle
 import com.wordpress.stories.util.isScreenTallerThan916
 import com.wordpress.stories.util.isVideo
+import com.wordpress.stories.util.normalizeSizeExportTo916
 import kotlinx.android.synthetic.main.activity_composer.*
 import kotlinx.android.synthetic.main.content_composer.*
 import kotlinx.android.synthetic.main.fragment_story_frame_selector.view.*
