@@ -121,7 +121,6 @@ import com.wordpress.stories.util.isVideo
 import com.wordpress.stories.util.normalizeSizeExportTo916
 import kotlinx.android.synthetic.main.activity_composer.*
 import kotlinx.android.synthetic.main.content_composer.*
-import kotlinx.android.synthetic.main.fragment_story_frame_selector.view.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -565,20 +564,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         }
     }
 
-    private fun setOpaqueBarHeightAndStoryFrameSelectorBackgroundColor() {
+    private fun setOpaqueBarHeight() {
         if (bottomOpaqueBarHeight > 0) {
             bottom_opaque_bar.layoutParams.height = bottomOpaqueBarHeight
         } else {
             bottom_opaque_bar.visibility = View.GONE
-        }
-        val screenWidth = resources.displayMetrics.widthPixels
-        val screenHeight = resources.displayMetrics.heightPixels
-        if (isScreenTallerThan916(screenWidth, screenHeight)) {
-            (bottom_strip_view as StoryFrameSelectorFragment)
-                    .setBackgroundColor(R.color.black_opaque_story_frame_selector)
-        } else {
-            (bottom_strip_view as StoryFrameSelectorFragment)
-                    .setBackgroundColor(R.color.black_transp_story_frame_selector)
         }
     }
 
@@ -1631,7 +1621,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun showStoryFrameSelector() {
-        setOpaqueBarHeightAndStoryFrameSelectorBackgroundColor()
+        setOpaqueBarHeight()
         bottom_opaque_bar.visibility = View.VISIBLE
         (bottom_strip_view as StoryFrameSelectorFragment).show()
     }
