@@ -1,5 +1,6 @@
 package com.wordpress.stories.util
 
+import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.util.Size
 import android.view.View
@@ -77,8 +78,22 @@ fun calculateAspectRatioForDrawable(drawable: Drawable): Float {
     return width.toFloat() / height.toFloat()
 }
 
+fun calculateAspectRatioForBitmap(bitmap: Bitmap): Float {
+    val width = bitmap.width
+    val height = bitmap.height
+    return width.toFloat() / height.toFloat()
+}
+
 fun isAspectRatioSimilarByPercentage(aspectRatio1: Float, aspectRatio2: Float, percentage: Float): Boolean {
     return (Math.abs(aspectRatio1 - aspectRatio2) < percentage)
+}
+
+fun isWidthMultiple(width1: Int, width2: Int): Boolean {
+    return isMultipleOf(width1, width2) || isMultipleOf(width2, width1)
+}
+
+private fun isMultipleOf(num1: Int, num2: Int): Boolean {
+    return (num1 % num2 == 0)
 }
 
 fun getSizeRatio(originalWidth: Int, originalHeight: Int): Float {
