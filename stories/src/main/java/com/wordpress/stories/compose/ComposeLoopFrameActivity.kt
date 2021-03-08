@@ -2014,7 +2014,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         val model = (frame.source as? FileBackgroundSource)?.file ?:
                         (frame.source as UriBackgroundSource).contentUri
         // 0. attempt center-crop to pre-load the image and we can retrieve the intrinsic width/height. Also, before
-        //      we know anything about the image Center-crop is our best bet, as it should be the widest use case.
+        //      we know anything about the image Center-crop is our best bet, as it should be the most common use case.
         // 1. if the image being loaded matches the aspect ratio of the device screen, then align to top
         //      (no parts would actually be cropped, given the matching the aspect ratio it should fit)
         // 2. if the device is taller than 9:16, just crop the bottom (showing the opaque bar)
