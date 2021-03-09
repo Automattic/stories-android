@@ -2029,6 +2029,26 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     .submit()
             val drawable = futureTarget.get()
 
+            val doAfterUse = object : ImageLoadedInterface {
+                override fun doAfter() {
+                    // here setup the PhotoView support matrix
+                    // we use a Handler because we need to set the support matrix only once the drawable
+                    // has been set on the PhotoView, otherwise the matrix is not applied
+                    // see
+                    // https://github.com/Baseflow/PhotoView/blob/139a9ffeaf70bd628b015374cb6530fcf7d0bcb7/photoview/src/main/java/com/github/chrisbanes/photoview/PhotoViewAttacher.java#L279-L289
+                    // if we're all good, doAfter() will be callled on Glide's `onResourceReady`, so
+                    // let's setup the ViewMatrix
+                    Handler().post{
+                        setBackgroundViewInfoOnPhotoView(
+                                frame,
+                                photoEditor.composedCanvas.source as PhotoView
+                        )
+                        // finally, clean target so resources can be freed up
+                        Glide.with(this@ComposeLoopFrameActivity).clear(futureTarget)
+                    }
+                }
+            }
+
             withContext(Dispatchers.Main) {
                 // 1. if the image being loaded matches the aspect ratio of the device screen, then align to top
                 //      (no parts would actually be cropped, given the matching aspect ratio it should fit)
@@ -2040,7 +2060,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     bottom_opaque_bar.visibility = View.GONE
                     // photoEditorView.source.layoutParams.height = originalCanvasHeight
                     photoEditorView.source.scaleType = CENTER_CROP
-                    loadImageWithGlideToDraw(drawable, frame, false)
+                    loadImageWithGlideToDraw(drawable,false, doAfterUse)
                 } else {
                     // 2. if the device is taller than 9:16, just crop the bottom (showing the opaque bar)
                     if (isScreenTallerThan916(screenWidth, screenHeight)
@@ -2053,7 +2073,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                         // photoEditorView.source.layoutParams.height = normalizedSize.height
                         photoEditorView.source.scaleType = CENTER_CROP
                         // photoEditorView.source.scaleType = FIT_CENTER
-                        loadImageWithGlideToDraw(drawable, frame, false)
+                        loadImageWithGlideToDraw(drawable, false, doAfterUse)
                     } else {
                         // 3. else, load with fit-center
                         (photoEditorView.source.layoutParams as LayoutParams)
@@ -2061,18 +2081,17 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                         bottom_opaque_bar.visibility = View.GONE
     //                                             photoEditorView.source.layoutParams.height = originalCanvasHeight
                         photoEditorView.source.scaleType = FIT_CENTER
-                        loadImageWithGlideToDraw(drawable, frame, true)
+                        loadImageWithGlideToDraw(drawable, true, doAfterUse)
                     }
                 }
             }
-            Glide.with(this@ComposeLoopFrameActivity).clear(futureTarget)
         }
     }
 
     private suspend fun loadImageWithGlideToDraw(
         drawable: Drawable,
-        frame: StoryFrameItem,
-        useFitCenter: Boolean = false
+        useFitCenter: Boolean = false,
+        doAfterUse: ImageLoadedInterface
     ) {
         withContext(Dispatchers.Main) {
             val transformToUse: BitmapTransformation = if (useFitCenter) {
@@ -2084,27 +2103,17 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             Glide.with(this@ComposeLoopFrameActivity)
                     .load(drawable)
                     .transform(transformToUse)
-                    .listener(provideGlideRequestListenerWithHandler(setupPhotoViewMatrix = {
-                        setBackgroundViewInfoOnPhotoView(
-                                frame,
-                                photoEditor.composedCanvas.source as PhotoView
-                        )
-                    }))
+                    .listener(provideGlideRequestListener(doAfterUse))
                     .into(photoEditorView.source)
+
         }
     }
 
-    interface ResourceLoader {
-        fun onResourceReady(
-            resource: Drawable,
-            model: Any?,
-            target: Target<Drawable>?,
-            dataSource: DataSource?,
-            isFirstResource: Boolean
-        ): Boolean
+    interface ImageLoadedInterface {
+        fun doAfter()
     }
 
-    private fun provideGlideRequestListenerWithHandler(doBefore: ResourceLoader? = null, setupPhotoViewMatrix: Runnable): RequestListener<Drawable> {
+    private fun provideGlideRequestListener(callback: ImageLoadedInterface): RequestListener<Drawable> {
         return object : RequestListener<Drawable> {
             override fun onLoadFailed(
                 e: GlideException?,
@@ -2123,19 +2132,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 dataSource: DataSource?,
                 isFirstResource: Boolean
             ): Boolean {
-                // here setup the PhotoView support matrix
-                // we use a handler because we need to set the support matrix only once the drawable
-                // has been set on the PhotoView, otherwise the matrix is not applied
-                // see
-                // https://github.com/Baseflow/PhotoView/blob/139a9ffeaf70bd628b015374cb6530fcf7d0bcb7/photoview/src/main/java/com/github/chrisbanes/photoview/PhotoViewAttacher.java#L279-L289
-                doBefore?.let {
-                    val result = doBefore.onResourceReady(requireNotNull(resource), model, target, dataSource, isFirstResource)
-                    if (!result) {
-                        // if we're all good, let's setup the ViewMatrix
-                        Handler().post(setupPhotoViewMatrix)
-                    }
-                    return result
-                } ?: Handler().post(setupPhotoViewMatrix)
+                callback.doAfter()
                 // return false to let Glide proceed and set the drawable
                 return false
             }
