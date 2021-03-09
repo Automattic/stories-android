@@ -2024,29 +2024,28 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
         CoroutineScope(Dispatchers.IO).launch {
             val futureTarget = Glide.with(this@ComposeLoopFrameActivity)
-                    .asBitmap()
+                    .asDrawable()
                     .load(model)
-                    //.submit(screenWidth, screenHeight)
                     .submit()
-            val bitmap = futureTarget.get()
+            val drawable = futureTarget.get()
 
             withContext(Dispatchers.Main) {
-                // targetView.setImageBitmap(bitmap)
                 // 1. if the image being loaded matches the aspect ratio of the device screen, then align to top
                 //      (no parts would actually be cropped, given the matching aspect ratio it should fit)
-                val drawableAspectRatio = calculateAspectRatioForBitmap(bitmap)
+                // val drawableAspectRatio = calculateAspectRatioForBitmap(bitmap)
+                val drawableAspectRatio = calculateAspectRatioForDrawable(drawable)
                 if (isAspectRatioSimilarByPercentage(drawableAspectRatio, screenSizeRatio, 0.001f)) {
                     (photoEditorView.source.layoutParams as LayoutParams)
                             .addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE)
                     bottom_opaque_bar.visibility = View.GONE
                     // photoEditorView.source.layoutParams.height = originalCanvasHeight
                     photoEditorView.source.scaleType = CENTER_CROP
-                    loadImageWithGlideToDraw(bitmap, frame, false)
+                    loadImageWithGlideToDraw(drawable, frame, false)
                 } else {
                     // 2. if the device is taller than 9:16, just crop the bottom (showing the opaque bar)
                     if (isScreenTallerThan916(screenWidth, screenHeight)
-                            && (isWidthMultiple(screenWidth, bitmap.width) ||
-                                    isWidthMultiple(bitmap.width, screenWidth))
+                            && (isWidthMultiple(screenWidth, drawable.intrinsicWidth) ||
+                                    isWidthMultiple(drawable.intrinsicWidth, screenWidth))
                     ) {
                         (photoEditorView.source.layoutParams as LayoutParams)
                                 .addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE)
@@ -2054,7 +2053,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                         // photoEditorView.source.layoutParams.height = normalizedSize.height
                         photoEditorView.source.scaleType = CENTER_CROP
                         // photoEditorView.source.scaleType = FIT_CENTER
-                        loadImageWithGlideToDraw(bitmap, frame,false)
+                        loadImageWithGlideToDraw(drawable, frame, false)
                     } else {
                         // 3. else, load with fit-center
                         (photoEditorView.source.layoutParams as LayoutParams)
@@ -2062,9 +2061,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                         bottom_opaque_bar.visibility = View.GONE
     //                                             photoEditorView.source.layoutParams.height = originalCanvasHeight
                         photoEditorView.source.scaleType = FIT_CENTER
-                        // we need to call Glide's .into() from the UI thread, so
-                        // this recursive call needs to be made within a Handler()
-                        loadImageWithGlideToDraw(bitmap, frame,true)
+                        loadImageWithGlideToDraw(drawable, frame, true)
                     }
                 }
             }
@@ -2072,7 +2069,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         }
     }
 
-    private suspend fun loadImageWithGlideToDraw(bitmap: Bitmap, frame: StoryFrameItem, useFitCenter: Boolean = false) {
+    private suspend fun loadImageWithGlideToDraw(
+        drawable: Drawable,
+        frame: StoryFrameItem,
+        useFitCenter: Boolean = false
+    ) {
         withContext(Dispatchers.Main) {
             val transformToUse: BitmapTransformation = if (useFitCenter) {
                 FitCenter()
@@ -2081,7 +2082,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             }
 
             Glide.with(this@ComposeLoopFrameActivity)
-                    .load(bitmap)
+                    .load(drawable)
                     .transform(transformToUse)
                     .listener(provideGlideRequestListenerWithHandler(setupPhotoViewMatrix = {
                         setBackgroundViewInfoOnPhotoView(
