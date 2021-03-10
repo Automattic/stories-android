@@ -575,8 +575,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // Given ComposeLoopFrameActivity is full screen, we can rely on the measuredHeight calculation instead.
         screenWidth = photoEditorView.source.measuredWidth
         screenHeight = photoEditorView.source.measuredHeight
+        normalizedSize = normalizeSizeExportTo916(screenWidth, screenHeight).toSize()
         if (isScreenTallerThan916(screenWidth, screenHeight)) {
-            normalizedSize = normalizeSizeExportTo916(screenWidth, screenHeight).toSize()
             return (screenHeight - normalizedSize.height)
         } else {
             return 0
