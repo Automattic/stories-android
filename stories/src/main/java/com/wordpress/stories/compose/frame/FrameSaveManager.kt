@@ -310,13 +310,13 @@ class FrameSaveManager(
                 Glide.with(context)
                         .asBitmap()
                         .load(uri)
-                        .fitCenter()    // we use fitCenter at first (instead of cropping) so we don't lose any information
+                        .fitCenter() // we use fitCenter at first (instead of cropping) so we don't lose any information
                         .submit(targetView.measuredWidth, targetView.measuredHeight)
             CENTER_CROP ->
                 Glide.with(context)
                         .asBitmap()
                         .load(uri)
-                        .centerCrop()    // we use fitCenter at first (instead of cropping) so we don't lose any information
+                        .centerCrop() // we use fitCenter at first (instead of cropping) so we don't lose any information
                         .submit(targetView.measuredWidth, targetView.measuredHeight)
             else -> // default case with no transform needed so futureTarget is initialized,
                     // but we don't really expect to get this case

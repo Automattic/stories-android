@@ -262,7 +262,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private var screenSizeRatio: Float = TARGET_RATIO_9_16
     private lateinit var normalizedSize: Size
 
-
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
             Log.d("ComposeLoopFrame", "onServiceConnected()")
@@ -2013,14 +2012,14 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun loadImageWithGlideToPrepare(frame: StoryFrameItem) {
-        val model = (frame.source as? FileBackgroundSource)?.file ?:
-        (frame.source as UriBackgroundSource).contentUri
+        val model = (frame.source as? FileBackgroundSource)?.file
+                ?: (frame.source as UriBackgroundSource).contentUri
 
         CoroutineScope(Dispatchers.IO).launch {
             val futureTarget = Glide.with(this@ComposeLoopFrameActivity)
                     .asDrawable()
                     .load(model)
-                    .fitCenter()    // we use fitCenter at first (instead of cropping) so we don't lose any information
+                    .fitCenter() // we use fitCenter at first (instead of cropping) so we don't lose any information
                     .submit(screenWidth, screenHeight) // we're not going to export images greater than the screen size
             val drawable = futureTarget.get()
 
@@ -2033,7 +2032,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     // https://github.com/Baseflow/PhotoView/blob/139a9ffeaf70bd628b015374cb6530fcf7d0bcb7/photoview/src/main/java/com/github/chrisbanes/photoview/PhotoViewAttacher.java#L279-L289
                     // if we're all good, doAfter() will be callled on Glide's `onResourceReady`, so
                     // let's setup the ViewMatrix
-                    Handler().post{
+                    Handler().post {
                         setBackgroundViewInfoOnPhotoView(
                                 frame,
                                 photoEditor.composedCanvas.source as PhotoView
@@ -2059,13 +2058,15 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     ) {
                         bottom_opaque_bar.visibility = View.VISIBLE
                         val transformToUse = if (drawable.intrinsicWidth >= screenWidth) {
-                            photoEditorView.source.scaleType = FIT_START // this aligns to top so there's no top black bar
+                            // this aligns to top so there's no top black bar
+                            photoEditorView.source.scaleType = FIT_START
                             null
                         } else {
                             photoEditorView.source.scaleType = FIT_CENTER
                             FitCenter()
                         }
-                        loadImageWithGlideToDraw(drawable, transformToUse, normalizedSize.width, normalizedSize.height, doAfterUse)
+                        loadImageWithGlideToDraw(drawable, transformToUse,
+                                normalizedSize.width, normalizedSize.height, doAfterUse)
                     } else {
                         // 3. else, load with fit-center (black bars on the side that doesn't fit)
                         // see https://developer.android.com/reference/android/graphics/Matrix.ScaleToFit#CENTER
