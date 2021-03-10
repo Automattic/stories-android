@@ -2038,8 +2038,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                                 frame,
                                 photoEditor.composedCanvas.source as PhotoView
                         )
-                        // finally, clean target so resources can be freed up
-                        Glide.with(this@ComposeLoopFrameActivity).clear(futureTarget)
                     }
                 }
             }
