@@ -2046,8 +2046,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 //      no parts would actually be cropped, given the matching aspect ratio it should fit
                 //      except the opaque bar given we're normalizing to 9:16 on export
                 val drawableAspectRatio = calculateAspectRatioForDrawable(drawable)
+                bottom_opaque_bar.visibility = View.VISIBLE
                 if (isAspectRatioSimilarByPercentage(drawableAspectRatio, screenSizeRatio, 0.01f)) {
-                    bottom_opaque_bar.visibility = View.GONE
                     photoEditorView.source.scaleType = CENTER_CROP
                     loadImageWithGlideToDraw(drawable, CenterCrop(), screenWidth, screenHeight, doAfterUse)
                 } else {
@@ -2056,7 +2056,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     if (isScreenTallerThan916(screenWidth, screenHeight) &&
                             (drawable.intrinsicHeight > drawable.intrinsicWidth)
                     ) {
-                        bottom_opaque_bar.visibility = View.VISIBLE
                         val transformToUse = if (drawable.intrinsicWidth >= screenWidth) {
                             // this aligns to top so there's no top black bar
                             photoEditorView.source.scaleType = FIT_START
@@ -2070,7 +2069,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     } else {
                         // 3. else, load with fit-center (black bars on the side that doesn't fit)
                         // see https://developer.android.com/reference/android/graphics/Matrix.ScaleToFit#CENTER
-                        bottom_opaque_bar.visibility = View.VISIBLE
                         photoEditorView.source.scaleType = FIT_CENTER
                         loadImageWithGlideToDraw(drawable, FitCenter(), screenWidth, screenHeight, doAfterUse)
                     }
