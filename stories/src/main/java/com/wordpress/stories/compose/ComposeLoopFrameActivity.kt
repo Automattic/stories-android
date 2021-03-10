@@ -35,6 +35,7 @@ import android.view.View.OnClickListener
 import android.webkit.MimeTypeMap
 import android.widget.ImageView.ScaleType.CENTER_CROP
 import android.widget.ImageView.ScaleType.FIT_CENTER
+import android.widget.ImageView.ScaleType.FIT_START
 import android.widget.RelativeLayout
 import android.widget.RelativeLayout.LayoutParams
 import android.widget.Toast
@@ -2026,7 +2027,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             val futureTarget = Glide.with(this@ComposeLoopFrameActivity)
                     .asDrawable()
                     .load(model)
-                    .submit()
+                    .fitCenter()    // we use fitCenter at first (instead of cropping) so we don't lose any information
+                    .submit(screenWidth, screenHeight) // we're not going to export images greater than the screen size
             val drawable = futureTarget.get()
 
             val doAfterUse = object : ImageLoadedInterface {
@@ -2052,36 +2054,25 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             withContext(Dispatchers.Main) {
                 // 1. if the image being loaded matches the aspect ratio of the device screen, then align to top
                 //      (no parts would actually be cropped, given the matching aspect ratio it should fit)
-                // val drawableAspectRatio = calculateAspectRatioForBitmap(bitmap)
                 val drawableAspectRatio = calculateAspectRatioForDrawable(drawable)
-                if (isAspectRatioSimilarByPercentage(drawableAspectRatio, screenSizeRatio, 0.001f)) {
-                    (photoEditorView.source.layoutParams as LayoutParams)
-                            .addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE)
+                if (isAspectRatioSimilarByPercentage(drawableAspectRatio, screenSizeRatio, 0.01f)) {
                     bottom_opaque_bar.visibility = View.GONE
-                    // photoEditorView.source.layoutParams.height = originalCanvasHeight
                     photoEditorView.source.scaleType = CENTER_CROP
-                    loadImageWithGlideToDraw(drawable,false, doAfterUse)
+                    loadImageWithGlideToDraw(drawable, CenterCrop(), screenWidth, originalCanvasHeight, doAfterUse)
                 } else {
-                    // 2. if the device is taller than 9:16, just crop the bottom (showing the opaque bar)
-                    if (isScreenTallerThan916(screenWidth, screenHeight)
-                            && (isWidthMultiple(screenWidth, drawable.intrinsicWidth) ||
-                                    isWidthMultiple(drawable.intrinsicWidth, screenWidth))
+                    // 2. if the device is taller than 9:16, and image is portrait
+                    // just crop the bottom (showing the opaque bar)
+                    if (isScreenTallerThan916(screenWidth, screenHeight) &&
+                            (drawable.intrinsicHeight > drawable.intrinsicWidth)
                     ) {
-                        (photoEditorView.source.layoutParams as LayoutParams)
-                                .addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE)
                         bottom_opaque_bar.visibility = View.VISIBLE
-                        // photoEditorView.source.layoutParams.height = normalizedSize.height
-                        photoEditorView.source.scaleType = CENTER_CROP
-                        // photoEditorView.source.scaleType = FIT_CENTER
-                        loadImageWithGlideToDraw(drawable, false, doAfterUse)
+                        photoEditorView.source.scaleType = FIT_START
+                        loadImageWithGlideToDraw(drawable, null, normalizedSize.width, normalizedSize.height, doAfterUse)
                     } else {
                         // 3. else, load with fit-center
-                        (photoEditorView.source.layoutParams as LayoutParams)
-                                .addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE)
-                        bottom_opaque_bar.visibility = View.GONE
-    //                                             photoEditorView.source.layoutParams.height = originalCanvasHeight
+                        bottom_opaque_bar.visibility = View.VISIBLE
                         photoEditorView.source.scaleType = FIT_CENTER
-                        loadImageWithGlideToDraw(drawable, true, doAfterUse)
+                        loadImageWithGlideToDraw(drawable, FitCenter(), screenWidth, originalCanvasHeight, doAfterUse)
                     }
                 }
             }
@@ -2090,22 +2081,25 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     private suspend fun loadImageWithGlideToDraw(
         drawable: Drawable,
-        useFitCenter: Boolean = false,
+        transformToUse: BitmapTransformation? = null,
+        overrideWidth: Int,
+        overrideHeight: Int,
         doAfterUse: ImageLoadedInterface
     ) {
         withContext(Dispatchers.Main) {
-            val transformToUse: BitmapTransformation = if (useFitCenter) {
-                FitCenter()
-            } else {
-                CenterCrop()
-            }
+            transformToUse?.let {
+                Glide.with(this@ComposeLoopFrameActivity)
+                        .load(drawable)
+                        .transform(it)
+                        .listener(provideGlideRequestListener(doAfterUse))
+                        .override(overrideWidth, overrideHeight)
+                        .into(photoEditorView.source)
 
-            Glide.with(this@ComposeLoopFrameActivity)
+            } ?: Glide.with(this@ComposeLoopFrameActivity)
                     .load(drawable)
-                    .transform(transformToUse)
                     .listener(provideGlideRequestListener(doAfterUse))
+                    .override(overrideWidth, overrideHeight)
                     .into(photoEditorView.source)
-
         }
     }
 
