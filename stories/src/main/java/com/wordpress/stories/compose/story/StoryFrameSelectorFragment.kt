@@ -31,7 +31,6 @@ interface OnStoryFrameSelectorTappedListener {
 class StoryFrameSelectorFragment : Fragment() {
     lateinit var storyViewModel: StoryViewModel
     private var storyFrameTappedListener: OnStoryFrameSelectorTappedListener? = null
-    private var backgroundColorResId: Int = R.color.black_transp_story_frame_selector // default background color
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val storyIndex: StoryIndex = getStoryIndexFromIntentOrBundle(savedInstanceState, activity?.intent)
@@ -98,7 +97,6 @@ class StoryFrameSelectorFragment : Fragment() {
             storyViewModel.addButtonClicked.call()
         }
         setupItemTouchListener(view)
-        applyBackgroundColor()
         view.visibility = View.INVISIBLE
         return view
     }
@@ -206,15 +204,6 @@ class StoryFrameSelectorFragment : Fragment() {
 
     fun showAddFrameControl() {
         view?.plus_icon?.visibility = View.VISIBLE
-    }
-
-    private fun applyBackgroundColor() {
-        view?.setBackgroundResource(backgroundColorResId)
-    }
-
-    fun setBackgroundColor(colorResId: Int) {
-        backgroundColorResId = colorResId
-        applyBackgroundColor()
     }
 
     fun setBottomOffset(offset: Int) {

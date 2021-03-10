@@ -23,7 +23,7 @@
     <color name="black_transp_light_darker">#99000000</color>
     <color name="black_transp_delete">#4D000000</color>
     <color name="black_transp_story_frame_selector">@color/black_transp_light</color>
-    <color name="black_opaque_story_frame_selector">@color/black</color>
+    <color name="black_opaque_bar">@color/black</color>
     <color name="black_transp_edit_mode_controls">@color/black_transp_light</color>
     <color name="black_transp_edit_mode_controls_pressed">@color/black_transp_light_darker</color>
     <color name="black_transp_error_scrim">#4D000000</color>

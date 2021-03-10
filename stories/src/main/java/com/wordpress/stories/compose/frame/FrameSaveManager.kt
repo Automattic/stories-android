@@ -7,7 +7,9 @@ import android.graphics.Matrix
 import android.net.Uri
 import android.view.View
 import android.view.ViewGroup.LayoutParams
+import android.widget.ImageView.ScaleType.CENTER_CROP
 import android.widget.ImageView.ScaleType.FIT_CENTER
+import android.widget.ImageView.ScaleType.FIT_START
 import android.widget.RelativeLayout
 import com.automattic.photoeditor.PhotoEditor
 import com.automattic.photoeditor.PhotoEditor.OnSaveWithCancelAndProgressListener
@@ -310,19 +312,46 @@ class FrameSaveManager(
         // -----------------------------------
         // now set the actual background image
         val targetView = ghostPhotoEditorView.source
+        val scaleType = frame.source.backgroundViewInfo?.scaleType
 
         // making use of Glide to decode bitmap and get the right orientation automatically
         // http://bumptech.github.io/glide/doc/getting-started.html#background-threads
-        val futureTarget = Glide.with(context)
-            .asBitmap()
-            .load(uri)
-            .submit(targetView.measuredWidth, targetView.measuredHeight)
-        targetView.setImageBitmap(futureTarget.get())
+        val futureTarget = when (scaleType) {
+            FIT_START ->
+                Glide.with(context)
+                        .asBitmap()
+                        .load(uri)
+                        // no transform used when FIT_START, see correlation in ComposeLoopFrameActivity's
+                        // loadImageWithGlideToPrepare()
+                        .submit(targetView.measuredWidth, targetView.measuredHeight)
+            FIT_CENTER ->
+                Glide.with(context)
+                        .asBitmap()
+                        .load(uri)
+                        .fitCenter() // we use fitCenter at first (instead of cropping) so we don't lose any information
+                        .submit(targetView.measuredWidth, targetView.measuredHeight)
+            CENTER_CROP ->
+                Glide.with(context)
+                        .asBitmap()
+                        .load(uri)
+                        .centerCrop() // we use fitCenter at first (instead of cropping) so we don't lose any information
+                        .submit(targetView.measuredWidth, targetView.measuredHeight)
+            else -> // default case with no transform needed so futureTarget is initialized,
+                    // but we don't really expect to get this case
+                Glide.with(context)
+                        .asBitmap()
+                        .load(uri)
+                        .submit(targetView.measuredWidth, targetView.measuredHeight)
+        }
+        val bitmap = futureTarget.get()
+        targetView.setImageBitmap(bitmap)
 
         // IMPORTANT: scaleType and setSuppMatrix should only be called _after_ the bitmap is set on the targetView
         // by means of targetView.setImageBitmap(). Calling this before will have no effect due to PhotoView's checks.
         (targetView as BackgroundImageView).apply {
-            scaleType = FIT_CENTER
+            frame.source.backgroundViewInfo?.let {
+                this.scaleType = it.scaleType
+            }
             setSuppMatrix(originalMatrix)
         }
 
