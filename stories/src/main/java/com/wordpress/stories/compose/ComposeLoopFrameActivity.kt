@@ -2045,8 +2045,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             }
 
             withContext(Dispatchers.Main) {
-                // 1. if the image being loaded matches the aspect ratio of the device screen, then align to top
-                //      (no parts would actually be cropped, given the matching aspect ratio it should fit)
+                // 1. if the image being loaded matches the aspect ratio of the device screen, use center_crop
+                //      no parts would actually be cropped, given the matching aspect ratio it should fit
+                //      except the opaque bar given we're normalizing to 9:16 on export
                 val drawableAspectRatio = calculateAspectRatioForDrawable(drawable)
                 if (isAspectRatioSimilarByPercentage(drawableAspectRatio, screenSizeRatio, 0.01f)) {
                     bottom_opaque_bar.visibility = View.GONE
@@ -2059,10 +2060,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                             (drawable.intrinsicHeight > drawable.intrinsicWidth)
                     ) {
                         bottom_opaque_bar.visibility = View.VISIBLE
-                        photoEditorView.source.scaleType = FIT_START
+                        photoEditorView.source.scaleType = FIT_START // this aligns to top so there's no top black bar
                         loadImageWithGlideToDraw(drawable, null, normalizedSize.width, normalizedSize.height, doAfterUse)
                     } else {
-                        // 3. else, load with fit-center
+                        // 3. else, load with fit-center (black bars on the side that doesn't fit)
+                        // see https://developer.android.com/reference/android/graphics/Matrix.ScaleToFit#CENTER
                         bottom_opaque_bar.visibility = View.VISIBLE
                         photoEditorView.source.scaleType = FIT_CENTER
                         loadImageWithGlideToDraw(drawable, FitCenter(), screenWidth, screenHeight, doAfterUse)
