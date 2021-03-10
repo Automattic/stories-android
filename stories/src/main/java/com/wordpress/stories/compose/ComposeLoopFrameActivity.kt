@@ -9,7 +9,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
-import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
@@ -36,8 +35,6 @@ import android.webkit.MimeTypeMap
 import android.widget.ImageView.ScaleType.CENTER_CROP
 import android.widget.ImageView.ScaleType.FIT_CENTER
 import android.widget.ImageView.ScaleType.FIT_START
-import android.widget.RelativeLayout
-import android.widget.RelativeLayout.LayoutParams
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.Group
@@ -124,13 +121,11 @@ import com.wordpress.stories.util.KEY_STORY_SAVE_RESULT
 import com.wordpress.stories.util.STATE_KEY_CURRENT_STORY_INDEX
 import com.wordpress.stories.util.TARGET_RATIO_9_16
 import com.wordpress.stories.util.calculateAspectRatioForDrawable
-import com.wordpress.stories.util.calculateAspectRatioForBitmap
 import com.wordpress.stories.util.getDisplayPixelSize
 import com.wordpress.stories.util.getSizeRatio
 import com.wordpress.stories.util.getStoryIndexFromIntentOrBundle
 import com.wordpress.stories.util.isAspectRatioSimilarByPercentage
 import com.wordpress.stories.util.isScreenTallerThan916
-import com.wordpress.stories.util.isWidthMultiple
 import com.wordpress.stories.util.isVideo
 import com.wordpress.stories.util.normalizeSizeExportTo916
 import kotlinx.android.synthetic.main.activity_composer.*
@@ -262,10 +257,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private var genericAnnouncementDialogProvider: GenericAnnouncementDialogProvider? = null
     private var showGenericAnnouncementDialogWhenReady = false
     private var useTempCaptureFile = true
-    private var screenWidth: Int = 1080 //default
-    private var screenHeight: Int = 1920 //default
+    private var screenWidth: Int = 1080 // default
+    private var screenHeight: Int = 1920 // default
     private var screenSizeRatio: Float = TARGET_RATIO_9_16
-    private var originalCanvasHeight = screenHeight
     private lateinit var normalizedSize: Size
 
 
@@ -576,9 +570,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun preCalculateOpaqueBarHeight(): Int {
-        screenWidth = resources.displayMetrics.widthPixels
-        screenHeight = resources.displayMetrics.heightPixels
-        originalCanvasHeight = photoEditorView.source.layoutParams.height
+        // We used to obtain the screen dimensions by querying resources.displayMetrics but this value is the
+        // actual screen size minus the navigation bar height i.e. on a Pixel device we'd get 1794 instead of 1920.
+        // Given ComposeLoopFrameActivity is full screen, we can rely on the measuredHeight calculation instead.
+        screenWidth = photoEditorView.source.measuredWidth
+        screenHeight = photoEditorView.source.measuredHeight
         if (isScreenTallerThan916(screenWidth, screenHeight)) {
             normalizedSize = normalizeSizeExportTo916(screenWidth, screenHeight).toSize()
             return (screenHeight - normalizedSize.height)
@@ -1998,7 +1994,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // extract matrix to float array matrixValues
         matrix.getValues(matrixValues)
         frame.source.backgroundViewInfo = BackgroundViewInfo(
-                imageMatrixValues = matrixValues
+                imageMatrixValues = matrixValues,
+                scaleType = backgroundImageSource.scaleType
         )
     }
 
@@ -2010,6 +2007,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             matrix.setValues(it.imageMatrixValues)
             backgroundImageSource.apply {
                 setSuppMatrix(matrix)
+                scaleType = it.scaleType
             }
         }
     }
@@ -2053,7 +2051,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 if (isAspectRatioSimilarByPercentage(drawableAspectRatio, screenSizeRatio, 0.01f)) {
                     bottom_opaque_bar.visibility = View.GONE
                     photoEditorView.source.scaleType = CENTER_CROP
-                    loadImageWithGlideToDraw(drawable, CenterCrop(), screenWidth, originalCanvasHeight, doAfterUse)
+                    loadImageWithGlideToDraw(drawable, CenterCrop(), screenWidth, screenHeight, doAfterUse)
                 } else {
                     // 2. if the device is taller than 9:16, and image is portrait
                     // just crop the bottom (showing the opaque bar)
@@ -2067,7 +2065,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                         // 3. else, load with fit-center
                         bottom_opaque_bar.visibility = View.VISIBLE
                         photoEditorView.source.scaleType = FIT_CENTER
-                        loadImageWithGlideToDraw(drawable, FitCenter(), screenWidth, originalCanvasHeight, doAfterUse)
+                        loadImageWithGlideToDraw(drawable, FitCenter(), screenWidth, screenHeight, doAfterUse)
                     }
                 }
             }
@@ -2089,7 +2087,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                         .listener(provideGlideRequestListener(doAfterUse))
                         .override(overrideWidth, overrideHeight)
                         .into(photoEditorView.source)
-
             } ?: Glide.with(this@ComposeLoopFrameActivity)
                     .load(drawable)
                     .listener(provideGlideRequestListener(doAfterUse))
