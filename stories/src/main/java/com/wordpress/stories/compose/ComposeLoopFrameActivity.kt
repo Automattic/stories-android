@@ -2058,8 +2058,14 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                             (drawable.intrinsicHeight > drawable.intrinsicWidth)
                     ) {
                         bottom_opaque_bar.visibility = View.VISIBLE
-                        photoEditorView.source.scaleType = FIT_START // this aligns to top so there's no top black bar
-                        loadImageWithGlideToDraw(drawable, null, normalizedSize.width, normalizedSize.height, doAfterUse)
+                        val transformToUse = if (drawable.intrinsicWidth >= screenWidth) {
+                            photoEditorView.source.scaleType = FIT_START // this aligns to top so there's no top black bar
+                            null
+                        } else {
+                            photoEditorView.source.scaleType = FIT_CENTER
+                            FitCenter()
+                        }
+                        loadImageWithGlideToDraw(drawable, transformToUse, normalizedSize.width, normalizedSize.height, doAfterUse)
                     } else {
                         // 3. else, load with fit-center (black bars on the side that doesn't fit)
                         // see https://developer.android.com/reference/android/graphics/Matrix.ScaleToFit#CENTER
