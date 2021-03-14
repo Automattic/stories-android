@@ -11,6 +11,7 @@ enum class Rotation private constructor(val rotation: Int) {
     ROTATION_270(270);
 
     companion object {
+        @JvmStatic
         fun fromInt(rotate: Int): Rotation {
             for (rotation in Rotation.values()) {
                 if (rotate == rotation.rotation) return rotation
