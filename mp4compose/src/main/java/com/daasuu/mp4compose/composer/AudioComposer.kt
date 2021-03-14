@@ -12,12 +12,13 @@ import java.nio.ByteOrder
 internal class AudioComposer(
     private val mediaExtractor: MediaExtractor,
     private val trackIndex: Int,
-    private val muxRender: MuxRender
+    private val muxRender: MuxRender,
+    private val useFallBacks: Boolean = false
 ) : IAudioComposer {
     private val sampleType = MuxRender.SampleType.AUDIO
     private val bufferInfo = MediaCodec.BufferInfo()
-    private val bufferSize: Int
-    private val buffer: ByteBuffer
+    private var bufferSize: Int
+    private var buffer: ByteBuffer
     override var isFinished: Boolean = false
         private set
     private val actualOutputFormat: MediaFormat
@@ -27,7 +28,15 @@ internal class AudioComposer(
     init {
         actualOutputFormat = this.mediaExtractor.getTrackFormat(this.trackIndex)
         this.muxRender.setOutputFormat(this.sampleType, actualOutputFormat)
-        bufferSize = actualOutputFormat.getInteger(MediaFormat.KEY_MAX_INPUT_SIZE)
+
+        // TODO: maybe the original assignement could work as well?
+        // bufferSize = actualOutputFormat.containsKey(MediaFormat.KEY_MAX_INPUT_SIZE) ? actualOutputFormat.getInteger(MediaFormat.KEY_MAX_INPUT_SIZE) : (64 * 1024);
+        bufferSize = if (useFallBacks && !actualOutputFormat.containsKey(MediaFormat.KEY_MAX_INPUT_SIZE)) {
+            (64 * 1024)
+        } else {
+            actualOutputFormat.getInteger(MediaFormat.KEY_MAX_INPUT_SIZE)
+        }
+
         buffer = ByteBuffer.allocateDirect(bufferSize).order(ByteOrder.nativeOrder())
     }
 
@@ -46,11 +55,18 @@ internal class AudioComposer(
 
         buffer.clear()
         val sampleSize = mediaExtractor.readSampleData(buffer, 0)
-        assert(sampleSize <= bufferSize)
+        if (useFallBacks && sampleSize > bufferSize) {
+            bufferSize = 2 * sampleSize;
+            buffer = ByteBuffer.allocateDirect(bufferSize).order(ByteOrder.nativeOrder());
+        } else {
+            assert(sampleSize <= bufferSize)
+        }
         val isKeyFrame = mediaExtractor.sampleFlags and MediaExtractor.SAMPLE_FLAG_SYNC != 0
         val flags = if (isKeyFrame) MediaCodec.BUFFER_FLAG_KEY_FRAME else 0
         bufferInfo.set(0, sampleSize, mediaExtractor.sampleTime, flags)
         muxRender.writeSampleData(sampleType, buffer, bufferInfo)
+        // TODO: should we use the original writtenPresentationTimeUs = mediaExtractor.getSampleTime();
+        // at least for the Video Compression use case?
         writtenPresentationTimeUs = bufferInfo.presentationTimeUs
 
         mediaExtractor.advance()
