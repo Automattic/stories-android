@@ -1,10 +1,11 @@
 package com.daasuu.mp4compose.composer;
 
+
 /**
- * // Refer:  https://github.com/ypresto/android-transcoder/blob/master/lib/src/main/java/net/ypresto/androidtranscoder/engine/AudioTrackTranscoder.java
+ * // Refer:  https://github.com/ypresto/android-transcoder/blob/master/lib/src/main/
+ * java/net/ypresto/androidtranscoder/engine/AudioTrackTranscoder.java
  *
  */
-
 import android.media.MediaCodec;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
@@ -14,7 +15,7 @@ import com.daasuu.mp4compose.composer.MuxRender.SampleType;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-
+@SuppressWarnings({"FallThrough", "MemberName"})
 class RemixAudioComposerBasic implements IAudioComposer {
     private static final SampleType SAMPLE_TYPE = SampleType.AUDIO;
 
@@ -89,7 +90,7 @@ class RemixAudioComposerBasic implements IAudioComposer {
         decoder.start();
         decoderStarted = true;
 
-        audioChannel = new AudioChannelWithSP(decoder, encoder, outputFormat,timeScale,isPitchChanged);
+        audioChannel = new AudioChannelWithSP(decoder, encoder, outputFormat, timeScale, isPitchChanged);
     }
 
     @Override
@@ -100,7 +101,7 @@ class RemixAudioComposerBasic implements IAudioComposer {
 
         while (drainEncoder(0) != DRAIN_STATE_NONE) busy = true;
         do {
-            if(audioChannel.isAnyPendingBuffIndex()){
+            if (audioChannel.isAnyPendingBuffIndex()) {
                 break;
             }
             status = drainDecoder(0);
@@ -132,9 +133,15 @@ class RemixAudioComposerBasic implements IAudioComposer {
 
         final int sampleSize = extractor.readSampleData(decoder.getInputBuffer(result), 0);
         final boolean isKeyFrame = (extractor.getSampleFlags() & MediaExtractor.SAMPLE_FLAG_SYNC) != 0;
-        decoder.queueInputBuffer(result, 0, sampleSize, extractor.getSampleTime(), isKeyFrame ? MediaCodec.BUFFER_FLAG_KEY_FRAME : 0);
+        decoder.queueInputBuffer(
+                result,
+                0,
+                sampleSize,
+                extractor.getSampleTime(),
+                isKeyFrame ? MediaCodec.BUFFER_FLAG_KEY_FRAME : 0
+        );
         extractor.advance();
-        numTracks ++ ;
+        numTracks++;
         return DRAIN_STATE_CONSUMED;
     }
 
@@ -155,7 +162,7 @@ class RemixAudioComposerBasic implements IAudioComposer {
             isDecoderEOS = true;
             audioChannel.drainDecoderBufferAndQueue(BaseAudioChannel.BUFFER_INDEX_END_OF_STREAM, 0);
         } else if (bufferInfo.size > 0) {
-            audioChannel.drainDecoderBufferAndQueue(result,bufferInfo.presentationTimeUs);
+            audioChannel.drainDecoderBufferAndQueue(result, bufferInfo.presentationTimeUs);
         }
 
         return DRAIN_STATE_CONSUMED;
@@ -172,7 +179,9 @@ class RemixAudioComposerBasic implements IAudioComposer {
                     throw new RuntimeException("Audio output format changed twice.");
                 }
                 actualOutputFormat = encoder.getOutputFormat();
-                addPrimingDelay = MediaFormat.MIMETYPE_AUDIO_AAC.equals(actualOutputFormat.getString(MediaFormat.KEY_MIME));
+                addPrimingDelay = MediaFormat.MIMETYPE_AUDIO_AAC.equals(
+                        actualOutputFormat.getString(MediaFormat.KEY_MIME)
+                );
                 muxer.setOutputFormat(SAMPLE_TYPE, actualOutputFormat);
                 return DRAIN_STATE_SHOULD_RETRY_IMMEDIATELY;
             case MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED:
@@ -202,7 +211,7 @@ class RemixAudioComposerBasic implements IAudioComposer {
 
     @Override
     public long getWrittenPresentationTimeUs() {
-        return (long)(writtenPresentationTimeUs * timeScale);
+        return (long) (writtenPresentationTimeUs * timeScale);
     }
 
     @Override

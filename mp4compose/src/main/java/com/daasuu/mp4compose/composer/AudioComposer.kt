@@ -56,8 +56,8 @@ internal class AudioComposer(
         buffer.clear()
         val sampleSize = mediaExtractor.readSampleData(buffer, 0)
         if (useFallBacks && sampleSize > bufferSize) {
-            bufferSize = 2 * sampleSize;
-            buffer = ByteBuffer.allocateDirect(bufferSize).order(ByteOrder.nativeOrder());
+            bufferSize = 2 * sampleSize
+            buffer = ByteBuffer.allocateDirect(bufferSize).order(ByteOrder.nativeOrder())
         } else {
             assert(sampleSize <= bufferSize)
         }

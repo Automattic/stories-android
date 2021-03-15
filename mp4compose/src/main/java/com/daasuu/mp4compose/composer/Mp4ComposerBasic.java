@@ -4,8 +4,10 @@ import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaMetadataRetriever;
 import android.util.Size;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.daasuu.mp4compose.FillMode;
 import com.daasuu.mp4compose.FillModeCustomItem;
 import com.daasuu.mp4compose.Rotation;
@@ -23,9 +25,9 @@ import java.util.concurrent.Executors;
 /**
  * Created by sudamasayuki on 2017/11/15.
  */
-
+@SuppressWarnings("MemberName")
 public class Mp4ComposerBasic implements ComposerInterface {
-    private final static String TAG = Mp4Composer.class.getSimpleName();
+    private static final String TAG = Mp4Composer.class.getSimpleName();
 
     private final DataSource srcDataSource;
     private final String destPath;
@@ -158,7 +160,7 @@ public class Mp4ComposerBasic implements ComposerInterface {
         return this;
     }
 
-    public Mp4ComposerBasic changePitch(final boolean isPitchChanged){
+    public Mp4ComposerBasic changePitch(final boolean isPitchChanged) {
         this.isPitchChanged = isPitchChanged;
         return this;
     }
@@ -206,7 +208,7 @@ public class Mp4ComposerBasic implements ComposerInterface {
 
 
     public Mp4ComposerBasic start() {
-        //if we're already composing, calling this should do nothing
+        // if we're already composing, calling this should do nothing
         if (engine != null) {
             return this;
         }
@@ -271,7 +273,7 @@ public class Mp4ComposerBasic implements ComposerInterface {
 
                 if (timeScale < 0.125f) {
                     timeScale = 0.125f;
-                }else if(timeScale > 8f){
+                } else if (timeScale > 8f) {
                     timeScale = 8f;
                 }
 
@@ -322,7 +324,6 @@ public class Mp4ComposerBasic implements ComposerInterface {
                             aacProfile,
                             forceAudioEncoding
                     );
-
                 } catch (Exception e) {
                     if (e instanceof MediaCodec.CodecException) {
                         logger.error(

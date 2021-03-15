@@ -21,7 +21,7 @@ import java.util.concurrent.Executors
  * Created by sudamasayuki on 2017/11/15.
  */
 
-class Mp4Composer: ComposerInterface {
+class Mp4Composer : ComposerInterface {
     private val srcUri: Uri?
     private val destPath: String
     private var filter: GlFilter? = null

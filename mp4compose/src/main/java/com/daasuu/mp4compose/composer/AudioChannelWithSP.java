@@ -10,9 +10,8 @@ import java.nio.ShortBuffer;
 /**
  * Created by TAPOS DATTA on 22,May,2020
  */
-
-public class AudioChannelWithSP extends BaseAudioChannel{
-
+@SuppressWarnings({"MemberName", "MethodName", "SimplifyBooleanReturn"})
+public class AudioChannelWithSP extends BaseAudioChannel {
     private static final String TAG = "AUDIO_CHANNEL_WITH_SONIC";
 
     private SonicAudioProcessor stream = null;  // SonicAudioProcessor can deal with stereo Audio
@@ -25,7 +24,13 @@ public class AudioChannelWithSP extends BaseAudioChannel{
     private boolean isPendingFeeding = true;
     private boolean isAffectInPitch; // if true the scale will impact in speed with pitch
 
-    AudioChannelWithSP(MediaCodec decoder, MediaCodec encoder, MediaFormat encodeFormat,float timeScale, boolean isPitchChanged) {
+    AudioChannelWithSP(
+            MediaCodec decoder,
+            MediaCodec encoder,
+            MediaFormat encodeFormat,
+            float timeScale,
+            boolean isPitchChanged
+    ) {
         super(decoder, encoder, encodeFormat);
         this.isAffectInPitch = isPitchChanged;
         this.timeScale = timeScale;
@@ -44,29 +49,28 @@ public class AudioChannelWithSP extends BaseAudioChannel{
         isPendingFeeding = true;
         tempInputBuffer = ByteBuffer.allocateDirect(BUFFER_CAPACITY * 16).order(ByteOrder.nativeOrder());
 
-        if(isAffectInPitch){
+        if (isAffectInPitch) {
             stream.setRate(timeScale);
-        }else {
+        } else {
             stream.setSpeed(timeScale);
         }
     }
 
     @Override
     protected long sampleCountToDurationUs(long sampleCount, int sampleRate, int channelCount) {
-        //considered short buffer as data
-        return (long) ((MICROSECS_PER_SEC * (sampleCount * 1f)/(sampleRate * 1f * channelCount)));
+        // considered short buffer as data
+        return (long) ((MICROSECS_PER_SEC * (sampleCount * 1f) / (sampleRate * 1f * channelCount)));
     }
 
     @Override
     public void drainDecoderBufferAndQueue(int bufferIndex, long presentationTimeUs) {
-
         if (actualDecodedFormat == null) {
             throw new RuntimeException("Buffer received before format!");
         }
 
         final ByteBuffer data =
-                bufferIndex == BUFFER_INDEX_END_OF_STREAM ?
-                        null : decoder.getOutputBuffer(bufferIndex);
+                bufferIndex == BUFFER_INDEX_END_OF_STREAM
+                        ? null : decoder.getOutputBuffer(bufferIndex);
 
         if (data != null) {
             writeToSonicSteam(data.asShortBuffer());
@@ -81,15 +85,18 @@ public class AudioChannelWithSP extends BaseAudioChannel{
 
     @Override
     public boolean feedEncoder(long timeoutUs) {
-
         if (stream == null || !isPendingFeeding || (!isEOF && stream.samplesAvailable() == 0)) {
-            //no data available
+            // no data available
 
             updatePendingDecoderStatus();
 
             return false;
-        } else if (!isEOF && timeScale < 1f && stream.samplesAvailable() > 0 && (stream.samplesAvailable() * outputChannelCount) < BUFFER_CAPACITY) {
-            //few data remaining in stream wait for next stream data
+        } else if (!isEOF
+                   && timeScale < 1f
+                   && stream.samplesAvailable() > 0
+                   && (stream.samplesAvailable() * outputChannelCount) < BUFFER_CAPACITY
+        ) {
+            // few data remaining in stream wait for next stream data
             updatePendingDecoderStatus();
 
             return false;
@@ -113,41 +120,12 @@ public class AudioChannelWithSP extends BaseAudioChannel{
     }
 
     private void updatePendingDecoderStatus() {
-
         if (pendingDecoderOutputBuffIndx != -1) {
             pendingDecoderOutputBuffIndx = -1;
         }
     }
 
     private boolean FastOrNormalTimeBufferProcess(int encoderInBuffIndex) {
-
-        int samplesNum = stream.samplesAvailable();
-
-        boolean status = false;
-
-        int rawDataLen = samplesNum * outputChannelCount;
-
-        if(rawDataLen >= BUFFER_CAPACITY){
-
-            return readStreamDataAndQueueToEncoder(BUFFER_CAPACITY, encoderInBuffIndex);
-        }
-
-        else if (rawDataLen > 0 && rawDataLen < BUFFER_CAPACITY) {
-
-            return readStreamDataAndQueueToEncoder(rawDataLen, encoderInBuffIndex);
-
-        } else if (isEOF && samplesNum == 0) {
-
-            return finalizeEncoderQueue(encoderInBuffIndex);
-
-        } else {
-
-            return status;
-        }
-    }
-
-    private boolean slowTimeBufferProcess(final int encoderInBuffIndex) {
-
         int samplesNum = stream.samplesAvailable();
 
         boolean status = false;
@@ -155,43 +133,50 @@ public class AudioChannelWithSP extends BaseAudioChannel{
         int rawDataLen = samplesNum * outputChannelCount;
 
         if (rawDataLen >= BUFFER_CAPACITY) {
-
             return readStreamDataAndQueueToEncoder(BUFFER_CAPACITY, encoderInBuffIndex);
-
-        } else if (isEOF && (rawDataLen > 0 && rawDataLen < BUFFER_CAPACITY)) {
-
+        } else if (rawDataLen > 0 && rawDataLen < BUFFER_CAPACITY) {
             return readStreamDataAndQueueToEncoder(rawDataLen, encoderInBuffIndex);
-
-        } else if (isEOF && rawDataLen == 0) {
-
+        } else if (isEOF && samplesNum == 0) {
             return finalizeEncoderQueue(encoderInBuffIndex);
-
         } else {
+            return status;
+        }
+    }
 
+    private boolean slowTimeBufferProcess(final int encoderInBuffIndex) {
+        int samplesNum = stream.samplesAvailable();
+
+        boolean status = false;
+
+        int rawDataLen = samplesNum * outputChannelCount;
+
+        if (rawDataLen >= BUFFER_CAPACITY) {
+            return readStreamDataAndQueueToEncoder(BUFFER_CAPACITY, encoderInBuffIndex);
+        } else if (isEOF && (rawDataLen > 0 && rawDataLen < BUFFER_CAPACITY)) {
+            return readStreamDataAndQueueToEncoder(rawDataLen, encoderInBuffIndex);
+        } else if (isEOF && rawDataLen == 0) {
+            return finalizeEncoderQueue(encoderInBuffIndex);
+        } else {
             return status;
         }
     }
 
     private boolean finalizeEncoderQueue(final int encoderInBuffIndex) {
-
         isPendingFeeding = false;
         return queueInputBufferInEncoder(null, encoderInBuffIndex);
     }
 
     private boolean readStreamDataAndQueueToEncoder(final int capacity, final int encoderInBuffIndex) {
-
         short[] rawData = new short[capacity];
         stream.readShortFromStream(rawData, (capacity / outputChannelCount));
         return queueInputBufferInEncoder(rawData, encoderInBuffIndex);
     }
 
     private boolean queueInputBufferInEncoder(final short[] rawData, final int encoderInBuffIndex) {
-
         final ShortBuffer outBuffer = encoder.getInputBuffer(encoderInBuffIndex).asShortBuffer();
 
         outBuffer.clear();
         if (rawData != null) {
-
             outBuffer.put(rawData);
             totalDataAdded += rawData.length;
 
@@ -207,7 +192,6 @@ public class AudioChannelWithSP extends BaseAudioChannel{
     }
 
     private void writeToSonicSteam(final ShortBuffer data) {
-
         short[] temBuff = new short[data.capacity()];
         data.get(temBuff);
         data.rewind();

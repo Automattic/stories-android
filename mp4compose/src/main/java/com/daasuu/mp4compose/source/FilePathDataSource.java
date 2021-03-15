@@ -10,14 +10,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+@SuppressWarnings("MemberName")
 public class FilePathDataSource implements DataSource {
-
-    private final static String TAG = FilePathDataSource.class.getSimpleName();
+    private static final String TAG = FilePathDataSource.class.getSimpleName();
 
     private FileDescriptor fileDescriptor;
 
     public FilePathDataSource(@NonNull String filePath, @NonNull Logger logger, @NonNull Listener listener) {
-
         final File srcFile = new File(filePath);
         final FileInputStream fileInputStream;
         try {

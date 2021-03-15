@@ -10,21 +10,20 @@ import java.util.Queue;
 /**
  * Created by TAPOS DATTA on 22,May,2020
  */
-
+@SuppressWarnings("MemberName")
 abstract class BaseAudioChannel {
-
     protected static class AudioBuffer {
         int bufferIndex;
         long presentationTimeUs;
         ShortBuffer data;
     }
-    protected static class BufferInfo{
+    protected static class BufferInfo {
         long totaldata;
         long presentationTimeUs;
     }
 
     static final int BUFFER_INDEX_END_OF_STREAM = -1;
-    protected static final int BYTE_PER_SAMPLE = 16 / 8 ;
+    protected static final int BYTE_PER_SAMPLE = 16 / 8;
     protected static final int BYTES_PER_SHORT = 2;
     protected static final long MICROSECS_PER_SEC = 1000000;
 
@@ -68,9 +67,9 @@ abstract class BaseAudioChannel {
         overflowBuffer.presentationTimeUs = 0;
     }
 
-    protected abstract long sampleCountToDurationUs(final long sampleCount, final int sampleRate, final int channelCount);
+    protected abstract long sampleCountToDurationUs(long sampleCount, int sampleRate, int channelCount);
 
-    protected abstract void drainDecoderBufferAndQueue(final int bufferIndex, final long presentationTimeUs);
+    protected abstract void drainDecoderBufferAndQueue(int bufferIndex, long presentationTimeUs);
 
     protected abstract boolean feedEncoder(long timeoutUs);
 }

@@ -5,8 +5,7 @@ import android.util.Log;
 /**
  * The default implementation of the {@link Logger} for Android.
  */
-public class AndroidLogger implements Logger{
-
+public class AndroidLogger implements Logger {
     @Override
     public void debug(String tag, String message) {
         Log.d(tag, message);
@@ -21,5 +20,4 @@ public class AndroidLogger implements Logger{
     public void warning(String tag, String message) {
         Log.w(tag, message);
     }
-
 }

@@ -1,9 +1,16 @@
 package com.daasuu.mp4compose.composer;
 
-import android.media.*;
+import android.media.MediaCodecInfo;
+import android.media.MediaCodecList;
+import android.media.MediaExtractor;
+import android.media.MediaFormat;
+import android.media.MediaMetadataRetriever;
+import android.media.MediaMuxer;
 import android.os.Build;
 import android.util.Size;
+
 import androidx.annotation.NonNull;
+
 import com.daasuu.mp4compose.FillMode;
 import com.daasuu.mp4compose.FillModeCustomItem;
 import com.daasuu.mp4compose.Rotation;
@@ -15,11 +22,13 @@ import com.daasuu.mp4compose.source.DataSource;
 import java.io.FileDescriptor;
 import java.io.IOException;
 
-// Refer: https://github.com/ypresto/android-transcoder/blob/master/lib/src/main/java/net/ypresto/androidtranscoder/engine/MediaTranscoderEngine.java
+// Refer: https://github.com/ypresto/android-transcoder/blob/master/lib/src/main/
+// java/net/ypresto/androidtranscoder/engine/MediaTranscoderEngine.java
 
 /**
  * Internal engine, do not use this directly.
  */
+@SuppressWarnings("MemberName")
 class Mp4ComposerEngineBasic {
     private static final String TAG = "Mp4ComposerEngine";
     private static final String AUDIO_PREFIX = "audio/";
@@ -69,7 +78,6 @@ class Mp4ComposerEngineBasic {
             final int aacProfile,
             final boolean forceAudioEncoding
     ) throws IOException {
-
         try {
             mediaExtractor = new MediaExtractor();
             mediaExtractor.setDataSource(srcDataSource.getFileDescriptor());
@@ -128,7 +136,7 @@ class Mp4ComposerEngineBasic {
                     videoTrackIndex,
                     actualVideoOutputFormat,
                     muxRender,
-                    (int)timeScale
+                    (int) timeScale
             );
             videoComposer.setUp(
                     filter,
@@ -143,12 +151,20 @@ class Mp4ComposerEngineBasic {
             mediaExtractor.selectTrack(videoTrackIndex);
 
             // setup audio if present and not muted
-            if (audioTrackIndex >= 0 && mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_HAS_AUDIO) != null && !mute) {
+            if (audioTrackIndex >= 0
+                && mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_HAS_AUDIO) != null
+                && !mute
+            ) {
                 // has Audio video
                 final MediaFormat inputMediaFormat = mediaExtractor.getTrackFormat(audioTrackIndex);
-                final MediaFormat outputMediaFormat = createAudioOutputFormat(inputMediaFormat, audioBitRate, aacProfile, forceAudioEncoding);
+                final MediaFormat outputMediaFormat = createAudioOutputFormat(
+                        inputMediaFormat,
+                        audioBitRate,
+                        aacProfile,
+                        forceAudioEncoding
+                );
 
-                if( timeScale >= 0.99 && timeScale <= 1.01  && outputMediaFormat.equals(inputMediaFormat)) {
+                if (timeScale >= 0.99 && timeScale <= 1.01 && outputMediaFormat.equals(inputMediaFormat)) {
                     audioComposer = new AudioComposer(
                             mediaExtractor,
                             audioTrackIndex,
@@ -310,7 +326,8 @@ class Mp4ComposerEngineBasic {
 
         outputFormat.setInteger(MediaFormat.KEY_BIT_RATE, bitrate);
         // On Build.VERSION_CODES.LOLLIPOP, format must not contain a MediaFormat#KEY_FRAME_RATE.
-        // https://developer.android.com/reference/android/media/MediaCodecInfo.CodecCapabilities.html#isFormatSupported(android.media.MediaFormat)
+        // https://developer.android.com/reference/android/media/MediaCodecInfo.CodecCapabilities.html
+        // #isFormatSupported(android.media.MediaFormat)
         if (Build.VERSION.SDK_INT != Build.VERSION_CODES.LOLLIPOP) {
             // Required but ignored by the encoder
             outputFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 30);
@@ -328,7 +345,7 @@ class Mp4ComposerEngineBasic {
         if (durationUs <= 0) {
             if (progressCallback != null) {
                 progressCallback.onProgress(PROGRESS_UNKNOWN);
-            }// unknown
+            } // unknown
         }
         while (!canceled && !(videoComposer.isFinished() && audioComposer.isFinished())) {
             boolean stepped = videoComposer.stepPipeline()

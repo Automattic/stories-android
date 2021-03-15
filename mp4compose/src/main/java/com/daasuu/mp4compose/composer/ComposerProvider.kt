@@ -11,7 +11,6 @@ import com.daasuu.mp4compose.composer.ComposerUseCase.CompressVideo
 import com.daasuu.mp4compose.composer.ComposerUseCase.SaveVideoAsFile
 import com.daasuu.mp4compose.composer.ComposerUseCase.SaveVideoFromBgAsFile
 import com.daasuu.mp4compose.filter.GlFilter
-import com.daasuu.mp4compose.source.DataSource
 
 sealed class ComposerUseCase {
     data class SaveVideoAsFile(

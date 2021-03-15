@@ -2,6 +2,7 @@ package com.daasuu.mp4compose;
 
 import android.media.MediaFormat;
 
+@SuppressWarnings("MemberName")
 public enum VideoFormatMimeType {
     HEVC(MediaFormat.MIMETYPE_VIDEO_HEVC),
     AVC(MediaFormat.MIMETYPE_VIDEO_AVC),

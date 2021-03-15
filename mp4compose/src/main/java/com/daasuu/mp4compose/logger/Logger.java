@@ -3,8 +3,8 @@ package com.daasuu.mp4compose.logger;
 /**
  * The logger interface used to log information to the console.
  */
-public interface Logger {
 
+public interface Logger {
     /**
      * Logs a debug message.
      *
@@ -29,5 +29,4 @@ public interface Logger {
      * @param message The message body.
      */
     void warning(String tag, String message);
-
 }
