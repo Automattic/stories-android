@@ -292,11 +292,13 @@ class PhotoEditorView : RelativeLayout {
 
     internal fun turnTextureViewOn() {
         backgroundImage.visibility = View.INVISIBLE
+        backgroundImageBlurred.visibility = View.INVISIBLE
         autoFitTextureView.visibility = View.VISIBLE
     }
 
     internal fun turnTextureViewOff() {
         backgroundImage.visibility = View.VISIBLE
+        backgroundImageBlurred.visibility = View.VISIBLE
         autoFitTextureView.visibility = View.INVISIBLE
     }
 
@@ -304,11 +306,13 @@ class PhotoEditorView : RelativeLayout {
         backgroundImage.visibility = autoFitTextureView.visibility.also {
             autoFitTextureView.visibility = backgroundImage.visibility
         }
+        backgroundImageBlurred.visibility = backgroundImage.visibility
         return autoFitTextureView.visibility == View.VISIBLE
     }
 
     internal fun turnTextureAndImageViewOff() {
         backgroundImage.visibility = View.INVISIBLE
+        backgroundImageBlurred.visibility = View.INVISIBLE
         autoFitTextureView.visibility = View.INVISIBLE
     }
 
