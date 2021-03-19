@@ -52,6 +52,8 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.10.0'
     kapt 'com.github.bumptech.glide:compiler:4.10.0'
 
+    implementation 'jp.wasabeef:glide-transformations:4.3.0'
+
     implementation 'org.greenrobot:eventbus:3.1.1'
 
     implementation project(path: ':photoeditor')
@@ -62,6 +64,8 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion"
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
+
+    implementation 'com.github.chrisbanes:PhotoView:2.3.0'
 
     lintChecks 'org.wordpress:lint:1.0.1'
 

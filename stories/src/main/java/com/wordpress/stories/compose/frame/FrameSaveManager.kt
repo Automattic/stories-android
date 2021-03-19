@@ -3,14 +3,19 @@ package com.wordpress.stories.compose.frame
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.Matrix
 import android.net.Uri
 import android.view.View
 import android.view.ViewGroup.LayoutParams
+import android.widget.ImageView.ScaleType.CENTER_CROP
+import android.widget.ImageView.ScaleType.FIT_CENTER
+import android.widget.ImageView.ScaleType.FIT_START
 import android.widget.RelativeLayout
 import com.automattic.photoeditor.PhotoEditor
 import com.automattic.photoeditor.PhotoEditor.OnSaveWithCancelAndProgressListener
 import com.automattic.photoeditor.views.PhotoEditorView
 import com.automattic.photoeditor.views.ViewType.STICKER_ANIMATED
+import com.automattic.photoeditor.views.background.fixed.BackgroundImageView
 import com.wordpress.stories.compose.story.StoryFrameItem
 import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.FileBackgroundSource
 import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.UriBackgroundSource
@@ -20,8 +25,8 @@ import com.wordpress.stories.compose.story.StoryFrameItemType.VIDEO
 import com.wordpress.stories.util.cloneViewSpecs
 import com.wordpress.stories.util.removeViewFromParent
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.request.FutureTarget
+import com.bumptech.glide.request.RequestOptions
 import com.wordpress.stories.util.isSizeRatio916
 import com.wordpress.stories.util.normalizeSizeExportTo916
 import kotlinx.coroutines.CoroutineScope
@@ -36,6 +41,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import java.io.File
 import kotlin.coroutines.CoroutineContext
+import jp.wasabeef.glide.transformations.BlurTransformation
 
 typealias FrameIndex = Int
 
@@ -142,8 +148,13 @@ class FrameSaveManager(
                 } else {
                     try {
                         // create ghost PhotoEditorView to be used for saving off-screen
+                        val originalMatrix = Matrix()
+                        frame.source.backgroundViewInfo?.let {
+                            originalMatrix.setValues(it.imageMatrixValues)
+                        }
+
                         val ghostPhotoEditorView = createGhostPhotoEditor(context, photoEditor.composedCanvas)
-                        frameFile = saveImageFrame(context, frame, ghostPhotoEditorView, frameIndex)
+                        frameFile = saveImageFrame(context, frame, ghostPhotoEditorView, originalMatrix, frameIndex)
                         frame.composedFrameFile = frameFile
                         saveProgressListener?.onFrameSaveCompleted(frameIndex, frame)
                     } catch (ex: Exception) {
@@ -167,10 +178,11 @@ class FrameSaveManager(
         context: Context,
         frame: StoryFrameItem,
         ghostPhotoEditorView: PhotoEditorView,
+        originalMatrix: Matrix,
         frameIndex: FrameIndex
     ): File {
         // prepare the ghostview with its background image and the AddedViews on top of it
-        val futureTarget = preparePhotoEditorViewForSnapshot(context, frame, ghostPhotoEditorView)
+        val futureTargetPair = preparePhotoEditorViewForSnapshot(context, frame, originalMatrix, ghostPhotoEditorView)
 
         val file = withContext(Dispatchers.IO) {
             if (normalizeTo916 && !isSizeRatio916(ghostPhotoEditorView.width, ghostPhotoEditorView.height)) {
@@ -188,7 +200,8 @@ class FrameSaveManager(
         }
 
         releaseAddedViewsAfterSnapshot(frame)
-        Glide.with(context).clear(futureTarget)
+        Glide.with(context).clear(futureTargetPair.first)
+        Glide.with(context).clear(futureTargetPair.second)
 
         return file
     }
@@ -276,21 +289,71 @@ class FrameSaveManager(
     private suspend fun preparePhotoEditorViewForSnapshot(
         context: Context,
         frame: StoryFrameItem,
+        originalMatrix: Matrix,
         ghostPhotoEditorView: PhotoEditorView
-    ): FutureTarget<Bitmap> {
+    ): Pair<FutureTarget<Bitmap>, FutureTarget<Bitmap>> {
         // prepare background
         val uri = (frame.source as? UriBackgroundSource)?.contentUri
             ?: (frame.source as FileBackgroundSource).file
 
+        // -----------------------------------
+        // first set the background blurred image
+        val targetBlurredView = ghostPhotoEditorView.sourceBlurredBkg
+
         // making use of Glide to decode bitmap and get the right orientation automatically
         // http://bumptech.github.io/glide/doc/getting-started.html#background-threads
-        val futureTarget = Glide.with(context)
-            .asBitmap()
-            .load(uri)
-            .transform(CenterCrop()) // also use CenterCrop as it's the same the user was seeing as per WYSIWYG
-            .submit(ghostPhotoEditorView.source.measuredWidth, ghostPhotoEditorView.source.measuredHeight)
+        val futureBlurredTarget = Glide.with(context)
+                .asBitmap()
+                .load(uri)
+                .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 3)))
+                .submit(targetBlurredView.measuredWidth, targetBlurredView.measuredHeight)
+        targetBlurredView.setImageBitmap(futureBlurredTarget.get())
+
+        // -----------------------------------
+        // now set the actual background image
+        val targetView = ghostPhotoEditorView.source
+        val scaleType = frame.source.backgroundViewInfo?.scaleType
+
+        // making use of Glide to decode bitmap and get the right orientation automatically
+        // http://bumptech.github.io/glide/doc/getting-started.html#background-threads
+        val futureTarget = when (scaleType) {
+            FIT_START ->
+                Glide.with(context)
+                        .asBitmap()
+                        .load(uri)
+                        // no transform used when FIT_START, see correlation in ComposeLoopFrameActivity's
+                        // loadImageWithGlideToPrepare()
+                        .submit(targetView.measuredWidth, targetView.measuredHeight)
+            FIT_CENTER ->
+                Glide.with(context)
+                        .asBitmap()
+                        .load(uri)
+                        .fitCenter() // we use fitCenter at first (instead of cropping) so we don't lose any information
+                        .submit(targetView.measuredWidth, targetView.measuredHeight)
+            CENTER_CROP ->
+                Glide.with(context)
+                        .asBitmap()
+                        .load(uri)
+                        .centerCrop() // we use fitCenter at first (instead of cropping) so we don't lose any information
+                        .submit(targetView.measuredWidth, targetView.measuredHeight)
+            else -> // default case with no transform needed so futureTarget is initialized,
+                    // but we don't really expect to get this case
+                Glide.with(context)
+                        .asBitmap()
+                        .load(uri)
+                        .submit(targetView.measuredWidth, targetView.measuredHeight)
+        }
         val bitmap = futureTarget.get()
-        ghostPhotoEditorView.source.setImageBitmap(bitmap)
+        targetView.setImageBitmap(bitmap)
+
+        // IMPORTANT: scaleType and setSuppMatrix should only be called _after_ the bitmap is set on the targetView
+        // by means of targetView.setImageBitmap(). Calling this before will have no effect due to PhotoView's checks.
+        (targetView as BackgroundImageView).apply {
+            frame.source.backgroundViewInfo?.let {
+                this.scaleType = it.scaleType
+            }
+            setSuppMatrix(originalMatrix)
+        }
 
         // removeViewFromParent for views that were added in the UI thread need to also run on the main thread
         // otherwise we'd get a android.view.ViewRootImpl$CalledFromWrongThreadException:
@@ -308,7 +371,7 @@ class FrameSaveManager(
                 }
             }
         }
-        return futureTarget
+        return Pair<FutureTarget<Bitmap>, FutureTarget<Bitmap>>(futureTarget, futureBlurredTarget)
     }
 
     private fun getViewLayoutParams(): LayoutParams {
