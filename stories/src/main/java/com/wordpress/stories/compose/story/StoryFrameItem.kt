@@ -1,6 +1,7 @@
 package com.wordpress.stories.compose.story
 
 import android.net.Uri
+import android.widget.ImageView.ScaleType
 import com.automattic.photoeditor.views.added.AddedView
 import com.automattic.photoeditor.views.added.AddedViewList
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason
@@ -29,7 +30,8 @@ data class StoryFrameItem(
 ) {
     @Serializable
     data class BackgroundViewInfo(
-        val imageMatrixValues: FloatArray
+        val imageMatrixValues: FloatArray,
+        val scaleType: ScaleType
     )
 
     @Serializable

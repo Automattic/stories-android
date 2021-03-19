@@ -1,5 +1,6 @@
 package com.wordpress.stories.util
 
+import android.graphics.drawable.Drawable
 import android.util.Size
 import android.view.View
 import android.view.ViewGroup
@@ -68,4 +69,17 @@ fun normalizeSizeExportTo916(originalWidth: Int, originalHeight: Int): ScreenSiz
             ScreenSize(normalizedWidthShouldBe.toInt(), originalHeight)
         }
     }
+}
+
+fun calculateAspectRatioForDrawable(drawable: Drawable): Float {
+    val width = drawable.intrinsicWidth
+    val height = drawable.intrinsicHeight
+    return width.toFloat() / height.toFloat()
+}
+
+fun isAspectRatioSimilarByPercentage(aspectRatio1: Float, aspectRatio2: Float, percentage: Float): Boolean {
+    return (Math.abs(aspectRatio1 - aspectRatio2) < percentage)
+}
+fun getSizeRatio(originalWidth: Int, originalHeight: Int): Float {
+    return (originalWidth.toFloat() / originalHeight.toFloat())
 }
