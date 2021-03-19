@@ -762,6 +762,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     override fun onDestroy() {
+        photoEditorView.onComposerDestroyed()
         doUnbindService()
         EventBus.getDefault().unregister(this)
         super.onDestroy()
