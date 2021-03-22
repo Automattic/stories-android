@@ -10,11 +10,11 @@ android {
 
     signingConfigs {
         release {
-            if (rootProject.hasProperty("storeFile") 
-                && rootProject.hasProperty("storePassword") 
-                && rootProject.hasProperty("keyAlias") 
+            if (rootProject.hasProperty("storeFile")
+                && rootProject.hasProperty("storePassword")
+                && rootProject.hasProperty("keyAlias")
                 && rootProject.hasProperty("keyPassword")
-            ) { 
+            ) {
                 storeFile file("${rootDir}/${rootProject.storeFile}")
                 storePassword rootProject.storePassword
                 keyAlias rootProject.keyAlias
@@ -78,7 +78,7 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.10.0'
     kapt 'com.github.bumptech.glide:compiler:4.10.0'
 
-    implementation 'org.greenrobot:eventbus:3.1.1'
+    implementation 'org.greenrobot:eventbus:3.2.0'
 
     implementation 'io.sentry:sentry-android:1.7.27'
     // this dependency is not required if you are already using your own
