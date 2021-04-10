@@ -726,6 +726,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         } else if (!partialCameraOperationInProgress && storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED &&
                 StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.isNotEmpty()) {
             storyViewModel.loadStory(storyIndexToSelect)
+            onStoryFrameSelected(oldIndex = StoryRepository.DEFAULT_FRAME_NONE_SELECTED, newIndex = 0)
             showGenericAnnouncementDialogWhenReady = true
             return
         }
