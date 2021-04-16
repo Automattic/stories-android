@@ -16,7 +16,7 @@
 
     <!-- START: Color picker bottom sheet -->
 
-    <dimen name="color_picker_bottom_sheet_default_height">250dp</dimen>
+    <dimen name="color_picker_bottom_sheet_default_height">275dp</dimen>
     <dimen name="color_picker_bottom_sheet_height_max_margin">75dp</dimen>
     <dimen name="color_picker_bottom_sheet_handle_width">40dp</dimen>
     <dimen name="color_picker_bottom_sheet_handle_height">4dp</dimen>
