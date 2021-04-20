@@ -49,11 +49,6 @@ class BackgroundImageView : PhotoView {
         mOnImageChangedListener?.onBitmapLoaded(bitmap)
     }
 
-    override fun setImageMatrix(matrix: Matrix) {
-        super.setImageMatrix(matrix)
-        mOnImageChangedListener?.onBitmapLoaded(bitmap)
-    }
-
     override fun setImageState(state: IntArray, merge: Boolean) {
         super.setImageState(state, merge)
         mOnImageChangedListener?.onBitmapLoaded(bitmap)
