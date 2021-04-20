@@ -18,6 +18,7 @@ import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.AppCompatImageView
+import androidx.core.view.children
 import com.automattic.photoeditor.OnSaveBitmap
 import com.automattic.photoeditor.R.styleable
 import com.automattic.photoeditor.views.background.fixed.BackgroundImageView
@@ -90,6 +91,9 @@ class PhotoEditorView : RelativeLayout {
 
     val listeners: ArrayList<SurfaceTextureListener>
         get() = surfaceListeners
+
+    val zIndexOrderedAddedViews: Sequence<View>
+        get() = children
 
     constructor(context: Context) : super(context) {
         init(null)

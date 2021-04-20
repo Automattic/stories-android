@@ -45,6 +45,16 @@ class AddedViewList : ArrayList<AddedView>() {
         }
         return -1
     }
+    fun getAddedViewForNativeView(element: View): AddedView? {
+        for (oneView in this) {
+            oneView.view?.let {
+                if (it == element) {
+                    return oneView
+                }
+            }
+        }
+        return null
+    }
 
     fun containsAnyAddedViewsOfType(type: ViewType): Boolean {
         for (oneView: AddedView in this) {
