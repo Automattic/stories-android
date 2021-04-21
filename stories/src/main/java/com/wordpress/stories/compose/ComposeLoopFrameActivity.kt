@@ -597,6 +597,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             showGenericAnnouncementDialogWhenReady = false
             genericAnnouncementDialogProvider?.showGenericAnnouncementDialog()
         }
+        if (storyViewModel.getCurrentStorySize() > 0) {
+            showCurrentSelectedFrame()
+        }
     }
 
     private fun setupStoryViewModelObservers() {
