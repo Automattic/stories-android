@@ -1046,7 +1046,24 @@ class PhotoEditor private constructor(builder: Builder) :
     }
 
     fun getViewsAdded(): AddedViewList {
+        // always make sure to return a freshly z-index-ordered AddedViewList
+        reorderAddedViewListAccordingToZIndex()
         return addedViews
+    }
+
+    private fun reorderAddedViewListAccordingToZIndex() {
+        val reorderedAddedViewList = AddedViewList()
+        for (oneView in parentView.zIndexOrderedAddedViews) {
+            when (oneView.tag) {
+                TEXT, EMOJI, ViewType.STICKER_ANIMATED -> {
+                    addedViews.getAddedViewForNativeView(oneView)?.let {
+                        reorderedAddedViewList.add(it)
+                    }
+                }
+            }
+        }
+        addedViews.clear()
+        addedViews.addAll(reorderedAddedViewList)
     }
 
     /**
