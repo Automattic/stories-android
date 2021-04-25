@@ -120,12 +120,31 @@ class FrameSaveManager(
         return listFiles
     }
 
+    private suspend fun inflateAddedViews(frame: StoryFrameItem) {
+        // when editing a Story, if a frame has not been selected to be shown in PhotoEditor,
+        // the views are never inflated. Let's make sure we do that before saving, otherwise
+        // we'll miss added views in the export.
+        withContext(Dispatchers.Main) {
+            for (addedView in frame.addedViews) {
+                if (addedView.view == null) {
+                    addedView.view = photoEditor.buildViewFromAddedViewInfo(
+                            addedView.viewInfo,
+                            addedView.viewType,
+                            false
+                    )
+                }
+            }
+        }
+    }
+
     private suspend fun saveStoryFrame(
         context: Context,
         frame: StoryFrameItem,
         frameIndex: FrameIndex
     ): File? {
         var frameFile: File? = null
+        // make sure to inflate and add AddedViews to parentView for this frame if this hasn't been done yet
+        inflateAddedViews(frame)
         when (frame.frameItemType) {
             is VIDEO -> {
                 // - if we have addedViews then we need to process the vido with mp4composer

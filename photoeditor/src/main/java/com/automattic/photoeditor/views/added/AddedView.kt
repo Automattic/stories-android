@@ -16,7 +16,7 @@ import kotlinx.serialization.Serializer
 
 @Serializable
 class AddedView(
-    @Transient val view: View? = null,
+    @Transient var view: View? = null,
     val viewType: ViewType,
     var viewInfo: AddedViewInfo,
     @Serializable(with = UriSerializer::class)
@@ -73,7 +73,7 @@ class AddedView(
                 it.translationX,
                 it.translationY,
                 it.scaleX,
-                getTextInfoFromActualView(view, viewType)
+                getTextInfoFromActualView(it, viewType)
             )
         }
     }
