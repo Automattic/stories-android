@@ -356,6 +356,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             workingAreaRect = calculateWorkingArea()
             photoEditor.updateWorkAreaRect(workingAreaRect)
             bottomOpaqueBarHeight = preCalculateOpaqueBarHeight()
+            setOpaqueBarHeight()
             screenSizeRatio = getSizeRatio(screenWidth, screenHeight)
             delete_view.addBottomOffset(bottomNavigationBarMargin)
             delete_slide_view.addBottomOffset(bottomNavigationBarMargin)
@@ -583,8 +584,12 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun setOpaqueBarHeight() {
+        bottom_opaque_bar.layoutParams.height = bottomOpaqueBarHeight
+    }
+
+    private fun showOpaqueBarIfNeeded() {
         if (bottomOpaqueBarHeight > 0) {
-            bottom_opaque_bar.layoutParams.height = bottomOpaqueBarHeight
+            bottom_opaque_bar.visibility = View.VISIBLE
         } else {
             bottom_opaque_bar.visibility = View.GONE
         }
@@ -1640,7 +1645,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     private fun showStoryFrameSelector() {
         setOpaqueBarHeight()
-        bottom_opaque_bar.visibility = View.VISIBLE
+        showOpaqueBarIfNeeded()
         (bottom_strip_view as StoryFrameSelectorFragment).show()
     }
 
