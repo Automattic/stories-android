@@ -1278,7 +1278,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun addNewText() {
-        photoEditor.addText("")
+        photoEditor.addText("", addTouchListener = true)
     }
 
     private fun testEmoji() {
