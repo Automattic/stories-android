@@ -584,7 +584,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun setOpaqueBarHeight() {
-        bottom_opaque_bar.layoutParams.height = bottomOpaqueBarHeight
+        if (bottomOpaqueBarHeight > 0) {
+            bottom_opaque_bar.layoutParams.height = bottomOpaqueBarHeight
+        }
     }
 
     private fun showOpaqueBarIfNeeded() {
