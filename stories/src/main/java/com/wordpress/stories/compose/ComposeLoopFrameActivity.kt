@@ -748,8 +748,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             checkForLowSpaceAndShowDialog()
         } else if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
             val storySaveResult = intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
-            if (storySaveResult != null &&
-                    StoryRepository.getStoryAtIndex(storySaveResult.storyIndex).frames.isNotEmpty()) {
+            if (storySaveResult != null && StoryRepository.isStoryIndexValid(storySaveResult.storyIndex)
+                    && StoryRepository.getStoryAtIndex(storySaveResult.storyIndex).frames.isNotEmpty()) {
                 // dismiss the error notification
                 intent.action?.let {
                     val notificationManager = NotificationManagerCompat.from(this)
