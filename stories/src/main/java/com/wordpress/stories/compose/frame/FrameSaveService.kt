@@ -203,7 +203,8 @@ class FrameSaveService : Service() {
         val frameFileList =
             storySaveProcessor.saveStory(
                 this,
-                frames
+                frames,
+                storySaveProcessor.storySaveResult.isRetry
             )
         storySaveProcessor.timeTracker.end()
         storySaveProcessor.updateStorySaveResultTimeElapsed()
@@ -387,9 +388,10 @@ class FrameSaveService : Service() {
 
         suspend fun saveStory(
             context: Context,
-            frames: List<StoryFrameItem>
+            frames: List<StoryFrameItem>,
+            isRetry: Boolean
         ): List<File> {
-            return frameSaveManager.saveStory(context, frames)
+            return frameSaveManager.saveStory(context, frames, isRetry)
         }
 
         fun onCancel() {
