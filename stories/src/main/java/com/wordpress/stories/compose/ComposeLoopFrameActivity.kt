@@ -2151,10 +2151,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     override fun onCurrentFrameTapped() {
-        val currentlyErrored = storyViewModel.anyOfCurrentStoryFramesIsErrored()
-        if (!currentlyErrored) {
-            toggleDeleteSlideMode()
-        }
+        toggleDeleteSlideMode()
     }
 
     override fun onStoryFrameLongPressed(oldIndex: Int, newIndex: Int) {
