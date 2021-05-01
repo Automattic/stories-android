@@ -2177,7 +2177,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             // if we're switching back from delete mode, let's show the retry button if this is an errored frame
             if (isErroredFrame) {
                 showRetryButton()
-                updateEditMode()
             }
         } else {
             enableDeleteSlideMode()
@@ -2186,9 +2185,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             // (otherwise they overlap)
             if (isErroredFrame) {
                 hideRetryButton()
-                updateEditMode()
             }
         }
+        updateEditMode()
     }
 
     private fun enableDeleteSlideMode() {
