@@ -2151,10 +2151,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     override fun onCurrentFrameTapped() {
-        val currentlyErrored = storyViewModel.anyOfCurrentStoryFramesIsErrored()
-        if (!currentlyErrored) {
-            toggleDeleteSlideMode()
-        }
+        toggleDeleteSlideMode()
     }
 
     override fun onStoryFrameLongPressed(oldIndex: Int, newIndex: Int) {
@@ -2171,10 +2168,26 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun toggleDeleteSlideMode() {
+        val selectedFrame = storyViewModel.getSelectedFrame()
+        val isErroredFrame = selectedFrame?.saveResultReason !is SaveSuccess
+
         if (delete_slide_view.visibility == View.VISIBLE) {
             disableDeleteSlideMode()
+
+            // if we're switching back from delete mode, let's show the retry button if this is an errored frame
+            if (isErroredFrame) {
+                showRetryButton()
+                updateEditMode()
+            }
         } else {
             enableDeleteSlideMode()
+
+            // if we're switching to delete mode, let's hide the retry button if this is an errored frame
+            // (otherwise they overlap)
+            if (isErroredFrame) {
+                hideRetryButton()
+                updateEditMode()
+            }
         }
     }
 
