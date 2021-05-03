@@ -120,6 +120,8 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
         requestCodes.PHOTO_PICKER = RequestCodes.PHOTO_PICKER
         requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED =
             PhotoPickerActivity.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED
+        requestCodes.EXTRA_LAUNCH_WPSTORIES_MEDIA_PICKER_REQUESTED =
+                PhotoPickerActivity.EXTRA_LAUNCH_WPSTORIES_MEDIA_PICKER_REQUESTED
         requestCodes.EXTRA_MEDIA_URIS = PhotoPickerActivity.EXTRA_MEDIA_URIS
     }
 

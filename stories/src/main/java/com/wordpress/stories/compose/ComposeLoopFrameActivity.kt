@@ -771,6 +771,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             )
             addFramesToStoryFromMediaUriList(uriList)
             setDefaultSelectionAndUpdateBackgroundSurfaceUI(uriList)
+        } else if (intent.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_MEDIA_PICKER_REQUESTED)) {
+            showMediaPicker()
         }
     }
 
@@ -2313,6 +2315,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // if not properly initialized)
         lateinit var EXTRA_MEDIA_URIS: String
         lateinit var EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED: String
+        lateinit var EXTRA_LAUNCH_WPSTORIES_MEDIA_PICKER_REQUESTED: String
     }
 
     companion object {
