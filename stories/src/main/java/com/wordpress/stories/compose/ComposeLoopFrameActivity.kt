@@ -564,7 +564,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             if (selectedFrameIndex < storyViewModel.getCurrentStorySize()) {
                 storyViewModel.setSelectedFrame(selectedFrameIndex)
             }
-        } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED) {
+        } else {
             onLoadFromIntent(intent)
         }
     }
@@ -616,12 +616,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             // if no frames in Story, finish
             // note momentarily there will be times when this LiveData is triggered while permissions are
             // being requested so, don't proceed if that is the case
-            if (storyViewModel.getCurrentStorySize() == 0 &&
-                    firstIntentLoaded && !permissionsRequestForCameraInProgress) {
-                // finally, delete the captured media
-                deleteCapturedMedia()
-                finish()
-            }
+            deleteCaptureMediaAndFinishWhenEmptyStory()
         })
 
         storyViewModel.onSelectedFrameIndex.observe(this, Observer { selectedFrameIndexChange ->
@@ -635,6 +630,15 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         storyViewModel.muteFrameAudioUiState.observe(this, Observer { frameIndex ->
             updateUiStateForAudioMuted(frameIndex)
         })
+    }
+
+    private fun deleteCaptureMediaAndFinishWhenEmptyStory() {
+        if (storyViewModel.getCurrentStorySize() == 0 &&
+                firstIntentLoaded && !permissionsRequestForCameraInProgress) {
+            // finally, delete the captured media
+            deleteCapturedMedia()
+            finish()
+        }
     }
 
     private fun updateUiStateForAudioMuted(frameIndex: Int) {
@@ -773,6 +777,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             setDefaultSelectionAndUpdateBackgroundSurfaceUI(uriList)
         } else if (intent.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_MEDIA_PICKER_REQUESTED)) {
             showMediaPicker()
+            firstIntentLoaded = true
         }
     }
 
@@ -884,6 +889,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     }
                     launchCameraPreviewWithSurfaceSafeguard()
                 }
+            } else if (intent.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_MEDIA_PICKER_REQUESTED)) {
+                // if coming from the PHOTO_PICKER with a cancel action, and we launched with
+                // EXTRA_LAUNCH_WPSTORIES_MEDIA_PICKER_REQUESTED to start the Story with, we should cancel.
+                deleteCaptureMediaAndFinishWhenEmptyStory()
             }
         }
     }
