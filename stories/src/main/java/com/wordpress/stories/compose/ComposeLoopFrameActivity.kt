@@ -484,7 +484,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 override fun onBackgroundSurfaceManagerReady() {
                     if (savedInstanceState == null && !firstIntentLoaded) {
                         onLoadFromIntent(intent)
-                        firstIntentLoaded = true
                     }
 
                     if (launchCameraRequestPending) {
@@ -729,6 +728,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     protected open fun onLoadFromIntent(intent: Intent) {
+        firstIntentLoaded = true
         val partialCameraOperationInProgress = intent.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED) ||
                 permissionsRequestForCameraInProgress
 
