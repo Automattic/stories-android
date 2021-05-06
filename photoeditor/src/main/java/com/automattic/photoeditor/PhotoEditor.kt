@@ -1060,12 +1060,14 @@ class PhotoEditor private constructor(builder: Builder) :
         return (addedViews.size > 0)
     }
 
+    @Synchronized
     fun getViewsAdded(): AddedViewList {
         // always make sure to return a freshly z-index-ordered AddedViewList
         reorderAddedViewListAccordingToZIndex()
         return addedViews
     }
 
+    @Synchronized
     private fun reorderAddedViewListAccordingToZIndex() {
         val reorderedAddedViewList = AddedViewList()
         for (oneView in parentView.zIndexOrderedAddedViews) {

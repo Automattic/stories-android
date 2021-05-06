@@ -66,7 +66,8 @@ class FrameSaveManager(
 
     suspend fun saveStory(
         context: Context,
-        frames: List<StoryFrameItem>
+        frames: List<StoryFrameItem>,
+        isRetry: Boolean
     ): List<File> {
         // calling the listener here so the progress notification initializes itself properly and
         // shows really how many Story frame pages we're going to save
@@ -74,7 +75,7 @@ class FrameSaveManager(
 
         // first, save all images async and wait
         val savedImages = saveLoopFramesAsyncAwait(
-            context, frames, IMAGE, IMAGE_CONCURRENCY_LIMIT
+            context, frames, IMAGE, IMAGE_CONCURRENCY_LIMIT, isRetry
         )
 
         yield()
@@ -82,7 +83,7 @@ class FrameSaveManager(
         // now, save all videos async and wait - this process is intense so only allow for 3 videos to be processed
         // concurrently
         val savedVideos = saveLoopFramesAsyncAwait(
-            context, frames, VIDEO(), VIDEO_CONCURRENCY_LIMIT
+            context, frames, VIDEO(), VIDEO_CONCURRENCY_LIMIT, isRetry
         )
 
         return savedImages + savedVideos
@@ -98,7 +99,8 @@ class FrameSaveManager(
         context: Context,
         frames: List<StoryFrameItem>,
         frameItemType: StoryFrameItemType,
-        concurrencyLimit: Int
+        concurrencyLimit: Int,
+        reattachAddedViewsAfterSaving: Boolean
     ): List<File> {
         // don't process more than 5 Story Pages concurrently
         val concurrencyLimitSemaphore = Semaphore(concurrencyLimit)
@@ -110,7 +112,7 @@ class FrameSaveManager(
                     // see above - we only want to save frames of frameItemType
                     if (frame.frameItemType.isSameType(frameItemType)) {
                         yield()
-                        return@withPermit saveStoryFrame(context, frame, index)
+                        return@withPermit saveStoryFrame(context, frame, index, reattachAddedViewsAfterSaving)
                     } else {
                         return@withPermit null
                     }
@@ -140,7 +142,8 @@ class FrameSaveManager(
     private suspend fun saveStoryFrame(
         context: Context,
         frame: StoryFrameItem,
-        frameIndex: FrameIndex
+        frameIndex: FrameIndex,
+        reattachAddedViewsAfterSaving: Boolean
     ): File? {
         var frameFile: File? = null
         // make sure to inflate and add AddedViews to parentView for this frame if this hasn't been done yet
@@ -153,6 +156,9 @@ class FrameSaveManager(
                 if (frame.addedViews.isNotEmpty() || frame.source is UriBackgroundSource) {
                     frameFile = saveVideoFrame(frame, frameIndex)
                     releaseAddedViewsAfterSnapshot(frame)
+                    if (reattachAddedViewsAfterSaving) {
+                        reattachAddedViewsToOriginalParent(frame)
+                    }
                 } else {
                     // don't process the video but return the original file if no added views in this Story frame
                     frameFile = (frame.source as FileBackgroundSource).file
@@ -186,6 +192,9 @@ class FrameSaveManager(
                         // are thrown) given it internally does check whether the parent contains the view before
                         // attempting to remove it
                         releaseAddedViewsAfterSnapshot(frame)
+                        if (reattachAddedViewsAfterSaving) {
+                            reattachAddedViewsToOriginalParent(frame)
+                        }
                     }
                 }
             }
@@ -218,7 +227,6 @@ class FrameSaveManager(
             }
         }
 
-        releaseAddedViewsAfterSnapshot(frame)
         Glide.with(context).clear(futureTargetPair.first)
         Glide.with(context).clear(futureTargetPair.second)
 
@@ -229,6 +237,15 @@ class FrameSaveManager(
         withContext(Dispatchers.Main) {
             // don't forget to remove these views from ghost offscreen view before exiting
             releaseAddedViews(frame)
+        }
+    }
+
+    private suspend fun reattachAddedViewsToOriginalParent(frame: StoryFrameItem) {
+        withContext(Dispatchers.Main) {
+            for (addedView in frame.addedViews) {
+                // photoEditor.composedCanvas.addView(addedView.view)
+                photoEditor.addViewToParentWithTouchListener(addedView)
+            }
         }
     }
 
