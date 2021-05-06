@@ -748,7 +748,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             checkForLowSpaceAndShowDialog()
         } else if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
             val storySaveResult = intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
-            if (storySaveResult != null &&
+            if (storySaveResult != null && StoryRepository.isStoryIndexValid(storySaveResult.storyIndex) &&
                     StoryRepository.getStoryAtIndex(storySaveResult.storyIndex).frames.isNotEmpty()) {
                 // dismiss the error notification
                 intent.action?.let {
@@ -2168,11 +2168,26 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun toggleDeleteSlideMode() {
+        val selectedFrame = storyViewModel.getSelectedFrame()
+        val isErroredFrame = selectedFrame?.saveResultReason !is SaveSuccess
+
         if (delete_slide_view.visibility == View.VISIBLE) {
             disableDeleteSlideMode()
+
+            // if we're switching back from delete mode, let's show the retry button if this is an errored frame
+            if (isErroredFrame) {
+                showRetryButton()
+            }
         } else {
             enableDeleteSlideMode()
+
+            // if we're switching to delete mode, let's hide the retry button if this is an errored frame
+            // (otherwise they overlap)
+            if (isErroredFrame) {
+                hideRetryButton()
+            }
         }
+        updateEditMode()
     }
 
     private fun enableDeleteSlideMode() {
