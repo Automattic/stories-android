@@ -617,8 +617,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             // being requested so, don't proceed if that is the case
             if (storyViewModel.getCurrentStorySize() == 0 &&
                     firstIntentLoaded && !permissionsRequestForCameraInProgress) {
-                // finally, delete the captured media
-                deleteCapturedMedia()
                 finish()
             }
         })
@@ -1085,6 +1083,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     listener = object : FrameSaveErrorDialogOk {
                         override fun OnOkClicked(dialog: DialogFragment) {
                             dialog.dismiss()
+                            // first of all, delete the backing captured media for this slide
+                            deleteCapturedMedia()
                             if (storyViewModel.getCurrentStorySize() == 1) {
                                 // discard the whole story
                                 safelyDiscardCurrentStoryAndCleanUpIntent()
