@@ -613,9 +613,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private fun setupStoryViewModelObservers() {
         storyViewModel.uiState.observe(this, Observer {
             // if no frames in Story, finish
-            // note momentarily there will be times when this LiveData is triggered while permissions are
-            // being requested so, don't proceed if that is the case
-            deleteCaptureMediaAndFinishWhenEmptyStory()
+            finishWhenEmptyStory()
         })
 
         storyViewModel.onSelectedFrameIndex.observe(this, Observer { selectedFrameIndexChange ->
@@ -631,11 +629,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         })
     }
 
-    private fun deleteCaptureMediaAndFinishWhenEmptyStory() {
+    private fun finishWhenEmptyStory() {
         if (storyViewModel.getCurrentStorySize() == 0 &&
                 firstIntentLoaded && !permissionsRequestForCameraInProgress) {
-            // finally, delete the captured media
-            deleteCapturedMedia()
             finish()
         }
     }
@@ -892,7 +888,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             } else if (intent.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_MEDIA_PICKER_REQUESTED)) {
                 // if coming from the PHOTO_PICKER with a cancel action, and we launched with
                 // EXTRA_LAUNCH_WPSTORIES_MEDIA_PICKER_REQUESTED to start the Story with, we should cancel.
-                deleteCaptureMediaAndFinishWhenEmptyStory()
+                finishWhenEmptyStory()
             }
         }
     }
