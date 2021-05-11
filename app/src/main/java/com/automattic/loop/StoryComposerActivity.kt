@@ -166,6 +166,7 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
     override fun onStoryDiscarded() {
         // example: do any cleanup you may need here
         Toast.makeText(this, "Story has been discarded!", Toast.LENGTH_SHORT).show()
+        finish()
     }
 
     override fun onFrameRemove(storyIndex: StoryIndex, storyFrameIndex: Int) {
