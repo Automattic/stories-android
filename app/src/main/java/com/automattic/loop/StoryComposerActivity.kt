@@ -60,9 +60,9 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
         get() = Dispatchers.Main + job
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         setSnackbarProvider(this)
         setMediaPickerProvider(this)
+        super.onCreate(savedInstanceState)
         setNotificationExtrasLoader(this)
         setMetadataProvider(this)
         setStoryDiscardListener(this) // optionally listen to discard events
