@@ -1,7 +1,7 @@
 
 package com.automattic.photoeditor.camera.interfaces
 
-import androidx.camera.core.FlashMode
+import androidx.camera.core.ImageCapture
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.AUTO
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.OFF
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState.ON
@@ -46,19 +46,19 @@ class CameraFlashStateKeeper : CameraFlashStateHandler {
 }
 
 // helper method to get CameraX flash mode from CameraFlashStateHandler.FlashIndicatorState enum
-fun cameraXflashModeFromStoriesFlashState(flashIndicatorState: FlashIndicatorState): FlashMode {
+fun cameraXflashModeFromStoriesFlashState(flashIndicatorState: FlashIndicatorState): Int {
     return when (flashIndicatorState) {
-        AUTO -> FlashMode.AUTO
-        ON -> FlashMode.ON
-        OFF -> FlashMode.OFF
+        AUTO -> ImageCapture.FLASH_MODE_AUTO
+        ON -> ImageCapture.FLASH_MODE_ON
+        OFF -> ImageCapture.FLASH_MODE_OFF
     }
 }
 
 // helper method to get Camera2 flash mode from CameraFlashStateHandler.FlashIndicatorState enum
-fun camera2flashModeFromStoriesFlashState(flashIndicatorState: FlashIndicatorState): FlashMode {
+fun camera2flashModeFromStoriesFlashState(flashIndicatorState: FlashIndicatorState): Int {
     return when (flashIndicatorState) {
-        AUTO -> FlashMode.AUTO
-        ON -> FlashMode.ON
-        OFF -> FlashMode.OFF
+        AUTO -> ImageCapture.FLASH_MODE_AUTO
+        ON -> ImageCapture.FLASH_MODE_ON
+        OFF -> ImageCapture.FLASH_MODE_OFF
     }
 }

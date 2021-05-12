@@ -1,6 +1,7 @@
 package com.automattic.photoeditor.camera
 
 import android.media.Image
+import android.net.Uri
 import android.util.Log
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
 
@@ -41,7 +42,7 @@ internal class ImageSaver(
             output?.let {
                 try {
                     it.close()
-                    imageCaptureListener?.onImageSaved(file)
+                    imageCaptureListener?.onImageSaved(Uri.fromFile(file))
                 } catch (e: IOException) {
                     Log.e(TAG, e.toString())
                     imageCaptureListener?.onError(e.toString(), e)
