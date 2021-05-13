@@ -611,11 +611,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun setupStoryViewModelObservers() {
-        storyViewModel.uiState.observe(this, Observer {
-            // if no frames in Story, finish
-            finishWhenEmptyStory()
-        })
-
         storyViewModel.onSelectedFrameIndex.observe(this, Observer { selectedFrameIndexChange ->
             updateSelectedFrameControls(selectedFrameIndexChange.first, selectedFrameIndexChange.second)
         })

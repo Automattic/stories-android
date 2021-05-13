@@ -60,9 +60,9 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
         get() = Dispatchers.Main + job
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         setSnackbarProvider(this)
         setMediaPickerProvider(this)
+        super.onCreate(savedInstanceState)
         setNotificationExtrasLoader(this)
         setMetadataProvider(this)
         setStoryDiscardListener(this) // optionally listen to discard events
@@ -166,6 +166,7 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
     override fun onStoryDiscarded() {
         // example: do any cleanup you may need here
         Toast.makeText(this, "Story has been discarded!", Toast.LENGTH_SHORT).show()
+        finish()
     }
 
     override fun onFrameRemove(storyIndex: StoryIndex, storyFrameIndex: Int) {
