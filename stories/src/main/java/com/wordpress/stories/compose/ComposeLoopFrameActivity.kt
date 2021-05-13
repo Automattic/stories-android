@@ -624,11 +624,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         })
     }
 
-    private fun deleteCaptureMediaAndFinishWhenEmptyStory() {
+    private fun finishWhenEmptyStory() {
         if (storyViewModel.getCurrentStorySize() == 0 &&
                 firstIntentLoaded && !permissionsRequestForCameraInProgress) {
-            // finally, delete the captured media
-            deleteCapturedMedia()
             finish()
         }
     }
@@ -885,7 +883,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             } else if (intent.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_MEDIA_PICKER_REQUESTED)) {
                 // if coming from the PHOTO_PICKER with a cancel action, and we launched with
                 // EXTRA_LAUNCH_WPSTORIES_MEDIA_PICKER_REQUESTED to start the Story with, we should cancel.
-                deleteCaptureMediaAndFinishWhenEmptyStory()
+                finishWhenEmptyStory()
             }
         }
     }
@@ -1089,6 +1087,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     listener = object : FrameSaveErrorDialogOk {
                         override fun OnOkClicked(dialog: DialogFragment) {
                             dialog.dismiss()
+                            // first of all, delete the backing captured media for this slide
+                            deleteCapturedMedia()
                             if (storyViewModel.getCurrentStorySize() == 1) {
                                 // discard the whole story
                                 safelyDiscardCurrentStoryAndCleanUpIntent()
