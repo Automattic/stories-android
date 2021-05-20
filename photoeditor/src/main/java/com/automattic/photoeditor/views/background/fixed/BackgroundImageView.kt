@@ -3,21 +3,20 @@ package com.automattic.photoeditor.views.background.fixed
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
-import android.graphics.Matrix
 import android.graphics.PorterDuff
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.Icon
 import android.net.Uri
 import android.util.AttributeSet
-import androidx.appcompat.widget.AppCompatImageView
+import com.github.chrisbanes.photoview.PhotoView
 
 /**
  * @author [Burhanuddin Rashid](https://github.com/burhanrashid52)
  * @version 0.1.2
  * @since 5/21/2018
  */
-internal class BackgroundImageView : AppCompatImageView {
+class BackgroundImageView : PhotoView {
     private var mOnImageChangedListener: OnImageChangedListener? = null
 
     val bitmap: Bitmap?
@@ -46,11 +45,6 @@ internal class BackgroundImageView : AppCompatImageView {
 
     override fun setImageIcon(icon: Icon?) {
         super.setImageIcon(icon)
-        mOnImageChangedListener?.onBitmapLoaded(bitmap)
-    }
-
-    override fun setImageMatrix(matrix: Matrix) {
-        super.setImageMatrix(matrix)
         mOnImageChangedListener?.onBitmapLoaded(bitmap)
     }
 

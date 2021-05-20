@@ -44,6 +44,8 @@ public class PhotoPickerActivity extends AppCompatActivity
     public static final String EXTRA_MEDIA_SOURCE = "media_source";
     public static final String EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED
             = "launch_wpstories_camera_requested";
+    public static final String EXTRA_LAUNCH_WPSTORIES_MEDIA_PICKER_REQUESTED
+            = "launch_wpstories_media_picker_requested";
 
     public static final String LOCAL_POST_ID = "local_post_id";
 

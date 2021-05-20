@@ -9,8 +9,10 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.graphics.drawable.Drawable
 import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
+import android.graphics.Matrix
 import android.hardware.Camera
 import android.media.MediaScannerConnection
 import android.net.Uri
@@ -23,12 +25,16 @@ import android.os.Vibrator
 import android.provider.Settings
 import android.text.TextUtils
 import android.util.Log
+import android.util.Size
 import android.view.GestureDetector
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnClickListener
 import android.webkit.MimeTypeMap
+import android.widget.ImageView.ScaleType.CENTER_CROP
+import android.widget.ImageView.ScaleType.FIT_CENTER
+import android.widget.ImageView.ScaleType.FIT_START
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.Group
@@ -63,8 +69,15 @@ import com.automattic.photoeditor.views.ViewType
 import com.automattic.photoeditor.views.ViewType.TEXT
 import com.automattic.photoeditor.views.added.AddedViewList
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.load.resource.bitmap.BitmapTransformation
+import com.bumptech.glide.load.resource.bitmap.FitCenter
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
+import com.github.chrisbanes.photoview.PhotoView
 import com.wordpress.stories.BuildConfig
 import com.wordpress.stories.R
 import com.wordpress.stories.compose.ComposeLoopFrameActivity.ExternalMediaPickerRequestCodesAndExtraKeys
@@ -90,6 +103,7 @@ import com.wordpress.stories.compose.story.StoryFrameItem
 import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource
 import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.FileBackgroundSource
 import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.UriBackgroundSource
+import com.wordpress.stories.compose.story.StoryFrameItem.BackgroundViewInfo
 import com.wordpress.stories.compose.story.StoryFrameItemType
 import com.wordpress.stories.compose.story.StoryFrameItemType.IMAGE
 import com.wordpress.stories.compose.story.StoryFrameItemType.VIDEO
@@ -105,14 +119,21 @@ import com.wordpress.stories.compose.text.TextStyleGroupManager
 import com.wordpress.stories.util.KEY_STORY_EDIT_MODE
 import com.wordpress.stories.util.KEY_STORY_SAVE_RESULT
 import com.wordpress.stories.util.STATE_KEY_CURRENT_STORY_INDEX
+import com.wordpress.stories.util.TARGET_RATIO_9_16
+import com.wordpress.stories.util.calculateAspectRatioForDrawable
 import com.wordpress.stories.util.getDisplayPixelSize
+import com.wordpress.stories.util.getSizeRatio
 import com.wordpress.stories.util.getStoryIndexFromIntentOrBundle
+import com.wordpress.stories.util.isAspectRatioSimilarByPercentage
+import com.wordpress.stories.util.isScreenTallerThan916
 import com.wordpress.stories.util.isVideo
+import com.wordpress.stories.util.normalizeSizeExportTo916
 import kotlinx.android.synthetic.main.activity_composer.*
 import kotlinx.android.synthetic.main.content_composer.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -190,6 +211,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private lateinit var backgroundSurfaceManager: BackgroundSurfaceManager
     private var currentOriginalCapturedFile: File? = null
     private lateinit var workingAreaRect: Rect
+    private var bottomOpaqueBarHeight: Int = 0 // default: no opaque bottom bar
 
     private val timesUpRunnable = Runnable {
         stopRecordingVideo(false) // time's up, it's not a cancellation
@@ -235,6 +257,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private var genericAnnouncementDialogProvider: GenericAnnouncementDialogProvider? = null
     private var showGenericAnnouncementDialogWhenReady = false
     private var useTempCaptureFile = true
+    private var screenWidth: Int = 1080 // default
+    private var screenHeight: Int = 1920 // default
+    private var screenSizeRatio: Float = TARGET_RATIO_9_16
+    private lateinit var normalizedSize: Size
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
@@ -329,6 +355,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             bottomNavigationBarMargin = insets.systemWindowInsetBottom
             workingAreaRect = calculateWorkingArea()
             photoEditor.updateWorkAreaRect(workingAreaRect)
+            bottomOpaqueBarHeight = preCalculateOpaqueBarHeight()
+            setOpaqueBarHeight()
+            screenSizeRatio = getSizeRatio(screenWidth, screenHeight)
             delete_view.addBottomOffset(bottomNavigationBarMargin)
             delete_slide_view.addBottomOffset(bottomNavigationBarMargin)
             (bottom_strip_view as StoryFrameSelectorFragment).setBottomOffset(bottomNavigationBarMargin)
@@ -340,6 +369,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 return authHeadersProvider?.getAuthHeaders(url)
             }
         }
+
+        // Pre-load the custom fonts if necessary
+        TextStyleGroupManager.preloadFonts(this)
 
         workingAreaRect = calculateWorkingArea()
         photoEditor = PhotoEditor.Builder(this, photoEditorView)
@@ -427,7 +459,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
         photoEditor.setFontResolver(object : FontResolver {
             override fun resolve(@TypefaceId typefaceId: Int): IdentifiableTypeface {
-                return TextStyleGroupManager.getIdentifiableTypefaceForId(typefaceId, this@ComposeLoopFrameActivity)
+                return TextStyleGroupManager.getIdentifiableTypefaceForId(typefaceId)
             }
         })
 
@@ -452,7 +484,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 override fun onBackgroundSurfaceManagerReady() {
                     if (savedInstanceState == null && !firstIntentLoaded) {
                         onLoadFromIntent(intent)
-                        firstIntentLoaded = true
                     }
 
                     if (launchCameraRequestPending) {
@@ -532,38 +563,54 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             if (selectedFrameIndex < storyViewModel.getCurrentStorySize()) {
                 storyViewModel.setSelectedFrame(selectedFrameIndex)
             }
-        } else if (storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED) {
+        } else {
             onLoadFromIntent(intent)
+        }
+    }
+
+    private fun preCalculateOpaqueBarHeight(): Int {
+        // We used to obtain the screen dimensions by querying resources.displayMetrics but this value is the
+        // actual screen size minus the navigation bar height i.e. on a Pixel device we'd get 1794 instead of 1920.
+        // Given ComposeLoopFrameActivity is full screen, we can rely on the measuredHeight calculation instead.
+        screenWidth = photoEditorView.source.measuredWidth
+        screenHeight = photoEditorView.source.measuredHeight
+        normalizedSize = normalizeSizeExportTo916(screenWidth, screenHeight).toSize()
+        if (isScreenTallerThan916(screenWidth, screenHeight)) {
+            return (screenHeight - normalizedSize.height)
+        } else {
+            return 0
+        }
+    }
+
+    private fun setOpaqueBarHeight() {
+        if (bottomOpaqueBarHeight > 0) {
+            bottom_opaque_bar.layoutParams.height = bottomOpaqueBarHeight
+        }
+    }
+
+    private fun showOpaqueBarIfNeeded() {
+        if (bottomOpaqueBarHeight > 0) {
+            bottom_opaque_bar.visibility = View.VISIBLE
+        } else {
+            bottom_opaque_bar.visibility = View.GONE
         }
     }
 
     override fun onStart() {
         super.onStart()
-        val selectedFrameIndex = storyViewModel.getSelectedFrameIndex()
-        if (!launchCameraRequestPending && !launchVideoPlayerRequestPending &&
-                selectedFrameIndex < storyViewModel.getCurrentStorySize()) {
-            updateBackgroundSurfaceUIWithStoryFrame(selectedFrameIndex)
-        }
         // upon loading an existing Story, show the generic announcement dialog if present
         if (showGenericAnnouncementDialogWhenReady) {
             showGenericAnnouncementDialogWhenReady = false
             genericAnnouncementDialogProvider?.showGenericAnnouncementDialog()
         }
+        if (storyViewModel.getCurrentStorySize() > 0 &&
+                !launchCameraRequestPending &&
+                !launchVideoPlayerRequestPending) {
+            showCurrentSelectedFrame()
+        }
     }
 
     private fun setupStoryViewModelObservers() {
-        storyViewModel.uiState.observe(this, Observer {
-            // if no frames in Story, finish
-            // note momentarily there will be times when this LiveData is triggered while permissions are
-            // being requested so, don't proceed if that is the case
-            if (storyViewModel.getCurrentStorySize() == 0 &&
-                    firstIntentLoaded && !permissionsRequestForCameraInProgress) {
-                // finally, delete the captured media
-                deleteCapturedMedia()
-                finish()
-            }
-        })
-
         storyViewModel.onSelectedFrameIndex.observe(this, Observer { selectedFrameIndexChange ->
             updateSelectedFrameControls(selectedFrameIndexChange.first, selectedFrameIndexChange.second)
         })
@@ -575,6 +622,13 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         storyViewModel.muteFrameAudioUiState.observe(this, Observer { frameIndex ->
             updateUiStateForAudioMuted(frameIndex)
         })
+    }
+
+    private fun finishWhenEmptyStory() {
+        if (storyViewModel.getCurrentStorySize() == 0 &&
+                firstIntentLoaded && !permissionsRequestForCameraInProgress) {
+            finish()
+        }
     }
 
     private fun updateUiStateForAudioMuted(frameIndex: Int) {
@@ -669,6 +723,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     protected open fun onLoadFromIntent(intent: Intent) {
+        firstIntentLoaded = true
         val partialCameraOperationInProgress = intent.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED) ||
                 permissionsRequestForCameraInProgress
 
@@ -678,6 +733,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         } else if (!partialCameraOperationInProgress && storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED &&
                 StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.isNotEmpty()) {
             storyViewModel.loadStory(storyIndexToSelect)
+            onStoryFrameSelected(oldIndex = StoryRepository.DEFAULT_FRAME_NONE_SELECTED, newIndex = 0)
             showGenericAnnouncementDialogWhenReady = true
             return
         }
@@ -687,7 +743,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             checkForLowSpaceAndShowDialog()
         } else if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
             val storySaveResult = intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
-            if (storySaveResult != null &&
+            if (storySaveResult != null && StoryRepository.isStoryIndexValid(storySaveResult.storyIndex) &&
                     StoryRepository.getStoryAtIndex(storySaveResult.storyIndex).frames.isNotEmpty()) {
                 // dismiss the error notification
                 intent.action?.let {
@@ -710,10 +766,14 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             )
             addFramesToStoryFromMediaUriList(uriList)
             setDefaultSelectionAndUpdateBackgroundSurfaceUI(uriList)
+        } else if (intent.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_MEDIA_PICKER_REQUESTED)) {
+            showMediaPicker()
+            firstIntentLoaded = true
         }
     }
 
     override fun onDestroy() {
+        photoEditorView.onComposerDestroyed()
         doUnbindService()
         EventBus.getDefault().unregister(this)
         super.onDestroy()
@@ -820,6 +880,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     }
                     launchCameraPreviewWithSurfaceSafeguard()
                 }
+            } else if (intent.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_MEDIA_PICKER_REQUESTED)) {
+                // if coming from the PHOTO_PICKER with a cancel action, and we launched with
+                // EXTRA_LAUNCH_WPSTORIES_MEDIA_PICKER_REQUESTED to start the Story with, we should cancel.
+                finishWhenEmptyStory()
             }
         }
     }
@@ -1023,6 +1087,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     listener = object : FrameSaveErrorDialogOk {
                         override fun OnOkClicked(dialog: DialogFragment) {
                             dialog.dismiss()
+                            // first of all, delete the backing captured media for this slide
+                            deleteCapturedMedia()
                             if (storyViewModel.getCurrentStorySize() == 1) {
                                 // discard the whole story
                                 safelyDiscardCurrentStoryAndCleanUpIntent()
@@ -1105,12 +1171,22 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     private fun saveStoryPreHook() {
         showLoading()
+        refreshBackgroundViewInfoOnSelectedFrame()
         // disable layout change animations, we need this to make added views immediately visible, otherwise
         // we may end up capturing a Bitmap of a backing drawable that still has not been updated
         // (i.e. no visible added Views)
         transition = photoEditorView.getLayoutTransition()
         photoEditorView.layoutTransition = null
         preHookRun = true
+    }
+
+    private fun refreshBackgroundViewInfoOnSelectedFrame() {
+        storyViewModel.getSelectedFrame()?.let {
+            setBackgroundViewInfoOnFrame(
+                    it,
+                    photoEditor.composedCanvas.source as PhotoView
+            )
+        }
     }
 
     private fun saveStoryPostHook(result: StorySaveResult) {
@@ -1208,7 +1284,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun addNewText() {
-        photoEditor.addText("")
+        photoEditor.addText("", addTouchListener = true)
     }
 
     private fun testEmoji() {
@@ -1572,9 +1648,12 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     private fun hideStoryFrameSelector() {
         (bottom_strip_view as StoryFrameSelectorFragment).hide()
+        bottom_opaque_bar.visibility = View.INVISIBLE
     }
 
     private fun showStoryFrameSelector() {
+        setOpaqueBarHeight()
+        showOpaqueBarIfNeeded()
         (bottom_strip_view as StoryFrameSelectorFragment).show()
     }
 
@@ -1868,6 +1947,15 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         if (oldIndex >= 0) {
             // only remember added views for frame if current index is valid
             addCurrentViewsToFrameAtIndex(oldIndex)
+
+            // save current imageMatrix as the background image may have been resized
+            val oldSelectedFrame = storyViewModel.getCurrentStoryFrameAt(oldIndex)
+            if (oldSelectedFrame?.frameItemType is IMAGE) {
+                setBackgroundViewInfoOnFrame(
+                        oldSelectedFrame,
+                        photoEditor.composedCanvas.source as PhotoView
+                )
+            } // TODO add else clause and handle VIDEO frameItemType
         }
 
         // This is tricky. See https://stackoverflow.com/questions/45860434/cant-remove-view-from-root-view
@@ -1896,11 +1984,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         if (newSelectedFrame.frameItemType is VIDEO) {
             showPlayVideoWithSurfaceSafeguard(source)
         } else {
-            val model = (source as? FileBackgroundSource)?.file ?: (source as UriBackgroundSource).contentUri
-            Glide.with(this@ComposeLoopFrameActivity)
-                .load(model)
-                .transform(CenterCrop())
-                .into(photoEditorView.source)
+            loadImageWithGlideToPrepare(newSelectedFrame)
             showStaticBackground()
         }
 
@@ -1919,8 +2003,154 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         showRetryButtonAndHideEditControlsForErroredFrame(newSelectedFrame.saveResultReason !is SaveSuccess)
     }
 
+    private fun setBackgroundViewInfoOnFrame(frame: StoryFrameItem, backgroundImageSource: PhotoView) {
+        val matrixValues = FloatArray(9)
+        val matrix = Matrix()
+        // fill in matrix with PhotoView Support matrix
+        backgroundImageSource.getSuppMatrix(matrix)
+        // extract matrix to float array matrixValues
+        matrix.getValues(matrixValues)
+        frame.source.backgroundViewInfo = BackgroundViewInfo(
+                imageMatrixValues = matrixValues,
+                scaleType = backgroundImageSource.scaleType
+        )
+    }
+
+    private fun setBackgroundViewInfoOnPhotoView(frame: StoryFrameItem, backgroundImageSource: PhotoView) {
+        val backgroundViewInfo = frame.source.backgroundViewInfo
+        // load image matrix from data if it exists
+        backgroundViewInfo?.let {
+            val matrix = Matrix()
+            matrix.setValues(it.imageMatrixValues)
+            backgroundImageSource.apply {
+                setSuppMatrix(matrix)
+                scaleType = it.scaleType
+            }
+        }
+    }
+
+    private fun loadImageWithGlideToPrepare(frame: StoryFrameItem) {
+        val model = (frame.source as? FileBackgroundSource)?.file
+                ?: (frame.source as UriBackgroundSource).contentUri
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val futureTarget = Glide.with(this@ComposeLoopFrameActivity)
+                    .asDrawable()
+                    .load(model)
+                    .fitCenter() // we use fitCenter at first (instead of cropping) so we don't lose any information
+                    .submit(screenWidth, screenHeight) // we're not going to export images greater than the screen size
+            val drawable = futureTarget.get()
+
+            val doAfterUse = object : ImageLoadedInterface {
+                override fun doAfter() {
+                    // here setup the PhotoView support matrix
+                    // we use a Handler because we need to set the support matrix only once the drawable
+                    // has been set on the PhotoView, otherwise the matrix is not applied
+                    // see
+                    // https://github.com/Baseflow/PhotoView/blob/139a9ffeaf70bd628b015374cb6530fcf7d0bcb7/photoview/src/main/java/com/github/chrisbanes/photoview/PhotoViewAttacher.java#L279-L289
+                    // if we're all good, doAfter() will be callled on Glide's `onResourceReady`, so
+                    // let's setup the ViewMatrix
+                    Handler().post {
+                        setBackgroundViewInfoOnPhotoView(
+                                frame,
+                                photoEditor.composedCanvas.source as PhotoView
+                        )
+                    }
+                }
+            }
+
+            withContext(Dispatchers.Main) {
+                // 1. if the image being loaded matches the aspect ratio of the device screen, use center_crop
+                //      no parts would actually be cropped, given the matching aspect ratio it should fit
+                //      except the opaque bar given we're normalizing to 9:16 on export
+                val drawableAspectRatio = calculateAspectRatioForDrawable(drawable)
+                bottom_opaque_bar.visibility = View.VISIBLE
+                if (isAspectRatioSimilarByPercentage(drawableAspectRatio, screenSizeRatio, 0.01f)) {
+                    photoEditorView.source.scaleType = CENTER_CROP
+                    loadImageWithGlideToDraw(drawable, CenterCrop(), screenWidth, screenHeight, doAfterUse)
+                } else {
+                    // 2. if the device is taller than 9:16, and image is portrait
+                    // just crop the bottom (showing the opaque bar)
+                    if (isScreenTallerThan916(screenWidth, screenHeight) &&
+                            (drawable.intrinsicHeight > drawable.intrinsicWidth)
+                    ) {
+                        val transformToUse = if (drawable.intrinsicWidth >= screenWidth) {
+                            // this aligns to top so there's no top black bar
+                            photoEditorView.source.scaleType = FIT_START
+                            null
+                        } else {
+                            photoEditorView.source.scaleType = FIT_CENTER
+                            FitCenter()
+                        }
+                        loadImageWithGlideToDraw(drawable, transformToUse,
+                                normalizedSize.width, normalizedSize.height, doAfterUse)
+                    } else {
+                        // 3. else, load with fit-center (black bars on the side that doesn't fit)
+                        // see https://developer.android.com/reference/android/graphics/Matrix.ScaleToFit#CENTER
+                        photoEditorView.source.scaleType = FIT_CENTER
+                        loadImageWithGlideToDraw(drawable, FitCenter(), screenWidth, screenHeight, doAfterUse)
+                    }
+                }
+            }
+        }
+    }
+
+    private suspend fun loadImageWithGlideToDraw(
+        drawable: Drawable,
+        transformToUse: BitmapTransformation? = null,
+        overrideWidth: Int,
+        overrideHeight: Int,
+        doAfterUse: ImageLoadedInterface
+    ) {
+        withContext(Dispatchers.Main) {
+            transformToUse?.let {
+                Glide.with(this@ComposeLoopFrameActivity)
+                        .load(drawable)
+                        .transform(it)
+                        .listener(provideGlideRequestListener(doAfterUse))
+                        .override(overrideWidth, overrideHeight)
+                        .into(photoEditorView.source)
+            } ?: Glide.with(this@ComposeLoopFrameActivity)
+                    .load(drawable)
+                    .listener(provideGlideRequestListener(doAfterUse))
+                    .override(overrideWidth, overrideHeight)
+                    .into(photoEditorView.source)
+        }
+    }
+
+    interface ImageLoadedInterface {
+        fun doAfter()
+    }
+
+    private fun provideGlideRequestListener(callback: ImageLoadedInterface): RequestListener<Drawable> {
+        return object : RequestListener<Drawable> {
+            override fun onLoadFailed(
+                e: GlideException?,
+                model: Any?,
+                target: Target<Drawable>?,
+                isFirstResource: Boolean
+            ): Boolean {
+                // let the default implementation run
+                return false
+            }
+
+            override fun onResourceReady(
+                resource: Drawable?,
+                model: Any?,
+                target: Target<Drawable>?,
+                dataSource: DataSource?,
+                isFirstResource: Boolean
+            ): Boolean {
+                callback.doAfter()
+                // return false to let Glide proceed and set the drawable
+                return false
+            }
+        }
+    }
+
     override fun onStoryFrameAddTapped() {
         addCurrentViewsToFrameAtIndex(storyViewModel.getSelectedFrameIndex())
+        refreshBackgroundViewInfoOnSelectedFrame()
         showMediaPicker()
     }
 
@@ -1942,11 +2172,26 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun toggleDeleteSlideMode() {
+        val selectedFrame = storyViewModel.getSelectedFrame()
+        val isErroredFrame = selectedFrame?.saveResultReason !is SaveSuccess
+
         if (delete_slide_view.visibility == View.VISIBLE) {
             disableDeleteSlideMode()
+
+            // if we're switching back from delete mode, let's show the retry button if this is an errored frame
+            if (isErroredFrame) {
+                showRetryButton()
+            }
         } else {
             enableDeleteSlideMode()
+
+            // if we're switching to delete mode, let's hide the retry button if this is an errored frame
+            // (otherwise they overlap)
+            if (isErroredFrame) {
+                hideRetryButton()
+            }
         }
+        updateEditMode()
     }
 
     private fun enableDeleteSlideMode() {
@@ -2087,6 +2332,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // if not properly initialized)
         lateinit var EXTRA_MEDIA_URIS: String
         lateinit var EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED: String
+        lateinit var EXTRA_LAUNCH_WPSTORIES_MEDIA_PICKER_REQUESTED: String
     }
 
     companion object {

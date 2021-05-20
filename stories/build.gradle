@@ -3,6 +3,7 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlinx-serialization'
+apply from: "../stories-common.gradle"
 
 android {
     compileSdkVersion rootProject.compileSdkVersion
@@ -51,7 +52,9 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.10.0'
     kapt 'com.github.bumptech.glide:compiler:4.10.0'
 
-    implementation 'org.greenrobot:eventbus:3.1.1'
+    implementation 'jp.wasabeef:glide-transformations:4.3.0'
+
+    implementation 'org.greenrobot:eventbus:3.2.0'
 
     implementation project(path: ':photoeditor')
 
@@ -62,6 +65,8 @@ dependencies {
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
 
+    implementation 'com.github.chrisbanes:PhotoView:2.3.0'
+
     lintChecks 'org.wordpress:lint:1.0.1'
 
     testImplementation 'junit:junit:4.12'
@@ -71,43 +76,29 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 }
 
-android.buildTypes.all { buildType ->
+tasks.register('createBuildConfigFieldsFromProperties') {
     // Add properties named "loop.xxx" to our BuildConfig
-    def inputFile = checkGradlePropertiesFile()
-    def properties = loadPropertiesFromFile(inputFile)
-    properties.any { property ->
-        if (property.key.toLowerCase().startsWith("wp.stories.use.")) {
-            buildType.buildConfigField "boolean", property.key.replace("wp.stories.", "").replace(".", "_").toUpperCase(),
-                    "${property.value}"
+    android.buildTypes.all { buildType ->
+        def inputFile = file("${rootDir}/gradle.properties")
+        def properties = loadGradleProperties(inputFile)
+        properties.any { property ->
+            if (property.key.toLowerCase().startsWith("wp.stories.use.")) {
+                buildType.buildConfigField "boolean", property.key.replace("wp.stories.", "").replace(".", "_").toUpperCase(), "${property.value}"
+            }
+            else if (property.key.toLowerCase().startsWith("wp.stories.")) {
+                buildType.buildConfigField "String", property.key.replace("wp.stories.", "").replace(".", "_").toUpperCase(), "\"${property.value}\""
+            }
+            else if (property.key.toLowerCase().startsWith("wp.stories.res.")) {
+                buildType.resValue "string", property.key.replace("wp.stories.res.", "").replace(".", "_").toLowerCase(), "${property.value}"
+            }
         }
-        else if (property.key.toLowerCase().startsWith("wp.stories.")) {
-            buildType.buildConfigField "String", property.key.replace("wp.stories.", "").replace(".", "_").toUpperCase(),
-                    "\"${property.value}\""
-        }
-        else if (property.key.toLowerCase().startsWith("wp.stories.res.")) {
-            buildType.resValue "string", property.key.replace("wp.stories.res.", "").replace(".", "_").toLowerCase(),
-                    "${property.value}"
-        }
-    }
 
-    if (properties.getProperty("wp.stories.use.cameraX") == null) {
-        // use cameraX implementation by default if no gradle.properties set
-        buildType.buildConfigField "boolean", "USE_CAMERAX", "true"
+        if (properties.getProperty("wp.stories.use.cameraX") == null) {
+            // use cameraX implementation by default if no gradle.properties set
+            buildType.buildConfigField "boolean", "USE_CAMERAX", "true"
+        }
     }
 }
 
-def checkGradlePropertiesFile() {
-    def inputFile = file("${rootDir}/gradle.properties")
-    if (!inputFile.exists()) {
-        throw new StopActionException("Build configuration file gradle.properties doesn't exist, follow README instructions")
-    }
-    return inputFile
-}
+preBuild.dependsOn(tasks.named("createBuildConfigFieldsFromProperties"))
 
-static def loadPropertiesFromFile(inputFile) {
-    def properties = new Properties()
-    inputFile.withInputStream { stream ->
-        properties.load(stream)
-    }
-    return properties
-}
