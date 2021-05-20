@@ -6,16 +6,19 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.Navigation
-import com.automattic.photoeditor.util.PermissionUtils
 import com.automattic.loop.AppPrefs
 import com.automattic.loop.MainActivity
 import com.automattic.loop.R
+import com.automattic.loop.databinding.ActivityIntroBinding
+import com.automattic.photoeditor.util.PermissionUtils
+import com.wordpress.stories.viewBinding
 
 class IntroActivity : AppCompatActivity(), IntroFragment.OnFragmentInteractionListener,
     PermissionRequestFragment.OnFragmentInteractionListener {
+    private val binding by viewBinding(ActivityIntroBinding::inflate)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_intro)
 
         window.statusBarColor = ContextCompat.getColor(this, android.R.color.white)
         showFragment(IntroFragment(), IntroFragment.TAG)
