@@ -131,8 +131,6 @@ import com.wordpress.stories.util.isScreenTallerThan916
 import com.wordpress.stories.util.isVideo
 import com.wordpress.stories.viewBinding
 import com.wordpress.stories.util.normalizeSizeExportTo916
-import kotlinx.android.synthetic.main.activity_composer.*
-import kotlinx.android.synthetic.main.content_composer.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -598,8 +596,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // We used to obtain the screen dimensions by querying resources.displayMetrics but this value is the
         // actual screen size minus the navigation bar height i.e. on a Pixel device we'd get 1794 instead of 1920.
         // Given ComposeLoopFrameActivity is full screen, we can rely on the measuredHeight calculation instead.
-        screenWidth = photoEditorView.source.measuredWidth
-        screenHeight = photoEditorView.source.measuredHeight
+        screenWidth = contentComposerBinding.photoEditorView.source.measuredWidth
+        screenHeight = contentComposerBinding.photoEditorView.source.measuredHeight
         normalizedSize = normalizeSizeExportTo916(screenWidth, screenHeight).toSize()
         if (isScreenTallerThan916(screenWidth, screenHeight)) {
             return (screenHeight - normalizedSize.height)
@@ -610,15 +608,15 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     private fun setOpaqueBarHeight() {
         if (bottomOpaqueBarHeight > 0) {
-            bottom_opaque_bar.layoutParams.height = bottomOpaqueBarHeight
+            contentComposerBinding.bottomOpaqueBar.layoutParams.height = bottomOpaqueBarHeight
         }
     }
 
     private fun showOpaqueBarIfNeeded() {
         if (bottomOpaqueBarHeight > 0) {
-            bottom_opaque_bar.visibility = View.VISIBLE
+            contentComposerBinding.bottomOpaqueBar.visibility = View.VISIBLE
         } else {
-            bottom_opaque_bar.visibility = View.GONE
+            contentComposerBinding.bottomOpaqueBar.visibility = View.GONE
         }
     }
 
@@ -799,7 +797,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     override fun onDestroy() {
-        photoEditorView.onComposerDestroyed()
+        contentComposerBinding.photoEditorView.onComposerDestroyed()
         doUnbindService()
         EventBus.getDefault().unregister(this)
         super.onDestroy()
@@ -1715,8 +1713,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         setOpaqueBarHeight()
         showOpaqueBarIfNeeded()
         (supportFragmentManager.findFragmentById(R.id.bottom_strip_view) as? StoryFrameSelectorFragment)?.show()
-        // TODO fix bottom_opaque_bar.visibilit with view binding
-//        bottom_opaque_bar.visibility = View.INVISIBLE
+        contentComposerBinding.bottomOpaqueBar.visibility = View.GONE
     }
 
     private fun hideEditModeUIControls() {
@@ -2142,9 +2139,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 //      no parts would actually be cropped, given the matching aspect ratio it should fit
                 //      except the opaque bar given we're normalizing to 9:16 on export
                 val drawableAspectRatio = calculateAspectRatioForDrawable(drawable)
-                bottom_opaque_bar.visibility = View.VISIBLE
+                contentComposerBinding.bottomOpaqueBar.visibility = View.VISIBLE
                 if (isAspectRatioSimilarByPercentage(drawableAspectRatio, screenSizeRatio, 0.01f)) {
-                    photoEditorView.source.scaleType = CENTER_CROP
+                    contentComposerBinding.photoEditorView.source.scaleType = CENTER_CROP
                     loadImageWithGlideToDraw(drawable, CenterCrop(), screenWidth, screenHeight, doAfterUse)
                 } else {
                     // 2. if the device is taller than 9:16, and image is portrait
@@ -2154,10 +2151,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     ) {
                         val transformToUse = if (drawable.intrinsicWidth >= screenWidth) {
                             // this aligns to top so there's no top black bar
-                            photoEditorView.source.scaleType = FIT_START
+                            contentComposerBinding.photoEditorView.source.scaleType = FIT_START
                             null
                         } else {
-                            photoEditorView.source.scaleType = FIT_CENTER
+                            contentComposerBinding.photoEditorView.source.scaleType = FIT_CENTER
                             FitCenter()
                         }
                         loadImageWithGlideToDraw(drawable, transformToUse,
@@ -2165,7 +2162,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     } else {
                         // 3. else, load with fit-center (black bars on the side that doesn't fit)
                         // see https://developer.android.com/reference/android/graphics/Matrix.ScaleToFit#CENTER
-                        photoEditorView.source.scaleType = FIT_CENTER
+                        contentComposerBinding.photoEditorView.source.scaleType = FIT_CENTER
                         loadImageWithGlideToDraw(drawable, FitCenter(), screenWidth, screenHeight, doAfterUse)
                     }
                 }
@@ -2187,12 +2184,12 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                         .transform(it)
                         .listener(provideGlideRequestListener(doAfterUse))
                         .override(overrideWidth, overrideHeight)
-                        .into(photoEditorView.source)
+                        .into(contentComposerBinding.photoEditorView.source)
             } ?: Glide.with(this@ComposeLoopFrameActivity)
                     .load(drawable)
                     .listener(provideGlideRequestListener(doAfterUse))
                     .override(overrideWidth, overrideHeight)
-                    .into(photoEditorView.source)
+                    .into(contentComposerBinding.photoEditorView.source)
         }
     }
 
