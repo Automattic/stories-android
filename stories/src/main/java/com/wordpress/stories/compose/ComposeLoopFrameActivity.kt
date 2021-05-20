@@ -1713,7 +1713,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         setOpaqueBarHeight()
         showOpaqueBarIfNeeded()
         (supportFragmentManager.findFragmentById(R.id.bottom_strip_view) as? StoryFrameSelectorFragment)?.show()
-        contentComposerBinding.bottomOpaqueBar.visibility = View.GONE
     }
 
     private fun hideEditModeUIControls() {
