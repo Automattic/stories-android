@@ -54,6 +54,9 @@ class Mp4ComposerEngineBasic {
         this.progressCallback = progressCallback;
     }
 
+    // TODO: currently we do not use the timeScale feature. Also the timeScale ends up
+    // being converted into an int in the VideoComposer layer.
+    // See https://github.com/Automattic/stories-android/issues/685 for more context.
     void compose(
             final DataSource srcDataSource,
             final String destSrc,

@@ -44,6 +44,9 @@ public class Mp4ComposerBasic implements ComposerInterface {
     private Listener listener;
     private FillMode fillMode = FillMode.PRESERVE_ASPECT_FIT;
     private FillModeCustomItem fillModeCustomItem;
+    // TODO: currently we do not use the timeScale feature. Also the timeScale ends up
+    // being converted into an int in the VideoComposer layer.
+    // See https://github.com/Automattic/stories-android/issues/685 for more context.
     private float timeScale = 1f; // should be in range 0.125 (-8X) to 8.0 (8X)
     private boolean isPitchChanged = false;
     private boolean flipVertical = false;
