@@ -194,7 +194,7 @@ class StoryFrameSelectorFragment : Fragment(R.layout.fragment_story_frame_select
     }
 
     fun hide() {
-        binding.root.visibility = View.GONE
+        binding.root.visibility = View.INVISIBLE
     }
 
     fun hideAddFrameControl() {

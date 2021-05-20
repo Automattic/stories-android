@@ -24,7 +24,8 @@
         android:layout_marginBottom="@dimen/color_picker_bottom_sheet_label_bottom_margin"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:textColor="#DE000000"
+        android:textColor="?android:attr/textColorPrimary"
+        android:alpha="0.87"
         android:text="@string/color_picker_label_text" />
 
     <androidx.recyclerview.widget.RecyclerView
@@ -48,7 +49,8 @@
         android:layout_marginBottom="@dimen/color_picker_bottom_sheet_label_bottom_margin"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:textColor="#DE000000"
+        android:textColor="?android:attr/textColorPrimary"
+        android:alpha="0.87"
         android:text="@string/color_picker_label_background" />
 
     <androidx.recyclerview.widget.RecyclerView

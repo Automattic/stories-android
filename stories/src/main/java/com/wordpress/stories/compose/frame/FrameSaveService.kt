@@ -203,7 +203,8 @@ class FrameSaveService : Service() {
         val frameFileList =
             storySaveProcessor.saveStory(
                 this,
-                frames
+                frames,
+                storySaveProcessor.storySaveResult.isRetry
             )
         storySaveProcessor.timeTracker.end()
         storySaveProcessor.updateStorySaveResultTimeElapsed()
@@ -329,7 +330,7 @@ class FrameSaveService : Service() {
             storySaveResult.frameSaveResult.add(FrameSaveResult(applyFrameIndexOverride(frameIndex), SaveSuccess))
 
             // dispatch FrameSaveCompleted event
-            EventBus.getDefault().post(FrameSaveCompleted(storyIndex, frameIndex, frame.id))
+            EventBus.getDefault().postSticky(FrameSaveCompleted(storyIndex, frameIndex, frame.id))
         }
 
         override fun onFrameSaveCanceled(frameIndex: FrameIndex, frame: StoryFrameItem) {
@@ -361,7 +362,7 @@ class FrameSaveService : Service() {
             storySaveResult.frameSaveResult.add(FrameSaveResult(applyFrameIndexOverride(frameIndex), SaveError(reason)))
 
             // dispatch FrameSaveFailed event
-            EventBus.getDefault().post(FrameSaveFailed(storyIndex, frameIndex, frame.id))
+            EventBus.getDefault().postSticky(FrameSaveFailed(storyIndex, frameIndex, frame.id))
         }
 
         fun attachProgressListener() {
@@ -387,9 +388,10 @@ class FrameSaveService : Service() {
 
         suspend fun saveStory(
             context: Context,
-            frames: List<StoryFrameItem>
+            frames: List<StoryFrameItem>,
+            isRetry: Boolean
         ): List<File> {
-            return frameSaveManager.saveStory(context, frames)
+            return frameSaveManager.saveStory(context, frames, isRetry)
         }
 
         fun onCancel() {

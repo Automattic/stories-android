@@ -241,7 +241,8 @@ class PhotoEditor private constructor(builder: Builder) :
     fun addText(
         text: String,
         textStyler: TextStyler? = null,
-        isViewBeingReadded: Boolean = false
+        isViewBeingReadded: Boolean = false,
+        addTouchListener: Boolean = false
     ): View? {
         brushDrawingView.brushDrawingMode = false
         val view: View?
@@ -253,9 +254,11 @@ class PhotoEditor private constructor(builder: Builder) :
 
 //            textInputTv.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
 
-            val multiTouchListenerInstance = getNewMultitouchListener() // newMultiTouchListener
-            setGestureControlOnMultiTouchListener(this, ViewType.TEXT, multiTouchListenerInstance)
-            setOnTouchListener(multiTouchListenerInstance)
+            if (addTouchListener) {
+                val multiTouchListenerInstance = getNewMultitouchListener() // newMultiTouchListener
+                setGestureControlOnMultiTouchListener(this, ViewType.TEXT, multiTouchListenerInstance)
+                setOnTouchListener(multiTouchListenerInstance)
+            }
             addViewToParent(this, ViewType.TEXT)
 
             // now open TextEditor right away if this is new text being added
@@ -365,11 +368,16 @@ class PhotoEditor private constructor(builder: Builder) :
     fun addViewToParentWithTouchListener(addedView: AddedView) {
         addedView.view?.let {
             addViewToParentWithTouchListener(it, addedView.viewType, addedView.uri)
-        } ?: buildViewFromAddedViewInfo(addedView.viewInfo, addedView.viewType)
+        } ?: buildViewFromAddedViewInfo(addedView.viewInfo, addedView.viewType, true)
+        .also { addedView.view = it }
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    private fun buildViewFromAddedViewInfo(addedViewInfo: AddedViewInfo, viewType: ViewType): View? {
+    fun buildViewFromAddedViewInfo(
+        addedViewInfo: AddedViewInfo,
+        viewType: ViewType,
+        addTouchListener: Boolean
+    ): View? {
         var view: View? = null
         when (viewType) {
             EMOJI -> {
@@ -381,18 +389,21 @@ class PhotoEditor private constructor(builder: Builder) :
                     // the actual calculated text size as obtained from the view is expressed in px.
                     emojiTextView?.setTextSize(TypedValue.COMPLEX_UNIT_PX, addedViewInfo.addedViewTextInfo.fontSizePx)
 
-                    val multiTouchListenerInstance = getNewMultitouchListener(it) // newMultiTouchListener
-                    setGestureControlOnMultiTouchListener(it, viewType, multiTouchListenerInstance)
-                    it.touchableArea?.setOnTouchListener(multiTouchListenerInstance)
+                    if (addTouchListener) {
+                        val multiTouchListenerInstance = getNewMultitouchListener(it) // newMultiTouchListener
+                        setGestureControlOnMultiTouchListener(it, viewType, multiTouchListenerInstance)
+                        it.touchableArea?.setOnTouchListener(multiTouchListenerInstance)
+                    }
                 }
             }
             TEXT -> {
                 // create TEXT view layout
                 val textStyler = TextStyler.from(addedViewInfo.addedViewTextInfo)
                 view = addText(
-                    text = addedViewInfo.addedViewTextInfo.text,
-                    textStyler = textStyler,
-                    isViewBeingReadded = true
+                        text = addedViewInfo.addedViewTextInfo.text,
+                        textStyler = textStyler,
+                        isViewBeingReadded = true,
+                        addTouchListener = addTouchListener
                 )
             }
         }
@@ -783,7 +794,9 @@ class PhotoEditor private constructor(builder: Builder) :
                 }
                 else -> {
                     clearHelperBox()
-                    filterCollection.add(GlWatermarkFilter(BitmapUtil.createBitmapFromView(v.view), viewPositionInfo))
+                    v.view?.let {
+                        filterCollection.add(GlWatermarkFilter(BitmapUtil.createBitmapFromView(it), viewPositionInfo))
+                    }
                 }
             }
         }
@@ -935,9 +948,11 @@ class PhotoEditor private constructor(builder: Builder) :
                 }
                 else -> {
                     clearHelperBox()
-                    filterCollection.add(
-                        GlWatermarkFilter(BitmapUtil.createBitmapFromView(oneView.view), viewPositionInfo)
-                    )
+                    oneView.view?.let {
+                        filterCollection.add(
+                                GlWatermarkFilter(BitmapUtil.createBitmapFromView(it), viewPositionInfo)
+                        )
+                    }
                 }
             }
         }
@@ -1045,8 +1060,27 @@ class PhotoEditor private constructor(builder: Builder) :
         return (addedViews.size > 0)
     }
 
+    @Synchronized
     fun getViewsAdded(): AddedViewList {
+        // always make sure to return a freshly z-index-ordered AddedViewList
+        reorderAddedViewListAccordingToZIndex()
         return addedViews
+    }
+
+    @Synchronized
+    private fun reorderAddedViewListAccordingToZIndex() {
+        val reorderedAddedViewList = AddedViewList()
+        for (oneView in parentView.zIndexOrderedAddedViews) {
+            when (oneView.tag) {
+                TEXT, EMOJI, ViewType.STICKER_ANIMATED -> {
+                    addedViews.getAddedViewForNativeView(oneView)?.let {
+                        reorderedAddedViewList.add(it)
+                    }
+                }
+            }
+        }
+        addedViews.clear()
+        addedViews.addAll(reorderedAddedViewList)
     }
 
     /**

@@ -54,7 +54,7 @@ object StoryRepository {
         }
     }
 
-    private fun isStoryIndexValid(storyIndex: StoryIndex): Boolean {
+    fun isStoryIndexValid(storyIndex: StoryIndex): Boolean {
         return storyIndex > DEFAULT_NONE_SELECTED && stories.size > storyIndex
     }
 
@@ -124,9 +124,11 @@ object StoryRepository {
         // iterate over the StorySaveResult, check their indexes, and set the corresponding frame result
         if (isStoryIndexValid(storyIndex)) {
             for (index in 0..saveResult.frameSaveResult.size - 1) {
-                val frameIdxToSet = saveResult.frameSaveResult[index].frameIndex
-                stories[storyIndex].frames[frameIdxToSet].saveResultReason =
-                        saveResult.frameSaveResult[index].resultReason
+                if (saveResult.frameSaveResult[index] != null) {
+                    val frameIdxToSet = saveResult.frameSaveResult[index].frameIndex
+                    stories[storyIndex].frames[frameIdxToSet].saveResultReason =
+                            saveResult.frameSaveResult[index].resultReason
+                }
             }
         }
     }

@@ -246,9 +246,7 @@ internal class Mp4ComposerEngine {
                     mediaExtractor = null
                 }
             } catch (e: RuntimeException) {
-                // Too fatal to make alive the app, because it may leak native resources.
-
-                throw Error("Could not shutdown mediaExtractor, codecs and mediaMuxer pipeline.", e)
+                Log.e(TAG, "Could not shutdown mediaExtractor, codecs and mediaMuxer pipeline.", e)
             }
 
             try {
