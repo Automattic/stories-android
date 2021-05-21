@@ -475,7 +475,7 @@ class PhotoEditor private constructor(builder: Builder) :
         var rootView: View? = null
         when (viewType) {
             ViewType.TEXT -> {
-                with (ViewPhotoEditorTextBinding.inflate(layoutInflater)) {
+                with(ViewPhotoEditorTextBinding.inflate(layoutInflater)) {
                     rootView = root
                     tvPhotoEditorText.gravity = Gravity.CENTER
                     if (mDefaultTextTypeface != null) {
@@ -484,12 +484,12 @@ class PhotoEditor private constructor(builder: Builder) :
                 }
             }
             ViewType.IMAGE -> {
-                with (ViewPhotoEditorImageBinding.inflate(layoutInflater)) {
+                with(ViewPhotoEditorImageBinding.inflate(layoutInflater)) {
                     rootView = root
                 }
             }
             ViewType.EMOJI -> {
-                with (ViewPhotoEditorEmojiBinding.inflate(layoutInflater)) {
+                with(ViewPhotoEditorEmojiBinding.inflate(layoutInflater)) {
                     rootView = root
                     TextViewCompat.setAutoSizeTextTypeWithDefaults(
                             tvPhotoEditorEmoji, TextViewCompat.AUTO_SIZE_TEXT_TYPE_UNIFORM)
