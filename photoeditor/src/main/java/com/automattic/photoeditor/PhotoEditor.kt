@@ -25,6 +25,9 @@ import androidx.annotation.RequiresPermission
 import androidx.annotation.UiThread
 import androidx.core.widget.TextViewCompat
 import androidx.emoji.text.EmojiCompat
+import com.automattic.photoeditor.databinding.ViewPhotoEditorEmojiBinding
+import com.automattic.photoeditor.databinding.ViewPhotoEditorImageBinding
+import com.automattic.photoeditor.databinding.ViewPhotoEditorTextBinding
 import com.automattic.photoeditor.gesture.MultiTouchListener
 import com.automattic.photoeditor.gesture.MultiTouchListener.OnMultiTouchListener
 import com.automattic.photoeditor.state.AuthenticationHeadersInterface
@@ -53,8 +56,6 @@ import com.daasuu.mp4compose.filter.GlFilterGroup
 import com.daasuu.mp4compose.filter.GlGifWatermarkFilter
 import com.daasuu.mp4compose.filter.GlWatermarkFilter
 import com.daasuu.mp4compose.filter.ViewPositionInfo
-import kotlinx.android.synthetic.main.view_photo_editor_emoji.view.*
-import kotlinx.android.synthetic.main.view_photo_editor_text.view.*
 import java.io.File
 import java.io.FileInputStream
 import java.lang.ref.WeakReference
@@ -343,7 +344,7 @@ class PhotoEditor private constructor(builder: Builder) :
 
             val multiTouchListenerInstance = getNewMultitouchListener(this) // newMultiTouchListener
             setGestureControlOnMultiTouchListener(this, ViewType.EMOJI, multiTouchListenerInstance)
-            touchableArea.setOnTouchListener(multiTouchListenerInstance)
+            findViewById<View>(R.id.touchableArea)?.setOnTouchListener(multiTouchListenerInstance)
             // setOnTouchListener(multiTouchListenerInstance)
             addViewToParent(this, ViewType.EMOJI)
         }
@@ -392,7 +393,7 @@ class PhotoEditor private constructor(builder: Builder) :
                     if (addTouchListener) {
                         val multiTouchListenerInstance = getNewMultitouchListener(it) // newMultiTouchListener
                         setGestureControlOnMultiTouchListener(it, viewType, multiTouchListenerInstance)
-                        it.touchableArea?.setOnTouchListener(multiTouchListenerInstance)
+                        it.findViewById<TextView>(R.id.touchableArea)?.setOnTouchListener(multiTouchListenerInstance)
                     }
                 }
             }
@@ -446,7 +447,7 @@ class PhotoEditor private constructor(builder: Builder) :
             }
 
             viewType == TEXT -> {
-                val textInputTv = rootView.tvPhotoEditorText
+                val textInputTv = rootView.findViewById<PhotoEditorTextView>(R.id.tvPhotoEditorText)
                 multiTouchListener.setOnGestureControl(object :
                         MultiTouchListener.OnGestureControl {
                     override fun onClick() {
@@ -474,35 +475,37 @@ class PhotoEditor private constructor(builder: Builder) :
         var rootView: View? = null
         when (viewType) {
             ViewType.TEXT -> {
-                rootView = layoutInflater.inflate(R.layout.view_photo_editor_text, null)
-                if (rootView.tvPhotoEditorText != null) {
-                    rootView.tvPhotoEditorText.gravity = Gravity.CENTER
+                with (ViewPhotoEditorTextBinding.inflate(layoutInflater)) {
+                    rootView = root
+                    tvPhotoEditorText.gravity = Gravity.CENTER
                     if (mDefaultTextTypeface != null) {
-                        rootView.tvPhotoEditorText.identifiableTypeface = mDefaultTextTypeface
+                        tvPhotoEditorText.identifiableTypeface = mDefaultTextTypeface
                     }
                 }
             }
-            ViewType.IMAGE -> rootView = layoutInflater.inflate(R.layout.view_photo_editor_image, null)
+            ViewType.IMAGE -> {
+                with (ViewPhotoEditorImageBinding.inflate(layoutInflater)) {
+                    rootView = root
+                }
+            }
             ViewType.EMOJI -> {
-                rootView = layoutInflater.inflate(R.layout.view_photo_editor_emoji, null)
-                val txtTextEmoji = rootView.tvPhotoEditorEmoji
-                if (txtTextEmoji != null) {
+                with (ViewPhotoEditorEmojiBinding.inflate(layoutInflater)) {
+                    rootView = root
                     TextViewCompat.setAutoSizeTextTypeWithDefaults(
-                        txtTextEmoji, TextViewCompat.AUTO_SIZE_TEXT_TYPE_UNIFORM)
+                            tvPhotoEditorEmoji, TextViewCompat.AUTO_SIZE_TEXT_TYPE_UNIFORM)
                     if (mDefaultEmojiTypeface != null) {
-                        txtTextEmoji.typeface = mDefaultEmojiTypeface
+                        tvPhotoEditorEmoji.typeface = mDefaultEmojiTypeface
                     }
-                    txtTextEmoji.gravity = Gravity.CENTER
-                    txtTextEmoji.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+                    tvPhotoEditorEmoji.gravity = Gravity.CENTER
+                    tvPhotoEditorEmoji.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
                 }
             }
         }
 
-        if (rootView != null) {
-            // We are setting tag as ViewType to identify what type of the view it is
-            // when we remove the view from stack i.e onRemoveViewListener(ViewType viewType, int numberOfAddedViews);
-            rootView.tag = viewType
-        }
+        // We are setting tag as ViewType to identify what type of the view it is
+        // when we remove the view from stack i.e onRemoveViewListener(ViewType viewType, int numberOfAddedViews);
+        rootView?.tag = viewType
+
         return rootView
     }
 
