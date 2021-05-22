@@ -23,7 +23,7 @@ class TextColorPickerAdapter internal constructor(private val context: Context, 
     private var selectedPosition = colorPickerColors.indexOf(startColor)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(ColorPickerListItemBinding.inflate(LayoutInflater.from(context)))
+        return ViewHolder(ColorPickerListItemBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -34,7 +34,7 @@ class TextColorPickerAdapter internal constructor(private val context: Context, 
             holder.binding.colorPickerSelectedCheckmarkView.visibility = View.GONE
         } else {
             holder.binding.colorPickerViewActualColor.setBackgroundResource(R.drawable.ic_color_picker_filler)
-            val background = holder.binding.colorPickerSelectedCheckmarkView.background
+            val background = holder.binding.colorPickerViewActualColor.background
             if (background is GradientDrawable) {
                 background.setColor(colorPickerColors[position])
             } else if (background is ColorDrawable) {
