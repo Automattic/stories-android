@@ -21,7 +21,7 @@ import java.util.concurrent.Executors
  * Created by sudamasayuki on 2017/11/15.
  */
 
-class Mp4Composer {
+class Mp4Composer : ComposerInterface {
     private val srcUri: Uri?
     private val destPath: String
     private var filter: GlFilter? = null
@@ -68,7 +68,7 @@ class Mp4Composer {
         return this
     }
 
-    fun filter(filter: GlFilter?): Mp4Composer {
+    override fun filter(filter: GlFilter?): Mp4Composer {
         this.filter = filter
         return this
     }
@@ -78,7 +78,7 @@ class Mp4Composer {
         return this
     }
 
-    fun size(size: Size): Mp4Composer {
+    override fun size(size: Size): Mp4Composer {
         this.outputResolution = size
         return this
     }
@@ -88,7 +88,7 @@ class Mp4Composer {
         return this
     }
 
-    fun mute(mute: Boolean): Mp4Composer {
+    override fun mute(mute: Boolean): Mp4Composer {
         this.mute = mute
         return this
     }
@@ -108,7 +108,7 @@ class Mp4Composer {
         return this
     }
 
-    fun fillMode(fillMode: FillMode): Mp4Composer {
+    override fun fillMode(fillMode: FillMode): Mp4Composer {
         this.fillMode = fillMode
         return this
     }
@@ -119,7 +119,7 @@ class Mp4Composer {
         return this
     }
 
-    fun listener(listener: Listener): Mp4Composer {
+    override fun listener(listener: Listener): Mp4Composer {
         this.listener = listener
         return this
     }
@@ -136,7 +136,7 @@ class Mp4Composer {
         return executorService!!
     }
 
-    fun start(): Mp4Composer {
+    override fun start(): Mp4Composer {
         getExecutorService().execute(Runnable {
             val engine = Mp4ComposerEngine()
 
@@ -263,27 +263,6 @@ class Mp4Composer {
 
     fun cancel() {
         getExecutorService().shutdownNow()
-    }
-
-    interface Listener {
-        /**
-         * Called to notify progress.
-         *
-         * @param progress Progress in [0.0, 1.0] range, or negative value if progress is unknown.
-         */
-        fun onProgress(progress: Double)
-
-        /**
-         * Called when transcode completed.
-         */
-        fun onCompleted()
-
-        /**
-         * Called when transcode canceled.
-         */
-        fun onCanceled()
-
-        fun onFailed(exception: Exception)
     }
 
     private fun initializeUriDataSource(engine: Mp4ComposerEngine) {
