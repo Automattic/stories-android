@@ -47,7 +47,10 @@ import com.automattic.photoeditor.views.filter.CustomEffect
 import com.automattic.photoeditor.views.filter.PhotoFilter
 import com.bumptech.glide.Glide
 import com.daasuu.mp4compose.FillMode
-import com.daasuu.mp4compose.composer.Mp4Composer
+import com.daasuu.mp4compose.composer.ComposerProvider
+import com.daasuu.mp4compose.composer.ComposerUseCase.SaveVideoAsFile
+import com.daasuu.mp4compose.composer.ComposerUseCase.SaveVideoFromBgAsFile
+import com.daasuu.mp4compose.composer.Listener
 import com.daasuu.mp4compose.filter.GlFilter
 import com.daasuu.mp4compose.filter.GlFilterGroup
 import com.daasuu.mp4compose.filter.GlGifWatermarkFilter
@@ -798,9 +801,16 @@ class PhotoEditor private constructor(builder: Builder) :
             }
         }
 
-        Mp4Composer(videoInputPath, videoOutputPath)
-            .with(context)
-            .addedHeaders(authenticationHeadersInterface?.getAuthHeaders(videoInputPath.toString()))
+        val composer = ComposerProvider.getComposerForUseCase(
+                SaveVideoAsFile(
+                        videoInputPath,
+                        videoOutputPath,
+                        context,
+                        authenticationHeadersInterface?.getAuthHeaders(videoInputPath.toString())
+                )
+        )
+
+        composer
 //            .size(width, height)
             // IMPORTANT: as we aim at a WYSIWYG UX, we need to produce a video of size equal to that of the phone
             // screen, given the user may be seeing a letterbox landscape video and placing emoji / text around
@@ -811,7 +821,7 @@ class PhotoEditor private constructor(builder: Builder) :
             .fillMode(FillMode.PRESERVE_ASPECT_FIT)
             .filter(if (customAddedViews.isNotEmpty()) GlFilterGroup(filterCollection) else null)
             .mute(muteAudio)
-            .listener(object : Mp4Composer.Listener {
+            .listener(object : Listener {
                 override fun onProgress(progress: Double) {
                     Log.d(TAG, "onProgress = $progress")
                     onSaveListener.onProgress(progress)
@@ -830,6 +840,10 @@ class PhotoEditor private constructor(builder: Builder) :
                 override fun onFailed(exception: Exception) {
                     Log.e(TAG, "onFailed()", exception)
                     onSaveListener.onFailure(exception)
+                }
+
+                override fun onStart() {
+                    Log.d(TAG, "onStart()")
                 }
             })
             .start()
@@ -957,11 +971,13 @@ class PhotoEditor private constructor(builder: Builder) :
         // take the static background image
         val bmp = createBitmapFromView(parentView.source)
 
-        Mp4Composer(bmp, videoOutputPath)
-            .size(bmp.width, bmp.height) // FIXME check whether these are the right values or not
+        val composer = ComposerProvider.getComposerForUseCase(SaveVideoFromBgAsFile(bmp, videoOutputPath))
+
+        composer
+            .size(Size(bmp.width, bmp.height)) // FIXME check whether these are the right values or not
             .fillMode(FillMode.PRESERVE_ASPECT_FIT)
             .filter(GlFilterGroup(filterCollection))
-            .listener(object : Mp4Composer.Listener {
+            .listener(object : Listener {
                 override fun onProgress(progress: Double) {
                     Log.d(TAG, "onProgress = $progress")
                     // TODO: show progress to user
@@ -981,8 +997,11 @@ class PhotoEditor private constructor(builder: Builder) :
                     Log.e(TAG, "onFailed()", exception)
                     onSaveListener.onFailure(exception)
                 }
-            })
-            .start()
+
+                override fun onStart() {
+                    Log.d(TAG, "onStart()")
+                }
+            }).start()
     }
 
     // TODO to be used in conjunction with mp4composer

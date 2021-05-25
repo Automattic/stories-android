@@ -36,6 +36,9 @@ internal class VideoComposer {
     private var encoderStarted: Boolean = false
     var writtenPresentationTimeUs: Long = 0
         private set
+    // TODO: currently we do not use the timeScale feature. Also the timeScale ends up
+    // being converted into an int in here being a float in upper layers.
+    // See https://github.com/Automattic/stories-android/issues/685 for more context.
     private val timeScale: Int
     private var useStaticBkg: Boolean = false
     private var addedFrameCount = 0
