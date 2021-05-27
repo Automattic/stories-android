@@ -22,9 +22,9 @@ jobs:
       - checkout
       - android/restore-gradle-cache
       - copy-gradle-properties
-      - run:
-          name: Checkstyle
-          command: ./gradlew --stacktrace checkstyle
+        #      - run:
+        #          name: Checkstyle
+        #          command: ./gradlew --stacktrace checkstyle
       - run:
           name: ktlint
           command: ./gradlew --stacktrace ciktlint
