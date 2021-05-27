@@ -15,7 +15,7 @@ commands:
 
 jobs:
   Lint:
-    executor: 
+    executor:
       name: android/default
       api-version: "29"
     steps:
@@ -35,7 +35,7 @@ jobs:
       - android/save-gradle-cache
       - android/save-lint-results
   Unit Tests:
-    executor: 
+    executor:
       name: android/default
       api-version: "29"
     steps:
@@ -48,7 +48,7 @@ jobs:
       - android/save-gradle-cache
       - android/save-test-results
   Installable Build:
-    executor: 
+    executor:
       name: android/default
       api-version: "29"
     steps:
