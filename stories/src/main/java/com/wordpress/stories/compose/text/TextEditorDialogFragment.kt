@@ -105,7 +105,7 @@ class TextEditorDialogFragment : DialogFragment() {
                 textStyleGroupManager.customFontSizeApplied = true
             }
 
-            with (it) {
+            with(it) {
                 initTextColoring()
 
                 it.textAlignmentButton.setOnClickListener {
