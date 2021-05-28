@@ -17,7 +17,6 @@ import com.wordpress.stories.compose.story.StoryViewModel.StoryFrameListUiState
 import com.wordpress.stories.databinding.FragmentStoryFrameItemPlusBinding
 import com.wordpress.stories.databinding.FragmentStoryFrameSelectorBinding
 import com.wordpress.stories.util.getStoryIndexFromIntentOrBundle
-import com.wordpress.stories.viewBinding
 
 interface OnStoryFrameSelectorTappedListener {
     fun onStoryFrameSelected(oldIndex: Int, newIndex: Int)
@@ -28,7 +27,7 @@ interface OnStoryFrameSelectorTappedListener {
 }
 
 class StoryFrameSelectorFragment : Fragment(R.layout.fragment_story_frame_selector) {
-    private val binding by viewBinding(FragmentStoryFrameSelectorBinding::bind)
+    private var binding: FragmentStoryFrameSelectorBinding? = null
     private lateinit var plusIconBinding: FragmentStoryFrameItemPlusBinding
 
     lateinit var storyViewModel: StoryViewModel
@@ -87,17 +86,19 @@ class StoryFrameSelectorFragment : Fragment(R.layout.fragment_story_frame_select
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        plusIconBinding = binding.plusIcon
-        binding.storyFramesView.adapter = StoryFrameSelectorAdapter()
-        // disable animations on selected border visibility changes so users can see the selection
-        // change on the selector immediately
-        (binding.storyFramesView.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
-        plusIconBinding.root.setOnClickListener {
-            storyViewModel.addButtonClicked.call()
+        with(FragmentStoryFrameSelectorBinding.bind(view)) {
+            binding = this
+            plusIconBinding = plusIcon
+            storyFramesView.adapter = StoryFrameSelectorAdapter()
+            // disable animations on selected border visibility changes so users can see the selection
+            // change on the selector immediately
+            (storyFramesView.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
+            plusIconBinding.root.setOnClickListener {
+                storyViewModel.addButtonClicked.call()
+            }
+            setupItemTouchListener()
+            root.visibility = View.INVISIBLE
         }
-        setupItemTouchListener(binding.root)
-        binding.root.visibility = View.INVISIBLE
     }
 
     override fun onAttach(context: Context) {
@@ -108,25 +109,25 @@ class StoryFrameSelectorFragment : Fragment(R.layout.fragment_story_frame_select
     }
 
     private fun updateContentUiState(contentState: StoryFrameListUiState) {
-        (binding.storyFramesView.adapter as StoryFrameSelectorAdapter).addAllItems(contentState.items)
+        (binding?.storyFramesView?.adapter as StoryFrameSelectorAdapter).addAllItems(contentState.items)
     }
 
     private fun updateContentUiStateSelection(oldSelection: Int, newSelection: Int) {
-        (binding.storyFramesView.adapter as StoryFrameSelectorAdapter)
+        (binding?.storyFramesView?.adapter as StoryFrameSelectorAdapter)
             .updateContentUiStateSelection(oldSelection, newSelection)
     }
 
     private fun updateContentUiStateMovedIndex(oldPosition: Int, newPosition: Int) {
-        (binding.storyFramesView.adapter as StoryFrameSelectorAdapter)
+        (binding?.storyFramesView?.adapter as StoryFrameSelectorAdapter)
             .updateContentUiStateMovedIndex(oldPosition, newPosition)
     }
 
     private fun updateContentUiStateItem(position: Int) {
-        (binding.storyFramesView.adapter as StoryFrameSelectorAdapter)
+        (binding?.storyFramesView?.adapter as StoryFrameSelectorAdapter)
             .updateContentUiStateItem(position)
     }
 
-    private fun setupItemTouchListener(view: View) {
+    private fun FragmentStoryFrameSelectorBinding.setupItemTouchListener() {
         val itemTouchCallback = object : ItemTouchHelper.SimpleCallback(
             ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT, 0
         ) {
@@ -186,15 +187,15 @@ class StoryFrameSelectorFragment : Fragment(R.layout.fragment_story_frame_select
         }
 
         val itemTouchHelper = ItemTouchHelper(itemTouchCallback)
-        itemTouchHelper.attachToRecyclerView(binding.storyFramesView)
+        itemTouchHelper.attachToRecyclerView(storyFramesView)
     }
 
     fun show() {
-        binding.root.visibility = View.VISIBLE
+        binding?.root?.visibility = View.VISIBLE
     }
 
     fun hide() {
-        binding.root.visibility = View.INVISIBLE
+        binding?.root?.visibility = View.INVISIBLE
     }
 
     fun hideAddFrameControl() {
@@ -206,11 +207,16 @@ class StoryFrameSelectorFragment : Fragment(R.layout.fragment_story_frame_select
     }
 
     fun setBottomOffset(offset: Int) {
-        val params = binding.root.layoutParams as ConstraintLayout.LayoutParams
+        val params = binding?.root?.layoutParams as ConstraintLayout.LayoutParams
         val hasChanged = params.bottomMargin != offset
         if (hasChanged) {
             params.bottomMargin = offset
-            binding.root.requestLayout()
+            binding?.root?.requestLayout()
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
     }
 }
