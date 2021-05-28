@@ -21,7 +21,6 @@ class SaveButton @JvmOverloads constructor(
 
     init {
         binding = ContentSaveButtonBinding.inflate(LayoutInflater.from(context))
-//        val view = View.inflate(context, R.layout.content_save_button, null)
         addView(binding?.root)
         setSaving(false)
     }
