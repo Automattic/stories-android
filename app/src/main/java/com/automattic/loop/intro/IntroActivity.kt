@@ -11,7 +11,7 @@ import com.automattic.loop.MainActivity
 import com.automattic.loop.R
 import com.automattic.loop.databinding.ActivityIntroBinding
 import com.automattic.photoeditor.util.PermissionUtils
-import com.wordpress.stories.viewBinding
+import com.automattic.loop.bindinghelpers.viewBinding
 
 class IntroActivity : AppCompatActivity(), IntroFragment.OnFragmentInteractionListener,
     PermissionRequestFragment.OnFragmentInteractionListener {

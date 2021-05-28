@@ -7,7 +7,7 @@ import com.automattic.loop.R
 import com.automattic.loop.databinding.IntroTemplateViewBinding
 import com.automattic.loop.util.INVALID_RESOURCE_ID
 import com.bumptech.glide.Glide
-import com.wordpress.stories.viewBinding
+import com.automattic.loop.bindinghelpers.viewBinding
 
 class IntroPagerFragment : Fragment(R.layout.intro_template_view) {
     private val binding by viewBinding(IntroTemplateViewBinding::bind)

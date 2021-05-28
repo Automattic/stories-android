@@ -6,7 +6,7 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import com.automattic.loop.R
 import com.automattic.loop.databinding.FragmentIntroBinding
-import com.wordpress.stories.viewBinding
+import com.automattic.loop.bindinghelpers.viewBinding
 
 class IntroFragment : Fragment(R.layout.fragment_intro) {
     interface OnFragmentInteractionListener {

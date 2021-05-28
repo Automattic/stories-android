@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.Navigation
 import com.automattic.loop.StoryComposerActivity.Companion.KEY_EXAMPLE_METADATA
 import com.automattic.loop.StoryComposerActivity.Companion.KEY_STORY_INDEX
+import com.automattic.loop.bindinghelpers.viewBinding
 import com.automattic.loop.databinding.ActivityMainBinding
 import com.automattic.loop.intro.IntroActivity
 import com.automattic.loop.photopicker.PhotoPickerActivity
@@ -20,7 +21,6 @@ import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveProcessStart
 import com.wordpress.stories.compose.frame.StorySaveEvents.StorySaveResult
 import com.wordpress.stories.compose.story.StoryRepository
 import com.wordpress.stories.util.KEY_STORY_SAVE_RESULT
-import com.wordpress.stories.viewBinding
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode

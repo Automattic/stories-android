@@ -26,7 +26,7 @@ import com.automattic.loop.databinding.PhotoPickerActivityBinding;
 import com.automattic.loop.databinding.ToolbarBinding;
 import com.automattic.loop.photopicker.utils.CameraIntentUtils;
 import com.automattic.loop.util.WPMediaUtils;
-import com.wordpress.stories.ViewBindingActivity;
+import com.automattic.loop.bindinghelpers.ViewBindingActivity;
 
 import java.io.File;
 import java.util.Collections;

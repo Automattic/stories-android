@@ -1,4 +1,4 @@
-package com.wordpress.stories
+package com.automattic.loop.bindinghelpers
 
 import android.view.LayoutInflater
 import androidx.appcompat.app.AppCompatActivity

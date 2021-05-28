@@ -27,7 +27,7 @@ import com.automattic.loop.R;
 import com.automattic.loop.databinding.PhotoPickerFragmentBinding;
 import com.automattic.loop.photopicker.PhotoPickerAdapter.PhotoPickerAdapterListener;
 import com.automattic.loop.photopicker.utils.AniUtils;
-import com.wordpress.stories.ViewBindingFragment;
+import com.automattic.loop.bindinghelpers.ViewBindingFragment;
 
 import java.util.ArrayList;
 import java.util.List;
