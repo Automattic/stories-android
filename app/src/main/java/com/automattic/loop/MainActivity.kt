@@ -8,7 +8,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.Navigation
 import com.automattic.loop.StoryComposerActivity.Companion.KEY_EXAMPLE_METADATA
 import com.automattic.loop.StoryComposerActivity.Companion.KEY_STORY_INDEX
-import com.automattic.loop.bindinghelpers.viewBinding
 import com.automattic.loop.databinding.ActivityMainBinding
 import com.automattic.loop.intro.IntroActivity
 import com.automattic.loop.photopicker.PhotoPickerActivity
@@ -26,7 +25,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
 class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionListener {
-    private val binding by viewBinding(ActivityMainBinding::inflate)
+    private var binding: ActivityMainBinding? = null
 
     override fun onFragmentInteraction(uri: Uri) {
         // TODO: change OnFragmentInteractionListener for something relevant to our needs
@@ -34,25 +33,21 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        setSupportActionBar(binding.toolbar)
         EventBus.getDefault().register(this)
 
-        binding.root.setOnApplyWindowInsetsListener { view, insets ->
-            // remember the insetTop as margin to all controls appearing at the top of the screen for full screen
-            // screens (i.e. ComposeLoopFrameActivity)
-            (application as Loop).setStatusBarHeight(insets.systemWindowInsetTop)
-            view.onApplyWindowInsets(insets)
-        }
+        with(ActivityMainBinding.inflate(layoutInflater)) {
+            binding = this
+            setContentView(root)
+            setSupportActionBar(toolbar)
+            root.setOnApplyWindowInsetsListener { view, insets ->
+                // remember the insetTop as margin to all controls appearing at the top of the screen for full screen
+                // screens (i.e. ComposeLoopFrameActivity)
+                (application as Loop).setStatusBarHeight(insets.systemWindowInsetTop)
+                view.onApplyWindowInsets(insets)
+            }
 
-        if (AppPrefs.isIntroRequired() || !PermissionUtils.allRequiredPermissionsGranted(this)) {
-            startActivity(Intent(this, IntroActivity::class.java))
-            finish()
-        }
-
-        binding.fab.run {
-            setOnClickListener {
-                isEnabled = false
+            fab.setOnClickListener {
+                fab.isEnabled = false
                 // NOTE: we want to start with camera capture mode in this demo app, so we pass the
                 // bundle with the corresponding parameter.
                 // If we had URIs to start the composer already populated with them, we'd use
@@ -60,14 +55,19 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
                 val bundle = Bundle()
                 bundle.putBoolean(PhotoPickerActivity.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED, true)
                 Navigation.findNavController(this@MainActivity, R.id.nav_host_fragment)
-                    .navigate(R.id.action_mainFragment_to_composeLoopFrameActivity, bundle)
+                        .navigate(R.id.action_mainFragment_to_composeLoopFrameActivity, bundle)
             }
+        }
+
+        if (AppPrefs.isIntroRequired() || !PermissionUtils.allRequiredPermissionsGranted(this)) {
+            startActivity(Intent(this, IntroActivity::class.java))
+            finish()
         }
     }
 
     override fun onResume() {
         super.onResume()
-        binding.fab.isEnabled = true
+        binding?.fab?.isEnabled = true
     }
 
     override fun onSupportNavigateUp() =
