@@ -13,7 +13,6 @@ import com.automattic.photoeditor.util.PermissionUtils
 
 class IntroActivity : AppCompatActivity(), IntroFragment.OnFragmentInteractionListener,
     PermissionRequestFragment.OnFragmentInteractionListener {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
