@@ -7,36 +7,33 @@ import com.automattic.loop.R
 import com.automattic.loop.databinding.IntroTitleTemplateViewBinding
 import com.automattic.loop.util.INVALID_RESOURCE_ID
 import com.bumptech.glide.Glide
-import com.automattic.loop.bindinghelpers.viewBinding
 
 class IntroPagerTitleFragment : Fragment(R.layout.intro_title_template_view) {
-    private val binding by viewBinding(IntroTitleTemplateViewBinding::bind)
-
-    private var titleText: Int = INVALID_RESOURCE_ID
-    private var promoText: Int = INVALID_RESOURCE_ID
-    private var backgroundImage: Int = INVALID_RESOURCE_ID
+    private var titleTextRes: Int = INVALID_RESOURCE_ID
+    private var promoTextRes: Int = INVALID_RESOURCE_ID
+    private var backgroundImageRes: Int = INVALID_RESOURCE_ID
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
-            titleText = it.getInt(KEY_TITLE_TEXT)
-            promoText = it.getInt(KEY_PROMO_TEXT)
-            backgroundImage = it.getInt(KEY_BACKGROUND_IMAGE)
+            titleTextRes = it.getInt(KEY_TITLE_TEXT)
+            promoTextRes = it.getInt(KEY_PROMO_TEXT)
+            backgroundImageRes = it.getInt(KEY_BACKGROUND_IMAGE)
         }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        with(view) {
-            Glide.with(context)
-                .load(backgroundImage)
-                .into(binding.backgroundImage)
-        }
+        with(IntroTitleTemplateViewBinding.bind(view)){
+            Glide.with(view.context)
+                    .load(backgroundImageRes)
+                    .into(backgroundImage)
 
-        binding.titleText.setText(titleText)
-        binding.promoText.setText(promoText)
+            titleText.setText(titleTextRes)
+            promoText.setText(promoTextRes)
+        }
     }
 
     companion object {
