@@ -26,7 +26,7 @@ class IntroPagerTitleFragment : Fragment(R.layout.intro_title_template_view) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        with(IntroTitleTemplateViewBinding.bind(view)){
+        with(IntroTitleTemplateViewBinding.bind(view)) {
             Glide.with(view.context)
                     .load(backgroundImageRes)
                     .into(backgroundImage)
