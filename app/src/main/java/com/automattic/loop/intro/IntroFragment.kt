@@ -7,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.automattic.loop.R.layout
-import kotlinx.android.synthetic.main.fragment_intro.*
+import com.automattic.loop.databinding.FragmentIntroBinding
 
 class IntroFragment : Fragment() {
     interface OnFragmentInteractionListener {
@@ -23,14 +23,16 @@ class IntroFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        get_started_button.setOnClickListener {
-            listener?.onGetStartedPressed()
+        with(FragmentIntroBinding.bind(view)) {
+            getStartedButton.setOnClickListener {
+                listener?.onGetStartedPressed()
+            }
+
+            introPager.adapter = IntroPagerAdapter(childFragmentManager)
+
+            // Using a TabLayout for simulating a page indicator strip
+            tabLayoutIndicator.setupWithViewPager(introPager, true)
         }
-
-        intro_pager.adapter = IntroPagerAdapter(childFragmentManager)
-
-        // Using a TabLayout for simulating a page indicator strip
-        tab_layout_indicator.setupWithViewPager(intro_pager, true)
     }
 
     override fun onAttach(context: Context) {
