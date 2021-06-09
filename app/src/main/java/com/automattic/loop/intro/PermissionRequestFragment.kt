@@ -7,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.automattic.loop.R
-import kotlinx.android.synthetic.main.fragment_permission.*
+import com.automattic.loop.databinding.FragmentPermissionBinding
 
 class PermissionRequestFragment : Fragment() {
     interface OnFragmentInteractionListener {
@@ -22,9 +22,10 @@ class PermissionRequestFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        turn_on_permissions_button.setOnClickListener {
-            listener?.onTurnOnPermissionsPressed()
+        with(FragmentPermissionBinding.bind(view)) {
+            turnOnPermissionsButton.setOnClickListener {
+                listener?.onTurnOnPermissionsPressed()
+            }
         }
     }
 
