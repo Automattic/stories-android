@@ -345,6 +345,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         super.onCreate(savedInstanceState)
         val activityComposerBinding = ActivityComposerBinding.inflate(layoutInflater)
         setContentView(activityComposerBinding.root)
+        binding = ContentComposerBinding.bind(activityComposerBinding.root.findViewById(R.id.content_composer_layout))
         EventBus.getDefault().register(this)
 
         topControlsBaseTopMargin = getLayoutTopMarginBeforeInset(binding.closeButton.layoutParams)
@@ -362,7 +363,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             screenSizeRatio = getSizeRatio(screenWidth, screenHeight)
             binding.deleteView.addBottomOffset(bottomNavigationBarMargin)
             binding.deleteSlideView.addBottomOffset(bottomNavigationBarMargin)
-            (binding.bottomStripView as StoryFrameSelectorFragment).setBottomOffset(bottomNavigationBarMargin)
+            getBottomStripFragment().setBottomOffset(bottomNavigationBarMargin)
             insets
         }
 
@@ -1649,14 +1650,14 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun hideStoryFrameSelector() {
-        (binding.bottomStripView as StoryFrameSelectorFragment).hide()
+        getBottomStripFragment().hide()
         binding.bottomOpaqueBar.visibility = View.INVISIBLE
     }
 
     private fun showStoryFrameSelector() {
         setOpaqueBarHeight()
         showOpaqueBarIfNeeded()
-        (binding.bottomStripView as StoryFrameSelectorFragment).show()
+        getBottomStripFragment().show()
     }
 
     private fun hideEditModeUIControls() {
@@ -1718,21 +1719,21 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 binding.editModeControls.visibility = View.INVISIBLE
                 binding.soundButton.visibility = View.INVISIBLE
                 binding.nextButton.isEnabled = true
-                (binding.bottomStripView as StoryFrameSelectorFragment).hideAddFrameControl()
+                getBottomStripFragment().hideAddFrameControl()
             }
             currentlyErrored -> {
                 blockTouchOnPhotoEditor(BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION)
                 binding.editModeControls.visibility = View.INVISIBLE
                 binding.soundButton.visibility = View.INVISIBLE
                 binding.nextButton.isEnabled = false
-                (binding.bottomStripView as StoryFrameSelectorFragment).hideAddFrameControl()
+                getBottomStripFragment().hideAddFrameControl()
             }
             else -> { // no errors here! this is the normal creation situation: release touch block, enable editing
                 releaseTouchOnPhotoEditor(BLOCK_TOUCH_MODE_NONE)
                 binding.editModeControls.visibility = View.VISIBLE
                 updateSoundControl()
                 binding.nextButton.isEnabled = true
-                (binding.bottomStripView as StoryFrameSelectorFragment).showAddFrameControl()
+                getBottomStripFragment().showAddFrameControl()
             }
         }
     }
@@ -2326,6 +2327,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     fun setGenericAnnouncementDialogProvider(provider: GenericAnnouncementDialogProvider) {
         genericAnnouncementDialogProvider = provider
+    }
+
+    private fun getBottomStripFragment(): StoryFrameSelectorFragment {
+        return supportFragmentManager.findFragmentById(R.id.bottom_strip_view) as StoryFrameSelectorFragment
     }
 
     class ExternalMediaPickerRequestCodesAndExtraKeys {
