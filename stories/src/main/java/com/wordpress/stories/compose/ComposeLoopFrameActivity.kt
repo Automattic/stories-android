@@ -117,6 +117,7 @@ import com.wordpress.stories.compose.story.StoryViewModelFactory
 import com.wordpress.stories.compose.text.TextEditorDialogFragment
 import com.wordpress.stories.compose.text.TextStyleGroupManager
 import com.wordpress.stories.databinding.ActivityComposerBinding
+import com.wordpress.stories.databinding.ContentComposerBinding
 import com.wordpress.stories.util.KEY_STORY_EDIT_MODE
 import com.wordpress.stories.util.KEY_STORY_SAVE_RESULT
 import com.wordpress.stories.util.STATE_KEY_CURRENT_STORY_INDEX
@@ -129,7 +130,6 @@ import com.wordpress.stories.util.isAspectRatioSimilarByPercentage
 import com.wordpress.stories.util.isScreenTallerThan916
 import com.wordpress.stories.util.isVideo
 import com.wordpress.stories.util.normalizeSizeExportTo916
-import kotlinx.android.synthetic.main.content_composer.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -207,6 +207,7 @@ interface StoryDiscardListener {
 }
 
 abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTappedListener {
+    private lateinit var binding: ContentComposerBinding
     private lateinit var photoEditor: PhotoEditor
     private lateinit var backgroundSurfaceManager: BackgroundSurfaceManager
     private var currentOriginalCapturedFile: File? = null
@@ -323,11 +324,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     private fun calculateWorkingArea(): Rect {
         val location = IntArray(2)
-        photoEditorView.getLocationOnScreen(location)
+        binding.photoEditorView.getLocationOnScreen(location)
         val xCoord = location[0]
         val yCoord = location[1]
-        val width = photoEditorView.measuredWidth
-        val height = photoEditorView.measuredHeight
+        val width = binding.photoEditorView.measuredWidth
+        val height = binding.photoEditorView.measuredHeight
 
         val bottomAreaHeight = resources.getDimensionPixelSize(R.dimen.bottom_strip_height) + bottomNavigationBarMargin
         val topAreaHeight = resources.getDimensionPixelSize(R.dimen.edit_mode_button_size)
@@ -346,22 +347,22 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         setContentView(activityComposerBinding.root)
         EventBus.getDefault().register(this)
 
-        topControlsBaseTopMargin = getLayoutTopMarginBeforeInset(close_button.layoutParams)
-        nextButtonBaseTopMargin = getLayoutTopMarginBeforeInset(next_button.layoutParams)
+        topControlsBaseTopMargin = getLayoutTopMarginBeforeInset(binding.closeButton.layoutParams)
+        nextButtonBaseTopMargin = getLayoutTopMarginBeforeInset(binding.nextButton.layoutParams)
         ViewCompat.setOnApplyWindowInsetsListener(activityComposerBinding.composeLoopFrameLayout) { _, insets ->
             // set insetTop as margin to all controls appearing at the top of the screen
-            addInsetTopMargin(next_button.layoutParams, nextButtonBaseTopMargin, insets.systemWindowInsetTop)
-            addInsetTopMargin(close_button.layoutParams, topControlsBaseTopMargin, insets.systemWindowInsetTop)
-            addInsetTopMargin(control_flash_group.layoutParams, topControlsBaseTopMargin, insets.systemWindowInsetTop)
+            addInsetTopMargin(binding.nextButton.layoutParams, nextButtonBaseTopMargin, insets.systemWindowInsetTop)
+            addInsetTopMargin(binding.closeButton.layoutParams, topControlsBaseTopMargin, insets.systemWindowInsetTop)
+            addInsetTopMargin(binding.controlFlashGroup.layoutParams, topControlsBaseTopMargin, insets.systemWindowInsetTop)
             bottomNavigationBarMargin = insets.systemWindowInsetBottom
             workingAreaRect = calculateWorkingArea()
             photoEditor.updateWorkAreaRect(workingAreaRect)
             bottomOpaqueBarHeight = preCalculateOpaqueBarHeight()
             setOpaqueBarHeight()
             screenSizeRatio = getSizeRatio(screenWidth, screenHeight)
-            delete_view.addBottomOffset(bottomNavigationBarMargin)
-            delete_slide_view.addBottomOffset(bottomNavigationBarMargin)
-            (bottom_strip_view as StoryFrameSelectorFragment).setBottomOffset(bottomNavigationBarMargin)
+            binding.deleteView.addBottomOffset(bottomNavigationBarMargin)
+            binding.deleteSlideView.addBottomOffset(bottomNavigationBarMargin)
+            (binding.bottomStripView as StoryFrameSelectorFragment).setBottomOffset(bottomNavigationBarMargin)
             insets
         }
 
@@ -375,9 +376,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         TextStyleGroupManager.preloadFonts(this)
 
         workingAreaRect = calculateWorkingArea()
-        photoEditor = PhotoEditor.Builder(this, photoEditorView)
+        photoEditor = PhotoEditor.Builder(this, binding.photoEditorView)
             .setPinchTextScalable(true) // set flag to make text scalable when pinch
-            .setDeleteView(delete_view)
+            .setDeleteView(binding.deleteView)
             .setWorkAreaRect(workingAreaRect)
             .setAuthenticatitonHeaderInterface(authHeaderInterfaceBridge)
             .build() // build photo editor sdk
@@ -430,7 +431,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             }
 
             override fun onRemoveViewListener(viewType: ViewType, numberOfAddedViews: Int) {
-                next_button.visibility = View.VISIBLE
+                binding.nextButton.visibility = View.VISIBLE
             }
 
             override fun onStartViewChangeListener(viewType: ViewType) {
@@ -450,7 +451,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             }
 
             override fun onRemoveViewReadyListener(removedView: View, ready: Boolean) {
-                delete_view.setReadyForDelete(ready)
+                binding.deleteView.setReadyForDelete(ready)
             }
 
             override fun getWorkingAreaRect(): Rect? {
@@ -467,16 +468,16 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         backgroundSurfaceManager = BackgroundSurfaceManager(
             savedInstanceState,
             lifecycle,
-            photoEditorView,
+                binding.photoEditorView,
             supportFragmentManager,
             object : FlashSupportChangeListener {
                 override fun onFlashSupportChanged(isSupported: Boolean) {
                     if (isSupported) {
-                        camera_flash_button.visibility = View.VISIBLE
-                        label_flash.visibility = View.VISIBLE
+                        binding.cameraFlashButton.visibility = View.VISIBLE
+                        binding.labelFlash.visibility = View.VISIBLE
                     } else {
-                        camera_flash_button.visibility = View.INVISIBLE
-                        label_flash.visibility = View.INVISIBLE
+                        binding.cameraFlashButton.visibility = View.INVISIBLE
+                        binding.labelFlash.visibility = View.INVISIBLE
                     }
                 }
             },
@@ -543,7 +544,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         setupStoryViewModelObservers()
 
         if (intent.getBooleanExtra(KEY_STORY_EDIT_MODE, false)) {
-            next_button.buttonMode = DONE
+            binding.nextButton.buttonMode = DONE
         }
 
         if (savedInstanceState != null) {
@@ -573,8 +574,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // We used to obtain the screen dimensions by querying resources.displayMetrics but this value is the
         // actual screen size minus the navigation bar height i.e. on a Pixel device we'd get 1794 instead of 1920.
         // Given ComposeLoopFrameActivity is full screen, we can rely on the measuredHeight calculation instead.
-        screenWidth = photoEditorView.source.measuredWidth
-        screenHeight = photoEditorView.source.measuredHeight
+        screenWidth = binding.photoEditorView.source.measuredWidth
+        screenHeight = binding.photoEditorView.source.measuredHeight
         normalizedSize = normalizeSizeExportTo916(screenWidth, screenHeight).toSize()
         if (isScreenTallerThan916(screenWidth, screenHeight)) {
             return (screenHeight - normalizedSize.height)
@@ -585,15 +586,15 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     private fun setOpaqueBarHeight() {
         if (bottomOpaqueBarHeight > 0) {
-            bottom_opaque_bar.layoutParams.height = bottomOpaqueBarHeight
+            binding.bottomOpaqueBar.layoutParams.height = bottomOpaqueBarHeight
         }
     }
 
     private fun showOpaqueBarIfNeeded() {
         if (bottomOpaqueBarHeight > 0) {
-            bottom_opaque_bar.visibility = View.VISIBLE
+            binding.bottomOpaqueBar.visibility = View.VISIBLE
         } else {
-            bottom_opaque_bar.visibility = View.GONE
+            binding.bottomOpaqueBar.visibility = View.GONE
         }
     }
 
@@ -663,8 +664,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private fun prepareErrorScreen(storySaveResult: StorySaveResult) {
         // disable the Publish button - need to pass a postDelayed given it somehow doesn't play well right on start
         // being shown
-        next_button.postDelayed({
-            next_button.isEnabled = false
+        binding.nextButton.postDelayed({
+            binding.nextButton.isEnabled = false
         }, 500)
 
         val errors = storySaveResult.frameSaveResult.filter { it.resultReason is SaveError }
@@ -774,7 +775,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     override fun onDestroy() {
-        photoEditorView.onComposerDestroyed()
+        binding.photoEditorView.onComposerDestroyed()
         doUnbindService()
         EventBus.getDefault().unregister(this)
         super.onDestroy()
@@ -789,7 +790,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         super.onResume()
         // Before setting full screen flags, we must wait a bit to let UI settle; otherwise, we may
         // be trying to set app to immersive mode before it's ready and the flags do not stick
-        photoEditorView.postDelayed({
+        binding.photoEditorView.postDelayed({
             hideStatusBar(window)
             workingAreaRect = calculateWorkingArea()
             photoEditor.updateWorkAreaRect(workingAreaRect)
@@ -838,7 +839,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     override fun onBackPressed() {
         if (!backgroundSurfaceManager.cameraVisible()) {
-            close_button.performClick()
+            binding.closeButton.performClick()
         } else if (storyViewModel.getCurrentStorySize() > 0) {
             showCurrentSelectedFrame()
         } else {
@@ -925,7 +926,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun addClickListeners() {
-        camera_capture_button
+        binding.cameraCaptureButton
             .setOnTouchListener(
                 PressAndHoldGestureHelper(
                     PressAndHoldGestureHelper.CLICK_LENGTH,
@@ -974,7 +975,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                             }
                             // when the wait to see whether this is a "press and hold" gesture starts,
                             // start the animation to grow the capture button radius
-                            camera_capture_button
+                            binding.cameraCaptureButton
                                 .animate()
                                 .scaleXBy(0.3f) // scale up by 30%
                                 .scaleYBy(0.3f)
@@ -987,8 +988,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                             }
                             // when gesture detection ends, we're good to
                             // get the capture button shape as it originally was (idle state)
-                            camera_capture_button.clearAnimation()
-                            camera_capture_button
+                            binding.cameraCaptureButton.clearAnimation()
+                            binding.cameraCaptureButton
                                 .animate()
                                 .scaleX(1.0f)
                                 .scaleY(1.0f)
@@ -997,25 +998,25 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     })
             )
 
-        container_gallery_upload.setOnClickListener {
+        binding.containerGalleryUpload.setOnClickListener {
             showMediaPicker()
         }
 
-        camera_flip_group.setOnClickListener {
+        binding.cameraFlipGroup.setOnClickListener {
             cameraSelection = backgroundSurfaceManager.flipCamera()
             saveCameraSelectionPref()
         }
 
         // attach listener a bit delayed as we need to have cameraBasicHandling created first
-        photoEditorView.postDelayed({
-            camera_flash_group.setAllOnClickListener(OnClickListener {
+        binding.photoEditorView.postDelayed({
+            binding.cameraFlashGroup.setAllOnClickListener(OnClickListener {
                 flashModeSelection = backgroundSurfaceManager.switchFlashState()
                 updateFlashModeSelectionIcon()
                 saveFlashModeSelectionPref()
             })
         }, SURFACE_MANAGER_READY_LAUNCH_DELAY)
 
-        close_button.setOnClickListener {
+        binding.closeButton.setOnClickListener {
             when {
                 backgroundSurfaceManager.cameraVisible() -> {
                     onBackPressed()
@@ -1047,16 +1048,16 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             }
         }
 
-        sound_button.setOnClickListener {
+        binding.soundButton.setOnClickListener {
             // flip the flag on audio muted on the VM, the change will get propagated to the UI
             storyViewModel.flipCurrentSelectedFrameOnAudioMuted()
         }
 
-        text_add_button.setOnClickListener {
+        binding.textAddButton.setOnClickListener {
             addNewText()
         }
 
-        stickers_add_button.setOnClickListener {
+        binding.stickersAddButton.setOnClickListener {
             // avoid multiple clicks when the one click is already being processed, fixes
             // https://github.com/Automattic/stories-android/issues/455
             if (!emojiPickerFragment.isAdded && !emojiPickerFragment.isVisible) {
@@ -1064,18 +1065,18 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             }
         }
 
-        next_button.setOnClickListener {
+        binding.nextButton.setOnClickListener {
             prepublishingEventProvider?.onStorySaveButtonPressed()
         }
 
-        retry_button.setOnClickListener {
+        binding.retryButton.setOnClickListener {
             // trigger the Service again, for this frame only
             storyFrameIndexToRetry = storyViewModel.getSelectedFrameIndex()
-            retry_button.setSaving(true)
+            binding.retryButton.setSaving(true)
             saveStory()
         }
 
-        delete_slide_view.setOnClickListener {
+        binding.deleteSlideView.setOnClickListener {
             var messageToUse = getString(R.string.dialog_discard_page_message)
             if (storyViewModel.getSelectedFrame()?.saveResultReason != SaveSuccess) {
                 messageToUse = getString(R.string.dialog_discard_errored_page_message)
@@ -1176,8 +1177,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // disable layout change animations, we need this to make added views immediately visible, otherwise
         // we may end up capturing a Bitmap of a backing drawable that still has not been updated
         // (i.e. no visible added Views)
-        transition = photoEditorView.getLayoutTransition()
-        photoEditorView.layoutTransition = null
+        transition = binding.photoEditorView.getLayoutTransition()
+        binding.photoEditorView.layoutTransition = null
         preHookRun = true
     }
 
@@ -1193,11 +1194,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private fun saveStoryPostHook(result: StorySaveResult) {
         doUnbindService()
         // re-enable layout change animations
-        photoEditorView.layoutTransition = transition
+        binding.photoEditorView.layoutTransition = transition
 
         // do this if we are retrying to save the current frame
         if (storyFrameIndexToRetry != StoryRepository.DEFAULT_NONE_SELECTED) {
-            retry_button.showSavedAnimation(Runnable {
+            binding.retryButton.showSavedAnimation(Runnable {
                 if (result.isSuccess()) {
                     hideRetryButton()
                 } else {
@@ -1223,16 +1224,16 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun hideRetryButton() {
-        retry_button.visibility = View.GONE
+        binding.retryButton.visibility = View.GONE
         // we need this force call given some timing issue when resetting the layout
-        retry_button.invalidate()
+        binding.retryButton.invalidate()
     }
 
     private fun showRetryButton() {
-        retry_button.setSaving(false)
-        retry_button.visibility = View.VISIBLE
+        binding.retryButton.setSaving(false)
+        binding.retryButton.visibility = View.VISIBLE
         // we need this force call given some timing issue when resetting the layout
-        retry_button.invalidate()
+        binding.retryButton.invalidate()
     }
 
     private fun refreshStoryFrameSelection() {
@@ -1367,18 +1368,18 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         }
 
         cameraOperationInCourse = true
-        camera_capture_button.startProgressingAnimation(CAMERA_STILL_PICTURE_ANIM_MS)
+        binding.cameraCaptureButton.startProgressingAnimation(CAMERA_STILL_PICTURE_ANIM_MS)
         backgroundSurfaceManager.takePicture(object : ImageCaptureListener {
             override fun onImageSaved(file: File) {
                 runOnUiThread {
                     Glide.with(this@ComposeLoopFrameActivity)
                         .load(file)
                         .transform(CenterCrop(), RoundedCorners(16))
-                        .into(gallery_upload_img)
+                        .into(binding.galleryUploadImg)
                     Glide.with(this@ComposeLoopFrameActivity)
                         .load(file)
                         .transform(CenterCrop())
-                        .into(photoEditorView.source)
+                        .into(binding.photoEditorView.source)
                     storyViewModel.apply {
                         addStoryFrameItemToCurrentStory(
                             StoryFrameItem(FileBackgroundSource(file = file), frameItemType = StoryFrameItemType.IMAGE)
@@ -1420,7 +1421,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         // force stop recording video after maximum time limit reached
         timesUpHandler.postDelayed(timesUpRunnable, CAMERA_VIDEO_RECORD_MAX_LENGTH_MS)
         // strat progressing animation
-        camera_capture_button.startProgressingAnimation(CAMERA_VIDEO_RECORD_MAX_LENGTH_MS)
+        binding.cameraCaptureButton.startProgressingAnimation(CAMERA_VIDEO_RECORD_MAX_LENGTH_MS)
         backgroundSurfaceManager.startRecordingVideo(object : VideoRecorderFinished {
             override fun onVideoSaved(file: File?) {
                 currentOriginalCapturedFile = file
@@ -1469,9 +1470,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         }
 
         if (backgroundSurfaceManager.cameraRecording()) {
-            camera_capture_button.stopProgressingAnimation()
-            camera_capture_button.clearAnimation()
-            camera_capture_button
+            binding.cameraCaptureButton.stopProgressingAnimation()
+            binding.cameraCaptureButton.clearAnimation()
+            binding.cameraCaptureButton
                 .animate()
                 .scaleX(1.0f)
                 .scaleY(1.0f)
@@ -1618,54 +1619,54 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun hideVideoUIControls() {
-        camera_flash_button.visibility = View.INVISIBLE
-        label_flash.visibility = View.INVISIBLE
+        binding.cameraFlashButton.visibility = View.INVISIBLE
+        binding.labelFlash.visibility = View.INVISIBLE
 
-        camera_flip_group.visibility = View.INVISIBLE
+        binding.cameraFlipGroup.visibility = View.INVISIBLE
 
-        container_gallery_upload.visibility = View.INVISIBLE
+        binding.containerGalleryUpload.visibility = View.INVISIBLE
     }
 
     private fun showVideoUIControls() {
-        camera_flash_button.visibility = View.VISIBLE
-        label_flash.visibility = View.VISIBLE
+        binding.cameraFlashButton.visibility = View.VISIBLE
+        binding.labelFlash.visibility = View.VISIBLE
 
-        camera_flip_group.visibility = View.VISIBLE
+        binding.cameraFlipGroup.visibility = View.VISIBLE
 
-        container_gallery_upload.visibility = View.VISIBLE
+        binding.containerGalleryUpload.visibility = View.VISIBLE
     }
 
     private fun showEditModeUIControls() {
         // hide capturing mode controls
         hideVideoUIControls()
-        camera_capture_button.visibility = View.INVISIBLE
+        binding.cameraCaptureButton.visibility = View.INVISIBLE
 
         // show proper edit mode controls
         updateEditMode()
-        next_button.visibility = View.VISIBLE
-        close_button.visibility = View.VISIBLE
-        delete_slide_view.visibility = View.GONE
+        binding.nextButton.visibility = View.VISIBLE
+        binding.closeButton.visibility = View.VISIBLE
+        binding.deleteSlideView.visibility = View.GONE
     }
 
     private fun hideStoryFrameSelector() {
-        (bottom_strip_view as StoryFrameSelectorFragment).hide()
-        bottom_opaque_bar.visibility = View.INVISIBLE
+        (binding.bottomStripView as StoryFrameSelectorFragment).hide()
+        binding.bottomOpaqueBar.visibility = View.INVISIBLE
     }
 
     private fun showStoryFrameSelector() {
         setOpaqueBarHeight()
         showOpaqueBarIfNeeded()
-        (bottom_strip_view as StoryFrameSelectorFragment).show()
+        (binding.bottomStripView as StoryFrameSelectorFragment).show()
     }
 
     private fun hideEditModeUIControls() {
-        camera_capture_button.visibility = View.VISIBLE
+        binding.cameraCaptureButton.visibility = View.VISIBLE
 
         // hide proper edit mode controls
-        edit_mode_controls.visibility = View.INVISIBLE
-        sound_button.visibility = View.INVISIBLE
-        next_button.visibility = View.INVISIBLE
-        retry_button.visibility = View.GONE
+        binding.editModeControls.visibility = View.INVISIBLE
+        binding.soundButton.visibility = View.INVISIBLE
+        binding.nextButton.visibility = View.INVISIBLE
+        binding.retryButton.visibility = View.GONE
         // show capturing mode controls
         showVideoUIControls()
     }
@@ -1676,32 +1677,32 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         hideFrameSelector: Boolean = true
     ) {
         // momentarily hide proper edit mode controls
-        edit_mode_controls.visibility = View.INVISIBLE
-        sound_button.visibility = View.INVISIBLE
+        binding.editModeControls.visibility = View.INVISIBLE
+        binding.soundButton.visibility = View.INVISIBLE
         if (hideFrameSelector) {
             hideStoryFrameSelector()
         }
         if (hideNextButton) {
-            next_button.visibility = View.INVISIBLE
+            binding.nextButton.visibility = View.INVISIBLE
         }
         if (hideCloseButton) {
-            close_button.visibility = View.INVISIBLE
+            binding.closeButton.visibility = View.INVISIBLE
         }
     }
 
     private fun updateSoundControl() {
         if (storyViewModel.getSelectedFrame()?.frameItemType is VIDEO) {
-            sound_button.visibility = View.VISIBLE
+            binding.soundButton.visibility = View.VISIBLE
             if (!storyViewModel.isSelectedFrameAudioMuted()) {
                 backgroundSurfaceManager.videoPlayerUnmute()
-                sound_button.setImageResource(R.drawable.ic_volume_up_black_24dp)
+                binding.soundButton.setImageResource(R.drawable.ic_volume_up_black_24dp)
             } else {
                 backgroundSurfaceManager.videoPlayerMute()
-                sound_button.setImageResource(R.drawable.ic_volume_off_black_24dp)
+                binding.soundButton.setImageResource(R.drawable.ic_volume_off_black_24dp)
             }
         } else {
             // images don't have audio
-            sound_button.visibility = View.INVISIBLE
+            binding.soundButton.visibility = View.INVISIBLE
         }
     }
 
@@ -1714,24 +1715,24 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             // don't allow editing or adding new frames but do allow publishing the Story
             originallyErrored && !currentlyErrored -> {
                 blockTouchOnPhotoEditor(BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY)
-                edit_mode_controls.visibility = View.INVISIBLE
-                sound_button.visibility = View.INVISIBLE
-                next_button.isEnabled = true
-                (bottom_strip_view as StoryFrameSelectorFragment).hideAddFrameControl()
+                binding.editModeControls.visibility = View.INVISIBLE
+                binding.soundButton.visibility = View.INVISIBLE
+                binding.nextButton.isEnabled = true
+                (binding.bottomStripView as StoryFrameSelectorFragment).hideAddFrameControl()
             }
             currentlyErrored -> {
                 blockTouchOnPhotoEditor(BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION)
-                edit_mode_controls.visibility = View.INVISIBLE
-                sound_button.visibility = View.INVISIBLE
-                next_button.isEnabled = false
-                (bottom_strip_view as StoryFrameSelectorFragment).hideAddFrameControl()
+                binding.editModeControls.visibility = View.INVISIBLE
+                binding.soundButton.visibility = View.INVISIBLE
+                binding.nextButton.isEnabled = false
+                (binding.bottomStripView as StoryFrameSelectorFragment).hideAddFrameControl()
             }
             else -> { // no errors here! this is the normal creation situation: release touch block, enable editing
                 releaseTouchOnPhotoEditor(BLOCK_TOUCH_MODE_NONE)
-                edit_mode_controls.visibility = View.VISIBLE
+                binding.editModeControls.visibility = View.VISIBLE
                 updateSoundControl()
-                next_button.isEnabled = true
-                (bottom_strip_view as StoryFrameSelectorFragment).showAddFrameControl()
+                binding.nextButton.isEnabled = true
+                (binding.bottomStripView as StoryFrameSelectorFragment).showAddFrameControl()
             }
         }
     }
@@ -1739,8 +1740,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private fun editModeRestoreAllUIControls() {
         // show all edit mode controls
         updateEditMode()
-        next_button.visibility = View.VISIBLE
-        close_button.visibility = View.VISIBLE
+        binding.nextButton.visibility = View.VISIBLE
+        binding.closeButton.visibility = View.VISIBLE
 
         showStoryFrameSelector()
     }
@@ -1758,11 +1759,11 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private fun updateFlashModeSelectionIcon() {
         when (flashModeSelection) {
             FlashIndicatorState.AUTO ->
-                camera_flash_button.background = getDrawable(R.drawable.ic_flash_auto_black_24dp)
+                binding.cameraFlashButton.background = getDrawable(R.drawable.ic_flash_auto_black_24dp)
             FlashIndicatorState.ON ->
-                camera_flash_button.background = getDrawable(R.drawable.ic_flash_on_black_24dp)
+                binding.cameraFlashButton.background = getDrawable(R.drawable.ic_flash_on_black_24dp)
             FlashIndicatorState.OFF ->
-                camera_flash_button.background = getDrawable(R.drawable.ic_flash_off_black_24dp)
+                binding.cameraFlashButton.background = getDrawable(R.drawable.ic_flash_off_black_24dp)
         }
     }
 
@@ -1849,45 +1850,45 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private fun blockTouchOnPhotoEditor(touchBlockMode: ScreenTouchBlockMode, message: String? = null) {
         when (touchBlockMode) {
             BLOCK_TOUCH_MODE_FULL_SCREEN -> {
-                translucent_view.visibility = View.VISIBLE
-                translucent_error_view.visibility = View.INVISIBLE
-                operation_text.text = message
-                translucent_view.setOnTouchListener { _, _ ->
+                binding.translucentView.visibility = View.VISIBLE
+                binding.translucentErrorView.visibility = View.INVISIBLE
+                binding.operationText.text = message
+                binding.translucentView.setOnTouchListener { _, _ ->
                     // no op
                     true
                 }
             }
             BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION -> {
-                translucent_view.visibility = View.GONE
-                translucent_error_view.visibility = View.VISIBLE
-                translucent_error_view.background = ColorDrawable(
+                binding.translucentView.visibility = View.GONE
+                binding.translucentErrorView.visibility = View.VISIBLE
+                binding.translucentErrorView.background = ColorDrawable(
                     ContextCompat.getColor(this, R.color.black_transp_error_scrim)
                 )
-                translucent_error_view.setOnTouchListener { _, _ ->
+                binding.translucentErrorView.setOnTouchListener { _, _ ->
                     // no op
                     true
                 }
             }
             // do block touch but don't show scrim (make it transparent)
             BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY -> {
-                translucent_view.visibility = View.GONE
-                translucent_error_view.visibility = View.VISIBLE
-                translucent_error_view.background = ColorDrawable(
+                binding.translucentView.visibility = View.GONE
+                binding.translucentErrorView.visibility = View.VISIBLE
+                binding.translucentErrorView.background = ColorDrawable(
                     ContextCompat.getColor(this, android.R.color.transparent)
                 )
-                translucent_error_view.setOnTouchListener { _, _ ->
+                binding.translucentErrorView.setOnTouchListener { _, _ ->
                     // no op
                     true
                 }
             }
             // block touch, no scrim, tapping releases block
             BLOCK_TOUCH_MODE_DELETE_SLIDE -> {
-                translucent_view.visibility = View.GONE
-                translucent_error_view.visibility = View.VISIBLE
-                translucent_error_view.background = ColorDrawable(
+                binding.translucentView.visibility = View.GONE
+                binding.translucentErrorView.visibility = View.VISIBLE
+                binding.translucentErrorView.background = ColorDrawable(
                         ContextCompat.getColor(this, android.R.color.transparent)
                 )
-                translucent_error_view.setOnTouchListener { _, _ ->
+                binding.translucentErrorView.setOnTouchListener { _, _ ->
                     // If the error view is tapped, dismiss it and cancel delete slide mode
                     // Don't consume the touch event, pass it along
                     disableDeleteSlideMode()
@@ -1896,8 +1897,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             }
             // just don't block touch
             BLOCK_TOUCH_MODE_NONE -> {
-                translucent_view.visibility = View.GONE
-                translucent_error_view.visibility = View.GONE
+                binding.translucentView.visibility = View.GONE
+                binding.translucentErrorView.visibility = View.GONE
             }
         }
     }
@@ -1905,15 +1906,15 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private fun releaseTouchOnPhotoEditor(touchBlockMode: ScreenTouchBlockMode) {
         when (touchBlockMode) {
             BLOCK_TOUCH_MODE_FULL_SCREEN -> {
-                translucent_view.visibility = View.GONE
-                operation_text.text = null
-                translucent_view.setOnTouchListener(null)
+                binding.translucentView.visibility = View.GONE
+                binding.operationText.text = null
+                binding.translucentView.setOnTouchListener(null)
             }
             BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION,
             BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY,
             BLOCK_TOUCH_MODE_NONE -> {
-                translucent_error_view.visibility = View.GONE
-                translucent_error_view.setOnTouchListener(null)
+                binding.translucentErrorView.visibility = View.GONE
+                binding.translucentErrorView.setOnTouchListener(null)
             }
         }
     }
@@ -2065,9 +2066,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 //      no parts would actually be cropped, given the matching aspect ratio it should fit
                 //      except the opaque bar given we're normalizing to 9:16 on export
                 val drawableAspectRatio = calculateAspectRatioForDrawable(drawable)
-                bottom_opaque_bar.visibility = View.VISIBLE
+                binding.bottomOpaqueBar.visibility = View.VISIBLE
                 if (isAspectRatioSimilarByPercentage(drawableAspectRatio, screenSizeRatio, 0.01f)) {
-                    photoEditorView.source.scaleType = CENTER_CROP
+                    binding.photoEditorView.source.scaleType = CENTER_CROP
                     loadImageWithGlideToDraw(drawable, CenterCrop(), screenWidth, screenHeight, doAfterUse)
                 } else {
                     // 2. if the device is taller than 9:16, and image is portrait
@@ -2077,10 +2078,10 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     ) {
                         val transformToUse = if (drawable.intrinsicWidth >= screenWidth) {
                             // this aligns to top so there's no top black bar
-                            photoEditorView.source.scaleType = FIT_START
+                            binding.photoEditorView.source.scaleType = FIT_START
                             null
                         } else {
-                            photoEditorView.source.scaleType = FIT_CENTER
+                            binding.photoEditorView.source.scaleType = FIT_CENTER
                             FitCenter()
                         }
                         loadImageWithGlideToDraw(drawable, transformToUse,
@@ -2088,7 +2089,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     } else {
                         // 3. else, load with fit-center (black bars on the side that doesn't fit)
                         // see https://developer.android.com/reference/android/graphics/Matrix.ScaleToFit#CENTER
-                        photoEditorView.source.scaleType = FIT_CENTER
+                        binding.photoEditorView.source.scaleType = FIT_CENTER
                         loadImageWithGlideToDraw(drawable, FitCenter(), screenWidth, screenHeight, doAfterUse)
                     }
                 }
@@ -2110,12 +2111,12 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                         .transform(it)
                         .listener(provideGlideRequestListener(doAfterUse))
                         .override(overrideWidth, overrideHeight)
-                        .into(photoEditorView.source)
+                        .into(binding.photoEditorView.source)
             } ?: Glide.with(this@ComposeLoopFrameActivity)
                     .load(drawable)
                     .listener(provideGlideRequestListener(doAfterUse))
                     .override(overrideWidth, overrideHeight)
-                    .into(photoEditorView.source)
+                    .into(binding.photoEditorView.source)
         }
     }
 
@@ -2176,7 +2177,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         val selectedFrame = storyViewModel.getSelectedFrame()
         val isErroredFrame = selectedFrame?.saveResultReason !is SaveSuccess
 
-        if (delete_slide_view.visibility == View.VISIBLE) {
+        if (binding.deleteSlideView.visibility == View.VISIBLE) {
             disableDeleteSlideMode()
 
             // if we're switching back from delete mode, let's show the retry button if this is an errored frame
@@ -2196,13 +2197,13 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun enableDeleteSlideMode() {
-        delete_slide_view.visibility = View.VISIBLE
+        binding.deleteSlideView.visibility = View.VISIBLE
         editModeHideAllUIControls(hideNextButton = true, hideFrameSelector = false)
         blockTouchOnPhotoEditor(BLOCK_TOUCH_MODE_DELETE_SLIDE)
     }
 
     private fun disableDeleteSlideMode() {
-        delete_slide_view.visibility = View.GONE
+        binding.deleteSlideView.visibility = View.GONE
         editModeRestoreAllUIControls()
         releaseTouchOnPhotoEditor(BLOCK_TOUCH_MODE_NONE)
     }
@@ -2239,7 +2240,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                             // as a swipe from bottom of the screen gesture
 
                             // in edit mode, show Emoji picker
-                            if (edit_mode_controls.visibility == View.VISIBLE) {
+                            if (binding.editModeControls.visibility == View.VISIBLE) {
                                 emojiPickerFragment.show(supportFragmentManager, emojiPickerFragment.tag)
                             } else {
                                 // in capture mode, show media picker
