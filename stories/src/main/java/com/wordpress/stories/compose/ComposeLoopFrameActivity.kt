@@ -116,6 +116,7 @@ import com.wordpress.stories.compose.story.StoryViewModel.StoryFrameListItemUiSt
 import com.wordpress.stories.compose.story.StoryViewModelFactory
 import com.wordpress.stories.compose.text.TextEditorDialogFragment
 import com.wordpress.stories.compose.text.TextStyleGroupManager
+import com.wordpress.stories.databinding.ActivityComposerBinding
 import com.wordpress.stories.util.KEY_STORY_EDIT_MODE
 import com.wordpress.stories.util.KEY_STORY_SAVE_RESULT
 import com.wordpress.stories.util.STATE_KEY_CURRENT_STORY_INDEX
@@ -128,7 +129,6 @@ import com.wordpress.stories.util.isAspectRatioSimilarByPercentage
 import com.wordpress.stories.util.isScreenTallerThan916
 import com.wordpress.stories.util.isVideo
 import com.wordpress.stories.util.normalizeSizeExportTo916
-import kotlinx.android.synthetic.main.activity_composer.*
 import kotlinx.android.synthetic.main.content_composer.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -342,12 +342,13 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_composer)
+        val activityComposerBinding = ActivityComposerBinding.inflate(layoutInflater)
+        setContentView(activityComposerBinding.root)
         EventBus.getDefault().register(this)
 
         topControlsBaseTopMargin = getLayoutTopMarginBeforeInset(close_button.layoutParams)
         nextButtonBaseTopMargin = getLayoutTopMarginBeforeInset(next_button.layoutParams)
-        ViewCompat.setOnApplyWindowInsetsListener(compose_loop_frame_layout) { _, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(activityComposerBinding.composeLoopFrameLayout) { _, insets ->
             // set insetTop as margin to all controls appearing at the top of the screen
             addInsetTopMargin(next_button.layoutParams, nextButtonBaseTopMargin, insets.systemWindowInsetTop)
             addInsetTopMargin(close_button.layoutParams, topControlsBaseTopMargin, insets.systemWindowInsetTop)
