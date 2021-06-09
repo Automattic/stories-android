@@ -56,8 +56,6 @@ import com.daasuu.mp4compose.filter.GlFilterGroup
 import com.daasuu.mp4compose.filter.GlGifWatermarkFilter
 import com.daasuu.mp4compose.filter.GlWatermarkFilter
 import com.daasuu.mp4compose.filter.ViewPositionInfo
-import kotlinx.android.synthetic.main.view_photo_editor_emoji.view.*
-import kotlinx.android.synthetic.main.view_photo_editor_text.view.*
 import java.io.File
 import java.io.FileInputStream
 import java.lang.ref.WeakReference
@@ -346,7 +344,7 @@ class PhotoEditor private constructor(builder: Builder) :
 
             val multiTouchListenerInstance = getNewMultitouchListener(this) // newMultiTouchListener
             setGestureControlOnMultiTouchListener(this, ViewType.EMOJI, multiTouchListenerInstance)
-            touchableArea.setOnTouchListener(multiTouchListenerInstance)
+            this.findViewById<View>(R.id.touchableArea).setOnTouchListener(multiTouchListenerInstance)
             // setOnTouchListener(multiTouchListenerInstance)
             addViewToParent(this, ViewType.EMOJI)
         }
@@ -395,7 +393,7 @@ class PhotoEditor private constructor(builder: Builder) :
                     if (addTouchListener) {
                         val multiTouchListenerInstance = getNewMultitouchListener(it) // newMultiTouchListener
                         setGestureControlOnMultiTouchListener(it, viewType, multiTouchListenerInstance)
-                        it.touchableArea?.setOnTouchListener(multiTouchListenerInstance)
+                        it.findViewById<View>(R.id.touchableArea)?.setOnTouchListener(multiTouchListenerInstance)
                     }
                 }
             }
@@ -449,7 +447,7 @@ class PhotoEditor private constructor(builder: Builder) :
             }
 
             viewType == TEXT -> {
-                val textInputTv = rootView.tvPhotoEditorText
+                val textInputTv = rootView.findViewById<PhotoEditorTextView>(R.id.tvPhotoEditorText)
                 multiTouchListener.setOnGestureControl(object :
                         MultiTouchListener.OnGestureControl {
                     override fun onClick() {
@@ -478,20 +476,21 @@ class PhotoEditor private constructor(builder: Builder) :
         when (viewType) {
             ViewType.TEXT -> {
                 rootView = layoutInflater.inflate(R.layout.view_photo_editor_text, null)
-                if (rootView.tvPhotoEditorText != null) {
-                    rootView.tvPhotoEditorText.gravity = Gravity.CENTER
+                val textInputTv = rootView.findViewById<PhotoEditorTextView>(R.id.tvPhotoEditorText)
+                if (textInputTv != null) {
+                    textInputTv.gravity = Gravity.CENTER
                     if (mDefaultTextTypeface != null) {
-                        rootView.tvPhotoEditorText.identifiableTypeface = mDefaultTextTypeface
+                        textInputTv.identifiableTypeface = mDefaultTextTypeface
                     }
                 }
             }
             ViewType.IMAGE -> rootView = layoutInflater.inflate(R.layout.view_photo_editor_image, null)
             ViewType.EMOJI -> {
                 rootView = layoutInflater.inflate(R.layout.view_photo_editor_emoji, null)
-                val txtTextEmoji = rootView.tvPhotoEditorEmoji
+                val txtTextEmoji = rootView.findViewById<TextView>(R.id.tvPhotoEditorEmoji)
                 if (txtTextEmoji != null) {
                     TextViewCompat.setAutoSizeTextTypeWithDefaults(
-                        txtTextEmoji, TextViewCompat.AUTO_SIZE_TEXT_TYPE_UNIFORM)
+                            txtTextEmoji, TextViewCompat.AUTO_SIZE_TEXT_TYPE_UNIFORM)
                     if (mDefaultEmojiTypeface != null) {
                         txtTextEmoji.typeface = mDefaultEmojiTypeface
                     }
