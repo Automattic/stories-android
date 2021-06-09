@@ -6,9 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.automattic.loop.R
+import com.automattic.loop.databinding.IntroTemplateViewBinding
 import com.automattic.loop.util.INVALID_RESOURCE_ID
 import com.bumptech.glide.Glide
-import kotlinx.android.synthetic.main.intro_title_template_view.*
 
 class IntroPagerFragment : Fragment() {
     private var promoTextRes: Int = INVALID_RESOURCE_ID
@@ -30,12 +30,12 @@ class IntroPagerFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        with(view) {
-            Glide.with(context)
-                .load(backgroundImageRes)
-                .into(background_image)
+        with(IntroTemplateViewBinding.bind(view)) {
+            Glide.with(view.context)
+                        .load(backgroundImageRes)
+                        .into(backgroundImage)
+            promoText.setText(promoTextRes)
         }
-        promo_text.setText(promoTextRes)
     }
 
     companion object {
