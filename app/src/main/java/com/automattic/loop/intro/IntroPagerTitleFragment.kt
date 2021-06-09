@@ -6,9 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.automattic.loop.R
+import com.automattic.loop.databinding.IntroTitleTemplateViewBinding
 import com.automattic.loop.util.INVALID_RESOURCE_ID
 import com.bumptech.glide.Glide
-import kotlinx.android.synthetic.main.intro_title_template_view.*
 
 class IntroPagerTitleFragment : Fragment() {
     private var titleTextRes: Int = INVALID_RESOURCE_ID
@@ -32,13 +32,13 @@ class IntroPagerTitleFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        with(view) {
-            Glide.with(context)
-                .load(backgroundImageRes)
-                .into(background_image)
+        with(IntroTitleTemplateViewBinding.bind(view)) {
+            Glide.with(view.context)
+                    .load(backgroundImageRes)
+                    .into(backgroundImage)
+            titleText.setText(titleTextRes)
+            promoText.setText(promoTextRes)
         }
-        title_text.setText(titleTextRes)
-        promo_text.setText(promoTextRes)
     }
 
     companion object {
