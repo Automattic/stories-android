@@ -11,17 +11,17 @@ import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.intro_title_template_view.*
 
 class IntroPagerTitleFragment : Fragment() {
-    private var titleText: Int = INVALID_RESOURCE_ID
-    private var promoText: Int = INVALID_RESOURCE_ID
-    private var backgroundImage: Int = INVALID_RESOURCE_ID
+    private var titleTextRes: Int = INVALID_RESOURCE_ID
+    private var promoTextRes: Int = INVALID_RESOURCE_ID
+    private var backgroundImageRes: Int = INVALID_RESOURCE_ID
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
-            titleText = it.getInt(KEY_TITLE_TEXT)
-            promoText = it.getInt(KEY_PROMO_TEXT)
-            backgroundImage = it.getInt(KEY_BACKGROUND_IMAGE)
+            titleTextRes = it.getInt(KEY_TITLE_TEXT)
+            promoTextRes = it.getInt(KEY_PROMO_TEXT)
+            backgroundImageRes = it.getInt(KEY_BACKGROUND_IMAGE)
         }
     }
 
@@ -34,11 +34,11 @@ class IntroPagerTitleFragment : Fragment() {
 
         with(view) {
             Glide.with(context)
-                .load(backgroundImage)
+                .load(backgroundImageRes)
                 .into(background_image)
         }
-        title_text.setText(titleText)
-        promo_text.setText(promoText)
+        title_text.setText(titleTextRes)
+        promo_text.setText(promoTextRes)
     }
 
     companion object {
