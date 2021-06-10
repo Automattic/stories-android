@@ -9,7 +9,6 @@ import android.transition.Slide;
 import android.util.Log;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.Window;
@@ -17,6 +16,7 @@ import android.view.Window;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
@@ -26,13 +26,12 @@ import com.automattic.loop.databinding.PhotoPickerActivityBinding;
 import com.automattic.loop.databinding.ToolbarBinding;
 import com.automattic.loop.photopicker.utils.CameraIntentUtils;
 import com.automattic.loop.util.WPMediaUtils;
-import com.wordpress.stories.ViewBindingActivity;
 
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
-public class PhotoPickerActivity extends ViewBindingActivity<PhotoPickerActivityBinding>
+public class PhotoPickerActivity extends AppCompatActivity
     implements PhotoPickerFragment.PhotoPickerListener {
     private static final String PICKER_FRAGMENT_TAG = "picker_fragment_tag";
     private static final String KEY_MEDIA_CAPTURE_PATH = "media_capture_path";
@@ -77,10 +76,6 @@ public class PhotoPickerActivity extends ViewBindingActivity<PhotoPickerActivity
         }
     }
 
-    @NonNull @Override public PhotoPickerActivityBinding inflateBinding(@NonNull LayoutInflater layoutInflater) {
-        return PhotoPickerActivityBinding.inflate(layoutInflater);
-    }
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,8 +87,10 @@ public class PhotoPickerActivity extends ViewBindingActivity<PhotoPickerActivity
         // set exit transition (slide down from top)
         getWindow().setExitTransition(new Slide(Gravity.TOP));
 
-        ToolbarBinding toolbarBinding = ToolbarBinding.bind(getBinding().getRoot());
-        setContentView(getBinding().getRoot());
+        PhotoPickerActivityBinding binding = PhotoPickerActivityBinding.inflate(getLayoutInflater());
+
+        ToolbarBinding toolbarBinding = ToolbarBinding.bind(binding.getRoot());
+        setContentView(binding.getRoot());
 
         mSwipeDetector = new GestureDetectorCompat(this, new FlingGestureListener());
 

@@ -20,6 +20,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.ActionMode;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -27,12 +28,11 @@ import com.automattic.loop.R;
 import com.automattic.loop.databinding.PhotoPickerFragmentBinding;
 import com.automattic.loop.photopicker.PhotoPickerAdapter.PhotoPickerAdapterListener;
 import com.automattic.loop.photopicker.utils.AniUtils;
-import com.wordpress.stories.ViewBindingFragment;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PhotoPickerFragment extends ViewBindingFragment<PhotoPickerFragmentBinding> {
+public class PhotoPickerFragment extends Fragment {
     private static final String KEY_LAST_TAPPED_ICON = "last_tapped_icon";
     private static final String KEY_SELECTED_POSITIONS = "selected_positions";
 
@@ -68,6 +68,7 @@ public class PhotoPickerFragment extends ViewBindingFragment<PhotoPickerFragment
     private MediaBrowserType mBrowserType;
     //    private SiteModel mSite;
     private ArrayList<Integer> mSelectedPositions;
+    private PhotoPickerFragmentBinding mBinding = null;
 
 //    public static PhotoPickerFragment newInstance(@NonNull PhotoPickerListener listener,
 //                                                  @NonNull MediaBrowserType browserType,
@@ -98,12 +99,6 @@ public class PhotoPickerFragment extends ViewBindingFragment<PhotoPickerFragment
         return fragment;
     }
 
-    @NonNull
-    @Override
-    public PhotoPickerFragmentBinding inflateBinding(@NonNull View view) {
-        return PhotoPickerFragmentBinding.bind(view);
-    }
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -131,14 +126,15 @@ public class PhotoPickerFragment extends ViewBindingFragment<PhotoPickerFragment
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        getBinding().takePicture.setOnClickListener(v -> doIconClicked(PhotoPickerIcon.WP_STORIES_CAPTURE));
-        getBinding().recycler.setEmptyView(getBinding().actionableEmptyView);
-        getBinding().recycler.setHasFixedSize(true);
+        mBinding = PhotoPickerFragmentBinding.bind(view);
+        mBinding.takePicture.setOnClickListener(v -> doIconClicked(PhotoPickerIcon.WP_STORIES_CAPTURE));
+        mBinding.recycler.setEmptyView(mBinding.actionableEmptyView);
+        mBinding.recycler.setHasFixedSize(true);
 
         // disable thumbnail loading during a fling to conserve memory
         final int minDistance = ViewConfiguration.get(getActivity()).getScaledMaximumFlingVelocity() / 2;
 
-        getBinding().recycler.setOnFlingListener(new RecyclerView.OnFlingListener() {
+        mBinding.recycler.setOnFlingListener(new RecyclerView.OnFlingListener() {
             @Override
             public boolean onFling(int velocityX, int velocityY) {
                 if (Math.abs(velocityY) > minDistance) {
@@ -147,7 +143,7 @@ public class PhotoPickerFragment extends ViewBindingFragment<PhotoPickerFragment
                 return false;
             }
         });
-        getBinding().recycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        mBinding.recycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
@@ -158,7 +154,7 @@ public class PhotoPickerFragment extends ViewBindingFragment<PhotoPickerFragment
         });
 
         if (!canShowBottomBar()) {
-            getBinding().bottomBar.setVisibility(View.GONE);
+            mBinding.bottomBar.setVisibility(View.GONE);
         } else {
 //            mBottomBar.findViewById(R.id.icon_camera).setOnClickListener(new View.OnClickListener() {
 //                @Override
@@ -170,7 +166,7 @@ public class PhotoPickerFragment extends ViewBindingFragment<PhotoPickerFragment
 //                    }
 //                }
 //            });
-            getBinding().iconPicker.setOnClickListener(v -> {
+            mBinding.iconPicker.setOnClickListener(v -> {
                 if (mBrowserType == MediaBrowserType.GRAVATAR_IMAGE_PICKER
                     || mBrowserType == MediaBrowserType.SITE_ICON_PICKER) {
                     doIconClicked(PhotoPickerIcon.ANDROID_CHOOSE_PHOTO);
@@ -350,7 +346,7 @@ public class PhotoPickerFragment extends ViewBindingFragment<PhotoPickerFragment
     }
 
     private boolean isBottomBarShowing() {
-        return getBinding().bottomBar.getVisibility() == View.VISIBLE;
+        return mBinding.bottomBar.getVisibility() == View.VISIBLE;
     }
 
     private final PhotoPickerAdapterListener mAdapterListener = new PhotoPickerAdapterListener() {
@@ -358,13 +354,13 @@ public class PhotoPickerFragment extends ViewBindingFragment<PhotoPickerFragment
         public void onSelectedCountChanged(int count) {
             if (count == 0) {
                 finishActionMode();
-                getBinding().takePicture.show();
+                mBinding.takePicture.show();
             } else {
                 if (mActionMode == null) {
                     ((AppCompatActivity) getActivity()).startSupportActionMode(new ActionModeCallback());
                 }
                 updateActionModeTitle(mAdapter.isSelectedSingleItemVideo());
-                getBinding().takePicture.hide();
+                mBinding.takePicture.hide();
             }
         }
 
@@ -382,9 +378,9 @@ public class PhotoPickerFragment extends ViewBindingFragment<PhotoPickerFragment
             }
 
             if (isEmpty) {
-                getBinding().textChooseItemsToAdd.setVisibility(View.GONE);
+                mBinding.textChooseItemsToAdd.setVisibility(View.GONE);
             } else {
-                getBinding().textChooseItemsToAdd.setVisibility(View.VISIBLE);
+                mBinding.textChooseItemsToAdd.setVisibility(View.VISIBLE);
             }
         }
     };
@@ -419,8 +415,8 @@ public class PhotoPickerFragment extends ViewBindingFragment<PhotoPickerFragment
         }
 
         mGridManager = new GridLayoutManager(getActivity(), NUM_COLUMNS);
-        getBinding().recycler.setLayoutManager(mGridManager);
-        getBinding().recycler.setAdapter(getAdapter());
+        mBinding.recycler.setLayoutManager(mGridManager);
+        mBinding.recycler.setAdapter(getAdapter());
         getAdapter().refresh(true);
     }
 
@@ -501,7 +497,7 @@ public class PhotoPickerFragment extends ViewBindingFragment<PhotoPickerFragment
             mActionMode = null;
             showBottomBar();
             getAdapter().clearSelection();
-            getBinding().takePicture.show();
+            mBinding.takePicture.show();
         }
     }
 
@@ -568,6 +564,11 @@ public class PhotoPickerFragment extends ViewBindingFragment<PhotoPickerFragment
 //        }
     }
 
+    @Override public void onDestroyView() {
+        super.onDestroyView();
+        mBinding = null;
+    }
+
     /*
      * shows the "soft ask" view which should appear when storage permission hasn't been granted
      */
@@ -611,10 +612,10 @@ public class PhotoPickerFragment extends ViewBindingFragment<PhotoPickerFragment
 //                }
 //            });
 //
-            getBinding().softAskView.setVisibility(View.VISIBLE);
+            mBinding.softAskView.setVisibility(View.VISIBLE);
 //            hideBottomBar();
-        } else if (getBinding().softAskView.getVisibility() == View.VISIBLE) {
-            AniUtils.fadeOut(getBinding().softAskView, AniUtils.Duration.MEDIUM);
+        } else if (mBinding.softAskView.getVisibility() == View.VISIBLE) {
+            AniUtils.fadeOut(mBinding.softAskView, AniUtils.Duration.MEDIUM);
 //            showBottomBar();
         }
     }

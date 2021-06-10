@@ -129,7 +129,6 @@ import com.wordpress.stories.util.getStoryIndexFromIntentOrBundle
 import com.wordpress.stories.util.isAspectRatioSimilarByPercentage
 import com.wordpress.stories.util.isScreenTallerThan916
 import com.wordpress.stories.util.isVideo
-import com.wordpress.stories.viewBinding
 import com.wordpress.stories.util.normalizeSizeExportTo916
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -210,7 +209,6 @@ interface StoryDiscardListener {
 }
 
 abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelectorTappedListener {
-    private val binding by viewBinding(ActivityComposerBinding::inflate)
     private lateinit var contentComposerBinding: ContentComposerBinding
 
     private lateinit var photoEditor: PhotoEditor
@@ -350,38 +348,41 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         super.onCreate(savedInstanceState)
         EventBus.getDefault().register(this)
 
-        contentComposerBinding = binding.contentComposer
+        with(ActivityComposerBinding.inflate(layoutInflater)) {
+            contentComposerBinding = contentComposer
+            setContentView(root)
 
-        topControlsBaseTopMargin = getLayoutTopMarginBeforeInset(contentComposerBinding.closeButton.layoutParams)
-        nextButtonBaseTopMargin = getLayoutTopMarginBeforeInset(contentComposerBinding.nextButton.layoutParams)
-        ViewCompat.setOnApplyWindowInsetsListener(binding.composeLoopFrameLayout) { _, insets ->
-            // set insetTop as margin to all controls appearing at the top of the screen
-            addInsetTopMargin(
-                contentComposerBinding.nextButton.layoutParams,
-                nextButtonBaseTopMargin,
-                insets.systemWindowInsetTop
-            )
-            addInsetTopMargin(
-                contentComposerBinding.closeButton.layoutParams,
-                topControlsBaseTopMargin,
-                insets.systemWindowInsetTop
-            )
-            addInsetTopMargin(
-                contentComposerBinding.controlFlashGroup.layoutParams,
-                topControlsBaseTopMargin,
-                insets.systemWindowInsetTop
-            )
-            bottomNavigationBarMargin = insets.systemWindowInsetBottom
-            workingAreaRect = calculateWorkingArea()
-            photoEditor.updateWorkAreaRect(workingAreaRect)
-            bottomOpaqueBarHeight = preCalculateOpaqueBarHeight()
-            setOpaqueBarHeight()
-            screenSizeRatio = getSizeRatio(screenWidth, screenHeight)
-            contentComposerBinding.deleteView.addBottomOffset(bottomNavigationBarMargin)
-            contentComposerBinding.deleteSlideView.addBottomOffset(bottomNavigationBarMargin)
-            (supportFragmentManager.findFragmentById(R.id.bottom_strip_view)
-                as? StoryFrameSelectorFragment)?.setBottomOffset(bottomNavigationBarMargin)
-            insets
+            topControlsBaseTopMargin = getLayoutTopMarginBeforeInset(contentComposerBinding.closeButton.layoutParams)
+            nextButtonBaseTopMargin = getLayoutTopMarginBeforeInset(contentComposerBinding.nextButton.layoutParams)
+            ViewCompat.setOnApplyWindowInsetsListener(composeLoopFrameLayout) { _, insets ->
+                // set insetTop as margin to all controls appearing at the top of the screen
+                addInsetTopMargin(
+                        contentComposerBinding.nextButton.layoutParams,
+                        nextButtonBaseTopMargin,
+                        insets.systemWindowInsetTop
+                )
+                addInsetTopMargin(
+                        contentComposerBinding.closeButton.layoutParams,
+                        topControlsBaseTopMargin,
+                        insets.systemWindowInsetTop
+                )
+                addInsetTopMargin(
+                        contentComposerBinding.controlFlashGroup.layoutParams,
+                        topControlsBaseTopMargin,
+                        insets.systemWindowInsetTop
+                )
+                bottomNavigationBarMargin = insets.systemWindowInsetBottom
+                workingAreaRect = calculateWorkingArea()
+                photoEditor.updateWorkAreaRect(workingAreaRect)
+                bottomOpaqueBarHeight = preCalculateOpaqueBarHeight()
+                setOpaqueBarHeight()
+                screenSizeRatio = getSizeRatio(screenWidth, screenHeight)
+                contentComposerBinding.deleteView.addBottomOffset(bottomNavigationBarMargin)
+                contentComposerBinding.deleteSlideView.addBottomOffset(bottomNavigationBarMargin)
+                (supportFragmentManager.findFragmentById(R.id.bottom_strip_view)
+                        as? StoryFrameSelectorFragment)?.setBottomOffset(bottomNavigationBarMargin)
+                insets
+            }
         }
 
         val authHeaderInterfaceBridge = object : AuthenticationHeadersInterface {

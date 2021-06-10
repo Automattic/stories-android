@@ -7,33 +7,29 @@ import com.automattic.loop.R
 import com.automattic.loop.databinding.IntroTemplateViewBinding
 import com.automattic.loop.util.INVALID_RESOURCE_ID
 import com.bumptech.glide.Glide
-import com.wordpress.stories.viewBinding
 
 class IntroPagerFragment : Fragment(R.layout.intro_template_view) {
-    private val binding by viewBinding(IntroTemplateViewBinding::bind)
-
-    private var promoText: Int = INVALID_RESOURCE_ID
-    private var backgroundImage: Int = INVALID_RESOURCE_ID
+    private var promoTextRes: Int = INVALID_RESOURCE_ID
+    private var backgroundImageRes: Int = INVALID_RESOURCE_ID
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
-            promoText = it.getInt(KEY_PROMO_TEXT)
-            backgroundImage = it.getInt(KEY_BACKGROUND_IMAGE)
+            promoTextRes = it.getInt(KEY_PROMO_TEXT)
+            backgroundImageRes = it.getInt(KEY_BACKGROUND_IMAGE)
         }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        with(view) {
-            Glide.with(context)
-                .load(backgroundImage)
-                .into(binding.backgroundImage)
+        with(IntroTemplateViewBinding.bind(view)) {
+            Glide.with(view.context)
+                    .load(backgroundImageRes)
+                    .into(backgroundImage)
+            promoText.setText(promoTextRes)
         }
-
-        binding.promoText.setText(promoText)
     }
 
     companion object {
