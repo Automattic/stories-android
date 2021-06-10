@@ -162,6 +162,7 @@ class FrameSaveManager(
                 } else {
                     // don't process the video but return the original file if no added views in this Story frame
                     frameFile = (frame.source as FileBackgroundSource).file
+                    saveProgressListener?.onFrameSaveCompleted(frameIndex, frame)
                 }
                 frame.composedFrameFile = frameFile
             }
