@@ -5,7 +5,7 @@ import android.os.Parcelable
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveError
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
 import com.wordpress.stories.compose.story.StoryIndex
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
 class StorySaveEvents {
