@@ -9,12 +9,16 @@ import androidx.navigation.Navigation
 import com.automattic.loop.AppPrefs
 import com.automattic.loop.MainActivity
 import com.automattic.loop.R
+import com.automattic.loop.databinding.IntroActivityBinding
 import com.automattic.photoeditor.util.PermissionUtils
 
 class IntroActivity : AppCompatActivity(), IntroFragment.OnFragmentInteractionListener,
     PermissionRequestFragment.OnFragmentInteractionListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val binding = IntroActivityBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         window.statusBarColor = ContextCompat.getColor(this, android.R.color.white)
         showFragment(IntroFragment(), IntroFragment.TAG)
