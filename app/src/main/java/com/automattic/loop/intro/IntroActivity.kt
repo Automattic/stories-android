@@ -17,8 +17,9 @@ class IntroActivity : AppCompatActivity(), IntroFragment.OnFragmentInteractionLi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val binding = IntroActivityBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        with(IntroActivityBinding.inflate(layoutInflater)) {
+            setContentView(root)
+        }
 
         window.statusBarColor = ContextCompat.getColor(this, android.R.color.white)
         showFragment(IntroFragment(), IntroFragment.TAG)
