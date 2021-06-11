@@ -25,7 +25,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
 class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionListener {
-    private var binding: ActivityMainBinding? = null
+    private lateinit var binding: ActivityMainBinding
 
     override fun onFragmentInteraction(uri: Uri) {
         // TODO: change OnFragmentInteractionListener for something relevant to our needs
@@ -67,7 +67,7 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
 
     override fun onResume() {
         super.onResume()
-        binding?.fab?.isEnabled = true
+        binding.fab.isEnabled = true
     }
 
     override fun onSupportNavigateUp() =

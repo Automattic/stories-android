@@ -27,7 +27,10 @@ interface OnStoryFrameSelectorTappedListener {
 }
 
 class StoryFrameSelectorFragment : Fragment(R.layout.fragment_story_frame_selector) {
-    private var binding: FragmentStoryFrameSelectorBinding? = null
+    private var _binding: FragmentStoryFrameSelectorBinding? = null
+    // This property is only valid between onCreateView and onDestroyView.
+    private val binding get() = _binding!!
+
     private lateinit var plusIconBinding: FragmentStoryFrameItemPlusBinding
 
     lateinit var storyViewModel: StoryViewModel
@@ -87,7 +90,7 @@ class StoryFrameSelectorFragment : Fragment(R.layout.fragment_story_frame_select
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         with(FragmentStoryFrameSelectorBinding.bind(view)) {
-            binding = this
+            _binding = this
             plusIconBinding = plusIcon
             storyFramesView.adapter = StoryFrameSelectorAdapter()
             // disable animations on selected border visibility changes so users can see the selection
@@ -109,21 +112,21 @@ class StoryFrameSelectorFragment : Fragment(R.layout.fragment_story_frame_select
     }
 
     private fun updateContentUiState(contentState: StoryFrameListUiState) {
-        (binding?.storyFramesView?.adapter as StoryFrameSelectorAdapter).addAllItems(contentState.items)
+        (binding.storyFramesView.adapter as StoryFrameSelectorAdapter).addAllItems(contentState.items)
     }
 
     private fun updateContentUiStateSelection(oldSelection: Int, newSelection: Int) {
-        (binding?.storyFramesView?.adapter as StoryFrameSelectorAdapter)
+        (binding.storyFramesView.adapter as StoryFrameSelectorAdapter)
             .updateContentUiStateSelection(oldSelection, newSelection)
     }
 
     private fun updateContentUiStateMovedIndex(oldPosition: Int, newPosition: Int) {
-        (binding?.storyFramesView?.adapter as StoryFrameSelectorAdapter)
+        (binding.storyFramesView.adapter as StoryFrameSelectorAdapter)
             .updateContentUiStateMovedIndex(oldPosition, newPosition)
     }
 
     private fun updateContentUiStateItem(position: Int) {
-        (binding?.storyFramesView?.adapter as StoryFrameSelectorAdapter)
+        (binding.storyFramesView.adapter as StoryFrameSelectorAdapter)
             .updateContentUiStateItem(position)
     }
 
@@ -191,11 +194,11 @@ class StoryFrameSelectorFragment : Fragment(R.layout.fragment_story_frame_select
     }
 
     fun show() {
-        binding?.root?.visibility = View.VISIBLE
+        binding.root.visibility = View.VISIBLE
     }
 
     fun hide() {
-        binding?.root?.visibility = View.INVISIBLE
+        binding.root.visibility = View.INVISIBLE
     }
 
     fun hideAddFrameControl() {
@@ -207,16 +210,16 @@ class StoryFrameSelectorFragment : Fragment(R.layout.fragment_story_frame_select
     }
 
     fun setBottomOffset(offset: Int) {
-        val params = binding?.root?.layoutParams as ConstraintLayout.LayoutParams
+        val params = binding.root.layoutParams as ConstraintLayout.LayoutParams
         val hasChanged = params.bottomMargin != offset
         if (hasChanged) {
             params.bottomMargin = offset
-            binding?.root?.requestLayout()
+            binding.root.requestLayout()
         }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        binding = null
+        _binding = null
     }
 }

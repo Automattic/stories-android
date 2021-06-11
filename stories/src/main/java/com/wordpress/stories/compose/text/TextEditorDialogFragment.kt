@@ -29,7 +29,9 @@ import com.wordpress.stories.databinding.AddTextDialogBinding
  */
 
 class TextEditorDialogFragment : DialogFragment() {
-    private var binding: AddTextDialogBinding? = null
+    private var _binding: AddTextDialogBinding? = null
+    // This property is only valid between onCreateView and onDestroyView.
+    private val binding get() = _binding!!
 
     @ColorInt private var colorCode: Int = 0
     @ColorInt private var backgroundColorCode: Int = Color.TRANSPARENT
@@ -70,8 +72,8 @@ class TextEditorDialogFragment : DialogFragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = AddTextDialogBinding.inflate(inflater)
-        return binding?.root
+        _binding = AddTextDialogBinding.inflate(inflater)
+        return binding.root
     }
 
     override fun onStop() {
@@ -84,7 +86,7 @@ class TextEditorDialogFragment : DialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         arguments?.let {
-            binding?.addTextEditText?.setText(it.getString(EXTRA_INPUT_TEXT))
+            binding.addTextEditText.setText(it.getString(EXTRA_INPUT_TEXT))
             colorCode = it.getInt(EXTRA_TEXT_COLOR_CODE)
             backgroundColorCode = it.getInt(EXTRA_TEXT_BACKGROUND_COLOR_CODE)
             textAlignment = TextAlignment.valueOf(it.getInt(EXTRA_TEXT_ALIGNMENT))
@@ -95,7 +97,7 @@ class TextEditorDialogFragment : DialogFragment() {
             ColorPickerBottomSheetHandler(it, view)
         }
 
-        binding?.let {
+        binding.let {
             // Hide the bottom sheet if the user taps in the EditText
             it.addTextEditText.setOnClickListener {
                 bottomSheetHandler?.hideBottomSheet()
@@ -152,11 +154,9 @@ class TextEditorDialogFragment : DialogFragment() {
     }
 
     override fun onDismiss(dialog: DialogInterface) {
-        binding?.let {
-            val inputText = it.addTextEditText.text.toString()
-            textEditor?.onDone(inputText, TextStyler.from(it.addTextEditText, typefaceId, backgroundColorCode))
-            textEditorAnalyticsHandler?.report()
-        }
+        val inputText = binding.addTextEditText.text.toString()
+        textEditor?.onDone(inputText, TextStyler.from(binding.addTextEditText, typefaceId, backgroundColorCode))
+        textEditorAnalyticsHandler?.report()
         super.onDismiss(dialog)
     }
 
@@ -264,7 +264,7 @@ class TextEditorDialogFragment : DialogFragment() {
     }
 
     override fun onDestroyView() {
-        binding = null
+        _binding = null
         super.onDestroyView()
     }
 
