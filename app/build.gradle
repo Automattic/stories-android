@@ -37,6 +37,9 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         signingConfig signingConfigs.release
     }
+    viewBinding {
+        enabled = true
+    }
     buildTypes {
         release {
             minifyEnabled false
@@ -84,6 +87,9 @@ dependencies {
     // this dependency is not required if you are already using your own
     // slf4j implementation
     implementation 'org.slf4j:slf4j-nop:1.7.25'
+
+    // lifecycle
+    implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycleVersion"
 
     implementation project(path: ':photoeditor')
     implementation project(path: ':stories')

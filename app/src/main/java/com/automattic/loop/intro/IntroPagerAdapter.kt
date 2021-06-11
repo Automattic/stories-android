@@ -5,7 +5,9 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import com.automattic.loop.R
 
-class IntroPagerAdapter(supportFragmentManager: FragmentManager) : FragmentPagerAdapter(supportFragmentManager) {
+class IntroPagerAdapter(
+    supportFragmentManager: FragmentManager
+) : FragmentPagerAdapter(supportFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
     override fun getItem(position: Int): Fragment {
         return if (position == 0) {
             IntroPagerTitleFragment.newInstance(R.string.intro_title_text, PROMO_TEXTS[position],

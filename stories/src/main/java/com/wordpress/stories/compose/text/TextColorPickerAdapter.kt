@@ -9,13 +9,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.wordpress.stories.R
+import com.wordpress.stories.databinding.ColorPickerListItemBinding
 import com.wordpress.stories.util.extractColorList
-import kotlinx.android.synthetic.main.color_picker_list_item.view.*
 
 typealias OnTextColorPickerClickListener = (Int) -> Unit
 
 class TextColorPickerAdapter internal constructor(private val context: Context, mode: Mode, startColor: Int? = null) :
-        RecyclerView.Adapter<TextColorPickerAdapter.ViewHolder>() {
+    RecyclerView.Adapter<TextColorPickerAdapter.ViewHolder>() {
     private val colorPickerColors = getDefaultColors(context, mode)
 
     private var onTextColorPickerClickListener: OnTextColorPickerClickListener? = null
@@ -23,26 +23,29 @@ class TextColorPickerAdapter internal constructor(private val context: Context, 
     private var selectedPosition = colorPickerColors.indexOf(startColor)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(context).inflate(R.layout.color_picker_list_item, parent, false)
-        return ViewHolder(view)
+        return ViewHolder(ColorPickerListItemBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.itemView.isSelected = (selectedPosition == position)
 
         if (colorPickerColors[position] == Color.TRANSPARENT) {
-            holder.colorPickerActualColorViewRef.setBackgroundResource(R.drawable.ic_gridicons_block_cropped)
-            holder.colorPickerSelectionViewRef.visibility = View.GONE
+            holder.binding.colorPickerViewActualColor.setBackgroundResource(R.drawable.ic_gridicons_block_cropped)
+            holder.binding.colorPickerSelectedCheckmarkView.visibility = View.GONE
         } else {
-            holder.colorPickerActualColorViewRef.setBackgroundResource(R.drawable.ic_color_picker_filler)
-            val background = holder.colorPickerActualColorViewRef.background
+            holder.binding.colorPickerViewActualColor.setBackgroundResource(R.drawable.ic_color_picker_filler)
+            val background = holder.binding.colorPickerViewActualColor.background
             if (background is GradientDrawable) {
                 background.setColor(colorPickerColors[position])
             } else if (background is ColorDrawable) {
                 background.color = colorPickerColors[position]
             }
 
-            holder.colorPickerSelectionViewRef.visibility = if (holder.itemView.isSelected) View.VISIBLE else View.GONE
+            holder.binding.colorPickerSelectedCheckmarkView.visibility = if (holder.itemView.isSelected) {
+                View.VISIBLE
+            } else {
+                View.GONE
+            }
         }
     }
 
@@ -52,10 +55,7 @@ class TextColorPickerAdapter internal constructor(private val context: Context, 
         this.onTextColorPickerClickListener = onTextColorPickerClickListener
     }
 
-    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        var colorPickerActualColorViewRef: View = itemView.color_picker_view_actual_color
-        var colorPickerSelectionViewRef: View = itemView.color_picker_selected_checkmark_view
-
+    inner class ViewHolder(val binding: ColorPickerListItemBinding) : RecyclerView.ViewHolder(binding.root) {
         init {
             itemView.setOnClickListener {
                 notifyItemChanged(selectedPosition)
@@ -73,10 +73,12 @@ class TextColorPickerAdapter internal constructor(private val context: Context, 
         enum class Mode { FOREGROUND, BACKGROUND }
 
         fun getDefaultColors(context: Context, mode: Mode): List<Int> {
-            val baseArray = context.resources.obtainTypedArray(when (mode) {
-                Mode.FOREGROUND -> R.array.text_colors
-                Mode.BACKGROUND -> R.array.text_background_colors
-            })
+            val baseArray = context.resources.obtainTypedArray(
+                when (mode) {
+                    Mode.FOREGROUND -> R.array.text_colors
+                    Mode.BACKGROUND -> R.array.text_background_colors
+                }
+            )
 
             return baseArray.extractColorList(context.resources).also { baseArray.recycle() }
         }

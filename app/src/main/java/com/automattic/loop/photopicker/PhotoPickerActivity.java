@@ -17,22 +17,22 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.automattic.loop.photopicker.utils.CameraIntentUtils;
 import com.automattic.loop.R;
+import com.automattic.loop.databinding.PhotoPickerActivityBinding;
+import com.automattic.loop.databinding.ToolbarBinding;
+import com.automattic.loop.photopicker.utils.CameraIntentUtils;
 import com.automattic.loop.util.WPMediaUtils;
 
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
-
 public class PhotoPickerActivity extends AppCompatActivity
-        implements PhotoPickerFragment.PhotoPickerListener {
+    implements PhotoPickerFragment.PhotoPickerListener {
     private static final String PICKER_FRAGMENT_TAG = "picker_fragment_tag";
     private static final String KEY_MEDIA_CAPTURE_PATH = "media_capture_path";
 
@@ -87,13 +87,14 @@ public class PhotoPickerActivity extends AppCompatActivity
         // set exit transition (slide down from top)
         getWindow().setExitTransition(new Slide(Gravity.TOP));
 
-        setContentView(R.layout.photo_picker_activity);
+        PhotoPickerActivityBinding binding = PhotoPickerActivityBinding.inflate(getLayoutInflater());
+
+        ToolbarBinding toolbarBinding = ToolbarBinding.bind(binding.getRoot());
+        setContentView(binding.getRoot());
 
         mSwipeDetector = new GestureDetectorCompat(this, new FlingGestureListener());
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        // toolbar.setNavigationIcon(R.drawable.ic_close_white_24dp);
-        setSupportActionBar(toolbar);
+        setSupportActionBar(toolbarBinding.toolbar);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
@@ -115,9 +116,9 @@ public class PhotoPickerActivity extends AppCompatActivity
 //            fragment = PhotoPickerFragment.newInstance(this, mBrowserType, mSite);
             fragment = PhotoPickerFragment.newInstance(this, mBrowserType);
             getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.fragment_container, fragment, PICKER_FRAGMENT_TAG)
-                                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                                .commitAllowingStateLoss();
+                                       .replace(R.id.fragment_container, fragment, PICKER_FRAGMENT_TAG)
+                                       .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                                       .commitAllowingStateLoss();
         } else {
             fragment.setPhotoPickerListener(this);
         }
@@ -132,7 +133,7 @@ public class PhotoPickerActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putSerializable(PhotoPickerFragment.ARG_BROWSER_TYPE, mBrowserType);
 //        outState.putInt(LOCAL_POST_ID, mLocalPostId);
@@ -179,10 +180,8 @@ public class PhotoPickerActivity extends AppCompatActivity
             case RequestCodes.PICTURE_LIBRARY:
             case RequestCodes.VIDEO_LIBRARY:
                 if (data != null) {
-                    if (data != null) {
-                        doMediaUrisSelected(WPMediaUtils.retrieveMediaUris(data),
-                                PhotoPickerMediaSource.ANDROID_PICKER);
-                    }
+                    doMediaUrisSelected(WPMediaUtils.retrieveMediaUris(data),
+                        PhotoPickerMediaSource.ANDROID_PICKER);
                 }
                 break;
             // user took a photo with the device camera
@@ -218,17 +217,12 @@ public class PhotoPickerActivity extends AppCompatActivity
 
     private void launchCamera() {
         CameraIntentUtils.launchCamera(this, getApplicationContext().getPackageName(),
-                                  new CameraIntentUtils.LaunchCameraCallback() {
-                                      @Override
-                                      public void onMediaCapturePathReady(String mediaCapturePath) {
-                                          mMediaCapturePath = mediaCapturePath;
-                                      }
-                                  });
+            mediaCapturePath -> mMediaCapturePath = mediaCapturePath);
     }
 
     private void launchWPStoriesCamera() {
         Intent intent = new Intent()
-                .putExtra(EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED, true);
+            .putExtra(EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED, true);
         setResult(RESULT_OK, intent);
         finish();
     }
@@ -236,13 +230,13 @@ public class PhotoPickerActivity extends AppCompatActivity
     private void launchPictureLibrary() {
 //        WPMediaUtils.launchPictureLibrary(this, false);
         startActivityForResult(
-                preparePictureLibraryIntent(getString(R.string.pick_photo), true),
-                RequestCodes.PICTURE_LIBRARY);
+            preparePictureLibraryIntent(getString(R.string.pick_photo), true),
+            RequestCodes.PICTURE_LIBRARY);
     }
 
     private void launchVideoLibrary() {
         startActivityForResult(prepareVideoLibraryIntent(getString(R.string.pick_video), true),
-                RequestCodes.VIDEO_LIBRARY);
+            RequestCodes.VIDEO_LIBRARY);
     }
 
 
@@ -356,18 +350,18 @@ public class PhotoPickerActivity extends AppCompatActivity
 //                        }
 //                    });
 //        } else {
-            Intent intent = new Intent()
-                    .putExtra(EXTRA_MEDIA_URIS, convertUrisListToStringArray(mediaUris))
-                    .putExtra(EXTRA_MEDIA_SOURCE, source.name());
-            setResult(RESULT_OK, intent);
-            finish();
+        Intent intent = new Intent()
+            .putExtra(EXTRA_MEDIA_URIS, convertUrisListToStringArray(mediaUris))
+            .putExtra(EXTRA_MEDIA_SOURCE, source.name());
+        setResult(RESULT_OK, intent);
+        finish();
 //        }
     }
 
     private void doMediaIdSelected(long mediaId, @NonNull PhotoPickerMediaSource source) {
         Intent data = new Intent()
-                .putExtra(EXTRA_MEDIA_ID, mediaId)
-                .putExtra(EXTRA_MEDIA_SOURCE, source.name());
+            .putExtra(EXTRA_MEDIA_ID, mediaId)
+            .putExtra(EXTRA_MEDIA_SOURCE, source.name());
         setResult(RESULT_OK, data);
         finish();
     }

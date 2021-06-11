@@ -56,8 +56,6 @@ import com.daasuu.mp4compose.filter.GlFilterGroup
 import com.daasuu.mp4compose.filter.GlGifWatermarkFilter
 import com.daasuu.mp4compose.filter.GlWatermarkFilter
 import com.daasuu.mp4compose.filter.ViewPositionInfo
-import kotlinx.android.synthetic.main.view_photo_editor_emoji.view.*
-import kotlinx.android.synthetic.main.view_photo_editor_text.view.*
 import java.io.File
 import java.io.FileInputStream
 import java.lang.ref.WeakReference
@@ -346,7 +344,7 @@ class PhotoEditor private constructor(builder: Builder) :
 
             val multiTouchListenerInstance = getNewMultitouchListener(this) // newMultiTouchListener
             setGestureControlOnMultiTouchListener(this, ViewType.EMOJI, multiTouchListenerInstance)
-            touchableArea.setOnTouchListener(multiTouchListenerInstance)
+            findViewById<View>(R.id.touchableArea)?.setOnTouchListener(multiTouchListenerInstance)
             // setOnTouchListener(multiTouchListenerInstance)
             addViewToParent(this, ViewType.EMOJI)
         }
@@ -395,7 +393,7 @@ class PhotoEditor private constructor(builder: Builder) :
                     if (addTouchListener) {
                         val multiTouchListenerInstance = getNewMultitouchListener(it) // newMultiTouchListener
                         setGestureControlOnMultiTouchListener(it, viewType, multiTouchListenerInstance)
-                        it.touchableArea?.setOnTouchListener(multiTouchListenerInstance)
+                        it.findViewById<TextView>(R.id.touchableArea)?.setOnTouchListener(multiTouchListenerInstance)
                     }
                 }
             }
@@ -449,7 +447,7 @@ class PhotoEditor private constructor(builder: Builder) :
             }
 
             viewType == TEXT -> {
-                val textInputTv = rootView.tvPhotoEditorText
+                val textInputTv = rootView.findViewById<PhotoEditorTextView>(R.id.tvPhotoEditorText)
                 multiTouchListener.setOnGestureControl(object :
                         MultiTouchListener.OnGestureControl {
                     override fun onClick() {
@@ -478,34 +476,33 @@ class PhotoEditor private constructor(builder: Builder) :
         when (viewType) {
             ViewType.TEXT -> {
                 rootView = layoutInflater.inflate(R.layout.view_photo_editor_text, null)
-                if (rootView.tvPhotoEditorText != null) {
-                    rootView.tvPhotoEditorText.gravity = Gravity.CENTER
+
+                rootView.findViewById<PhotoEditorTextView>(R.id.tvPhotoEditorText)?.let {
+                    it.gravity = Gravity.CENTER
                     if (mDefaultTextTypeface != null) {
-                        rootView.tvPhotoEditorText.identifiableTypeface = mDefaultTextTypeface
+                        it.identifiableTypeface = mDefaultTextTypeface
                     }
                 }
             }
             ViewType.IMAGE -> rootView = layoutInflater.inflate(R.layout.view_photo_editor_image, null)
             ViewType.EMOJI -> {
                 rootView = layoutInflater.inflate(R.layout.view_photo_editor_emoji, null)
-                val txtTextEmoji = rootView.tvPhotoEditorEmoji
-                if (txtTextEmoji != null) {
+                rootView.findViewById<TextView>(R.id.tvPhotoEditorText)?.let {
                     TextViewCompat.setAutoSizeTextTypeWithDefaults(
-                        txtTextEmoji, TextViewCompat.AUTO_SIZE_TEXT_TYPE_UNIFORM)
+                        it, TextViewCompat.AUTO_SIZE_TEXT_TYPE_UNIFORM)
                     if (mDefaultEmojiTypeface != null) {
-                        txtTextEmoji.typeface = mDefaultEmojiTypeface
+                        it.typeface = mDefaultEmojiTypeface
                     }
-                    txtTextEmoji.gravity = Gravity.CENTER
-                    txtTextEmoji.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+                    it.gravity = Gravity.CENTER
+                    it.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
                 }
             }
         }
 
-        if (rootView != null) {
-            // We are setting tag as ViewType to identify what type of the view it is
-            // when we remove the view from stack i.e onRemoveViewListener(ViewType viewType, int numberOfAddedViews);
-            rootView.tag = viewType
-        }
+        // We are setting tag as ViewType to identify what type of the view it is
+        // when we remove the view from stack i.e onRemoveViewListener(ViewType viewType, int numberOfAddedViews);
+        rootView?.tag = viewType
+
         return rootView
     }
 

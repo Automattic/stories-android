@@ -4,17 +4,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.URLUtil
-import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
-import com.wordpress.stories.compose.story.StoryFrameSelectorAdapter.StoryFrameHolder.StoryFrameHolderItem
-import com.wordpress.stories.compose.story.StoryViewModel.StoryFrameListItemUiState
-import com.wordpress.stories.compose.story.StoryViewModel.StoryFrameListItemUiState.StoryFrameListItemUiStateFrame
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
-import com.wordpress.stories.R
-import kotlinx.android.synthetic.main.fragment_story_frame_item.view.*
+import com.wordpress.stories.compose.story.StoryFrameSelectorAdapter.StoryFrameHolder.StoryFrameHolderItem
+import com.wordpress.stories.compose.story.StoryViewModel.StoryFrameListItemUiState
+import com.wordpress.stories.compose.story.StoryViewModel.StoryFrameListItemUiState.StoryFrameListItemUiStateFrame
+import com.wordpress.stories.databinding.FragmentStoryFrameItemBinding
 
 class StoryFrameSelectorAdapter : RecyclerView.Adapter<StoryFrameSelectorAdapter.StoryFrameHolder>() {
     private val items = mutableListOf<StoryFrameListItemUiState>()
@@ -26,9 +24,10 @@ class StoryFrameSelectorAdapter : RecyclerView.Adapter<StoryFrameSelectorAdapter
         return when (viewType) {
             VIEW_TYPE_IMAGE ->
                 StoryFrameHolderItem(
-                    LayoutInflater
-                        .from(parent.context)
-                        .inflate(R.layout.fragment_story_frame_item, parent, false)
+                    FragmentStoryFrameItemBinding.inflate(
+                        LayoutInflater
+                            .from(parent.context)
+                    )
                 )
             else -> throw NotImplementedError("Unknown ViewType")
         }
@@ -71,14 +70,11 @@ class StoryFrameSelectorAdapter : RecyclerView.Adapter<StoryFrameSelectorAdapter
         notifyItemMoved(oldPosition, newPosition)
     }
 
-    sealed class StoryFrameHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val clickableView = view // entire view should be clickable
-        val imageView: ImageView = view.frame_image
-        val frameBorder: ImageView = view.frame_image_selected
-        val frameErrored: ImageView? = view.frame_image_errored
+    sealed class StoryFrameHolder(binding: FragmentStoryFrameItemBinding) : RecyclerView.ViewHolder(binding.root) {
+        val clickableView = binding.root // entire view should be clickable
         abstract fun onBind(uiState: StoryFrameListItemUiState)
 
-        class StoryFrameHolderItem(v: View) : StoryFrameHolder(v) {
+        class StoryFrameHolderItem(val binding: FragmentStoryFrameItemBinding) : StoryFrameHolder(binding) {
             private var onFrameSelected: (() -> Unit)? = null
             private var onFrameLongPressed: (() -> Unit)? = null
 
@@ -100,15 +96,15 @@ class StoryFrameSelectorAdapter : RecyclerView.Adapter<StoryFrameSelectorAdapter
                 val loadThumbnailImage = {
                     // get the first frame in the video, that is the frame located at frameTime 0
                     val options = RequestOptions().frame(0)
-                    Glide.with(imageView.context)
+                    Glide.with(binding.frameImage.context)
                         .load(uiState.filePath)
                         .apply(options)
                         .transform(CenterCrop(), RoundedCorners(8))
-                        .into(imageView)
+                        .into(binding.frameImage)
                 }
 
                 if (URLUtil.isNetworkUrl(uiState.filePath)) {
-                    imageView.postDelayed({
+                    binding.frameImage.postDelayed({
                         loadThumbnailImage()
                     }, REMOTE_DELAY_MILLIS)
                 } else {
@@ -116,17 +112,15 @@ class StoryFrameSelectorAdapter : RecyclerView.Adapter<StoryFrameSelectorAdapter
                 }
 
                 if (uiState.selected) {
-                    frameBorder.visibility = View.VISIBLE
+                    binding.frameImageSelected.visibility = View.VISIBLE
                 } else {
-                    frameBorder.visibility = View.GONE
+                    binding.frameImageSelected.visibility = View.GONE
                 }
 
-                frameErrored?.let {
-                    if (uiState.errored) {
-                        it.visibility = View.VISIBLE
-                    } else {
-                        it.visibility = View.GONE
-                    }
+                if (uiState.errored) {
+                    binding.frameImageErrored.visibility = View.VISIBLE
+                } else {
+                    binding.frameImageErrored.visibility = View.GONE
                 }
             }
         }
