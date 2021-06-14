@@ -9,9 +9,9 @@ import com.wordpress.stories.compose.story.StoryIndex
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
+@SuppressLint("ParcelCreator")
 class StorySaveEvents {
     @Parcelize
-    @SuppressLint("ParcelCreator")
     data class StorySaveResult(
         var storyIndex: StoryIndex = 0,
         val frameSaveResult: MutableList<FrameSaveResult> = mutableListOf(),
@@ -25,19 +25,16 @@ class StorySaveEvents {
         }
     }
     @Parcelize
-    @SuppressLint("ParcelCreator")
     data class FrameSaveResult(val frameIndex: FrameIndex, val resultReason: SaveResultReason) : Parcelable
 
     @Serializable
     sealed class SaveResultReason : Parcelable {
         @Serializable
         @Parcelize
-        @SuppressLint("ParcelCreator")
         object SaveSuccess : SaveResultReason()
 
         @Serializable
         @Parcelize
-        @SuppressLint("ParcelCreator")
         data class SaveError(
             var reason: String? = null
         ) : SaveResultReason()
