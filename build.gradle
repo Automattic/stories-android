@@ -4,16 +4,21 @@ buildscript {
     ext.kotlinVersion = '1.4.10'
     ext.serializationVersion = '1.0-M1-1.4.0-rc'
     repositories {
+        maven {
+            url 'https://a8c-libs.s3.amazonaws.com/android' 
+            content {
+                includeGroup "com.automattic.android"
+            }
+        }
         google()
         jcenter()
         maven { url "https://jitpack.io" }
-        maven { url 'https://a8c-libs.s3.amazonaws.com/android' }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.6.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion"
-        //classpath 'com.automattic.android:fetchstyle:1.1'
+        classpath 'com.automattic.android:fetchstyle:1.1'
         classpath 'io.sentry:sentry-android-gradle-plugin:1.7.27'
         classpath 'com.automattic.android:configure:0.6.1'
 
@@ -22,7 +27,7 @@ buildscript {
     }
 }
 
-//apply plugin: 'com.automattic.android.fetchstyle'
+apply plugin: 'com.automattic.android.fetchstyle'
 apply plugin: 'com.automattic.android.configure'
 
 allprojects {
