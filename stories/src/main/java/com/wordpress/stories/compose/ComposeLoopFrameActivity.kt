@@ -951,6 +951,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         onStoryFrameSelected(-1, storyFrameIndex)
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun addClickListeners() {
         contentComposerBinding.run {
             cameraCaptureButton
@@ -1281,6 +1282,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         storyViewModel.setSelectedFrameByUser(storyViewModel.getSelectedFrameIndex())
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun addCurrentViewsToFrameAtIndex(index: Int) {
         // first, remember the currently added views
         val currentStoryFrameItem = storyViewModel.getCurrentStoryFrameAt(index)
@@ -1916,6 +1918,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         )
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun blockTouchOnPhotoEditor(touchBlockMode: ScreenTouchBlockMode, message: String? = null) {
         contentComposerBinding.run {
             when (touchBlockMode) {
@@ -1974,6 +1977,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun releaseTouchOnPhotoEditor(touchBlockMode: ScreenTouchBlockMode) {
         contentComposerBinding.run {
             when (touchBlockMode) {
