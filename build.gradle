@@ -5,7 +5,7 @@ buildscript {
     ext.serializationVersion = '1.0-M1-1.4.0-rc'
     repositories {
         maven {
-            url 'https://a8c-libs.s3.amazonaws.com/android' 
+            url 'https://a8c-libs.s3.amazonaws.com/android'
             content {
                 includeGroup "com.automattic.android"
             }
@@ -15,7 +15,7 @@ buildscript {
         maven { url "https://jitpack.io" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.0.2'
+        classpath 'com.android.tools.build:gradle:4.2.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion"
         classpath 'com.automattic.android:fetchstyle:1.1'
