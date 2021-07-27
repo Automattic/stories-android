@@ -1,8 +1,8 @@
 static def loadGradleProperties(inputFile) {
-        if (!inputFile.exists()) {
-            throw new StopActionException("Build configuration file gradle.properties doesn't exist, follow README instructions")
-        }
         def properties = new Properties()
+        if (!inputFile.exists()) {
+            return properties
+        }
         inputFile.withInputStream { stream ->
             properties.load(stream)
         }
