@@ -104,27 +104,23 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 }
 
-tasks.register('createBuildConfigFieldsFromProperties') {
-    // Add properties named "loop.xxx" to our BuildConfig
-    android.buildTypes.all { buildType ->
-        def inputFile = file("${rootDir}/gradle.properties")
-        def properties = loadGradleProperties(inputFile)
-        properties.any { property ->
-        if (property.key.toLowerCase().startsWith("loop.")) {
-                buildType.buildConfigField "String", property.key.replace("loop.", "").replace(".", "_").toUpperCase(),
-                        "\"${property.value}\""
-            }
-            else if (property.key.toLowerCase().startsWith("sentry.dsn")) {
-                buildType.buildConfigField "String", property.key.replace(".", "_").toUpperCase(),
-                        "\"${property.value}\""
-            }
-            else if (property.key.toLowerCase().startsWith("loop.res.")) {
-                buildType.resValue "string", property.key.replace("loop.res.", "").replace(".", "_").toLowerCase(),
-                        "${property.value}"
-            }
+// Add properties named "loop.xxx" to our BuildConfig
+android.buildTypes.all { buildType ->
+    def inputFile = file("${rootDir}/gradle.properties")
+    def properties = loadGradleProperties(inputFile)
+    properties.any { property ->
+    if (property.key.toLowerCase().startsWith("loop.")) {
+            buildType.buildConfigField "String", property.key.replace("loop.", "").replace(".", "_").toUpperCase(),
+                    "\"${property.value}\""
+        }
+        else if (property.key.toLowerCase().startsWith("sentry.dsn")) {
+            buildType.buildConfigField "String", property.key.replace(".", "_").toUpperCase(),
+                    "\"${property.value}\""
+        }
+        else if (property.key.toLowerCase().startsWith("loop.res.")) {
+            buildType.resValue "string", property.key.replace("loop.res.", "").replace(".", "_").toLowerCase(),
+                    "${property.value}"
         }
     }
 }
-
-preBuild.dependsOn(tasks.named("createBuildConfigFieldsFromProperties"))
 
