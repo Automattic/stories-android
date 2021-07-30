@@ -57,7 +57,6 @@ captures/
 !/.idea/codeStyleSettings.xml
 !/.idea/encodings.xml
 !/.idea/copyright/
-!/.idea/compiler.xml
 # Enforce plugins
 !/.idea/externalDependencies.xml
 # Checkstyle configuration
