@@ -59,8 +59,6 @@ dependencies {
 
     implementation project(path: ':mp4compose')
 
-    lintChecks 'org.wordpress:lint:1.0.1'
-
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     implementation 'androidx.emoji:emoji:1.0.0'
