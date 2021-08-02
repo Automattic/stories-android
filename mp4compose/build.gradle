@@ -32,6 +32,7 @@ repositories {
         content {
             includeGroup "org.wordpress"
             includeGroup "org.jetbrains.kotlinx"
+            includeGroup "com.andreapivetta.kolor"
         }
     }
 }
