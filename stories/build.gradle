@@ -49,6 +49,7 @@ repositories {
     jcenter() {
         content {
             includeGroup "org.wordpress"
+            includeGroup "org.jetbrains.kotlinx"
         }
     }
 }
