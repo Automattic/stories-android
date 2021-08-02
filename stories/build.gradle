@@ -40,6 +40,19 @@ android {
     }
 }
 
+repositories {
+    google()
+    mavenCentral()
+    maven { url "https://jitpack.io" }
+
+    // jcenter is deprecated, so limit its usage until it's completely removed
+    jcenter() {
+        content {
+            includeGroup "org.wordpress"
+        }
+    }
+}
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
