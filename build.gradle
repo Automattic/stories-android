@@ -33,12 +33,6 @@ apply plugin: 'com.automattic.android.configure'
 allprojects {
     apply plugin: 'checkstyle'
 
-    repositories {
-        google()
-        jcenter()
-        maven { url "https://jitpack.io" }
-    }
-
     if (tasks.findByPath('checkstyle') == null) {
         tasks.create(name: 'checkstyle', type: Checkstyle) {
             source 'src'
