@@ -13,7 +13,6 @@ import android.graphics.drawable.Drawable
 import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
 import android.graphics.Matrix
-import android.hardware.Camera
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
