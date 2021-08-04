@@ -1866,17 +1866,6 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun sendNewStoryFrameReadyBroadcast(mediaFile: File) {
-        // Implicit broadcasts will be ignored for devices running API
-        // level >= 24, so if you only target 24+ you can remove this statement
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-            @Suppress("DEPRECATION")
-            if (mediaFile.extension == "jpg") {
-                sendBroadcast(Intent(Camera.ACTION_NEW_PICTURE, Uri.fromFile(mediaFile)))
-            } else {
-                sendBroadcast(Intent(Camera.ACTION_NEW_VIDEO, Uri.fromFile(mediaFile)))
-            }
-        }
-
         // If the folder selected is an external media directory, this is unnecessary
         // but otherwise other apps will not be able to access our images unless we
         // scan them using [MediaScannerConnection]
@@ -1888,20 +1877,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun sendNewStoryReadyBroadcast(rawMediaFileList: List<File?>) {
-        // Implicit broadcasts will be ignored for devices running API
-        // level >= 24, so if you only target 24+ you can remove this statement
         val mediaFileList = rawMediaFileList.filterNotNull()
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-            @Suppress("DEPRECATION")
-            for (mediaFile in mediaFileList) {
-                if (mediaFile.extension == "jpg") {
-                    sendBroadcast(Intent(Camera.ACTION_NEW_PICTURE, Uri.fromFile(mediaFile)))
-                } else {
-                    sendBroadcast(Intent(Camera.ACTION_NEW_VIDEO, Uri.fromFile(mediaFile)))
-                }
-            }
-        }
-
         val arrayOfmimeTypes = arrayOfNulls<String>(mediaFileList.size)
         val arrayOfPaths = arrayOfNulls<String>(mediaFileList.size)
         for ((index, mediaFile) in mediaFileList.withIndex()) {
