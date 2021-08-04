@@ -124,13 +124,8 @@ class PermissionUtils {
             return true
         }
 
-        fun anyVideoNeededPermissionPermanentlyDenied(activity: Activity): String? {
-            if (Build.VERSION.SDK_INT >= VERSION_CODES.M) {
-                return checkPermanentDenyForPermissions(activity, REQUIRED_PERMISSIONS_WITH_AUDIO)
-            } else {
-                return null
-            }
-        }
+        fun anyVideoNeededPermissionPermanentlyDenied(activity: Activity): String? =
+                checkPermanentDenyForPermissions(activity, REQUIRED_PERMISSIONS_WITH_AUDIO)
 
         @RequiresApi(VERSION_CODES.M)
         private fun checkPermanentDenyForPermissions(activity: Activity, permissions: Array<String>): String? {
