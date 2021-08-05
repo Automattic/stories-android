@@ -1,7 +1,6 @@
 package com.daasuu.mp4compose.composer
 
 import android.media.MediaCodec
-import android.os.Build
 
 import java.nio.ByteBuffer
 
