@@ -1,7 +1,6 @@
 package com.daasuu.mp4compose.composer
 
 import android.media.MediaCodec
-import android.os.Build
 
 import java.nio.ByteBuffer
 
@@ -17,14 +16,10 @@ internal class MediaCodecBufferCompatWrapper(private val mediaCodec: MediaCodec)
     private val outputBuffers: Array<ByteBuffer>? = null
 
     fun getInputBuffer(index: Int): ByteBuffer? {
-        return if (Build.VERSION.SDK_INT >= 21) {
-            mediaCodec.getInputBuffer(index)
-        } else inputBuffers!![index]
+        return mediaCodec.getInputBuffer(index)
     }
 
     fun getOutputBuffer(index: Int): ByteBuffer? {
-        return if (Build.VERSION.SDK_INT >= 21) {
-            mediaCodec.getOutputBuffer(index)
-        } else outputBuffers!![index]
+        return mediaCodec.getOutputBuffer(index)
     }
 }

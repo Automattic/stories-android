@@ -4,11 +4,8 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.hardware.Camera
 import android.media.MediaScannerConnection
-import android.net.Uri
 import android.os.Binder
-import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
@@ -240,19 +237,6 @@ class FrameSaveService : Service() {
     }
 
     private fun sendNewMediaReadyBroadcast(mediaFileList: List<File>) {
-        // Implicit broadcasts will be ignored for devices running API
-        // level >= 24, so if you only target 24+ you can remove this statement
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-            @Suppress("DEPRECATION")
-            for (mediaFile in mediaFileList) {
-                if (mediaFile.extension == "jpg") {
-                    sendBroadcast(Intent(Camera.ACTION_NEW_PICTURE, Uri.fromFile(mediaFile)))
-                } else {
-                    sendBroadcast(Intent(Camera.ACTION_NEW_VIDEO, Uri.fromFile(mediaFile)))
-                }
-            }
-        }
-
         val arrayOfmimeTypes = arrayOfNulls<String>(mediaFileList.size)
         val arrayOfPaths = arrayOfNulls<String>(mediaFileList.size)
         for ((index, mediaFile) in mediaFileList.withIndex()) {

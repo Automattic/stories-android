@@ -128,10 +128,6 @@ class Mp4ComposerEngineBasic {
                     outputResolution,
                     iFrameInterval
             );
-            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) {
-                // Only LOLLIPOP sets KEY_FRAME_RATE here.
-                actualVideoOutputFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 30);
-            }
 
             // setup video composer
             videoComposer = new VideoComposer(

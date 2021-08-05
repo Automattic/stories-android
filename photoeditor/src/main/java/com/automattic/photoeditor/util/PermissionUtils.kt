@@ -5,7 +5,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Build.VERSION_CODES
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
@@ -124,13 +123,8 @@ class PermissionUtils {
             return true
         }
 
-        fun anyVideoNeededPermissionPermanentlyDenied(activity: Activity): String? {
-            if (Build.VERSION.SDK_INT >= VERSION_CODES.M) {
-                return checkPermanentDenyForPermissions(activity, REQUIRED_PERMISSIONS_WITH_AUDIO)
-            } else {
-                return null
-            }
-        }
+        fun anyVideoNeededPermissionPermanentlyDenied(activity: Activity): String? =
+                checkPermanentDenyForPermissions(activity, REQUIRED_PERMISSIONS_WITH_AUDIO)
 
         @RequiresApi(VERSION_CODES.M)
         private fun checkPermanentDenyForPermissions(activity: Activity, permissions: Array<String>): String? {
