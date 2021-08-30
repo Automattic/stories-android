@@ -74,6 +74,7 @@ import com.bumptech.glide.load.resource.bitmap.BitmapTransformation
 import com.bumptech.glide.load.resource.bitmap.FitCenter
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.bumptech.glide.request.FutureTarget
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.github.chrisbanes.photoview.PhotoView
@@ -119,6 +120,7 @@ import com.wordpress.stories.databinding.ActivityComposerBinding
 import com.wordpress.stories.databinding.ContentComposerBinding
 import com.wordpress.stories.util.KEY_STORY_EDIT_MODE
 import com.wordpress.stories.util.KEY_STORY_SAVE_RESULT
+import com.wordpress.stories.util.LOG_TAG
 import com.wordpress.stories.util.STATE_KEY_CURRENT_STORY_INDEX
 import com.wordpress.stories.util.TARGET_RATIO_9_16
 import com.wordpress.stories.util.calculateAspectRatioForDrawable
@@ -138,6 +140,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import java.io.File
 import java.io.IOException
+import java.util.concurrent.ExecutionException
 import kotlin.math.abs
 
 fun Group.setAllOnClickListener(listener: OnClickListener?) {
@@ -2088,12 +2091,24 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 ?: (frame.source as UriBackgroundSource).contentUri
 
         CoroutineScope(Dispatchers.IO).launch {
-            val futureTarget = Glide.with(this@ComposeLoopFrameActivity)
-                    .asDrawable()
-                    .load(model)
-                    .fitCenter() // we use fitCenter at first (instead of cropping) so we don't lose any information
-                    .submit(screenWidth, screenHeight) // we're not going to export images greater than the screen size
-            val drawable = futureTarget.get()
+            var futureTarget: FutureTarget<Drawable>? = null
+            var drawable: Drawable? = null
+            try {
+                futureTarget = Glide.with(this@ComposeLoopFrameActivity)
+                        .asDrawable()
+                        .load(model)
+                        .fitCenter() // we use fitCenter at first (instead of cropping) so we don't lose any information
+                        .submit(screenWidth, screenHeight) // we're not going to export images greater than the screen size
+                drawable = futureTarget?.get()
+            } catch (e: ExecutionException) {
+                Log.d(LOG_TAG, "See issue #15096 notify failed with:$e")
+            } catch (e: InterruptedException) {
+                Log.d(LOG_TAG, "See issue #15096 notify failed with:$e")
+            } catch (e: IOException) {
+                Log.d(LOG_TAG, "See issue #15096 notify failed with:$e")
+            } finally {
+                futureTarget?.cancel(true)
+            }
 
             val doAfterUse = object : ImageLoadedInterface {
                 override fun doAfter() {
@@ -2113,37 +2128,48 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 }
             }
 
-            withContext(Dispatchers.Main) {
-                // 1. if the image being loaded matches the aspect ratio of the device screen, use center_crop
-                //      no parts would actually be cropped, given the matching aspect ratio it should fit
-                //      except the opaque bar given we're normalizing to 9:16 on export
-                val drawableAspectRatio = calculateAspectRatioForDrawable(drawable)
-                contentComposerBinding.bottomOpaqueBar.visibility = View.VISIBLE
-                if (isAspectRatioSimilarByPercentage(drawableAspectRatio, screenSizeRatio, 0.01f)) {
-                    contentComposerBinding.photoEditorView.source.scaleType = CENTER_CROP
-                    loadImageWithGlideToDraw(drawable, CenterCrop(), screenWidth, screenHeight, doAfterUse)
-                } else {
-                    // 2. if the device is taller than 9:16, and image is portrait
-                    // just crop the bottom (showing the opaque bar)
-                    if (isScreenTallerThan916(screenWidth, screenHeight) &&
-                            (drawable.intrinsicHeight > drawable.intrinsicWidth)
-                    ) {
-                        val transformToUse = if (drawable.intrinsicWidth >= screenWidth) {
-                            // this aligns to top so there's no top black bar
-                            contentComposerBinding.photoEditorView.source.scaleType = FIT_START
-                            null
-                        } else {
-                            contentComposerBinding.photoEditorView.source.scaleType = FIT_CENTER
-                            FitCenter()
-                        }
-                        loadImageWithGlideToDraw(drawable, transformToUse,
-                                normalizedSize.width, normalizedSize.height, doAfterUse)
+            if (drawable != null) {
+                matchAspectRatio(drawable, doAfterUse)
+            }
+        }
+    }
+
+    private suspend fun matchAspectRatio(
+        drawable: Drawable,
+        doAfterUse: ImageLoadedInterface
+    ) {
+        withContext(Dispatchers.Main) {
+            // 1. if the image being loaded matches the aspect ratio of the device screen, use center_crop
+            //      no parts would actually be cropped, given the matching aspect ratio it should fit
+            //      except the opaque bar given we're normalizing to 9:16 on export
+            val drawableAspectRatio = calculateAspectRatioForDrawable(drawable)
+            contentComposerBinding.bottomOpaqueBar.visibility = View.VISIBLE
+            if (isAspectRatioSimilarByPercentage(drawableAspectRatio, screenSizeRatio, 0.01f)) {
+                contentComposerBinding.photoEditorView.source.scaleType = CENTER_CROP
+                loadImageWithGlideToDraw(drawable, CenterCrop(), screenWidth, screenHeight, doAfterUse)
+            } else {
+                // 2. if the device is taller than 9:16, and image is portrait
+                // just crop the bottom (showing the opaque bar)
+                if (isScreenTallerThan916(screenWidth, screenHeight) &&
+                        (drawable.intrinsicHeight > drawable.intrinsicWidth)
+                ) {
+                    val transformToUse = if (drawable.intrinsicWidth >= screenWidth) {
+                        // this aligns to top so there's no top black bar
+                        contentComposerBinding.photoEditorView.source.scaleType = FIT_START
+                        null
                     } else {
-                        // 3. else, load with fit-center (black bars on the side that doesn't fit)
-                        // see https://developer.android.com/reference/android/graphics/Matrix.ScaleToFit#CENTER
                         contentComposerBinding.photoEditorView.source.scaleType = FIT_CENTER
-                        loadImageWithGlideToDraw(drawable, FitCenter(), screenWidth, screenHeight, doAfterUse)
+                        FitCenter()
                     }
+                    loadImageWithGlideToDraw(
+                            drawable, transformToUse,
+                            normalizedSize.width, normalizedSize.height, doAfterUse
+                    )
+                } else {
+                    // 3. else, load with fit-center (black bars on the side that doesn't fit)
+                    // see https://developer.android.com/reference/android/graphics/Matrix.ScaleToFit#CENTER
+                    contentComposerBinding.photoEditorView.source.scaleType = FIT_CENTER
+                    loadImageWithGlideToDraw(drawable, FitCenter(), screenWidth, screenHeight, doAfterUse)
                 }
             }
         }
