@@ -94,7 +94,7 @@ ext {
     compileSdkVersion = 28
     buildToolVersion = '28.0.3'
 
-    minSdkVersion = 21
+    minSdkVersion = 24
     targetSdkVersion = 28
 
     lifecycleVersion = '2.2.0'
