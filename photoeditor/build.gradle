@@ -60,7 +60,7 @@ dependencies {
     
     implementation 'com.github.chrisbanes:PhotoView:2.3.0'
 
-    implementation project(path: ':mp4compose')
+    implementation mp4composeProjectDependency
 
     lintChecks 'org.wordpress:lint:1.0.1'
 

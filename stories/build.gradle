@@ -68,7 +68,7 @@ dependencies {
 
     implementation 'org.greenrobot:eventbus:3.2.0'
 
-    implementation project(path: ':photoeditor')
+    implementation photoEditorProjectDependency
 
     // lifecycle
     implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycleVersion"
