@@ -15,6 +15,7 @@ steps:
     plugins:
       - *publish-android-artifacts-docker-container
     command: |
+      cp gradle.properties-example gradle.properties
       .buildkite/publish-mp4compose.sh
 
   - label: "Publish :photoeditor"
@@ -24,6 +25,7 @@ steps:
     plugins:
       - *publish-android-artifacts-docker-container
     command: |
+      cp gradle.properties-example gradle.properties
       .buildkite/publish-photoeditor.sh
 
   - label: "Publish :stories"
@@ -33,4 +35,5 @@ steps:
     plugins:
       - *publish-android-artifacts-docker-container
     command: |
+      cp gradle.properties-example gradle.properties
       .buildkite/publish-stories.sh
