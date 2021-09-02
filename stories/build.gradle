@@ -112,3 +112,21 @@ android.buildTypes.all { buildType ->
     }
 }
 
+project.afterEvaluate {
+    publishing {
+        publications {
+            StoriesPublication(MavenPublication) {
+                from components.release
+
+                groupId "org.wordpress"
+                artifactId "stories"
+                // version is set by 'publish-to-s3' plugin
+            }
+        }
+   }
+}
+
+publishToS3Plugin {
+    mavenPublishGroupId "org.wordpress"
+    mavenPublishArtifactId "stories"
+}

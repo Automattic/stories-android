@@ -37,3 +37,22 @@ dependencies {
 repositories {
     mavenCentral()
 }
+
+project.afterEvaluate {
+    publishing {
+        publications {
+            MP4ComposePublication(MavenPublication) {
+                from components.release
+
+                groupId "org.wordpress.stories"
+                artifactId "mp4compose"
+                // version is set by 'publish-to-s3' plugin
+            }
+        }
+   }
+}
+
+publishToS3Plugin {
+    mavenPublishGroupId "org.wordpress.stories"
+    mavenPublishArtifactId "mp4compose"
+}

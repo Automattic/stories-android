@@ -71,3 +71,22 @@ dependencies {
 repositories {
     mavenCentral()
 }
+
+project.afterEvaluate {
+    publishing {
+        publications {
+            PhotoEditorPublication(MavenPublication) {
+                from components.release
+
+                groupId "org.wordpress.stories"
+                artifactId "photoeditor"
+                // version is set by 'publish-to-s3' plugin
+            }
+        }
+   }
+}
+
+publishToS3Plugin {
+    mavenPublishGroupId "org.wordpress.stories"
+    mavenPublishArtifactId "photoeditor"
+}
