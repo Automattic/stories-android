@@ -118,7 +118,7 @@ project.afterEvaluate {
             StoriesPublication(MavenPublication) {
                 from components.release
 
-                groupId "org.wordpress"
+                groupId "com.automattic"
                 artifactId "stories"
                 // version is set by 'publish-to-s3' plugin
             }
@@ -127,6 +127,6 @@ project.afterEvaluate {
 }
 
 publishToS3Plugin {
-    mavenPublishGroupId "org.wordpress"
+    mavenPublishGroupId "com.automattic"
     mavenPublishArtifactId "stories"
 }

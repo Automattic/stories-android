@@ -78,7 +78,7 @@ project.afterEvaluate {
             PhotoEditorPublication(MavenPublication) {
                 from components.release
 
-                groupId "org.wordpress.stories"
+                groupId "com.automattic.stories"
                 artifactId "photoeditor"
                 // version is set by 'publish-to-s3' plugin
             }
@@ -87,6 +87,6 @@ project.afterEvaluate {
 }
 
 publishToS3Plugin {
-    mavenPublishGroupId "org.wordpress.stories"
+    mavenPublishGroupId "com.automattic.stories"
     mavenPublishArtifactId "photoeditor"
 }
