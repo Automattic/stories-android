@@ -1,4 +1,4 @@
-package com.wordpress.stories.compose.event
+package com.wordpress.stories.compose.frame
 
 import com.wordpress.stories.compose.story.StoryIndex
 

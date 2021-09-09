@@ -88,6 +88,8 @@ import com.wordpress.stories.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_PHOTO
 import com.wordpress.stories.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY
 import com.wordpress.stories.compose.emoji.EmojiPickerFragment
 import com.wordpress.stories.compose.emoji.EmojiPickerFragment.EmojiListener
+import com.wordpress.stories.compose.frame.StoryLoadEvents.StoryLoadEnd
+import com.wordpress.stories.compose.frame.StoryLoadEvents.StoryLoadStart
 import com.wordpress.stories.compose.frame.FrameIndex
 import com.wordpress.stories.compose.frame.FrameSaveManager
 import com.wordpress.stories.compose.frame.FrameSaveNotifier
@@ -747,6 +749,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     protected open fun onLoadFromIntent(intent: Intent) {
+        EventBus.getDefault().post(StoryLoadStart(storyIndexToSelect))
         firstIntentLoaded = true
         val partialCameraOperationInProgress = intent.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED) ||
             permissionsRequestForCameraInProgress
@@ -754,11 +757,15 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         if (storyViewModel.getCurrentStoryIndex() == StoryRepository.DEFAULT_NONE_SELECTED) {
             storyViewModel.loadStory(storyIndexToSelect)
             storyIndexToSelect = storyViewModel.getCurrentStoryIndex()
+            // dispatch StoryLoadEnd event
+            EventBus.getDefault().post(StoryLoadEnd(storyIndexToSelect))
         } else if (!partialCameraOperationInProgress && storyIndexToSelect != StoryRepository.DEFAULT_NONE_SELECTED &&
             StoryRepository.getStoryAtIndex(storyIndexToSelect).frames.isNotEmpty()) {
             storyViewModel.loadStory(storyIndexToSelect)
             onStoryFrameSelected(oldIndex = StoryRepository.DEFAULT_FRAME_NONE_SELECTED, newIndex = 0)
             showGenericAnnouncementDialogWhenReady = true
+            // dispatch StoryLoadEnd event
+            EventBus.getDefault().post(StoryLoadEnd(storyIndexToSelect))
             return
         }
 
@@ -780,6 +787,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 } else {
                     onStoryFrameSelected(oldIndex = StoryRepository.DEFAULT_FRAME_NONE_SELECTED, newIndex = 0)
                 }
+                // dispatch StoryLoadEnd event
+                EventBus.getDefault().post(StoryLoadEnd(storyIndexToSelect))
             } else {
                 showToast(getString(R.string.toast_story_page_not_found))
                 finish()
@@ -790,6 +799,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             )
             addFramesToStoryFromMediaUriList(uriList)
             setDefaultSelectionAndUpdateBackgroundSurfaceUI(uriList)
+            // dispatch StoryLoadEnd event
+            EventBus.getDefault().post(StoryLoadEnd(storyIndexToSelect))
         } else if (intent.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_MEDIA_PICKER_REQUESTED)) {
             showMediaPicker()
             firstIntentLoaded = true

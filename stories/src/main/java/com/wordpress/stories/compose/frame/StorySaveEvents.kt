@@ -1,11 +1,10 @@
-package com.wordpress.stories.compose.event
+package com.wordpress.stories.compose.frame
 
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Parcelable
-import com.wordpress.stories.compose.event.StorySaveEvents.SaveResultReason.SaveError
-import com.wordpress.stories.compose.event.StorySaveEvents.SaveResultReason.SaveSuccess
-import com.wordpress.stories.compose.frame.FrameIndex
+import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveError
+import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess
 import com.wordpress.stories.compose.story.StoryIndex
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
