@@ -749,6 +749,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     protected open fun onLoadFromIntent(intent: Intent) {
+        // dispatch StoryLoadStart event
         EventBus.getDefault().post(StoryLoadStart(storyIndexToSelect))
         firstIntentLoaded = true
         val partialCameraOperationInProgress = intent.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED) ||
