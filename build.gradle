@@ -91,11 +91,11 @@ subprojects {
 }
 
 ext {
-    compileSdkVersion = 28
+    compileSdkVersion = 30
     buildToolVersion = '28.0.3'
 
     minSdkVersion = 24
-    targetSdkVersion = 28
+    targetSdkVersion = 30
 
     lifecycleVersion = '2.2.0'
     coroutinesVersion = '1.3.9'

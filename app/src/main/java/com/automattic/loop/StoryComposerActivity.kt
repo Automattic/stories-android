@@ -78,11 +78,12 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK && data != null) {
             if (data.hasExtra(PhotoPickerActivity.EXTRA_MEDIA_URIS)) {
-                val uriList: List<Uri> = convertStringArrayIntoUrisList(
-                        data.getStringArrayExtra(PhotoPickerActivity.EXTRA_MEDIA_URIS)
-                )
-                // if there are any external Uris in this list, copy them locally before trying to use them
-                processExternalUris(uriList)
+                val mediaUris = data.getStringArrayExtra(PhotoPickerActivity.EXTRA_MEDIA_URIS)
+                if (mediaUris != null) {
+                    val uriList: List<Uri> = convertStringArrayIntoUrisList(mediaUris)
+                    // if there are any external Uris in this list, copy them locally before trying to use them
+                    processExternalUris(uriList)
+                }
             }
         }
     }

@@ -795,11 +795,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 finish()
             }
         } else if (intent.hasExtra(requestCodes.EXTRA_MEDIA_URIS)) {
-            val uriList: List<Uri> = convertStringArrayIntoUrisList(
-                intent.getStringArrayExtra(requestCodes.EXTRA_MEDIA_URIS)
-            )
-            addFramesToStoryFromMediaUriList(uriList)
-            setDefaultSelectionAndUpdateBackgroundSurfaceUI(uriList)
+            setMediaUris(intent)
             // dispatch StoryLoadEnd event
             EventBus.getDefault().post(StoryLoadEnd(storyIndexToSelect))
         } else if (intent.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_MEDIA_PICKER_REQUESTED)) {
@@ -900,11 +896,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             requestCodes.PHOTO_PICKER -> if (resultCode == Activity.RESULT_OK && data != null) {
                 val providerHandlesMediaPickerResult = mediaPickerProvider?.providerHandlesOnActivityResult() ?: false
                 if (data.hasExtra(requestCodes.EXTRA_MEDIA_URIS) && !providerHandlesMediaPickerResult) {
-                    val uriList: List<Uri> = convertStringArrayIntoUrisList(
-                        data.getStringArrayExtra(requestCodes.EXTRA_MEDIA_URIS)
-                    )
-                    addFramesToStoryFromMediaUriList(uriList)
-                    setDefaultSelectionAndUpdateBackgroundSurfaceUI(uriList)
+                    setMediaUris(data)
                 } else if (data.hasExtra(requestCodes.EXTRA_LAUNCH_WPSTORIES_CAMERA_REQUESTED)) {
                     if (!PermissionUtils.allRequiredPermissionsGranted(this)) {
                         // at this point, the user wants to launch the camera
@@ -922,6 +914,15 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 // EXTRA_LAUNCH_WPSTORIES_MEDIA_PICKER_REQUESTED to start the Story with, we should cancel.
                 finishWhenEmptyStory()
             }
+        }
+    }
+
+    private fun setMediaUris(intent: Intent) {
+        val mediaUris = intent.getStringArrayExtra(requestCodes.EXTRA_MEDIA_URIS)
+        if (mediaUris != null) {
+            val uriList: List<Uri> = convertStringArrayIntoUrisList(mediaUris)
+            addFramesToStoryFromMediaUriList(uriList)
+            setDefaultSelectionAndUpdateBackgroundSurfaceUI(uriList)
         }
     }
 

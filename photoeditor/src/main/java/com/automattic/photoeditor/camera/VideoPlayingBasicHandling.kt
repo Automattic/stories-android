@@ -141,7 +141,7 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
     private fun startUp() {
         if (textureView.isAvailable && active) {
             CoroutineScope(Dispatchers.Main).launch {
-                startVideoPlay(textureView.surfaceTexture)
+                textureView.surfaceTexture?.let { startVideoPlay(it) }
             }
         }
     }
@@ -270,10 +270,10 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
             videoOrientation = rotation
         } catch (e: IOException) {
             playerPreparedListener?.onPlayerError()
-            Log.d(TAG, e.message)
+            Log.d(TAG, e.message.toString())
         } catch (e: NumberFormatException) {
             playerPreparedListener?.onPlayerError()
-            Log.d(TAG, e.message)
+            Log.d(TAG, e.message.toString())
         } catch (e: IllegalArgumentException) {
             playerPreparedListener?.onPlayerError()
             Log.e(TAG, "Can't read duration of the video.", e)
