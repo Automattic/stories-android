@@ -79,8 +79,8 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
         if (resultCode == Activity.RESULT_OK && data != null) {
             if (data.hasExtra(PhotoPickerActivity.EXTRA_MEDIA_URIS)) {
                 val mediaUris = data.getStringArrayExtra(PhotoPickerActivity.EXTRA_MEDIA_URIS)
-                if (mediaUris != null) {
-                    val uriList: List<Uri> = convertStringArrayIntoUrisList(mediaUris)
+                mediaUris?.let {
+                    val uriList: List<Uri> = convertStringArrayIntoUrisList(it)
                     // if there are any external Uris in this list, copy them locally before trying to use them
                     processExternalUris(uriList)
                 }
