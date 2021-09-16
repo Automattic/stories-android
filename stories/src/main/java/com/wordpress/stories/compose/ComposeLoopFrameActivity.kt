@@ -918,8 +918,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun setMediaUris(intent: Intent) {
-        val mediaUris = intent.getStringArrayExtra(requestCodes.EXTRA_MEDIA_URIS)
-        mediaUris?.let {
+        intent.getStringArrayExtra(requestCodes.EXTRA_MEDIA_URIS)?.let {
             val uriList: List<Uri> = convertStringArrayIntoUrisList(it)
             addFramesToStoryFromMediaUriList(uriList)
             setDefaultSelectionAndUpdateBackgroundSurfaceUI(uriList)
