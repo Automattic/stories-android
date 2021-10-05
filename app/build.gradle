@@ -1,7 +1,10 @@
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-kapt'
-apply plugin: 'io.sentry.android.gradle'
+plugins {
+    id "com.android.application"
+    id "org.jetbrains.kotlin.android"
+    id "io.sentry.android.gradle"
+    id "org.jetbrains.kotlin.kapt"
+}
+
 apply from: "../stories-common.gradle"
 
 android {
@@ -63,7 +66,7 @@ ext {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
+    implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$gradle.ext.kotlinVersion"
 
     implementation "androidx.appcompat:appcompat:$appCompatVersion"
     implementation "androidx.constraintlayout:constraintlayout:$constraintLayoutVersion"

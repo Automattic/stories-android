@@ -1,8 +1,12 @@
-apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-kapt'
-apply plugin: 'kotlinx-serialization'
-apply plugin: 'kotlin-parcelize'
+plugins {
+    id "com.android.library"
+    id "org.jetbrains.kotlin.android"
+    id "org.jetbrains.kotlin.kapt"
+    id "org.jetbrains.kotlin.plugin.serialization"
+    id "org.jetbrains.kotlin.plugin.parcelize"
+    id "com.automattic.android.publish-to-s3"
+}
+
 apply from: "../stories-common.gradle"
 
 android {
@@ -42,9 +46,9 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$gradle.ext.kotlinVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serializationVersion"
-    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$gradle.ext.kotlinVersion"
 
     implementation "androidx.appcompat:appcompat:$appCompatVersion"
     implementation "androidx.constraintlayout:constraintlayout:$constraintLayoutVersion"
@@ -64,7 +68,7 @@ dependencies {
 
     implementation 'org.greenrobot:eventbus:3.2.0'
 
-    implementation project(path: ':photoeditor')
+    implementation photoEditorProjectDependency
 
     // lifecycle
     implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycleVersion"
@@ -80,7 +84,7 @@ dependencies {
     lintChecks 'org.wordpress:lint:1.0.1'
 
     testImplementation 'junit:junit:4.12'
-    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion"
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$gradle.ext.kotlinVersion"
 
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
@@ -108,3 +112,21 @@ android.buildTypes.all { buildType ->
     }
 }
 
+project.afterEvaluate {
+    publishing {
+        publications {
+            StoriesPublication(MavenPublication) {
+                from components.release
+
+                groupId "com.automattic"
+                artifactId "stories"
+                // version is set by 'publish-to-s3' plugin
+            }
+        }
+   }
+}
+
+publishToS3Plugin {
+    mavenPublishGroupId "com.automattic"
+    mavenPublishArtifactId "stories"
+}
