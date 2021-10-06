@@ -1,7 +1,45 @@
-include ':app'
-include ':mp4compose'
-project(':mp4compose').projectDir = new File(rootProject.projectDir, '/mp4compose')
-include ':photoeditor'
-project(':photoeditor').projectDir = new File(rootProject.projectDir, '/photoeditor')
-include ':stories'
-project(':stories').projectDir = new File(rootProject.projectDir, '/stories')
+pluginManagement {
+    gradle.ext.kotlinVersion = '1.4.20'
+    gradle.ext.agpVersion = '4.2.2'
+
+    plugins {
+        id "org.jetbrains.kotlin.android" version gradle.ext.kotlinVersion
+        id "org.jetbrains.kotlin.kapt" version gradle.ext.kotlinVersion
+        id "org.jetbrains.kotlin.plugin.serialization" version gradle.ext.kotlinVersion
+        id "org.jetbrains.kotlin.plugin.parcelize" version gradle.ext.kotlinVersion
+        id "com.android.application" version gradle.ext.agpVersion
+        id "com.android.library" version gradle.ext.agpVersion
+        id "io.sentry.android.gradle" version "2.0.0"
+        id "com.automattic.android.publish-to-s3" version "0.6.1"
+    }
+    repositories {
+        maven {
+            url 'https://a8c-libs.s3.amazonaws.com/android' 
+            content {
+                includeGroup "com.automattic.android"
+                includeGroup "com.automattic.android.publish-to-s3"
+            }
+        }
+        gradlePluginPortal()
+        google()
+        jcenter()
+    }
+    resolutionStrategy {
+        eachPlugin {
+            // TODO: Remove this as soon as fetchstyle starts supporting Plugin Marker Artifacts
+            if (requested.id.id == "com.automattic.android.fetchstyle") {
+                useModule("com.automattic.android:fetchstyle:1.1")
+            }
+            // TODO: Remove this as soon as configure starts supporting Plugin Marker Artifacts
+            if (requested.id.id == "com.automattic.android.configure") {
+                useModule("com.automattic.android:configure:0.6.1")
+            }
+        }
+    }
+}
+
+include ':app',
+        ':mp4compose',
+        ':photoeditor',
+        ':stories'
+

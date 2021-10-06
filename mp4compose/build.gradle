@@ -1,5 +1,8 @@
-apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
+plugins {
+    id "com.android.library"
+    id "org.jetbrains.kotlin.android"
+    id "com.automattic.android.publish-to-s3"
+}
 
 android {
     compileSdkVersion rootProject.compileSdkVersion
@@ -25,7 +28,7 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$gradle.ext.kotlinVersion"
 
     implementation 'com.github.bumptech.glide:glide:4.10.0'
 
@@ -33,4 +36,23 @@ dependencies {
 }
 repositories {
     mavenCentral()
+}
+
+project.afterEvaluate {
+    publishing {
+        publications {
+            MP4ComposePublication(MavenPublication) {
+                from components.release
+
+                groupId "com.automattic.stories"
+                artifactId "mp4compose"
+                // version is set by 'publish-to-s3' plugin
+            }
+        }
+   }
+}
+
+publishToS3Plugin {
+    mavenPublishGroupId "com.automattic.stories"
+    mavenPublishArtifactId "mp4compose"
 }
