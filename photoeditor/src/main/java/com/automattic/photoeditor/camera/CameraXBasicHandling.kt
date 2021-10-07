@@ -150,7 +150,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
             val parent = textureView.parent as ViewGroup
             parent.removeView(textureView)
             parent.addView(textureView, 0)
-            textureView.surfaceTexture = it.surfaceTexture
+            textureView.setSurfaceTexture(it.surfaceTexture)
         }
 
         // we used to bind all use cases to lifecycle on start

@@ -274,7 +274,7 @@ class PhotoEditorView : RelativeLayout {
             })
         } else if (autoFitTextureView.visibility == View.VISIBLE) {
             // this saves just a snapshot of whatever is being displayed on the TextureSurface
-            backgroundImage.setImageBitmap(autoFitTextureView.bitmap)
+            autoFitTextureView.bitmap?.let { backgroundImage.setImageBitmap(it) }
             toggleTextureView()
             onSaveBitmap.onBitmapReady(backgroundImage.bitmap!!)
         } else {
