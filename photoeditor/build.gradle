@@ -80,13 +80,9 @@ project.afterEvaluate {
 
                 groupId "com.automattic.stories"
                 artifactId "photoeditor"
+                artifact tasks.named("androidSourcesJar") // This task is added by 'publish-to-s3' plugin
                 // version is set by 'publish-to-s3' plugin
             }
         }
    }
-}
-
-publishToS3Plugin {
-    mavenPublishGroupId "com.automattic.stories"
-    mavenPublishArtifactId "photoeditor"
 }
