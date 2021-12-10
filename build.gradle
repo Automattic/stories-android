@@ -17,6 +17,7 @@ allprojects {
             content {
                 includeGroup "com.automattic"
                 includeGroup "com.automattic.stories"
+                includeGroup "org.wordpress"
             }
         }
         google()
