@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources">
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="button_height">64dp</dimen>
 
