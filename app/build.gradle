@@ -55,6 +55,7 @@ android {
     lintOptions {
         abortOnError false
         lintConfig file('lint.xml')
+        disable("IconLocation")
     }
 
     useLibrary 'android.test.runner'
