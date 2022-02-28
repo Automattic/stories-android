@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">loop</string>
 
     <string name="main_placeholder">Still working on this! Tap the + to continue.</string>
@@ -32,12 +32,12 @@
     <string name="photo_picker_soft_ask_allow">Allow</string>
     <string name="photo_picker_soft_ask_label">%s needs permissions to access your photos</string>
     <string name="photo_picker_device_desc">pick from device</string>
-    <string name="photo_picker_camera_desc">open camera</string>
-    <string name="photo_picker_wpmedia_desc">pick from WordPress media</string>
+    <string name="photo_picker_camera_desc" tools:ignore="UnusedResources">open camera</string>
+    <string name="photo_picker_wpmedia_desc" tools:ignore="UnusedResources">pick from WordPress media</string>
     <string name="content_description_person_reading_device_notification">Person reading device with notifications</string>
 
     <string name="dialog_general_announcement_title">General announcement</string>
-    <string name="dialog_general_announcement_message">This is an announcement you can make from the host app</string>
+    <string name="dialog_general_announcement_message" tools:ignore="UnusedResources">This is an announcement you can make from the host app</string>
 
     <!-- Photo picker - Loop   -->
     <string name="photo_picker_add_photos_to_story">Choose the photos and videos you\'d like to add to your story</string>
