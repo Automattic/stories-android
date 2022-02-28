@@ -1,7 +1,7 @@
-<resources>
-    <dimen name="margin_extra_small">2dp</dimen>
-    <dimen name="margin_medium">8dp</dimen>
-    <dimen name="margin_extra_large">16dp</dimen>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <dimen name="margin_extra_small" tools:ignore="UnusedResources">2dp</dimen>
+    <dimen name="margin_medium" tools:ignore="UnusedResources">8dp</dimen>
+    <dimen name="margin_extra_large" tools:ignore="UnusedResources">16dp</dimen>
 
     <dimen name="round_button_large">92dp</dimen>
     <dimen name="round_button_circle_stroke">4dp</dimen>
