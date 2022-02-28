@@ -13,11 +13,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end|bottom"
-        android:backgroundTint="@color/pink_50"
-        android:tint="@color/white"
-        android:src="@drawable/ic_photo_camera_24px"
         android:layout_margin="@dimen/fab_margin"
-        tools:ignore="InconsistentLayout"/>
+        android:backgroundTint="@color/pink_50"
+        android:src="@drawable/ic_photo_camera_24px"
+        android:tint="@color/white"
+        tools:ignore="ContentDescription,InconsistentLayout" />
 
     <LinearLayout
         android:layout_width="match_parent"
