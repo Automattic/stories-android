@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <scale xmlns:android="http://schemas.android.com/apk/res/android"
+       xmlns:tools="http://schemas.android.com/tools"
+       tools:ignore="UnusedResources"
        android:duration="@android:integer/config_longAnimTime"
        android:fillAfter="true"
        android:fromXScale="0.0"
