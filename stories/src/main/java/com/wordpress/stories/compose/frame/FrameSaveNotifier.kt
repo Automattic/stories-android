@@ -297,7 +297,7 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
             context,
             notificationId,
             notificationIntent,
-            PendingIntent.FLAG_ONE_SHOT
+            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
         )
 
         notificationBuilder.setSmallIcon(android.R.drawable.stat_notify_error)
