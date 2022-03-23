@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
@@ -25,7 +25,7 @@
         <item name="colorAccent">?attr/colorPrimary</item>
     </style>
 
-    <style name="EditText">
+    <style name="EditText" tools:ignore="UnusedResources">
         <item name="android:singleLine">true</item>
         <item name="colorControlNormal">#FFFFFF</item>
         <item name="colorControlActivated">#FFFFFF</item>

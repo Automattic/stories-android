@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <color name="colorPrimary">@color/colorPrimary_wp</color>
     <color name="colorPrimaryDark">@color/colorPrimaryDark_wp</color>
     <color name="colorAccent">@color/colorAccent_wp</color>
@@ -8,11 +8,11 @@
     <color name="colorPrimaryDark_wp">#006088</color>
     <color name="colorAccent_wp">@color/white</color>
 
-    <color name="pink_50">#c9356e</color>
+    <color name="pink_50" tools:ignore="UnusedResources">#c9356e</color>
 
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
-    <color name="grey">#888888</color>
+    <color name="grey" tools:ignore="UnusedResources">#888888</color>
     <color name="gray_10">#C3C4C7</color>
     <color name="black_transp">#99000000</color>
     <color name="black_transp_light">#66000000</color>
@@ -39,5 +39,5 @@
     <color name="red_50">#d63638</color>
     <color name="red_30">#f86368</color>
     <color name="background_dark">#121212</color>
-    <color name="background_dark_elevated">#2e2e2e</color>
+    <color name="background_dark_elevated" tools:ignore="UnusedResources">#2e2e2e</color>
 </resources>
