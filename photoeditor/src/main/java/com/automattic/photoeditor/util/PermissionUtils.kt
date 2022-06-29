@@ -5,7 +5,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.os.Build.VERSION_CODES
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
