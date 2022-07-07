@@ -5,8 +5,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.os.Build.VERSION_CODES
-import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
@@ -126,7 +124,6 @@ class PermissionUtils {
         fun anyVideoNeededPermissionPermanentlyDenied(activity: Activity): String? =
                 checkPermanentDenyForPermissions(activity, REQUIRED_PERMISSIONS_WITH_AUDIO)
 
-        @RequiresApi(VERSION_CODES.M)
         private fun checkPermanentDenyForPermissions(activity: Activity, permissions: Array<String>): String? {
             for (permission in permissions) {
                 if (ContextCompat.checkSelfPermission(
@@ -138,7 +135,6 @@ class PermissionUtils {
             return null
         }
 
-        @RequiresApi(VERSION_CODES.M)
         fun neverAskAgainSelected(
             activity: Activity,
             permission: String

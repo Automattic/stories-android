@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
-import android.os.Build
 import android.util.AttributeSet
 import android.util.Log
 import android.view.TextureView
@@ -16,7 +15,6 @@ import android.widget.ImageView.ScaleType.CENTER_CROP
 import android.widget.ImageView.ScaleType.FIT_CENTER
 import android.widget.ProgressBar
 import android.widget.RelativeLayout
-import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.view.children
 import com.automattic.photoeditor.OnSaveBitmap
@@ -107,7 +105,6 @@ class PhotoEditorView : RelativeLayout {
         init(attrs)
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int, defStyleRes: Int) : super(
         context,
         attrs,
