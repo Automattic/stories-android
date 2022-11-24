@@ -4,7 +4,6 @@ plugins {
     id "org.jetbrains.kotlin.plugin.serialization"
     id "io.sentry.android.gradle"
 
-    id "com.automattic.android.fetchstyle"
     id "com.automattic.android.configure"
 }
 
