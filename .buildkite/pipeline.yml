@@ -1,19 +1,12 @@
-common-params:
-  &publish-android-artifacts-docker-container
-  docker#v3.8.0:
-    image: "public.ecr.aws/automattic/android-build-image:v1.2.0"
-    propagate-environment: true
-    environment:
-      # DO NOT MANUALLY SET THESE VALUES!
-      # They are passed from the Buildkite agent to the Docker container
-      - "AWS_ACCESS_KEY"
-      - "AWS_SECRET_KEY"
+common_params:
+  # Common plugin settings to use with the `plugins` key.
+  - &common_plugins
+    - automattic/bash-cache#2.11.0
 
 steps:
   - label: "Publish :mp4compose"
     key: "publish-mp4compose"
-    plugins:
-      - *publish-android-artifacts-docker-container
+    plugins: *common_plugins
     command: |
       cp gradle.properties-example gradle.properties
       .buildkite/publish-mp4compose.sh
@@ -22,8 +15,7 @@ steps:
     key: "publish-photoeditor"
     depends_on:
       - "publish-mp4compose"
-    plugins:
-      - *publish-android-artifacts-docker-container
+    plugins: *common_plugins
     command: |
       cp gradle.properties-example gradle.properties
       .buildkite/publish-photoeditor.sh
@@ -32,8 +24,7 @@ steps:
     key: "publish-stories"
     depends_on:
       - "publish-photoeditor"
-    plugins:
-      - *publish-android-artifacts-docker-container
+    plugins: *common_plugins
     command: |
       cp gradle.properties-example gradle.properties
       .buildkite/publish-stories.sh
