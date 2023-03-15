@@ -400,7 +400,7 @@ public class Mp4ComposerBasic implements ComposerInterface {
                 if (mediaMetadataRetriever != null) {
                     mediaMetadataRetriever.release();
                 }
-            } catch (RuntimeException e) {
+            } catch (Exception e) {
                 logger.error(TAG, "Failed to release mediaMetadataRetriever.", e);
             }
         }
@@ -445,7 +445,7 @@ public class Mp4ComposerBasic implements ComposerInterface {
                 if (retriever != null) {
                     retriever.release();
                 }
-            } catch (RuntimeException e) {
+            } catch (Exception e) {
                 logger.error(TAG, "Failed to release mediaMetadataRetriever.", e);
             }
         }
