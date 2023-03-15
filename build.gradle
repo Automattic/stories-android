@@ -20,7 +20,7 @@ allprojects {
             }
         }
         google()
-        jcenter()
+        mavenCentral()
         maven { url "https://jitpack.io" }
     }
 
@@ -77,7 +77,7 @@ subprojects {
 
 ext {
     minSdkVersion = 24
-    compileSdkVersion = 31
+    compileSdkVersion = 33
     targetSdkVersion = 31
 
     lifecycleVersion = '2.2.0'
