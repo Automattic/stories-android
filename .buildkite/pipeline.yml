@@ -12,8 +12,29 @@ steps:
   # Wait for Gradle Wrapper to be validated before running any other jobs
   - wait
 
+  - label: "checkstyle"
+    key: "checkstyle"
+    command: |
+      cp gradle.properties-example gradle.properties
+      ./gradlew checkstyle
+    plugins: *common_plugins
+    artifact_paths:
+      - "**/build/reports/checkstyle/checkstyle.*"
+
+  - label: "ktlint"
+    key: "ktlint"
+    command: |
+      cp gradle.properties-example gradle.properties
+      ./gradlew ciktlint
+    plugins: *common_plugins
+    artifact_paths:
+      - "**/build/ktlint.xml"
+
   - label: "Publish :mp4compose"
     key: "publish-mp4compose"
+    depends_on:
+      - "checkstyle"
+      - "ktlint"
     plugins: *common_plugins
     command: |
       cp gradle.properties-example gradle.properties
