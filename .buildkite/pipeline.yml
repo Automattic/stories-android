@@ -31,18 +31,20 @@ steps:
         artifact_paths:
           - "**/build/ktlint.xml"
 
-  - label: "Unit tests"
-    key: "unit-tests"
-    command: |
-      cp gradle.properties-example gradle.properties
-      ./gradlew testRelease
-    plugins: *common_plugins
+  - group: 🔬 Unit Tests
+    key: all-unit-tests
+    steps:
+      - label: "🔬 Unit Test"
+        command: |
+          cp gradle.properties-example gradle.properties
+          ./gradlew testRelease
+        plugins: *common_plugins
 
   - group: 🚀 Publish to S3
     key: publish-to-s3
     depends_on:
       - all-linters
-      - unit-tests
+      - all-unit-tests
     steps:
       - label: "🚀 Publish :mp4compose"
         key: "publish-mp4compose"
