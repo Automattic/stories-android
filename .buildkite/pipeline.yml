@@ -12,54 +12,62 @@ steps:
   # Wait for Gradle Wrapper to be validated before running any other jobs
   - wait
 
-  - label: "checkstyle"
-    key: "checkstyle"
-    command: |
-      cp gradle.properties-example gradle.properties
-      ./gradlew checkstyle
-    plugins: *common_plugins
-    artifact_paths:
-      - "**/build/reports/checkstyle/checkstyle.*"
+  - group: "🕵️ Linters"
+    key: all-linters
+    steps:
+      - label: "🕵️ checkstyle"
+        command: |
+          cp gradle.properties-example gradle.properties
+          ./gradlew checkstyle
+        plugins: *common_plugins
+        artifact_paths:
+          - "**/build/reports/checkstyle/checkstyle.*"
 
-  - label: "ktlint"
-    key: "ktlint"
-    command: |
-      cp gradle.properties-example gradle.properties
-      ./gradlew ciktlint
-    plugins: *common_plugins
-    artifact_paths:
-      - "**/build/ktlint.xml"
+      - label: "🕵️ ktlint"
+        command: |
+          cp gradle.properties-example gradle.properties
+          ./gradlew ciktlint
+        plugins: *common_plugins
+        artifact_paths:
+          - "**/build/ktlint.xml"
 
   - label: "Unit tests"
+    key: "unit-tests"
     command: |
       cp gradle.properties-example gradle.properties
       ./gradlew testRelease
     plugins: *common_plugins
 
-  - label: "Publish :mp4compose"
-    key: "publish-mp4compose"
+  - group: 🚀 Publish to S3
+    key: publish-to-s3
     depends_on:
-      - "checkstyle"
-      - "ktlint"
-    plugins: *common_plugins
-    command: |
-      cp gradle.properties-example gradle.properties
-      .buildkite/publish-mp4compose.sh
+      - all-linters
+      - unit-tests
+    steps:
+      - label: "🚀 Publish :mp4compose"
+        key: "publish-mp4compose"
+        depends_on:
+          - "checkstyle"
+          - "ktlint"
+        plugins: *common_plugins
+        command: |
+          cp gradle.properties-example gradle.properties
+          .buildkite/publish-mp4compose.sh
 
-  - label: "Publish :photoeditor"
-    key: "publish-photoeditor"
-    depends_on:
-      - "publish-mp4compose"
-    plugins: *common_plugins
-    command: |
-      cp gradle.properties-example gradle.properties
-      .buildkite/publish-photoeditor.sh
+      - label: "🚀 Publish :photoeditor"
+        key: "publish-photoeditor"
+        depends_on:
+          - "publish-mp4compose"
+        plugins: *common_plugins
+        command: |
+          cp gradle.properties-example gradle.properties
+          .buildkite/publish-photoeditor.sh
 
-  - label: "Publish :stories"
-    key: "publish-stories"
-    depends_on:
-      - "publish-photoeditor"
-    plugins: *common_plugins
-    command: |
-      cp gradle.properties-example gradle.properties
-      .buildkite/publish-stories.sh
+      - label: "🚀 Publish :stories"
+        key: "publish-stories"
+        depends_on:
+          - "publish-photoeditor"
+        plugins: *common_plugins
+        command: |
+          cp gradle.properties-example gradle.properties
+          .buildkite/publish-stories.sh
