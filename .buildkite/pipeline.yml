@@ -30,6 +30,12 @@ steps:
     artifact_paths:
       - "**/build/ktlint.xml"
 
+  - label: "Unit tests"
+    command: |
+      cp gradle.properties-example gradle.properties
+      ./gradlew testRelease
+    plugins: *common_plugins
+
   - label: "Publish :mp4compose"
     key: "publish-mp4compose"
     depends_on:
