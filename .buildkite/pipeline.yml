@@ -48,9 +48,6 @@ steps:
     steps:
       - label: "🚀 Publish :mp4compose"
         key: "publish-mp4compose"
-        depends_on:
-          - "checkstyle"
-          - "ktlint"
         plugins: *common_plugins
         command: |
           cp gradle.properties-example gradle.properties
