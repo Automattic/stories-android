@@ -16,15 +16,13 @@ class PermissionUtils {
         val PERMISSION_REQUEST_CODE = 5200
         val IS_PERMISSION_REQUESTED_PREFS = "is_permission_requested_prefs"
         val REQUIRED_PERMISSIONS = arrayOf(
-            Manifest.permission.CAMERA,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
+            Manifest.permission.CAMERA
         )
 
         // Video requires access to recording audio (microphone).
         val REQUIRED_PERMISSIONS_WITH_AUDIO = arrayOf(
                 Manifest.permission.CAMERA,
-                Manifest.permission.RECORD_AUDIO,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
+                Manifest.permission.RECORD_AUDIO
         )
 
         fun checkPermission(context: Context, permission: String) =
