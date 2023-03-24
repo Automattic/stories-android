@@ -451,7 +451,11 @@ public class PhotoPickerAdapter extends RecyclerView.Adapter<PhotoPickerAdapter.
         } catch (Exception ex) {
             // catch every other exception... we don't want to crash for this for god's sake
         } finally {
-            mediaMetadataRetriever.release();
+            try {
+                mediaMetadataRetriever.release();
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to release mediaMetadataRetriever." + e.getMessage());
+            }
         }
 
         return durationUs;

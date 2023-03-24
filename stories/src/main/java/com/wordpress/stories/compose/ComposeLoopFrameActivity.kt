@@ -2293,31 +2293,27 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private inner class FlingGestureListener : GestureDetector.SimpleOnGestureListener() {
-        override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
-            e1?.let {
-                e2?.let {
-                    if (e1.y - e2.y > SWIPE_MIN_DISTANCE && abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
-                        // Bottom to top
-                        val ycoordStart = e1.y
-                        if ((screenSizeY - ycoordStart) < SWIPE_MIN_DISTANCE_FROM_BOTTOM) {
-                            // if swipe started as close as bottom of the screen as possible, then interpret this
-                            // as a swipe from bottom of the screen gesture
+        override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
+            if (e1.y - e2.y > SWIPE_MIN_DISTANCE && abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
+                // Bottom to top
+                val ycoordStart = e1.y
+                if ((screenSizeY - ycoordStart) < SWIPE_MIN_DISTANCE_FROM_BOTTOM) {
+                    // if swipe started as close as bottom of the screen as possible, then interpret this
+                    // as a swipe from bottom of the screen gesture
 
-                            // in edit mode, show Emoji picker
-                            if (contentComposerBinding.editModeControls.visibility == View.VISIBLE) {
-                                emojiPickerFragment.show(supportFragmentManager, emojiPickerFragment.tag)
-                            } else {
-                                // in capture mode, show media picker
-                                showMediaPicker()
-                            }
-                        }
-                        return false
-                    } else if (e2.y - e1.y > SWIPE_MIN_DISTANCE &&
-                        abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
-                        // Top to bottom
-                        return false
+                    // in edit mode, show Emoji picker
+                    if (contentComposerBinding.editModeControls.visibility == View.VISIBLE) {
+                        emojiPickerFragment.show(supportFragmentManager, emojiPickerFragment.tag)
+                    } else {
+                        // in capture mode, show media picker
+                        showMediaPicker()
                     }
                 }
+                return false
+            } else if (e2.y - e1.y > SWIPE_MIN_DISTANCE &&
+                abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
+                // Top to bottom
+                return false
             }
             return super.onFling(e1, e2, velocityX, velocityY)
         }

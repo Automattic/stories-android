@@ -62,7 +62,8 @@ android {
 }
 
 ext {
-    flipperVersion = '0.50.0'
+    flipperVersion = '0.138.0'
+    soloaderVersion = '0.10.3'
 }
 
 dependencies {
@@ -101,7 +102,7 @@ dependencies {
     implementation('org.wordpress:utils:trunk-1ed207c03d2242b6fc3d74f9e388e9163cbc82a6')
 
     debugImplementation "com.facebook.flipper:flipper:$flipperVersion"
-    debugImplementation 'com.facebook.soloader:soloader:0.9.0'
+    debugImplementation "com.facebook.soloader:soloader:$soloaderVersion"
     debugImplementation "com.facebook.flipper:flipper-network-plugin:$flipperVersion"
 
     testImplementation 'junit:junit:4.12'
