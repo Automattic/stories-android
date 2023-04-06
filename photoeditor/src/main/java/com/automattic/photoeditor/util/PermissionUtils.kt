@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
@@ -15,9 +16,11 @@ class PermissionUtils {
     companion object {
         val PERMISSION_REQUEST_CODE = 5200
         val IS_PERMISSION_REQUESTED_PREFS = "is_permission_requested_prefs"
-        val REQUIRED_PERMISSIONS = arrayOf(
-            Manifest.permission.CAMERA
-        )
+        val REQUIRED_PERMISSIONS = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                    arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                } else {
+                    arrayOf(Manifest.permission.CAMERA)
+                }
 
         // Video requires access to recording audio (microphone).
         val REQUIRED_PERMISSIONS_WITH_AUDIO = arrayOf(

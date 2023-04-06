@@ -3,6 +3,7 @@ package com.automattic.loop.photopicker;
 import android.Manifest.permission;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.view.LayoutInflater;
@@ -502,8 +503,12 @@ public class PhotoPickerFragment extends Fragment {
     }
 
     private boolean hasStoragePermission() {
-        return ContextCompat.checkSelfPermission(
-            getActivity(), permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            return ContextCompat.checkSelfPermission(
+                    requireActivity(), permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+        } else {
+            return true;
+        }
     }
 
 ///*
