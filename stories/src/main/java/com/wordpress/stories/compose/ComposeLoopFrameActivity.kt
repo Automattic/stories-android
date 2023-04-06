@@ -9,10 +9,10 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
-import android.graphics.drawable.Drawable
+import android.graphics.Matrix
 import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
-import android.graphics.Matrix
+import android.graphics.drawable.Drawable
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
@@ -71,8 +71,8 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.bitmap.BitmapTransformation
-import com.bumptech.glide.load.resource.bitmap.FitCenter
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.FitCenter
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
@@ -88,12 +88,12 @@ import com.wordpress.stories.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_PHOTO
 import com.wordpress.stories.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY
 import com.wordpress.stories.compose.emoji.EmojiPickerFragment
 import com.wordpress.stories.compose.emoji.EmojiPickerFragment.EmojiListener
-import com.wordpress.stories.compose.frame.StoryLoadEvents.StoryLoadEnd
-import com.wordpress.stories.compose.frame.StoryLoadEvents.StoryLoadStart
 import com.wordpress.stories.compose.frame.FrameIndex
 import com.wordpress.stories.compose.frame.FrameSaveManager
 import com.wordpress.stories.compose.frame.FrameSaveNotifier
 import com.wordpress.stories.compose.frame.FrameSaveService
+import com.wordpress.stories.compose.frame.StoryLoadEvents.StoryLoadEnd
+import com.wordpress.stories.compose.frame.StoryLoadEvents.StoryLoadStart
 import com.wordpress.stories.compose.frame.StoryNotificationType
 import com.wordpress.stories.compose.frame.StorySaveEvents
 import com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveError
@@ -1172,7 +1172,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             // fresh intent, go fully save the Story
             if (storyViewModel.getCurrentStorySize() > 0) {
                 // save all composed frames
-                if (PermissionUtils.checkAndRequestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R ||
+                    PermissionUtils.checkAndRequestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                ) {
                     storyFrameIndexToRetry = StoryRepository.DEFAULT_NONE_SELECTED
                     saveStory()
                 }
@@ -1560,7 +1562,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     @SuppressLint("MissingPermission")
     private fun saveVideo(inputFile: Uri) {
-        if (PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R ||
+            PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        ) {
             showLoading()
             try {
                 val file = getLoopFrameFile(this, true)
@@ -1617,7 +1621,9 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     @SuppressLint("MissingPermission")
     private fun saveVideoWithStaticBackground() {
-        if (PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R ||
+            PermissionUtils.checkPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        ) {
             showLoading()
             try {
                 val file = getLoopFrameFile(this, true, "tmp")
