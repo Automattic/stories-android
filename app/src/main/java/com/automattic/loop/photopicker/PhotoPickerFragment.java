@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.ActionMode;
 import androidx.core.content.ContextCompat;
@@ -406,7 +407,7 @@ public class PhotoPickerFragment extends Fragment {
             return;
         }
 
-        if (!hasStoragePermission()) {
+        if (!hasPhotosVideosPermission()) {
             return;
         }
 
@@ -502,6 +503,15 @@ public class PhotoPickerFragment extends Fragment {
         }
     }
 
+    private boolean hasPhotosVideosPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            return hasReadMediaImagesPermission() && hasReadMediaVideoPermission();
+        } else {
+            // For devices lower than API 33, storage permission is the equivalent of Photos and Videos permission
+            return hasReadStoragePermission();
+        }
+    }
+
     private boolean hasStoragePermission() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
             return ContextCompat.checkSelfPermission(
@@ -509,6 +519,29 @@ public class PhotoPickerFragment extends Fragment {
         } else {
             return true;
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private boolean hasReadMediaImagesPermission() {
+        return ContextCompat.checkSelfPermission(
+                requireActivity(),
+                permission.READ_MEDIA_IMAGES
+        ) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private boolean hasReadMediaVideoPermission() {
+        return ContextCompat.checkSelfPermission(
+                requireActivity(),
+                permission.READ_MEDIA_VIDEO
+        ) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private boolean hasReadStoragePermission() {
+        return ContextCompat.checkSelfPermission(
+                requireContext(),
+                permission.READ_EXTERNAL_STORAGE
+        ) == PackageManager.PERMISSION_GRANTED;
     }
 
 ///*
@@ -527,7 +560,7 @@ public class PhotoPickerFragment extends Fragment {
             return;
         }
 
-        if (hasStoragePermission()) {
+        if (hasPhotosVideosPermission()) {
             showSoftAskView(false);
             if (!hasAdapter()) {
                 reload();
