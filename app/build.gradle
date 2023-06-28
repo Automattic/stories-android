@@ -36,7 +36,6 @@ android {
         } else {
             versionName "1.0.0.14-prealpha"
         }
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         signingConfig signingConfigs.release
     }
     viewBinding {
@@ -106,7 +105,6 @@ dependencies {
     debugImplementation "com.facebook.flipper:flipper-network-plugin:$flipperVersion"
 
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }
 
 // Add properties named "loop.xxx" to our BuildConfig
