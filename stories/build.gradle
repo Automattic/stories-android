@@ -44,7 +44,7 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serializationVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$kotlinxSerializationVersion"
     implementation "org.jetbrains.kotlin:kotlin-reflect:$gradle.ext.kotlinVersion"
 
     implementation "androidx.appcompat:appcompat:$androidxAppcompatVersion"
