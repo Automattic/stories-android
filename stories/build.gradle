@@ -82,7 +82,6 @@ dependencies {
     lintChecks 'org.wordpress:lint:1.1.0'
 
     testImplementation 'junit:junit:4.13.2'
-    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$gradle.ext.kotlinVersion"
 }
 
 // Add properties named "loop.xxx" to our BuildConfig

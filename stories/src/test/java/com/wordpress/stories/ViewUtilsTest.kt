@@ -3,10 +3,10 @@ package com.wordpress.stories
 import com.wordpress.stories.util.ScreenSize
 import com.wordpress.stories.util.isSizeRatio916
 import com.wordpress.stories.util.normalizeSizeExportTo916
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 class ViewUtilsTest {
     @Test
