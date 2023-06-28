@@ -79,7 +79,9 @@ ext {
     minSdkVersion = 24
     compileSdkVersion = 33
     targetSdkVersion = 33
+}
 
+ext {
     lifecycleVersion = '2.2.0'
     coroutinesVersion = '1.3.9'
     constraintLayoutVersion = '1.1.3'
