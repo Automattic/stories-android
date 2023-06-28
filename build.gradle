@@ -92,6 +92,8 @@ ext {
     kotlinxCoroutinesVersion = '1.3.9'
     kotlinxSerializationVersion = '1.0-M1-1.4.0-rc'
 
+    wordPressLintVersion = '1.1.0'
+
     mp4composeProjectDependency = project.hasProperty("mp4composeVersion") ? "com.automattic.stories:mp4compose:${project.getProperty("mp4composeVersion")}" : project(":mp4compose")
     photoEditorProjectDependency = project.hasProperty("photoEditorVersion") ? "com.automattic.stories:photoeditor:${project.getProperty("photoEditorVersion")}" : project(":photoeditor")
 }
