@@ -76,7 +76,6 @@ dependencies {
     implementation "androidx.emoji:emoji:$androidxEmojiVersion"
     implementation "androidx.preference:preference-ktx:$androidxPreferenceVersion"
     implementation "androidx.recyclerview:recyclerview:$androidxRecyclerviewVersion"
-    implementation "androidx.preference:preference-ktx:$androidxPreferenceVersion"
 
     implementation "com.google.android.material:material:$googleMaterialVersion"
 
