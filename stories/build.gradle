@@ -53,7 +53,7 @@ dependencies {
 
     implementation "androidx.navigation:navigation-fragment-ktx:$androidxNavigationVersion"
     implementation "androidx.navigation:navigation-ui-ktx:$androidxNavigationVersion"
-    implementation 'androidx.emoji:emoji:1.0.0'
+    implementation "androidx.emoji:emoji:$androidxEmojiVersion"
     implementation "androidx.recyclerview:recyclerview:1.1.0"
 
     implementation "com.google.android.material:material:$googleMaterialVersion"

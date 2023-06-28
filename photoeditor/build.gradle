@@ -57,7 +57,7 @@ dependencies {
 
     lintChecks "org.wordpress:lint:$wordPressLintVersion"
 
-    implementation 'androidx.emoji:emoji:1.0.0'
+    implementation "androidx.emoji:emoji:$androidxEmojiVersion"
 }
 repositories {
     mavenCentral()
