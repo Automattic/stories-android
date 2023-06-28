@@ -103,8 +103,6 @@ dependencies {
     debugImplementation "com.facebook.flipper:flipper:$flipperVersion"
     debugImplementation "com.facebook.soloader:soloader:$soloaderVersion"
     debugImplementation "com.facebook.flipper:flipper-network-plugin:$flipperVersion"
-
-    testImplementation 'junit:junit:4.12'
 }
 
 // Add properties named "loop.xxx" to our BuildConfig
