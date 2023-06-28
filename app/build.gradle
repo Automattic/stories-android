@@ -95,7 +95,7 @@ dependencies {
 
     implementation project(path: ':photoeditor')
     implementation project(path: ':stories')
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion"
 
     implementation('org.wordpress:utils:trunk-1ed207c03d2242b6fc3d74f9e388e9163cbc82a6')
 
