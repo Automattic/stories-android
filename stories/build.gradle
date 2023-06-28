@@ -81,7 +81,7 @@ dependencies {
 
     implementation 'com.github.chrisbanes:PhotoView:2.3.0'
 
-    lintChecks 'org.wordpress:lint:1.0.1'
+    lintChecks 'org.wordpress:lint:1.1.0'
 
     testImplementation 'junit:junit:4.12'
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$gradle.ext.kotlinVersion"
