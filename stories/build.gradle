@@ -63,7 +63,7 @@ dependencies {
 
     implementation "jp.wasabeef:glide-transformations:$glideTransformationsVersion"
 
-    implementation 'org.greenrobot:eventbus:3.3.1'
+    implementation "org.greenrobot:eventbus:$eventBusVersion"
 
     implementation photoEditorProjectDependency
 
