@@ -1,6 +1,7 @@
 pluginManagement {
     gradle.ext.kotlinVersion = '1.6.10'
     gradle.ext.agpVersion = '7.2.1'
+    gradle.ext.sentryVersion = '2.0.0'
 
     plugins {
         id "org.jetbrains.kotlin.android" version gradle.ext.kotlinVersion
@@ -9,7 +10,7 @@ pluginManagement {
         id "org.jetbrains.kotlin.plugin.parcelize" version gradle.ext.kotlinVersion
         id "com.android.application" version gradle.ext.agpVersion
         id "com.android.library" version gradle.ext.agpVersion
-        id "io.sentry.android.gradle" version "2.0.0"
+        id "io.sentry.android.gradle" version gradle.ext.sentryVersion
         id "com.automattic.android.publish-to-s3" version "0.7.0"
     }
     repositories {
