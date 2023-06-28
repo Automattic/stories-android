@@ -54,7 +54,7 @@ android {
     }
     lintOptions {
         abortOnError false
-        lintConfig file('lint.xml')
+        lintConfig file("${project.rootDir}/lint.xml")
         disable("IconLocation")
     }
 
