@@ -99,6 +99,7 @@ ext {
     kotlinxCoroutinesVersion = '1.3.9'
     kotlinxSerializationVersion = '1.0-M1-1.4.0-rc'
     sentryAndroidVersion = "5.0.1"
+    slf4jVersion = '1.7.25'
 
     junitVersion = '4.13.2'
 
