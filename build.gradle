@@ -82,6 +82,9 @@ ext {
 }
 
 ext {
+    flipperVersion = '0.138.0'
+    soloaderVersion = '0.10.3'
+
     androidxAppcompatVersion = '1.0.2'
     androidxCameraVersion = "1.0.0-alpha06" // check for updates
     androidxConstraintlayoutVersion = '1.1.3'

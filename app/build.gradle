@@ -60,11 +60,6 @@ android {
     useLibrary 'android.test.runner'
 }
 
-ext {
-    flipperVersion = '0.138.0'
-    soloaderVersion = '0.10.3'
-}
-
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
