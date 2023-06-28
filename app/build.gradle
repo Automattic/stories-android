@@ -75,7 +75,7 @@ dependencies {
     implementation "androidx.navigation:navigation-ui-ktx:$androidxNavigationVersion"
     implementation "androidx.emoji:emoji:$androidxEmojiVersion"
     implementation "androidx.preference:preference-ktx:1.1.1"
-    implementation "androidx.recyclerview:recyclerview:1.1.0"
+    implementation "androidx.recyclerview:recyclerview:$androidxRecyclerviewVersion"
     implementation "androidx.preference:preference-ktx:1.1.1"
 
     implementation "com.google.android.material:material:$googleMaterialVersion"
