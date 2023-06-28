@@ -90,6 +90,7 @@ ext {
     androidxNavigationVersion = '2.0.0'
     glideVersion = '4.10.0'
     glideTransformationsVersion = '4.3.0'
+    googleMaterialVersion = '1.2.1'
     kotlinxCoroutinesVersion = '1.3.9'
     kotlinxSerializationVersion = '1.0-M1-1.4.0-rc'
 
