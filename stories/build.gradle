@@ -80,7 +80,7 @@ dependencies {
 
     lintChecks "org.wordpress:lint:$wordPressLintVersion"
 
-    testImplementation 'junit:junit:4.13.2'
+    testImplementation "junit:junit:$junitVersion"
 }
 
 // Add properties named "loop.xxx" to our BuildConfig
