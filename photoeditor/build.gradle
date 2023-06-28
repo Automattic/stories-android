@@ -51,7 +51,7 @@ dependencies {
 
     implementation "jp.wasabeef:glide-transformations:$glideTransformationsVersion"
     
-    implementation 'com.github.chrisbanes:PhotoView:2.3.0'
+    implementation "com.github.chrisbanes:PhotoView:$chrisbanesPhotoviewVersion"
 
     implementation mp4composeProjectDependency
 

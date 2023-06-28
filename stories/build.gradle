@@ -76,7 +76,7 @@ dependencies {
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion"
 
-    implementation 'com.github.chrisbanes:PhotoView:2.3.0'
+    implementation "com.github.chrisbanes:PhotoView:$chrisbanesPhotoviewVersion"
 
     lintChecks "org.wordpress:lint:$wordPressLintVersion"
 
