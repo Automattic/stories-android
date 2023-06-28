@@ -82,9 +82,11 @@ ext {
 }
 
 ext {
+    // debug
     flipperVersion = '0.138.0'
     soloaderVersion = '0.10.3'
 
+    // main
     androidxAppcompatVersion = '1.0.2'
     androidxCameraVersion = "1.0.0-alpha06" // check for updates
     androidxConstraintlayoutVersion = '1.1.3'
@@ -104,10 +106,13 @@ ext {
     sentryAndroidVersion = "5.0.1"
     slf4jVersion = '1.7.25'
 
+    // test
     junitVersion = '4.13.2'
 
+    // other
     wordPressLintVersion = '1.1.0'
 
+    // project
     mp4composeProjectDependency = project.hasProperty("mp4composeVersion") ? "com.automattic.stories:mp4compose:${project.getProperty("mp4composeVersion")}" : project(":mp4compose")
     photoEditorProjectDependency = project.hasProperty("photoEditorVersion") ? "com.automattic.stories:photoeditor:${project.getProperty("photoEditorVersion")}" : project(":photoeditor")
 }
