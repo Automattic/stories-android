@@ -290,7 +290,6 @@ internal class VideoComposer {
                 return DRAIN_STATE_SHOULD_RETRY_IMMEDIATELY
             }
             MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED -> {
-                encoderOutputBuffer = encoder!!.getOutputBuffer(result)
                 return DRAIN_STATE_SHOULD_RETRY_IMMEDIATELY
             }
             else -> {
