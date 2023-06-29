@@ -167,7 +167,7 @@ internal class VideoComposer {
                 // byte[] input = BitmapEncodingUtils.getNV12(bkgBitmap.getWidth(), bkgBitmap.getHeight(), bkgBitmap);
                 val inputBuffer = encoder!!.getInputBuffer(inputBufIdx)
                 inputBuffer!!.clear()
-                inputBuffer.put(bkgBitmapBytesNV12)
+                inputBuffer.put(bkgBitmapBytesNV12!!)
                 encoder!!.queueInputBuffer(
                     inputBufIdx, 0, bkgBitmapBytesNV12!!.size,
                     getPresentationTimeUsec(addedFrameCount), 0
