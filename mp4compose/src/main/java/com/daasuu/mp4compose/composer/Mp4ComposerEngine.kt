@@ -137,10 +137,8 @@ internal class Mp4ComposerEngine {
                 }
 
                 try {
-                    durationUs =
-                        java.lang.Long.parseLong(
-                            mediaMetadataRetriever!!.extractMetadata(
-                                MediaMetadataRetriever.METADATA_KEY_DURATION)) * 1000
+                    val duration = mediaMetadataRetriever?.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+                    durationUs = duration?.let { java.lang.Long.parseLong(it) * 1000 } ?: 0
                 } catch (e: NumberFormatException) {
                     durationUs = -1
                 }

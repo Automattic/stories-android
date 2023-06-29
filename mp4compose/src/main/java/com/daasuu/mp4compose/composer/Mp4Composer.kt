@@ -283,7 +283,7 @@ class Mp4Composer : ComposerInterface {
                 )
             }
             val orientation = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)
-            return Integer.valueOf(orientation)
+            return orientation?.let { Integer.valueOf(it) } ?: 0
         } catch (e: IllegalArgumentException) {
             Log.e("MediaMetadataRetriever", "getVideoRotation IllegalArgumentException")
             return 0
@@ -322,10 +322,14 @@ class Mp4Composer : ComposerInterface {
                 )
             }
 
-            val width = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH))
-            val height = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT))
+            val width = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)
+            val height = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)
 
-            return Size(width, height)
+            return if (width != null && height != null) {
+                Size(Integer.valueOf(width), Integer.valueOf(height))
+            } else {
+                defaultResolution
+            }
         } catch (e: IllegalArgumentException) {
             Log.e("MediaMetadataRetriever", "getVideoResolution IllegalArgumentException")
             return defaultResolution
