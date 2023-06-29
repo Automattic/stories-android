@@ -236,7 +236,7 @@ class Mp4Composer : ComposerInterface {
                         mute,
                         Rotation.fromInt(rotation.rotation), // FIXME assume portrait for now
                         staticImageResolution,
-                        fillMode!!,
+                        fillMode,
                         fillModeCustomItem!!,
                         timeScale,
                         flipVertical,
