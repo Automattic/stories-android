@@ -565,6 +565,7 @@ class PhotoEditor private constructor(builder: Builder) :
                 if (removedViewWithData != null && addToRedoList) {
                     redoViews.add(removedViewWithData)
                 }
+                @Suppress("DEPRECATION")
                 mOnPhotoEditorListener?.onRemoveViewListener(addedViews.size)
                 mOnPhotoEditorListener?.onRemoveViewListener(viewType, addedViews.size)
             }
@@ -586,6 +587,7 @@ class PhotoEditor private constructor(builder: Builder) :
                 parentView.removeView(removeView.view)
                 redoViews.add(removeView)
             }
+            @Suppress("DEPRECATION")
             mOnPhotoEditorListener?.onRemoveViewListener(addedViews.size)
             val viewTag = removeView.view?.tag
             (viewTag as? ViewType)?.let {
@@ -1064,6 +1066,7 @@ class PhotoEditor private constructor(builder: Builder) :
             }
             redoViews.add(removeView)
         }
+        @Suppress("DEPRECATION")
         mOnPhotoEditorListener?.onRemoveViewListener(addedViews.size)
         mOnPhotoEditorListener?.onRemoveViewListener(ViewType.BRUSH_DRAWING, addedViews.size)
     }
