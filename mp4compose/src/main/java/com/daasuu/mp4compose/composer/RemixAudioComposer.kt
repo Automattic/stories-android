@@ -117,6 +117,7 @@ internal class RemixAudioComposer(
         if (isDecoderEOS) return DRAIN_STATE_NONE
 
         val result = decoder!!.dequeueOutputBuffer(bufferInfo, timeoutUs)
+        @Suppress("DEPRECATION")
         when (result) {
             MediaCodec.INFO_TRY_AGAIN_LATER -> return DRAIN_STATE_NONE
             MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
@@ -140,6 +141,7 @@ internal class RemixAudioComposer(
         if (isFinished) return DRAIN_STATE_NONE
 
         val result = encoder!!.dequeueOutputBuffer(bufferInfo, timeoutUs)
+        @Suppress("DEPRECATION")
         when (result) {
             MediaCodec.INFO_TRY_AGAIN_LATER -> return DRAIN_STATE_NONE
             MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {

@@ -249,6 +249,7 @@ internal class VideoComposer {
     private fun drainDecoder(): Int {
         if (isDecoderEOS) return DRAIN_STATE_NONE
         val result = decoder!!.dequeueOutputBuffer(bufferInfo, 0)
+        @Suppress("DEPRECATION")
         when (result) {
             MediaCodec.INFO_TRY_AGAIN_LATER -> return DRAIN_STATE_NONE
             MediaCodec.INFO_OUTPUT_FORMAT_CHANGED, MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED ->
@@ -276,6 +277,7 @@ internal class VideoComposer {
         if (isFinished) return DRAIN_STATE_NONE
         val result = encoder!!.dequeueOutputBuffer(bufferInfo, 0)
         var encoderOutputBuffer: ByteBuffer? = null
+        @Suppress("DEPRECATION")
         when (result) {
             MediaCodec.INFO_TRY_AGAIN_LATER -> return DRAIN_STATE_NONE
             MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {

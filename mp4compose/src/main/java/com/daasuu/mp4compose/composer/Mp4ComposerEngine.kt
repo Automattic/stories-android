@@ -211,6 +211,7 @@ internal class Mp4ComposerEngine {
                 videoOutputFormat.setInteger(MediaFormat.KEY_BIT_RATE, BIT_RATE)
                 videoOutputFormat.setInteger(MediaFormat.KEY_FRAME_RATE, FRAME_RATE)
                 videoOutputFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, I_FRAME_INTERVAL)
+                @Suppress("DEPRECATION")
                 videoOutputFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, COLOR_FormatYUV420SemiPlanar)
 
                 // setup video composer for static background image
