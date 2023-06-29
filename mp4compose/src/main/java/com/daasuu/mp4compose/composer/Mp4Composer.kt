@@ -273,16 +273,14 @@ class Mp4Composer : ComposerInterface {
         var mediaMetadataRetriever: MediaMetadataRetriever? = null
         try {
             mediaMetadataRetriever = MediaMetadataRetriever()
-            videoUri?.let { uri ->
-                context?.let {
-                    DataSourceUtil.setDataSource(
-                        it,
-                        uri,
-                        mediaExtractor = null,
-                        mediaMetadataRetriever = mediaMetadataRetriever,
-                        addedRequestHeaders = addedRequestHeaders
-                    )
-                }
+            context?.let {
+                DataSourceUtil.setDataSource(
+                    it,
+                    videoUri,
+                    mediaExtractor = null,
+                    mediaMetadataRetriever = mediaMetadataRetriever,
+                    addedRequestHeaders = addedRequestHeaders
+                )
             }
             val orientation = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)
             return Integer.valueOf(orientation)
