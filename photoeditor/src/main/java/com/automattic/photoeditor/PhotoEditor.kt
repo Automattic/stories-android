@@ -36,8 +36,6 @@ import com.automattic.photoeditor.util.BitmapUtil
 import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.views.PhotoEditorView
 import com.automattic.photoeditor.views.ViewType
-import com.automattic.photoeditor.views.ViewType.EMOJI
-import com.automattic.photoeditor.views.ViewType.TEXT
 import com.automattic.photoeditor.views.added.AddedView
 import com.automattic.photoeditor.views.added.AddedViewInfo
 import com.automattic.photoeditor.views.added.AddedViewList
@@ -381,7 +379,7 @@ class PhotoEditor private constructor(builder: Builder) :
     ): View? {
         var view: View? = null
         when (viewType) {
-            EMOJI -> {
+            ViewType.EMOJI -> {
                 // create emoji view layout
                 view = addEmoji(addedViewInfo.addedViewTextInfo.text)
                 view?.let {
@@ -397,7 +395,7 @@ class PhotoEditor private constructor(builder: Builder) :
                     }
                 }
             }
-            TEXT -> {
+            ViewType.TEXT -> {
                 // create TEXT view layout
                 val textStyler = TextStyler.from(addedViewInfo.addedViewTextInfo)
                 view = addText(
@@ -407,6 +405,9 @@ class PhotoEditor private constructor(builder: Builder) :
                         addTouchListener = addTouchListener
                 )
             }
+            ViewType.BRUSH_DRAWING -> Unit // Do nothing
+            ViewType.IMAGE -> Unit // Do nothing
+            ViewType.STICKER_ANIMATED -> Unit // Do nothing
         }
 
         // now apply all common parameters to newly created view object
@@ -433,7 +434,7 @@ class PhotoEditor private constructor(builder: Builder) :
         multiTouchListener: MultiTouchListener
     ) {
         when {
-            viewType == EMOJI -> {
+            viewType == ViewType.EMOJI -> {
                 multiTouchListener.setOnGestureControl(object :
                         MultiTouchListener.OnGestureControl {
                     override fun onClick() {
@@ -446,7 +447,7 @@ class PhotoEditor private constructor(builder: Builder) :
                 })
             }
 
-            viewType == TEXT -> {
+            viewType == ViewType.TEXT -> {
                 val textInputTv = rootView.findViewById<PhotoEditorTextView>(R.id.tvPhotoEditorText)
                 multiTouchListener.setOnGestureControl(object :
                         MultiTouchListener.OnGestureControl {
@@ -497,6 +498,9 @@ class PhotoEditor private constructor(builder: Builder) :
                     it.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
                 }
             }
+
+            ViewType.BRUSH_DRAWING -> Unit // Do nothing
+            ViewType.STICKER_ANIMATED -> Unit // Do nothing
         }
 
         // We are setting tag as ViewType to identify what type of the view it is
@@ -1088,7 +1092,7 @@ class PhotoEditor private constructor(builder: Builder) :
         val reorderedAddedViewList = AddedViewList()
         for (oneView in parentView.zIndexOrderedAddedViews) {
             when (oneView.tag) {
-                TEXT, EMOJI, ViewType.STICKER_ANIMATED -> {
+                ViewType.TEXT, ViewType.EMOJI, ViewType.STICKER_ANIMATED -> {
                     addedViews.getAddedViewForNativeView(oneView)?.let {
                         reorderedAddedViewList.add(it)
                     }
