@@ -693,7 +693,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         }, 500)
 
         val errors = storySaveResult.frameSaveResult.filter { it.resultReason is SaveError }
-        val minIndexToSelect = errors.minBy { it.frameIndex }
+        val minIndexToSelect = errors.minByOrNull { it.frameIndex }
 
         // select the first errored frame
         onStoryFrameSelected(
