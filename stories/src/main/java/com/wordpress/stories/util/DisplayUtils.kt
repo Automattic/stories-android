@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Point
 import android.view.WindowManager
 
+@Suppress("DEPRECATION")
 fun getDisplayPixelSize(context: Context): Point {
     val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     val display = wm.defaultDisplay

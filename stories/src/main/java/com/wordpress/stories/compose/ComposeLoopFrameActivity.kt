@@ -220,6 +220,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private val timesUpRunnable = Runnable {
         stopRecordingVideo(false) // time's up, it's not a cancellation
     }
+    @Suppress("DEPRECATION")
     private val timesUpHandler = Handler()
     private var launchCameraRequestPending = false
     private var launchVideoPlayerRequestPending = false
@@ -571,6 +572,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         }
 
         if (savedInstanceState != null) {
+            @Suppress("DEPRECATION")
             currentOriginalCapturedFile =
                 savedInstanceState.getSerializable(STATE_KEY_CURRENT_ORIGINAL_CAPTURED_FILE) as File?
             preHookRun = savedInstanceState.getBoolean(STATE_KEY_PREHOOK_RUN)
@@ -773,7 +775,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
             launchCameraPreviewWithSurfaceSafeguard()
             checkForLowSpaceAndShowDialog()
         } else if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
-            val storySaveResult = intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
+            @Suppress("DEPRECATION") val storySaveResult =
+                    intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
             if (storySaveResult != null && StoryRepository.isStoryIndexValid(storySaveResult.storyIndex) &&
                     StoryRepository.getStoryAtIndex(storySaveResult.storyIndex).frames.isNotEmpty()) {
                 // dismiss the error notification
@@ -867,6 +870,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         permissionsRequestForCameraInProgress = false
     }
 
+    @Suppress("DEPRECATION")
     override fun onBackPressed() {
         if (!backgroundSurfaceManager.cameraVisible()) {
             contentComposerBinding.closeButton.performClick()
@@ -1183,7 +1187,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     private fun anyOfOriginalIntentResultsIsError(): Boolean {
         if (intent.hasExtra(KEY_STORY_SAVE_RESULT)) {
-            val storySaveResult =
+            @Suppress("DEPRECATION") val storySaveResult =
                 intent.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
             storySaveResult?.let {
                 // where there any errors when we opened the Activity to handle those errors?
@@ -1516,7 +1520,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     }
 
     private fun vibrate() {
-        val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        @Suppress("DEPRECATION") val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
         // Vibrate for 100 milliseconds
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             vibrator.vibrate(
@@ -2106,7 +2110,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     .submit(screenWidth, screenHeight) // we're not going to export images greater than the screen size
             val drawable = futureTarget.get()
 
-            val doAfterUse = object : ImageLoadedInterface {
+            @Suppress("DEPRECATION") val doAfterUse = object : ImageLoadedInterface {
                 override fun doAfter() {
                     // here setup the PhotoView support matrix
                     // we use a Handler because we need to set the support matrix only once the drawable

@@ -82,6 +82,7 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
             dialog.setContentView(binding.root)
             val params = binding.root.layoutParams as CoordinatorLayout.LayoutParams
 
+            @Suppress("DEPRECATION")
             (params.behavior as? BottomSheetBehavior)?.setBottomSheetCallback(bottomSheetBehaviorCallback)
             (params.behavior as? BottomSheetBehavior)?.state = BottomSheetBehavior.STATE_EXPANDED
 
