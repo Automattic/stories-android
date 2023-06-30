@@ -21,6 +21,8 @@ android.useAndroidX=true
 # Automatically convert third-party libraries to use AndroidX
 android.enableJetifier=false
 
+android.nonTransitiveRClass=true
+
 # Stories properties
 
 wp.stories.use.cameraX = true
