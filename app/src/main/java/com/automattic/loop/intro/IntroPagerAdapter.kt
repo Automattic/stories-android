@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.automattic.loop.intro
 
 import androidx.fragment.app.Fragment
@@ -5,6 +7,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import com.automattic.loop.R
 
+@Suppress("DEPRECATION")
 class IntroPagerAdapter(
     supportFragmentManager: FragmentManager
 ) : FragmentPagerAdapter(supportFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
