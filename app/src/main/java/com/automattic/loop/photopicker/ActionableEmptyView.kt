@@ -55,12 +55,12 @@ class ActionableEmptyView : LinearLayout {
         bottomImage = layout.findViewById(R.id.bottom_image)
 
         attrs.let {
-            val typedArray = context.obtainStyledAttributes(it, R.styleable.ActionableEmptyView, 0, 0)
+            val typedArray = context.obtainStyledAttributes(it, com.wordpress.stories.R.styleable.ActionableEmptyView, 0, 0)
 
-            val imageResource = typedArray.getResourceId(R.styleable.ActionableEmptyView_aevImage, 0)
-            val titleAttribute = typedArray.getString(R.styleable.ActionableEmptyView_aevTitle)
-            val subtitleAttribute = typedArray.getString(R.styleable.ActionableEmptyView_aevSubtitle)
-            val buttonAttribute = typedArray.getString(R.styleable.ActionableEmptyView_aevButton)
+            val imageResource = typedArray.getResourceId(com.wordpress.stories.R.styleable.ActionableEmptyView_aevImage, 0)
+            val titleAttribute = typedArray.getString(com.wordpress.stories.R.styleable.ActionableEmptyView_aevTitle)
+            val subtitleAttribute = typedArray.getString(com.wordpress.stories.R.styleable.ActionableEmptyView_aevSubtitle)
+            val buttonAttribute = typedArray.getString(com.wordpress.stories.R.styleable.ActionableEmptyView_aevButton)
 
             if (imageResource != 0) {
                 image.setImageResource(imageResource)

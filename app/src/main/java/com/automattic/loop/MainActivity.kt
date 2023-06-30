@@ -96,14 +96,14 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
 
         if (event.isSuccess()) {
             val text = String.format(
-                getString(R.string.story_saving_snackbar_finished_successfully),
+                getString(com.wordpress.stories.R.string.story_saving_snackbar_finished_successfully),
                 StoryRepository.getStoryAtIndex(event.storyIndex).title
             )
             Snackbar.make(findViewById(android.R.id.content), text, Snackbar.LENGTH_SHORT).show()
         } else {
             // show snackbar and add the PendingIntent with the StorySaveResult as a Serialized object if errors
             val errorText = String.format(
-                getString(R.string.story_saving_snackbar_finished_with_error),
+                getString(com.wordpress.stories.R.string.story_saving_snackbar_finished_with_error),
                 StoryRepository.getStoryAtIndex(event.storyIndex).title
             )
             val snackbarMessage = FrameSaveNotifier.buildSnackbarErrorMessage(
@@ -112,7 +112,7 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
                 errorText
             )
             val snackbar = Snackbar.make(findViewById(android.R.id.content), snackbarMessage, Snackbar.LENGTH_LONG)
-            snackbar.setAction(R.string.story_saving_failed_quick_action_manage) {
+            snackbar.setAction(com.wordpress.stories.R.string.story_saving_failed_quick_action_manage) {
                 // here go to the StoryComposerActivity, passing the SaveResult
                 val intent = Intent(this@MainActivity, StoryComposerActivity::class.java)
                 intent.putExtra(KEY_STORY_SAVE_RESULT, event)
@@ -136,7 +136,7 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
     fun onStorySaveStart(event: StorySaveProcessStart) {
         EventBus.getDefault().removeStickyEvent(event)
         val text = String.format(
-            getString(R.string.story_saving_snackbar_started),
+            getString(com.wordpress.stories.R.string.story_saving_snackbar_started),
             StoryRepository.getStoryAtIndex(event.storyIndex).title
         )
         Snackbar.make(findViewById(android.R.id.content), text, Snackbar.LENGTH_SHORT).show()
