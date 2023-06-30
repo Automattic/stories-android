@@ -931,7 +931,6 @@ class PhotoEditor private constructor(builder: Builder) :
     /**
      * Produce a new video with a static background image
      *
-     * @param saveSettings builder for multiple save options [SaveSettings]
      * @param onSaveListener callback for saving video
      * @see OnSaveListener
      */
@@ -939,7 +938,6 @@ class PhotoEditor private constructor(builder: Builder) :
     @RequiresPermission(allOf = [Manifest.permission.WRITE_EXTERNAL_STORAGE])
     fun saveVideoFromStaticBackgroundAsFile(
         videoOutputPath: String,
-        saveSettings: SaveSettings,
         onSaveListener: OnSaveWithCancelListener
     ) {
         val widthParent = parentView.width

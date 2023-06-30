@@ -48,7 +48,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.automattic.photoeditor.OnPhotoEditorListener
 import com.automattic.photoeditor.PhotoEditor
-import com.automattic.photoeditor.SaveSettings
 import com.automattic.photoeditor.camera.interfaces.CameraSelection
 import com.automattic.photoeditor.camera.interfaces.FlashIndicatorState
 import com.automattic.photoeditor.camera.interfaces.ImageCaptureListener
@@ -1629,14 +1628,8 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 val file = getLoopFrameFile(this, true, "tmp")
                 file.createNewFile()
 
-                val saveSettings = SaveSettings.Builder()
-                    .setClearViewsEnabled(true)
-                    .setTransparencyEnabled(true)
-                    .build()
-
                 photoEditor.saveVideoFromStaticBackgroundAsFile(
                     file.absolutePath,
-                    saveSettings,
                     object : PhotoEditor.OnSaveWithCancelListener {
                         override fun onCancel(noAddedViews: Boolean) {
                             // TODO not implemented
