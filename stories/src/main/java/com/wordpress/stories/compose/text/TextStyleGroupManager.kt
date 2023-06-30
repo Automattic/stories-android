@@ -162,7 +162,7 @@ class TextStyleGroupManager(val context: Context) {
     }
 
     fun getAnalyticsLabelFor(@TypefaceId typefaceId: Int): String {
-        return supportedTypefaces[typefaceId]?.label?.toLowerCase(Locale.ROOT).orEmpty()
+        return supportedTypefaces[typefaceId]?.label?.lowercase(Locale.ROOT).orEmpty()
     }
 
     private fun adjustTextViewLabelAlignment(@TypefaceId typefaceId: Int, textView: TextView) {
