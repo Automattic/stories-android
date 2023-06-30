@@ -10,6 +10,7 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatButton
 import com.automattic.loop.R
+import com.wordpress.stories.R as StoriesR
 
 /**
  * View shown when screen is in an empty state.  It contains the following:
@@ -55,12 +56,12 @@ class ActionableEmptyView : LinearLayout {
         bottomImage = layout.findViewById(R.id.bottom_image)
 
         attrs.let {
-            val typedArray = context.obtainStyledAttributes(it, com.wordpress.stories.R.styleable.ActionableEmptyView, 0, 0)
+            val typedArray = context.obtainStyledAttributes(it, StoriesR.styleable.ActionableEmptyView, 0, 0)
 
-            val imageResource = typedArray.getResourceId(com.wordpress.stories.R.styleable.ActionableEmptyView_aevImage, 0)
-            val titleAttribute = typedArray.getString(com.wordpress.stories.R.styleable.ActionableEmptyView_aevTitle)
-            val subtitleAttribute = typedArray.getString(com.wordpress.stories.R.styleable.ActionableEmptyView_aevSubtitle)
-            val buttonAttribute = typedArray.getString(com.wordpress.stories.R.styleable.ActionableEmptyView_aevButton)
+            val imageResource = typedArray.getResourceId(StoriesR.styleable.ActionableEmptyView_aevImage, 0)
+            val titleAttribute = typedArray.getString(StoriesR.styleable.ActionableEmptyView_aevTitle)
+            val subtitleAttribute = typedArray.getString(StoriesR.styleable.ActionableEmptyView_aevSubtitle)
+            val buttonAttribute = typedArray.getString(StoriesR.styleable.ActionableEmptyView_aevButton)
 
             if (imageResource != 0) {
                 image.setImageResource(imageResource)
