@@ -208,7 +208,7 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
                         it.start()
                         it.setLooping(true)
                     }
-                    setOnErrorListener { mp, what, extra ->
+                    setOnErrorListener { _, _, _ ->
                         playerPreparedListener?.onPlayerError()
                         true
                     }
