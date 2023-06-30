@@ -269,7 +269,7 @@ class BackgroundSurfaceManager(
             // This is to circumvent an issue in CameraX that should be solved in the beta version.
             // TODO: implement this in the saveFile listener so we're sure to only change to the option
             // wanted (video player) once we're sure video has been successfully saved
-            val handler = Handler()
+            @Suppress("DEPRECATION") val handler = Handler()
             handler.postDelayed({
                 videoPlayerHandling.currentFile = cameraBasicHandler.currentFile
                 doDeactivateReactivateSurfaceAndPlay()

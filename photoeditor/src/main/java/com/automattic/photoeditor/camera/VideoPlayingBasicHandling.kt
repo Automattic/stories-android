@@ -170,6 +170,7 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
 
                 mediaPlayer?.apply {
                     setSurface(s)
+                    @Suppress("DEPRECATION")
                     setAudioStreamType(AudioManager.STREAM_MUSIC)
                     setLooping(true)
                     setOnPreparedListener {
@@ -201,6 +202,7 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
 
                 mediaPlayer?.apply {
                     setSurface(s)
+                    @Suppress("DEPRECATION")
                     setAudioStreamType(AudioManager.STREAM_MUSIC)
                     setLooping(true)
                     setOnPreparedListener {

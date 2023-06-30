@@ -116,7 +116,7 @@ class CameraUtils {
             cameraId: String
         ): Size {
             // Get screen metrics used to setup camera for full screen resolution
-            val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
+            @Suppress("DEPRECATION") val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
             val displaySize = Point(metrics.widthPixels, metrics.heightPixels)
             val optimalPreviewSize: Size
             Log.d(TAG, "Screen metrics: ${metrics.widthPixels} x ${metrics.heightPixels}")
@@ -129,7 +129,7 @@ class CameraUtils {
 
             // Find out if we need to swap dimension to get the preview size relative to sensor
             // coordinate.
-            val displayRotation = activity.windowManager.defaultDisplay.rotation
+            @Suppress("DEPRECATION") val displayRotation = activity.windowManager.defaultDisplay.rotation
 
             val sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION) ?: 0
             val swappedDimensions = areDimensionsSwapped(displayRotation, sensorOrientation)

@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.automattic.photoeditor.camera
 
 import android.annotation.SuppressLint
@@ -82,7 +84,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
     @SuppressLint("RestrictedApi")
     private fun startCamera() {
         // Get screen metrics used to setup camera for full screen resolution
-        val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
+        @Suppress("DEPRECATION") val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
         screenAspectRatio = Rational(metrics.widthPixels, metrics.heightPixels)
 
         // retrieve flash availability for this camera
@@ -190,7 +192,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                 videoCapture?.clear()
             }
 
-            val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
+            @Suppress("DEPRECATION") val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
 
             val videoCaptureConfig = VideoCaptureConfig.Builder().apply {
                 setLensFacing(lensFacing)
@@ -202,6 +204,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
             // video capture only
             CameraX.bindToLifecycle(activity, videoCapture)
 
+            @Suppress("DEPRECATION")
             videoCapture?.startRecording(
                 it,
                 AsyncTask.THREAD_POOL_EXECUTOR,
@@ -249,6 +252,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                 }
 
                 // Setup image capture listener which is triggered after photo has been taken
+                @Suppress("DEPRECATION")
                 imageCapture?.takePicture(
                     it,
                     metadata,
