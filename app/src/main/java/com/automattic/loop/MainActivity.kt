@@ -112,7 +112,7 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
                 errorText
             )
             val snackbar = Snackbar.make(findViewById(android.R.id.content), snackbarMessage, Snackbar.LENGTH_LONG)
-            snackbar.setAction(R.string.story_saving_failed_quick_action_manage) { view ->
+            snackbar.setAction(R.string.story_saving_failed_quick_action_manage) {
                 // here go to the StoryComposerActivity, passing the SaveResult
                 val intent = Intent(this@MainActivity, StoryComposerActivity::class.java)
                 intent.putExtra(KEY_STORY_SAVE_RESULT, event)
