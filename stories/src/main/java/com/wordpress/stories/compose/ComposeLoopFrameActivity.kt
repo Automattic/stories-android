@@ -664,7 +664,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
         }
     }
 
-    @Suppress("unused")
+    @Suppress("unused", "UNUSED_PARAMETER")
     private fun updateSelectedFrameControls(oldSelection: Int, newSelection: Int) {
         if (storyViewModel.getCurrentStorySize() > newSelection) {
             val selectedFrame = storyViewModel.getCurrentStoryFrameAt(newSelection)
