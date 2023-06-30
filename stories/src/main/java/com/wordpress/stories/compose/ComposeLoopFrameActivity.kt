@@ -80,11 +80,6 @@ import com.wordpress.stories.BuildConfig
 import com.wordpress.stories.R
 import com.wordpress.stories.compose.ComposeLoopFrameActivity.ExternalMediaPickerRequestCodesAndExtraKeys
 import com.wordpress.stories.compose.FinishButton.FinishButtonMode.DONE
-import com.wordpress.stories.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_DELETE_SLIDE
-import com.wordpress.stories.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_FULL_SCREEN
-import com.wordpress.stories.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_NONE
-import com.wordpress.stories.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION
-import com.wordpress.stories.compose.ScreenTouchBlockMode.BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY
 import com.wordpress.stories.compose.emoji.EmojiPickerFragment
 import com.wordpress.stories.compose.emoji.EmojiPickerFragment.EmojiListener
 import com.wordpress.stories.compose.frame.FrameIndex
@@ -1663,12 +1658,12 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
 
     protected fun showLoading() {
         editModeHideAllUIControls(true)
-        blockTouchOnPhotoEditor(BLOCK_TOUCH_MODE_FULL_SCREEN)
+        blockTouchOnPhotoEditor(ScreenTouchBlockMode.BLOCK_TOUCH_MODE_FULL_SCREEN)
     }
 
     protected fun hideLoading() {
         editModeRestoreAllUIControls()
-        releaseTouchOnPhotoEditor(BLOCK_TOUCH_MODE_FULL_SCREEN)
+        releaseTouchOnPhotoEditor(ScreenTouchBlockMode.BLOCK_TOUCH_MODE_FULL_SCREEN)
     }
 
     private fun showSnackbar(message: String, actionLabel: String? = null, listener: OnClickListener? = null) {
@@ -1795,21 +1790,21 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                 // if we were in an error-handling situation but now all pages are OK we're ready to go
                 // don't allow editing or adding new frames but do allow publishing the Story
                 originallyErrored && !currentlyErrored -> {
-                    blockTouchOnPhotoEditor(BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY)
+                    blockTouchOnPhotoEditor(ScreenTouchBlockMode.BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY)
                     editModeControls.visibility = View.INVISIBLE
                     soundButton.visibility = View.INVISIBLE
                     nextButton.isEnabled = true
                     storyFrameSelectorFragment?.hideAddFrameControl()
                 }
                 currentlyErrored -> {
-                    blockTouchOnPhotoEditor(BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION)
+                    blockTouchOnPhotoEditor(ScreenTouchBlockMode.BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION)
                     editModeControls.visibility = View.INVISIBLE
                     soundButton.visibility = View.INVISIBLE
                     nextButton.isEnabled = false
                     storyFrameSelectorFragment?.hideAddFrameControl()
                 }
                 else -> { // no errors here! this is the normal creation situation: release touch block, enable editing
-                    releaseTouchOnPhotoEditor(BLOCK_TOUCH_MODE_NONE)
+                    releaseTouchOnPhotoEditor(ScreenTouchBlockMode.BLOCK_TOUCH_MODE_NONE)
                     editModeControls.visibility = View.VISIBLE
                     updateSoundControl()
                     nextButton.isEnabled = true
@@ -1912,7 +1907,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private fun blockTouchOnPhotoEditor(touchBlockMode: ScreenTouchBlockMode, message: String? = null) {
         contentComposerBinding.run {
             when (touchBlockMode) {
-                BLOCK_TOUCH_MODE_FULL_SCREEN -> {
+                ScreenTouchBlockMode.BLOCK_TOUCH_MODE_FULL_SCREEN -> {
                     translucentView.visibility = View.VISIBLE
                     translucentErrorView.visibility = View.INVISIBLE
                     operationText.text = message
@@ -1921,7 +1916,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                         true
                     }
                 }
-                BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION -> {
+                ScreenTouchBlockMode.BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION -> {
                     translucentView.visibility = View.GONE
                     translucentErrorView.visibility = View.VISIBLE
                     translucentErrorView.background = ColorDrawable(
@@ -1933,7 +1928,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     }
                 }
                 // do block touch but don't show scrim (make it transparent)
-                BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY -> {
+                ScreenTouchBlockMode.BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY -> {
                     translucentView.visibility = View.GONE
                     translucentErrorView.visibility = View.VISIBLE
                     translucentErrorView.background = ColorDrawable(
@@ -1945,7 +1940,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     }
                 }
                 // block touch, no scrim, tapping releases block
-                BLOCK_TOUCH_MODE_DELETE_SLIDE -> {
+                ScreenTouchBlockMode.BLOCK_TOUCH_MODE_DELETE_SLIDE -> {
                     translucentView.visibility = View.GONE
                     translucentErrorView.visibility = View.VISIBLE
                     translucentErrorView.background = ColorDrawable(
@@ -1959,7 +1954,7 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
                     }
                 }
                 // just don't block touch
-                BLOCK_TOUCH_MODE_NONE -> {
+                ScreenTouchBlockMode.BLOCK_TOUCH_MODE_NONE -> {
                     translucentView.visibility = View.GONE
                     translucentErrorView.visibility = View.GONE
                 }
@@ -1971,17 +1966,18 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private fun releaseTouchOnPhotoEditor(touchBlockMode: ScreenTouchBlockMode) {
         contentComposerBinding.run {
             when (touchBlockMode) {
-                BLOCK_TOUCH_MODE_FULL_SCREEN -> {
+                ScreenTouchBlockMode.BLOCK_TOUCH_MODE_FULL_SCREEN -> {
                     translucentView.visibility = View.GONE
                     operationText.text = null
                     translucentView.setOnTouchListener(null)
                 }
-                BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION,
-                BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY,
-                BLOCK_TOUCH_MODE_NONE -> {
+                ScreenTouchBlockMode.BLOCK_TOUCH_MODE_PHOTO_EDITOR_ERROR_PENDING_RESOLUTION,
+                ScreenTouchBlockMode.BLOCK_TOUCH_MODE_PHOTO_EDITOR_READY,
+                ScreenTouchBlockMode.BLOCK_TOUCH_MODE_NONE -> {
                     translucentErrorView.visibility = View.GONE
                     translucentErrorView.setOnTouchListener(null)
                 }
+                ScreenTouchBlockMode.BLOCK_TOUCH_MODE_DELETE_SLIDE -> Unit // Do nothing
             }
         }
     }
@@ -2266,13 +2262,13 @@ abstract class ComposeLoopFrameActivity : AppCompatActivity(), OnStoryFrameSelec
     private fun enableDeleteSlideMode() {
         contentComposerBinding.deleteSlideView.visibility = View.VISIBLE
         editModeHideAllUIControls(hideNextButton = true, hideFrameSelector = false)
-        blockTouchOnPhotoEditor(BLOCK_TOUCH_MODE_DELETE_SLIDE)
+        blockTouchOnPhotoEditor(ScreenTouchBlockMode.BLOCK_TOUCH_MODE_DELETE_SLIDE)
     }
 
     private fun disableDeleteSlideMode() {
         contentComposerBinding.deleteSlideView.visibility = View.GONE
         editModeRestoreAllUIControls()
-        releaseTouchOnPhotoEditor(BLOCK_TOUCH_MODE_NONE)
+        releaseTouchOnPhotoEditor(ScreenTouchBlockMode.BLOCK_TOUCH_MODE_NONE)
     }
 
     private fun showPlayVideoWithSurfaceSafeguard(source: BackgroundSource) {
