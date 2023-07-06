@@ -129,6 +129,7 @@ class StoryComposerActivity : ComposeLoopFrameActivity(),
         val intent = Intent(this, PhotoPickerActivity::class.java)
         intent.putExtra(PhotoPickerFragment.ARG_BROWSER_TYPE, MediaBrowserType.LOOP_PICKER)
 
+        @Suppress("DEPRECATION")
         startActivityForResult(
             intent,
             RequestCodes.PHOTO_PICKER,

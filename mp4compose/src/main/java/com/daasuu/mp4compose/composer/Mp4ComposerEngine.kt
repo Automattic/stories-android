@@ -137,10 +137,8 @@ internal class Mp4ComposerEngine {
                 }
 
                 try {
-                    durationUs =
-                        java.lang.Long.parseLong(
-                            mediaMetadataRetriever!!.extractMetadata(
-                                MediaMetadataRetriever.METADATA_KEY_DURATION)) * 1000
+                    val duration = mediaMetadataRetriever?.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+                    durationUs = duration?.let { java.lang.Long.parseLong(it) * 1000 } ?: 0
                 } catch (e: NumberFormatException) {
                     durationUs = -1
                 }
@@ -213,6 +211,7 @@ internal class Mp4ComposerEngine {
                 videoOutputFormat.setInteger(MediaFormat.KEY_BIT_RATE, BIT_RATE)
                 videoOutputFormat.setInteger(MediaFormat.KEY_FRAME_RATE, FRAME_RATE)
                 videoOutputFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, I_FRAME_INTERVAL)
+                @Suppress("DEPRECATION")
                 videoOutputFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, COLOR_FormatYUV420SemiPlanar)
 
                 // setup video composer for static background image

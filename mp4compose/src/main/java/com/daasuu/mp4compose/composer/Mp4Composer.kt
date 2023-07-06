@@ -236,7 +236,7 @@ class Mp4Composer : ComposerInterface {
                         mute,
                         Rotation.fromInt(rotation.rotation), // FIXME assume portrait for now
                         staticImageResolution,
-                        fillMode!!,
+                        fillMode,
                         fillModeCustomItem!!,
                         timeScale,
                         flipVertical,
@@ -273,19 +273,17 @@ class Mp4Composer : ComposerInterface {
         var mediaMetadataRetriever: MediaMetadataRetriever? = null
         try {
             mediaMetadataRetriever = MediaMetadataRetriever()
-            videoUri?.let { uri ->
-                context?.let {
-                    DataSourceUtil.setDataSource(
-                        it,
-                        uri,
-                        mediaExtractor = null,
-                        mediaMetadataRetriever = mediaMetadataRetriever,
-                        addedRequestHeaders = addedRequestHeaders
-                    )
-                }
+            context?.let {
+                DataSourceUtil.setDataSource(
+                    it,
+                    videoUri,
+                    mediaExtractor = null,
+                    mediaMetadataRetriever = mediaMetadataRetriever,
+                    addedRequestHeaders = addedRequestHeaders
+                )
             }
             val orientation = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)
-            return Integer.valueOf(orientation)
+            return orientation?.let { Integer.valueOf(it) } ?: 0
         } catch (e: IllegalArgumentException) {
             Log.e("MediaMetadataRetriever", "getVideoRotation IllegalArgumentException")
             return 0
@@ -324,10 +322,14 @@ class Mp4Composer : ComposerInterface {
                 )
             }
 
-            val width = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH))
-            val height = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT))
+            val width = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)
+            val height = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)
 
-            return Size(width, height)
+            return if (width != null && height != null) {
+                Size(Integer.valueOf(width), Integer.valueOf(height))
+            } else {
+                defaultResolution
+            }
         } catch (e: IllegalArgumentException) {
             Log.e("MediaMetadataRetriever", "getVideoResolution IllegalArgumentException")
             return defaultResolution

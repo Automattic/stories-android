@@ -42,6 +42,7 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
             root.setOnApplyWindowInsetsListener { view, insets ->
                 // remember the insetTop as margin to all controls appearing at the top of the screen for full screen
                 // screens (i.e. ComposeLoopFrameActivity)
+                @Suppress("DEPRECATION")
                 (application as Loop).setStatusBarHeight(insets.systemWindowInsetTop)
                 view.onApplyWindowInsets(insets)
             }
@@ -111,7 +112,7 @@ class MainActivity : AppCompatActivity(), MainFragment.OnFragmentInteractionList
                 errorText
             )
             val snackbar = Snackbar.make(findViewById(android.R.id.content), snackbarMessage, Snackbar.LENGTH_LONG)
-            snackbar.setAction(R.string.story_saving_failed_quick_action_manage) { view ->
+            snackbar.setAction(R.string.story_saving_failed_quick_action_manage) {
                 // here go to the StoryComposerActivity, passing the SaveResult
                 val intent = Intent(this@MainActivity, StoryComposerActivity::class.java)
                 intent.putExtra(KEY_STORY_SAVE_RESULT, event)

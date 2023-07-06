@@ -24,7 +24,7 @@ abstract class VideoRecorderFragment : Fragment(),
     protected var flashSupported: Boolean by Delegates.observable(
         initialValue = false,
         onChange = {
-            prop, old, new -> flashSupportChangeListener.onFlashSupportChanged(new)
+            _, _, new -> flashSupportChangeListener.onFlashSupportChanged(new)
         }
     )
     var useTempCaptureFile = true

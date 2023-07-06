@@ -170,6 +170,7 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
 
                 mediaPlayer?.apply {
                     setSurface(s)
+                    @Suppress("DEPRECATION")
                     setAudioStreamType(AudioManager.STREAM_MUSIC)
                     setLooping(true)
                     setOnPreparedListener {
@@ -201,6 +202,7 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
 
                 mediaPlayer?.apply {
                     setSurface(s)
+                    @Suppress("DEPRECATION")
                     setAudioStreamType(AudioManager.STREAM_MUSIC)
                     setLooping(true)
                     setOnPreparedListener {
@@ -208,7 +210,7 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
                         it.start()
                         it.setLooping(true)
                     }
-                    setOnErrorListener { mp, what, extra ->
+                    setOnErrorListener { _, _, _ ->
                         playerPreparedListener?.onPlayerError()
                         true
                     }
@@ -259,15 +261,12 @@ class VideoPlayingBasicHandling : Fragment(), SurfaceFragmentHandler, VideoPlaye
                 )
             }
 
-            val height = metadataRetriever
-            .extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)
-            val width = metadataRetriever
-                .extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)
-            var rotation = Integer.valueOf(metadataRetriever
-                .extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION))
-            videoHeight = java.lang.Float.parseFloat(height)
-            videoWidth = java.lang.Float.parseFloat(width)
-            videoOrientation = rotation
+            val height = metadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)
+            val width = metadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)
+            val orientation = metadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)
+            videoHeight = height?.let { java.lang.Float.parseFloat(it) } ?: 0f
+            videoWidth = width?.let { java.lang.Float.parseFloat(it) } ?: 0f
+            videoOrientation = orientation?.let { Integer.valueOf(it) } ?: 0
         } catch (e: IOException) {
             playerPreparedListener?.onPlayerError()
             Log.d(TAG, e.message.toString())

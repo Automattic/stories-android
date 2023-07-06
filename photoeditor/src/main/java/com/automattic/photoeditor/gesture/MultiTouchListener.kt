@@ -53,6 +53,7 @@ internal class MultiTouchListener(
 
     init {
         mScaleGestureDetector = ScaleGestureDetector(ScaleGestureListener())
+        @Suppress("DEPRECATION")
         mGestureListener = GestureDetector(GestureListener())
         if (deleteView != null) {
             outRect = Rect(

@@ -40,9 +40,10 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
             context.applicationContext,
             context.getString(R.string.notification_channel_transient_id)
         ).apply {
-                setSmallIcon(android.R.drawable.stat_sys_upload)
-                color = context.resources.getColor(R.color.primary_50)
-                setOnlyAlertOnce(true)
+            setSmallIcon(android.R.drawable.stat_sys_upload)
+            @Suppress("DEPRECATION")
+            color = context.resources.getColor(R.color.primary_50)
+            setOnlyAlertOnce(true)
         }
     }
 
@@ -127,6 +128,7 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
             // reset the notification id so a new one is generated next time the service is started
             notificationData.notificationId = 0
             resetNotificationCounters()
+            @Suppress("DEPRECATION")
             service.stopForeground(true)
             return true
         }
@@ -323,6 +325,7 @@ class FrameSaveNotifier(private val context: Context, private val service: Frame
         }
 
         // Add MANAGE action and default action
+        @Suppress("DEPRECATION")
         notificationBuilder.addAction(
             0, context.getString(R.string.story_saving_failed_quick_action_manage),
             pendingIntent
