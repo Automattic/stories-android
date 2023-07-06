@@ -1,7 +1,7 @@
 {
   "project_name": "stories-android",
   "branch": "trunk",
-  "pinned_hash": "267bf11b6aaaf0c6e541b0bbaebe6ca6e13eed15",
+  "pinned_hash": "75704ed3adb5b518b0a775bf1b6126b64a32aba7",
   "files_to_copy": [
     {
       "file": "android/Loop/gradle.properties",
