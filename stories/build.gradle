@@ -42,6 +42,10 @@ android {
     lintOptions{
         lintConfig file("${project.rootDir}/lint.xml")
     }
+
+    buildFeatures {
+        buildConfig true
+    }
 }
 
 dependencies {

@@ -58,6 +58,9 @@ android {
         lintConfig file("${project.rootDir}/lint.xml")
         disable("IconLocation")
     }
+    buildFeatures {
+        buildConfig true
+    }
 
     useLibrary 'android.test.runner'
 }
