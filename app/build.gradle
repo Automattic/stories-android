@@ -53,7 +53,7 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    lintOptions {
+    lint {
         abortOnError false
         lintConfig file("${project.rootDir}/lint.xml")
         disable("IconLocation")
