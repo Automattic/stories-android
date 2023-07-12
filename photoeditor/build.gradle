@@ -7,6 +7,8 @@ plugins {
 }
 
 android {
+    namespace "com.automattic.photoeditor"
+
     compileSdkVersion rootProject.compileSdkVersion
 
     defaultConfig {

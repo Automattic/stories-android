@@ -10,6 +10,8 @@ plugins {
 apply from: "../stories-common.gradle"
 
 android {
+    namespace "com.wordpress.stories"
+
     compileSdkVersion rootProject.compileSdkVersion
 
 

@@ -8,6 +8,8 @@ plugins {
 apply from: "../stories-common.gradle"
 
 android {
+    namespace "com.automattic.loop"
+
     compileSdkVersion rootProject.compileSdkVersion
 
     signingConfigs {
