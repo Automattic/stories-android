@@ -10,15 +10,14 @@ plugins {
 apply from: "../stories-common.gradle"
 
 android {
+    namespace "com.wordpress.stories"
+
     compileSdkVersion rootProject.compileSdkVersion
 
 
     defaultConfig {
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
-        consumerProguardFiles 'consumer-rules.pro'
     }
 
     viewBinding {
@@ -37,8 +36,12 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    lintOptions{
+    lint {
         lintConfig file("${project.rootDir}/lint.xml")
+    }
+
+    buildFeatures {
+        buildConfig true
     }
 }
 
@@ -113,7 +116,6 @@ project.afterEvaluate {
 
                 groupId "com.automattic"
                 artifactId "stories"
-                artifact tasks.named("androidSourcesJar") // This task is added by 'publish-to-s3' plugin
                 // version is set by 'publish-to-s3' plugin
             }
         }
