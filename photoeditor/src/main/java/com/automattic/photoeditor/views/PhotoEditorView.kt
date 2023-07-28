@@ -1,6 +1,7 @@
 package com.automattic.photoeditor.views
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
@@ -190,7 +191,7 @@ class PhotoEditorView : RelativeLayout {
 
         backgroundImage.setOnImageChangedListener(object : BackgroundImageView.OnImageChangedListener {
             override fun onBitmapLoaded(sourceBitmap: Bitmap?) {
-                if (attachedToWindow) {
+                if (attachedToWindow && ((context as? Activity)?.let { !it.isDestroyed } != false)) {
                     Glide.with(context).load(sourceBitmap)
                             .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 3)))
                             .into(backgroundImageBlurred)
