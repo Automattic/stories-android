@@ -191,7 +191,7 @@ class PhotoEditorView : RelativeLayout {
 
         backgroundImage.setOnImageChangedListener(object : BackgroundImageView.OnImageChangedListener {
             override fun onBitmapLoaded(sourceBitmap: Bitmap?) {
-                if (attachedToWindow && (context as? Activity)?.isDestroyed != true) {
+                if (attachedToWindow && isAttachedToWindow && (context as? Activity)?.isDestroyedOrFinishing != true) {
                     Glide.with(context).load(sourceBitmap)
                             .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 3)))
                             .into(backgroundImageBlurred)
@@ -335,5 +335,7 @@ class PhotoEditorView : RelativeLayout {
         private val brushSrcId = 2
         private val glFilterId = 3
         private val cameraPreviewId = 4
+        private val Activity.isDestroyedOrFinishing
+            get() = isDestroyed || isFinishing
     }
 }
