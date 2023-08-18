@@ -191,6 +191,9 @@ class PhotoEditorView : RelativeLayout {
 
         backgroundImage.setOnImageChangedListener(object : BackgroundImageView.OnImageChangedListener {
             override fun onBitmapLoaded(sourceBitmap: Bitmap?) {
+                // We are conditioning on both the manually tracked attachedToWindow and the similar built-in flag to
+                // be reduce the likelihood of a race induced crash in Glide load. See:
+                // https://github.com/Automattic/stories-android/pull/739#discussion_r1297544914
                 if (attachedToWindow && isAttachedToWindow && (context as? Activity)?.isDestroyedOrFinishing != true) {
                     Glide.with(context).load(sourceBitmap)
                             .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 3)))
