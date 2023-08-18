@@ -1,6 +1,7 @@
 package com.automattic.photoeditor.views
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
@@ -190,7 +191,10 @@ class PhotoEditorView : RelativeLayout {
 
         backgroundImage.setOnImageChangedListener(object : BackgroundImageView.OnImageChangedListener {
             override fun onBitmapLoaded(sourceBitmap: Bitmap?) {
-                if (attachedToWindow) {
+                // We are conditioning on both the manually tracked attachedToWindow and the similar built-in flag to
+                // be reduce the likelihood of a race induced crash in Glide load. See:
+                // https://github.com/Automattic/stories-android/pull/739#discussion_r1297544914
+                if (attachedToWindow && isAttachedToWindow && (context as? Activity)?.isDestroyedOrFinishing != true) {
                     Glide.with(context).load(sourceBitmap)
                             .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 3)))
                             .into(backgroundImageBlurred)
@@ -334,5 +338,7 @@ class PhotoEditorView : RelativeLayout {
         private val brushSrcId = 2
         private val glFilterId = 3
         private val cameraPreviewId = 4
+        private val Activity.isDestroyedOrFinishing
+            get() = isDestroyed || isFinishing
     }
 }
