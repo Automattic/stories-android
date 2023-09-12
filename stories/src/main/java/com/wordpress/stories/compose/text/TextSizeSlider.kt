@@ -1,6 +1,7 @@
 package com.wordpress.stories.compose.text
 
 import android.content.res.Resources
+import android.os.Build
 import android.util.TypedValue
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
@@ -31,8 +32,17 @@ class TextSizeSlider(
 
     @Suppress("DEPRECATION")
     fun update() {
-        val fontSizeSp = (textView.textSize / resources.displayMetrics.scaledDensity).toInt()
-        seekBar.progress = (fontSizeSp - TEXT_SIZE_SLIDER_MIN_VALUE) / TEXT_SIZE_SLIDER_STEP
+        val fontSizeSp = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            // this takes into account text specifics (such as font size multipliers in system settings)
+            TypedValue.deriveDimension(
+                    TypedValue.COMPLEX_UNIT_SP,
+                    textView.textSize,
+                    resources.displayMetrics
+            )
+        } else {
+            (textView.textSize / resources.displayMetrics.scaledDensity)
+        }
+        seekBar.progress = (fontSizeSp.toInt() - TEXT_SIZE_SLIDER_MIN_VALUE) / TEXT_SIZE_SLIDER_STEP
     }
 
     companion object {
