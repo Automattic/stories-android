@@ -405,8 +405,9 @@ public class PhotoPickerActivity extends AppCompatActivity
         private static final int SWIPE_MIN_DISTANCE = 120;
         private static final int SWIPE_THRESHOLD_VELOCITY = 200;
 
-        @Override public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            if (e1 != null && e2 != null) {
+        @Override
+        public boolean onFling(@Nullable MotionEvent e1, @NonNull MotionEvent e2, float velocityX, float velocityY) {
+            if (e1 != null) {
                 if (e2.getY() - e1.getY() > SWIPE_MIN_DISTANCE
                     && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
                     // Top to bottom

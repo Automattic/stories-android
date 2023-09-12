@@ -61,7 +61,7 @@ class VideoRecordingControlView @JvmOverloads constructor(
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         if (w != oldw || h != oldh) {
-            bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)?.apply {
+            bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888).apply {
                 eraseColor(Color.TRANSPARENT)
                 viewCanvas = Canvas(this)
             }
