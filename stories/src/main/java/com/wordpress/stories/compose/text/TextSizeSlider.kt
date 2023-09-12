@@ -29,6 +29,7 @@ class TextSizeSlider(
         })
     }
 
+    @Suppress("DEPRECATION")
     fun update() {
         val fontSizeSp = (textView.textSize / resources.displayMetrics.scaledDensity).toInt()
         seekBar.progress = (fontSizeSp - TEXT_SIZE_SLIDER_MIN_VALUE) / TEXT_SIZE_SLIDER_STEP
