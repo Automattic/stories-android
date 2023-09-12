@@ -78,9 +78,8 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
         super.setupDialog(dialog, style)
         activity?.let { activity ->
             val binding = FragmentBottomStickerEmojiDialogBinding.inflate(LayoutInflater.from(context))
-//            val contentView = View.inflate(context, R.layout.fragment_bottom_sticker_emoji_dialog, null)
             dialog.setContentView(binding.root)
-            val params = binding.root.layoutParams as CoordinatorLayout.LayoutParams
+            val params = (binding.root.parent as View).layoutParams as CoordinatorLayout.LayoutParams
 
             @Suppress("DEPRECATION")
             (params.behavior as? BottomSheetBehavior)?.setBottomSheetCallback(bottomSheetBehaviorCallback)
