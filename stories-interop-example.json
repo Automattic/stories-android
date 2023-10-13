@@ -1,0 +1,160 @@
+{
+  "frames": [
+    {
+      "source": {
+        "type": "com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.FileBackgroundSource",
+        "file": "/data/user/0/com.automattic.portkey/app_tmp/tmp_wp_story1595960744285.jpg"
+      },
+      "frameItemType": {
+        "type": "com.wordpress.stories.compose.story.StoryFrameItemType.IMAGE"
+      },
+      "addedViews": [
+        {
+          "viewType": "TEXT",
+          "viewInfo": {
+            "rotation": 0,
+            "translationX": -180,
+            "translationY": -861.4966,
+            "scale": 1,
+            "addedViewTextInfo": {
+              "text": "this is some text",
+              "fontSizePx": 140,
+              "textColor": -1,
+              "textAlignment": 2
+            }
+          },
+          "uri": null
+        }
+      ],
+      "saveResultReason": {
+        "type": "com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess"
+      }
+    },
+    {
+      "source": {
+        "type": "com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.UriBackgroundSource",
+        "contentUri": "content://media/external/video/media/639"
+      },
+      "frameItemType": {
+        "type": "com.wordpress.stories.compose.story.StoryFrameItemType.VIDEO",
+        "muteAudio": false
+      },
+      "addedViews": [
+        {
+          "viewType": "TEXT",
+          "viewInfo": {
+            "rotation": 0,
+            "translationX": 5.053711,
+            "translationY": -769.71716,
+            "scale": 1,
+            "addedViewTextInfo": {
+              "text": "this is some text, on a video background",
+              "fontSizePx": 140,
+              "textColor": -1,
+              "textAlignment": 4
+            }
+          },
+          "uri": null
+        },
+        {
+          "viewType": "EMOJI",
+          "viewInfo": {
+            "rotation": 0,
+            "translationX": 0,
+            "translationY": 0,
+            "scale": 1,
+            "addedViewTextInfo": {
+              "text": "😁",
+              "fontSizePx": 284,
+              "textColor": -16777216,
+              "textAlignment": 4
+            }
+          },
+          "uri": null
+        }
+      ],
+      "saveResultReason": {
+        "type": "com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess"
+      }
+    },
+    {
+      "source": {
+        "type": "com.wordpress.stories.compose.story.StoryFrameItem.BackgroundSource.UriBackgroundSource",
+        "contentUri": "content://media/external/images/media/638"
+      },
+      "frameItemType": {
+        "type": "com.wordpress.stories.compose.story.StoryFrameItemType.IMAGE"
+      },
+      "addedViews": [
+        {
+          "viewType": "TEXT",
+          "viewInfo": {
+            "rotation": 0,
+            "translationX": -240.0293,
+            "translationY": -866.2858,
+            "scale": 1,
+            "addedViewTextInfo": {
+              "text": "one text view",
+              "fontSizePx": 140,
+              "textColor": -1,
+              "textAlignment": 2
+            }
+          },
+          "uri": null
+        },
+        {
+          "viewType": "TEXT",
+          "viewInfo": {
+            "rotation": 0,
+            "translationX": -120.01465,
+            "translationY": -683.99414,
+            "scale": 1,
+            "addedViewTextInfo": {
+              "text": "another text view",
+              "fontSizePx": 140,
+              "textColor": -1,
+              "textAlignment": 2
+            }
+          },
+          "uri": null
+        },
+        {
+          "viewType": "TEXT",
+          "viewInfo": {
+            "rotation": 0,
+            "translationX": -214.98047,
+            "translationY": -504.95605,
+            "scale": 1,
+            "addedViewTextInfo": {
+              "text": "third text view",
+              "fontSizePx": 140,
+              "textColor": -1,
+              "textAlignment": 2
+            }
+          },
+          "uri": null
+        },
+        {
+          "viewType": "EMOJI",
+          "viewInfo": {
+            "rotation": 0,
+            "translationX": 0,
+            "translationY": 0,
+            "scale": 1,
+            "addedViewTextInfo": {
+              "text": "😬",
+              "fontSizePx": 284,
+              "textColor": -16777216,
+              "textAlignment": 4
+            }
+          },
+          "uri": null
+        }
+      ],
+      "saveResultReason": {
+        "type": "com.wordpress.stories.compose.frame.StorySaveEvents.SaveResultReason.SaveSuccess"
+      }
+    }
+  ],
+  "title": null
+}
