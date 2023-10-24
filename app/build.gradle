@@ -101,6 +101,8 @@ dependencies {
     debugImplementation "com.facebook.flipper:flipper:$flipperVersion"
     debugImplementation "com.facebook.soloader:soloader:$soloaderVersion"
     debugImplementation "com.facebook.flipper:flipper-network-plugin:$flipperVersion"
+
+    lintChecks "org.wordpress:lint:$wordPressLintVersion"
 }
 
 // Add properties named "loop.xxx" to our BuildConfig
