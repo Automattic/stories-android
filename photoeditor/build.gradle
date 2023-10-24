@@ -55,8 +55,6 @@ dependencies {
 
     implementation mp4composeProjectDependency
 
-    lintChecks "org.wordpress:lint:$wordPressLintVersion"
-
     implementation "androidx.emoji:emoji:$androidxEmojiVersion"
 }
 repositories {
