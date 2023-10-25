@@ -118,7 +118,7 @@ ext {
     junitVersion = '4.13.2'
 
     // other
-    wordPressLintVersion = '1.1.0'
+    wordPressLintVersion = '2.0.0'
 
     // project
     mp4composeProjectDependency = project.hasProperty("mp4composeVersion") ? "com.automattic.stories:mp4compose:${project.getProperty("mp4composeVersion")}" : project(":mp4compose")
