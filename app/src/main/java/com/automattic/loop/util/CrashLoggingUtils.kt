@@ -1,57 +1,30 @@
 package com.automattic.loop.util
 
+import android.content.Context
 import com.automattic.loop.AppPrefs
 import com.automattic.loop.BuildConfig
-import io.sentry.Sentry
-import io.sentry.android.AndroidSentryClientFactory
-import io.sentry.event.BreadcrumbBuilder
+import io.sentry.SentryOptions
+import io.sentry.android.core.SentryAndroid
 
 class CrashLoggingUtils {
     companion object {
-        @JvmStatic fun shouldEnableCrashLogging(context: android.content.Context): Boolean {
-            return AppPrefs.isCrashLoggingEnabled()
-        }
+        fun startCrashLogging(context: Context) {
+            if (!AppPrefs.isCrashLoggingEnabled()) return
 
-        @JvmStatic fun enableCrashLogging(context: android.content.Context) {
-            Sentry.init(BuildConfig.SENTRY_DSN, AndroidSentryClientFactory(context))
-            Sentry.getContext().addTag("version", BuildConfig.VERSION_NAME)
-        }
+            SentryAndroid.init(context) { options ->
+                options.apply {
+                    dsn = BuildConfig.SENTRY_DSN
+                    beforeSend = SentryOptions.BeforeSendCallback { event, _ ->
+                        if (AppPrefs.isCrashLoggingEnabled()) event else null
+                    }
 
-        @JvmStatic fun startCrashLogging(context: android.content.Context) {
-            if (shouldEnableCrashLogging(
-                    context
-                )
-            ) {
-                enableCrashLogging(context)
+                    // TODO: BuildConfig.VERSION_NAME value is removed in AGP 4.1 because the version_name does not reflect the final value
+                    // https://developer.android.com/studio/releases/gradle-plugin#4-1-0
+                    // We'll start publishing the artifacts to S3 and will not be using this information either, so unfortunately we can't use `version_name` here
+                    // If this is an important piece of information, we should look into alternative ways to obtain it. One possibility is to get the client version instead
+                    // setTag("version", BuildConfig.VERSION_NAME)
+                }
             }
-        }
-
-        @JvmStatic fun stopCrashLogging() {
-            Sentry.clearContext()
-            Sentry.close()
-        }
-
-        @JvmStatic fun log(message: String?) {
-            if (message == null) {
-                return
-            }
-
-            Sentry.getContext().recordBreadcrumb(
-                BreadcrumbBuilder().setMessage(message).build()
-            )
-        }
-
-        @JvmStatic fun log(exception: Throwable) {
-            Sentry.capture(exception)
-        }
-
-        @JvmStatic fun logException(tr: Throwable) {
-            log(tr)
-        }
-
-        @JvmStatic fun logException(tr: Throwable, message: String?) {
-            log(message)
-            log(tr)
         }
     }
 }

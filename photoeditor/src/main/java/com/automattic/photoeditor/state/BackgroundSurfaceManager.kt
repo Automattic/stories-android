@@ -68,7 +68,7 @@ class BackgroundSurfaceManager(
     private var isVideoPlayerVisible: Boolean = false
     private var isCameraRecording: Boolean = false
 
-    @Suppress("unused")
+    @Suppress("unused", "UNUSED_PARAMETER")
     @OnLifecycleEvent(ON_CREATE)
     fun onCreate(source: LifecycleOwner) {
         // clear surfaceTexture listeners
@@ -105,7 +105,7 @@ class BackgroundSurfaceManager(
         if (isCameraVisible || isVideoPlayerVisible) { photoEditorView.toggleTextureView() }
     }
 
-    @Suppress("unused")
+    @Suppress("unused", "UNUSED_PARAMETER")
     @OnLifecycleEvent(ON_DESTROY)
     fun onDestroy(source: LifecycleOwner) {
         if (lifeCycle.currentState.isAtLeast(Lifecycle.State.DESTROYED)) {
@@ -121,7 +121,7 @@ class BackgroundSurfaceManager(
         lifeCycle.removeObserver(this)
     }
 
-    @Suppress("unused")
+    @Suppress("unused", "UNUSED_PARAMETER")
     @OnLifecycleEvent(ON_START)
     fun onStart(source: LifecycleOwner) {
         // TODO: get state and restart fragments / camera preview?
@@ -130,19 +130,19 @@ class BackgroundSurfaceManager(
         }
     }
 
-    @Suppress("unused")
+    @Suppress("unused", "UNUSED_PARAMETER")
     @OnLifecycleEvent(ON_STOP)
     fun onStop(source: LifecycleOwner) {
         // TODO: save state and pause fragments / camera preview?
     }
 
-    @Suppress("unused")
+    @Suppress("unused", "UNUSED_PARAMETER")
     @OnLifecycleEvent(ON_RESUME)
     fun onResume(source: LifecycleOwner) {
         // TODO: get state and restart fragments / camera preview?
     }
 
-    @Suppress("unused")
+    @Suppress("unused", "UNUSED_PARAMETER")
     @OnLifecycleEvent(ON_PAUSE)
     fun onPause(source: LifecycleOwner) {
         // TODO: save state and pause fragments / camera preview?
@@ -270,7 +270,7 @@ class BackgroundSurfaceManager(
             // This is to circumvent an issue in CameraX that should be solved in the beta version.
             // TODO: implement this in the saveFile listener so we're sure to only change to the option
             // wanted (video player) once we're sure video has been successfully saved
-            val handler = Handler()
+            @Suppress("DEPRECATION") val handler = Handler()
             handler.postDelayed({
                 videoPlayerHandling.currentFile = cameraBasicHandler.currentFile
                 doDeactivateReactivateSurfaceAndPlay()

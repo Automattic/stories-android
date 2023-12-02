@@ -1,7 +1,42 @@
-include ':app'
-include ':mp4compose'
-project(':mp4compose').projectDir = new File(rootProject.projectDir, '/mp4compose')
-include ':photoeditor'
-project(':photoeditor').projectDir = new File(rootProject.projectDir, '/photoeditor')
-include ':stories'
-project(':stories').projectDir = new File(rootProject.projectDir, '/stories')
+pluginManagement {
+    gradle.ext.kotlinVersion = '1.6.10'
+    gradle.ext.agpVersion = '8.1.0'
+    gradle.ext.automatticPublishToS3Version = '0.8.0'
+    gradle.ext.sentryVersion = '2.0.0'
+
+    plugins {
+        id "org.jetbrains.kotlin.android" version gradle.ext.kotlinVersion
+        id "org.jetbrains.kotlin.kapt" version gradle.ext.kotlinVersion
+        id "org.jetbrains.kotlin.plugin.serialization" version gradle.ext.kotlinVersion
+        id "org.jetbrains.kotlin.plugin.parcelize" version gradle.ext.kotlinVersion
+        id "com.android.application" version gradle.ext.agpVersion
+        id "com.android.library" version gradle.ext.agpVersion
+        id "io.sentry.android.gradle" version gradle.ext.sentryVersion
+        id "com.automattic.android.publish-to-s3" version gradle.ext.automatticPublishToS3Version
+    }
+    repositories {
+        maven {
+            url 'https://a8c-libs.s3.amazonaws.com/android' 
+            content {
+                includeGroup "com.automattic.android"
+                includeGroup "com.automattic.android.publish-to-s3"
+            }
+        }
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+    resolutionStrategy {
+        eachPlugin {
+            // TODO: Remove this as soon as configure starts supporting Plugin Marker Artifacts
+            if (requested.id.id == "com.automattic.android.configure") {
+                useModule("com.automattic.android:configure:0.6.5")
+            }
+        }
+    }
+}
+
+include ':app',
+        ':mp4compose',
+        ':photoeditor',
+        ':stories'

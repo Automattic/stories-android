@@ -6,19 +6,18 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.emoji.text.EmojiCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.automattic.photoeditor.PhotoEditor
-import com.wordpress.stories.compose.hideStatusBar
-import com.wordpress.stories.util.getDisplayPixelWidth
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.wordpress.stories.R
-import kotlinx.android.synthetic.main.fragment_bottom_sticker_emoji_dialog.view.*
-import kotlinx.android.synthetic.main.row_emoji.view.*
+import com.wordpress.stories.compose.hideStatusBar
+import com.wordpress.stories.databinding.FragmentBottomStickerEmojiDialogBinding
+import com.wordpress.stories.databinding.RowEmojiBinding
+import com.wordpress.stories.util.getDisplayPixelWidth
 
 class EmojiPickerFragment : BottomSheetDialogFragment() {
     private var listener: EmojiListener? = null
@@ -30,6 +29,7 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
                 dismiss()
             }
         }
+
         override fun onSlide(bottomSheet: View, slideOffset: Float) {
             // Tweak to make swipe down fully dismiss the view because of this issue:
             // Swiping down on the sheet, the stickers get stuck half way
@@ -77,15 +77,16 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         activity?.let { activity ->
-            val contentView = View.inflate(context, R.layout.fragment_bottom_sticker_emoji_dialog, null)
-            dialog.setContentView(contentView)
-            val params = (contentView.parent as View).layoutParams as CoordinatorLayout.LayoutParams
+            val binding = FragmentBottomStickerEmojiDialogBinding.inflate(LayoutInflater.from(context))
+            dialog.setContentView(binding.root)
+            val params = (binding.root.parent as View).layoutParams as CoordinatorLayout.LayoutParams
 
+            @Suppress("DEPRECATION")
             (params.behavior as? BottomSheetBehavior)?.setBottomSheetCallback(bottomSheetBehaviorCallback)
             (params.behavior as? BottomSheetBehavior)?.state = BottomSheetBehavior.STATE_EXPANDED
 
-            contentView.rvEmoji.layoutManager = GridLayoutManager(activity, COLUMNS)
-            contentView.rvEmoji.adapter = EmojiAdapter(PhotoEditor.getEmojis(activity))
+            binding.rvEmoji.layoutManager = GridLayoutManager(activity, COLUMNS)
+            binding.rvEmoji.adapter = EmojiAdapter(PhotoEditor.getEmojis(activity))
         }
     }
 
@@ -103,9 +104,10 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
                 params.width = it
                 view.layoutParams = params
             }
-            return ViewHolder(view)
+            return ViewHolder(RowEmojiBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         }
 
+        @SuppressLint("RecyclerView")
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             // use EmojiCompat to process the string and make sure we have an emoji that can be rendered
             EmojiCompat.get().registerInitCallback(object : EmojiCompat.InitCallback() {
@@ -113,14 +115,14 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
                     EmojiCompat.get().unregisterInitCallback(this)
 
                     val compat = EmojiCompat.get()
-                    holder.txtEmojiRef.text = compat.process(emojiList[position])
+                    holder.binding.txtEmoji.text = compat.process(emojiList[position])
                 }
 
                 override fun onFailed(throwable: Throwable?) {
                     EmojiCompat.get().unregisterInitCallback(this)
 
                     // just fallback to setting the text
-                    holder.txtEmojiRef.text = emojiList[position]
+                    holder.binding.txtEmoji.text = emojiList[position]
                 }
             })
         }
@@ -129,9 +131,7 @@ class EmojiPickerFragment : BottomSheetDialogFragment() {
             return emojiList.size
         }
 
-        inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            var txtEmojiRef: TextView = itemView.txtEmoji
-
+        inner class ViewHolder(val binding: RowEmojiBinding) : RecyclerView.ViewHolder(binding.root) {
             init {
                 itemView.setOnClickListener {
                     listener?.onEmojiClick(emojiList[layoutPosition])

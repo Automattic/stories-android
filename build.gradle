@@ -1,35 +1,29 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-buildscript {
-    ext.kotlinVersion = '1.4.10'
-    ext.serializationVersion = '1.0-M1-1.4.0-rc'
-    repositories {
-        google()
-        jcenter()
-        maven { url "https://dl.bintray.com/automattic/maven/" }
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.1'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-        classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion"
-        classpath 'com.automattic.android:fetchstyle:1.1'
-        classpath 'io.sentry:sentry-android-gradle-plugin:1.7.27'
-        classpath 'com.automattic.android:configure:0.3.0'
+plugins {
+    id "com.android.application" apply false
+    id "org.jetbrains.kotlin.android" apply false
+    id "org.jetbrains.kotlin.plugin.serialization"
+    id "io.sentry.android.gradle"
 
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
-    }
+    id "com.automattic.android.configure"
 }
-
-apply plugin: 'com.automattic.android.fetchstyle'
-apply plugin: 'com.automattic.android.configure'
 
 allprojects {
     apply plugin: 'checkstyle'
 
     repositories {
+        maven {
+            url "https://a8c-libs.s3.amazonaws.com/android"
+            content {
+                includeGroup "com.automattic"
+                includeGroup "com.automattic.stories"
+                includeGroup "org.wordpress"
+            }
+        }
         google()
-        jcenter()
+        mavenCentral()
+        maven { url "https://jitpack.io" }
     }
 
     if (tasks.findByPath('checkstyle') == null) {
@@ -45,6 +39,12 @@ allprojects {
         checkstyle {
             toolVersion = '8.3'
             configFile file("${project.rootDir}/config/checkstyle.xml")
+        }
+    }
+
+    tasks.withType(KotlinCompile).all {
+        kotlinOptions {
+            allWarningsAsErrors = true
         }
     }
 }
@@ -84,32 +84,47 @@ subprojects {
 }
 
 ext {
-    compileSdkVersion = 28
-    buildToolVersion = '28.0.3'
+    minSdkVersion = 24
+    compileSdkVersion = 34
+    targetSdkVersion = 33
+}
 
-    minSdkVersion = 21
-    targetSdkVersion = 28
+ext {
+    // debug
+    flipperVersion = '0.138.0'
+    soloaderVersion = '0.10.3'
 
-    lifecycleVersion = '2.2.0'
-    coroutinesVersion = '1.3.9'
-    constraintLayoutVersion = '1.1.3'
-    appCompatVersion = '1.0.2'
-    coreVersion = '1.2.0'
-    navComponentVersion = '2.0.0'
+    // main
+    androidxAppcompatVersion = '1.0.2'
+    androidxCameraVersion = "1.2.3" // check for updates
+    androidxConstraintlayoutVersion = '1.1.3'
+    androidxCoreVersion = '1.2.0'
+    androidxEmojiVersion = '1.0.0'
+    androidxLifecycleVersion = '2.2.0'
+    androidxNavigationVersion = '2.0.0'
+    androidxPreferenceVersion = '1.1.0'
+    androidxRecyclerviewVersion = '1.1.0'
+    chrisbanesPhotoviewVersion = '2.3.0'
+    eventBusVersion = '3.3.1'
+    glideVersion = '4.10.0'
+    glideTransformationsVersion = '4.3.0'
+    googleMaterialVersion = '1.2.1'
+    kotlinxCoroutinesVersion = '1.3.9'
+    kotlinxSerializationVersion = '1.0-M1-1.4.0-rc'
+    sentryAndroidVersion = "5.0.1"
+    slf4jVersion = '1.7.25'
+
+    // test
+    junitVersion = '4.13.2'
+
+    // other
+    wordPressLintVersion = '2.0.0'
+
+    // project
+    mp4composeProjectDependency = project.hasProperty("mp4composeVersion") ? "com.automattic.stories:mp4compose:${project.getProperty("mp4composeVersion")}" : project(":mp4compose")
+    photoEditorProjectDependency = project.hasProperty("photoEditorVersion") ? "com.automattic.stories:photoeditor:${project.getProperty("photoEditorVersion")}" : project(":photoeditor")
 }
 
 task clean(type: Delete) {
     delete rootProject.buildDir
-}
-
-def loadGradleProperties() {
-    def inputFile = file("${rootDir}/gradle.properties")
-    if (!inputFile.exists()) {
-        throw new StopActionException("Build configuration file gradle.properties doesn't exist, follow README instructions")
-    }
-    def properties = new Properties()
-    inputFile.withInputStream { stream ->
-        properties.load(stream)
-    }
-    return properties
 }

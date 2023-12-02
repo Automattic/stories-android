@@ -1,41 +1,35 @@
 package com.automattic.loop.intro
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.automattic.loop.R
+import com.automattic.loop.databinding.IntroTemplateViewBinding
 import com.automattic.loop.util.INVALID_RESOURCE_ID
 import com.bumptech.glide.Glide
-import kotlinx.android.synthetic.main.intro_title_template_view.*
 
-class IntroPagerFragment : Fragment() {
-    private var promoText: Int = INVALID_RESOURCE_ID
-    private var backgroundImage: Int = INVALID_RESOURCE_ID
+class IntroPagerFragment : Fragment(R.layout.intro_template_view) {
+    private var promoTextRes: Int = INVALID_RESOURCE_ID
+    private var backgroundImageRes: Int = INVALID_RESOURCE_ID
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         arguments?.let {
-            promoText = it.getInt(KEY_PROMO_TEXT)
-            backgroundImage = it.getInt(KEY_BACKGROUND_IMAGE)
+            promoTextRes = it.getInt(KEY_PROMO_TEXT)
+            backgroundImageRes = it.getInt(KEY_BACKGROUND_IMAGE)
         }
-    }
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.intro_template_view, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        with(view) {
-            Glide.with(context)
-                .load(backgroundImage)
-                .into(background_image)
+        with(IntroTemplateViewBinding.bind(view)) {
+            Glide.with(view.context)
+                    .load(backgroundImageRes)
+                    .into(backgroundImage)
+            promoText.setText(promoTextRes)
         }
-        promo_text.setText(promoText)
     }
 
     companion object {

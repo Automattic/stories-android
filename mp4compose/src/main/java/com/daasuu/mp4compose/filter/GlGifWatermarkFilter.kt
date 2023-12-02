@@ -36,7 +36,7 @@ class GlGifWatermarkFilter(
     init {
         val glide = Glide.get(context)
         val sourceData = inputStreamToBytes(gifAsInputStream)
-        byteBuffer = ByteBuffer.wrap(sourceData)
+        byteBuffer = ByteBuffer.wrap(sourceData!!)
 
         val parser = GifHeaderParser()
         parser.setData(byteBuffer)

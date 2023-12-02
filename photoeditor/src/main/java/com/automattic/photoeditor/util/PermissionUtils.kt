@@ -6,8 +6,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Build
-import android.os.Build.VERSION_CODES
-import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
@@ -18,16 +16,16 @@ class PermissionUtils {
     companion object {
         val PERMISSION_REQUEST_CODE = 5200
         val IS_PERMISSION_REQUESTED_PREFS = "is_permission_requested_prefs"
-        val REQUIRED_PERMISSIONS = arrayOf(
-            Manifest.permission.CAMERA,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-        )
+        val REQUIRED_PERMISSIONS = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+                    arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                } else {
+                    arrayOf(Manifest.permission.CAMERA)
+                }
 
         // Video requires access to recording audio (microphone).
         val REQUIRED_PERMISSIONS_WITH_AUDIO = arrayOf(
                 Manifest.permission.CAMERA,
-                Manifest.permission.RECORD_AUDIO,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
+                Manifest.permission.RECORD_AUDIO
         )
 
         fun checkPermission(context: Context, permission: String) =
@@ -124,15 +122,9 @@ class PermissionUtils {
             return true
         }
 
-        fun anyVideoNeededPermissionPermanentlyDenied(activity: Activity): String? {
-            if (Build.VERSION.SDK_INT >= VERSION_CODES.M) {
-                return checkPermanentDenyForPermissions(activity, REQUIRED_PERMISSIONS_WITH_AUDIO)
-            } else {
-                return null
-            }
-        }
+        fun anyVideoNeededPermissionPermanentlyDenied(activity: Activity): String? =
+                checkPermanentDenyForPermissions(activity, REQUIRED_PERMISSIONS_WITH_AUDIO)
 
-        @RequiresApi(VERSION_CODES.M)
         private fun checkPermanentDenyForPermissions(activity: Activity, permissions: Array<String>): String? {
             for (permission in permissions) {
                 if (ContextCompat.checkSelfPermission(
@@ -144,7 +136,6 @@ class PermissionUtils {
             return null
         }
 
-        @RequiresApi(VERSION_CODES.M)
         fun neverAskAgainSelected(
             activity: Activity,
             permission: String

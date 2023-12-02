@@ -1,7 +1,11 @@
+@file:Suppress("DEPRECATION")
+
 package com.automattic.photoeditor.camera
 
+import android.Manifest.permission
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.pm.PackageManager
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
@@ -36,6 +40,7 @@ import androidx.camera.core.VideoCapture
 import androidx.camera.core.VideoCapture.OnVideoSavedCallback
 import androidx.camera.core.ViewPort
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.util.Consumer
 import androidx.lifecycle.LifecycleOwner
@@ -164,6 +169,40 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                 // during the lifecycle of this use case
                 .setTargetRotation(textureView.display.rotation)
                 .build()
+//======= FROM TRUNK ??
+//        // Get screen metrics used to setup camera for full screen resolution
+//        @Suppress("DEPRECATION") val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
+//        screenAspectRatio = Rational(metrics.widthPixels, metrics.heightPixels)
+//
+//        // retrieve flash availability for this camera
+//        val cameraId = CameraX.getCameraWithLensFacing(lensFacing)
+//        cameraId?.let {
+//            updateFlashSupported(it)
+//        }
+//
+//        // Create configuration object for the preview use case
+//        val previewConfig = PreviewConfig.Builder().apply {
+//            setLensFacing(lensFacing)
+//            /*  From https://developer.android.com/jetpack/androidx/releases/camera#camera2-core-1.0.0-alpha06
+//                Aspect Ratios: For each use case, applications should call only one of setTargetResolution() or
+//                setTargetAspectRatio(). Calling both on the same builder will return an error.
+//                In general it’s recommended to use setTargetAspectRatio() based on the application’s UI design.
+//                Specific resolutions will be based on the use case. For example, preview will be near screen resolutions
+//                and image capture will provide high resolution stills. See the automatic resolutions table for more
+//                information. https://developer.android.com/training/camerax/configuration#automatic-resolution
+//                Use setTargetResolution() for more specific cases, such as when minimum (to save computation) or
+//                maximum resolutions (for processing details) are required.
+//             */
+//            // for now, we're calling setTargetAspectRatioCustom() with this device's screen aspect ratio, given
+//            // setting an aspect ratio of 4:3 would show undesired effects on alpha06 such as a stretched preview
+//            setTargetAspectRatioCustom(screenAspectRatio)
+//            // Set initial target rotation, we will have to call this again if rotation changes
+//            // during the lifecycle of this use case
+//            setTargetRotation(textureView.display.rotation)
+//        }.build()
+//
+//        videoPreview = Preview(previewConfig)
+//>>>>>>> trunk
 
         // Set up the capture use case to allow users to take photos
         imageCapture = ImageCapture.Builder()
@@ -201,6 +240,30 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                 // during the lifecycle of this use case
                 .setTargetRotation(textureView.display.rotation)
                 .build()
+//=======
+//        videoPreview.setOnPreviewOutputUpdateListener {
+//            // if, for whatever reason a pre-existing surfaceTexture was being used,
+//            // then call `release()`  on it, as per docs
+//            // https://developer.android.com/reference/androidx/camera/core/Preview.html#setOnPreviewOutputUpdateListener(androidx.camera.core.Preview.OnPreviewOutputUpdateListener)
+//            // * <p>Once {@link OnPreviewOutputUpdateListener#onUpdated(PreviewOutput)}  is called,
+//            //     * ownership of the {@link PreviewOutput} and its contents is transferred to the application. It
+//            //     * is the application's responsibility to release the last {@link SurfaceTexture} returned by
+//            //     * {@link PreviewOutput#getSurfaceTexture()} when a new SurfaceTexture is provided via an update
+//            //     * or when the user is finished with the use case.  A SurfaceTexture is created each time the
+//            //     * use case becomes active and no previous SurfaceTexture exists.
+//            textureView.surfaceTexture?.release()
+//
+//            // Also removing and re-adding the TextureView here, due to the following reasons:
+//            // https://developer.android.com/reference/androidx/camera/core/Preview.html#setOnPreviewOutputUpdateListener(androidx.camera.core.Preview.OnPreviewOutputUpdateListener)
+//            // * Calling TextureView.setSurfaceTexture(SurfaceTexture) when the TextureView's SurfaceTexture is already
+//            // * created, should be preceded by calling ViewGroup.removeView(View) and ViewGroup.addView(View) on the
+//            // * parent view of the TextureView to ensure the setSurfaceTexture() call succeeds.
+//            val parent = textureView.parent as ViewGroup
+//            parent.removeView(textureView)
+//            parent.addView(textureView, 0)
+//            textureView.setSurfaceTexture(it.surfaceTexture)
+//        }
+//>>>>>>> trunk
 
         // we used to bind all use cases to lifecycle on start
         // DON'T do this, may end up with this: https://github.com/Automattic/stories-android/issues/50
@@ -276,43 +339,25 @@ class CameraXBasicHandling : VideoRecorderFragment() {
         currentFile?.let { captureFile ->
             captureFile.createNewFile()
 
-//            // unbind this use case for now, we'll re-bind later
-//            imageCapture?.let {
-//                if (cameraProvider.isBound(it)) {
-//                    cameraProvider.unbind(it)
-//                }
-//            }
-//
-//            // if a previous instance exists, request to release muxer and buffers
-//            videoCapture?.let {
-//                if (cameraProvider.isBound(it)) {
-//                    cameraProvider.unbind(it)
-//                }
-//            }
-//
-//            val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
-//            val videoTargetResolution = VideoUtils.normalizeTargetVideoSize(metrics.widthPixels, metrics.heightPixels)
-//            Log.d("DEBUG", "START RECORDING metrics: " + metrics.widthPixels + "x" + metrics.heightPixels)
-//            Log.d("DEBUG", "START RECORDING videoTargetResolution: " + videoTargetResolution.width + "x" + videoTargetResolution.height)
-//
-//            // Set up the capture use case to allow users to take photos
-//            videoCapture = VideoCapture.Builder()
-//                    // We request aspect ratio but no resolution to match preview config but letting
-//                    // CameraX optimize for whatever specific resolution best fits requested capture mode
-//                    // .setTargetAspectRatio(AspectRatio.RATIO_16_9)
-//                    .setTargetResolution(videoTargetResolution)
-//                    // Set initial target rotation, we will have to call this again if rotation changes
-//                    // during the lifecycle of this use case
-//                    .setTargetRotation(textureView.display.rotation)
-//                    .build()
-//
-//            // video capture only
-//            val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
-//            cameraProvider.bindToLifecycle(activity as LifecycleOwner, cameraSelector, videoCapture)
 
             val outputFileOptions = VideoCapture.OutputFileOptions.Builder(captureFile)
                     .build()
 
+//            if (ActivityCompat.checkSelfPermission(
+//                            this,
+//                            permission.RECORD_AUDIO
+//                    ) != PackageManager.PERMISSION_GRANTED) {
+//                // TODO: Consider calling
+//                //    ActivityCompat#requestPermissions
+//                // here to request the missing permissions, and then overriding
+//                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+//                //                                          int[] grantResults)
+//                // to handle the case where the user grants the permission. See the documentation
+//                // for ActivityCompat#requestPermissions for more details.
+//                return
+//            }
+
+            @Suppress("DEPRECATION")
             videoCapture?.startRecording(
                     outputFileOptions,
                     ContextCompat.getMainExecutor(context),
@@ -371,6 +416,7 @@ class CameraXBasicHandling : VideoRecorderFragment() {
                 }
 
                 // Setup image capture listener which is triggered after photo has been taken
+                @Suppress("DEPRECATION")
                 imageCapture?.takePicture(
                         outputFileOptions,
                         ContextCompat.getMainExecutor(context),

@@ -87,7 +87,6 @@ class GlToneCurveFilter(input: InputStream) : GlFilter(GlFilter.DEFAULT_VERTEX_S
 
     private fun setFromCurveFileInputStream(input: InputStream) {
         try {
-            val version = readShort(input).toInt()
             val totalCurves = readShort(input).toInt()
 
             val curves = ArrayList<Array<PointF>?>(totalCurves)

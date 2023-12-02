@@ -22,14 +22,15 @@ import com.automattic.photoeditor.text.TextStyler
 import com.wordpress.stories.R
 import com.wordpress.stories.compose.StoriesAnalyticsListener
 import com.wordpress.stories.compose.text.TextColorPickerAdapter.Companion.Mode
-import kotlinx.android.synthetic.main.add_text_dialog.*
-import kotlinx.android.synthetic.main.color_picker_bottom_sheet.*
+import com.wordpress.stories.databinding.AddTextDialogBinding
 
 /**
  * Created by Burhanuddin Rashid on 1/16/2018.
  */
 
 class TextEditorDialogFragment : DialogFragment() {
+    private var binding: AddTextDialogBinding? = null
+
     @ColorInt private var colorCode: Int = 0
     @ColorInt private var backgroundColorCode: Int = Color.TRANSPARENT
 
@@ -69,7 +70,8 @@ class TextEditorDialogFragment : DialogFragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.add_text_dialog, container, false)
+        binding = AddTextDialogBinding.inflate(inflater)
+        return binding?.root
     }
 
     override fun onStop() {
@@ -82,7 +84,7 @@ class TextEditorDialogFragment : DialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         arguments?.let {
-            add_text_edit_text.setText(it.getString(EXTRA_INPUT_TEXT))
+            binding?.addTextEditText?.setText(it.getString(EXTRA_INPUT_TEXT))
             colorCode = it.getInt(EXTRA_TEXT_COLOR_CODE)
             backgroundColorCode = it.getInt(EXTRA_TEXT_BACKGROUND_COLOR_CODE)
             textAlignment = TextAlignment.valueOf(it.getInt(EXTRA_TEXT_ALIGNMENT))
@@ -93,63 +95,68 @@ class TextEditorDialogFragment : DialogFragment() {
             ColorPickerBottomSheetHandler(it, view)
         }
 
-        // Hide the bottom sheet if the user taps in the EditText
-        add_text_edit_text.setOnClickListener {
-            bottomSheetHandler?.hideBottomSheet()
-        }
+        binding?.let {
+            // Hide the bottom sheet if the user taps in the EditText
+            it.addTextEditText.setOnClickListener {
+                bottomSheetHandler?.hideBottomSheet()
+            }
 
-        textSizeSlider = TextSizeSlider(text_size_slider, add_text_edit_text, resources) {
-            textStyleGroupManager.customFontSizeApplied = true
-        }
+            textSizeSlider = TextSizeSlider(it.textSizeSlider, it.addTextEditText, resources) {
+                textStyleGroupManager.customFontSizeApplied = true
+            }
 
-        initTextColoring()
+            with(it) {
+                initTextColoring()
 
-        text_alignment_button.setOnClickListener {
-            textAlignment = TextAlignment.getNext(textAlignment)
-            updateTextAlignment(textAlignment)
-        }
+                it.textAlignmentButton.setOnClickListener {
+                    textAlignment = TextAlignment.getNext(textAlignment)
+                    updateTextAlignment(textAlignment)
+                }
 
-        text_style_toggle_button?.setOnClickListener {
-            typefaceId = textStyleGroupManager.getNextTypeface(typefaceId)
-            textStyleGroupManager.styleTextView(typefaceId, add_text_edit_text)
-            textStyleGroupManager.styleAndLabelTextView(typefaceId, text_style_toggle_button)
-            trackTextStyleToggled()
-            textSizeSlider.update()
-        }
+                it.textStyleToggleButton.setOnClickListener {
+                    typefaceId = textStyleGroupManager.getNextTypeface(typefaceId)
+                    textStyleGroupManager.styleTextView(typefaceId, addTextEditText)
+                    textStyleGroupManager.styleAndLabelTextView(typefaceId, textStyleToggleButton)
+                    trackTextStyleToggled()
+                    this@TextEditorDialogFragment.textSizeSlider.update()
+                }
 
-        color_picker_button.setOnClickListener {
-            bottomSheetHandler?.toggleBottomSheet()
-        }
+                it.colorPickerButton.setOnClickListener {
+                    bottomSheetHandler?.toggleBottomSheet()
+                }
+                // Apply any existing styling to text
+                it.addTextEditText.setTextColor(colorCode)
+                applyBackgroundColor(backgroundColorCode)
 
-        // Apply any existing styling to text
-        add_text_edit_text.setTextColor(colorCode)
-        applyBackgroundColor(backgroundColorCode)
+                updateTextAlignment(textAlignment)
 
-        updateTextAlignment(textAlignment)
+                // This first time pass the font size so we know if we should fix the size
+                val initialTextSize = arguments?.getFloat(EXTRA_TEXT_SIZE) ?: 0F
 
-        // This first time pass the font size so we know if we should fix the size
-        val initialTextSize = arguments?.getFloat(EXTRA_TEXT_SIZE) ?: 0F
+                textStyleGroupManager.styleTextView(typefaceId, it.addTextEditText, initialTextSize)
+                textStyleGroupManager.styleAndLabelTextView(typefaceId, it.textStyleToggleButton)
 
-        textStyleGroupManager.styleTextView(typefaceId, add_text_edit_text, initialTextSize)
-        textStyleGroupManager.styleAndLabelTextView(typefaceId, text_style_toggle_button)
+                this@TextEditorDialogFragment.textSizeSlider.update()
 
-        textSizeSlider.update()
+                updateColorPickerButton()
 
-        updateColorPickerButton()
+                addTextEditText.requestFocus()
 
-        add_text_edit_text.requestFocus()
-
-        // Make a callback on activity when user is done with text editing
-        add_text_done_button?.setOnClickListener {
-            dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
-            dismiss()
+                // Make a callback on activity when user is done with text editing
+                addTextDoneButton.setOnClickListener {
+                    dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
+                    dismiss()
+                }
+            }
         }
     }
 
     override fun onDismiss(dialog: DialogInterface) {
-        val inputText = add_text_edit_text?.text.toString()
-        textEditor?.onDone(inputText, TextStyler.from(add_text_edit_text, typefaceId, backgroundColorCode))
-        textEditorAnalyticsHandler?.report()
+        binding?.let {
+            val inputText = it.addTextEditText.text.toString()
+            textEditor?.onDone(inputText, TextStyler.from(it.addTextEditText, typefaceId, backgroundColorCode))
+            textEditorAnalyticsHandler?.report()
+        }
         super.onDismiss(dialog)
     }
 
@@ -163,17 +170,17 @@ class TextEditorDialogFragment : DialogFragment() {
         textEditorAnalyticsHandler = TextEditorAnalyticsHandler { analyticsListener?.trackStoryTextChanged(it) }
     }
 
-    private fun initTextColoring() {
+    private fun AddTextDialogBinding.initTextColoring() {
         activity?.let {
             // Set up the color picker for text color
             val textColorPickerAdapter = TextColorPickerAdapter(it, Mode.FOREGROUND, colorCode).apply {
                 setOnColorPickerClickListener { colorCode ->
                     this@TextEditorDialogFragment.colorCode = colorCode
-                    add_text_edit_text?.setTextColor(colorCode)
+                    addTextEditText.setTextColor(colorCode)
                     updateColorPickerButton()
                 }
             }
-            with(text_color_picker_recycler_view) {
+            with(colorPickerBottomSheet.textColorPickerRecyclerView) {
                 this.layoutManager = LinearLayoutManager(it, LinearLayoutManager.HORIZONTAL, false)
                 setHasFixedSize(true)
                 this.adapter = textColorPickerAdapter
@@ -186,10 +193,10 @@ class TextEditorDialogFragment : DialogFragment() {
                     applyBackgroundColor(colorCode)
                     updateColorPickerButton()
                     // Reapply the styles, since text shadow depends on the background color + style combination
-                    textStyleGroupManager.styleTextView(typefaceId, add_text_edit_text)
+                    textStyleGroupManager.styleTextView(typefaceId, addTextEditText)
                 }
             }
-            with(text_background_color_picker_recycler_view) {
+            with(colorPickerBottomSheet.textBackgroundColorPickerRecyclerView) {
                 this.layoutManager = LinearLayoutManager(it, LinearLayoutManager.HORIZONTAL, false)
                 setHasFixedSize(true)
                 this.adapter = textBgColorPickerAdapter
@@ -197,7 +204,7 @@ class TextEditorDialogFragment : DialogFragment() {
         }
     }
 
-    private fun updateTextAlignment(textAlignment: TextAlignment) {
+    private fun AddTextDialogBinding.updateTextAlignment(textAlignment: TextAlignment) {
         // Externally, we track text alignment as one of the allowed values for View#setTextAlignment.
         // However text alignment doesn't seem to work well for modifying EditTexts after they're already
         // drawn, so we're relying on view gravity to change alignment in the EditText on the fly.
@@ -205,18 +212,20 @@ class TextEditorDialogFragment : DialogFragment() {
         // intended, so this gravity/text alignment dichotomy seems necessary.)
         // We should still set the textAlignment value though to make it easier to extract style values from the
         // EditText when the fragment is dismissed.
-        add_text_edit_text.textAlignment = textAlignment.value
-        add_text_edit_text.gravity = when (textAlignment) {
+        addTextEditText.textAlignment = textAlignment.value
+        addTextEditText.gravity = when (textAlignment) {
             TextAlignment.LEFT -> Gravity.START or Gravity.CENTER_VERTICAL
             TextAlignment.CENTER -> Gravity.CENTER_HORIZONTAL or Gravity.CENTER_VERTICAL
             TextAlignment.RIGHT -> Gravity.END or Gravity.CENTER_VERTICAL
         }
 
-        text_alignment_button.setImageResource(when (textAlignment) {
-            TextAlignment.LEFT -> R.drawable.ic_gridicons_align_left_32
-            TextAlignment.CENTER -> R.drawable.ic_gridicons_align_center_32
-            TextAlignment.RIGHT -> R.drawable.ic_gridicons_align_right_32
-        })
+        textAlignmentButton.setImageResource(
+            when (textAlignment) {
+                TextAlignment.LEFT -> R.drawable.ic_gridicons_align_left_32
+                TextAlignment.CENTER -> R.drawable.ic_gridicons_align_center_32
+                TextAlignment.RIGHT -> R.drawable.ic_gridicons_align_right_32
+            }
+        )
 
         // The background span needs to be re-applied to adjust for the alignment change
         applyBackgroundColor(backgroundColorCode)
@@ -226,8 +235,8 @@ class TextEditorDialogFragment : DialogFragment() {
      * Applies the given background color as a span to the EditText.
      * Will clear any background color spans if [colorCode] is [Color.TRANSPARENT].
      */
-    private fun applyBackgroundColor(@ColorInt colorCode: Int) {
-        add_text_edit_text.text?.apply {
+    private fun AddTextDialogBinding.applyBackgroundColor(@ColorInt colorCode: Int) {
+        addTextEditText.text?.apply {
             // Clear any existing background color spans
             getSpans(0, length, RoundedBackgroundColorSpan::class.java)?.forEach { removeSpan(it) }
             if (colorCode != Color.TRANSPARENT) {
@@ -240,9 +249,9 @@ class TextEditorDialogFragment : DialogFragment() {
     /**
      * Colorizes the color picker button image with the current text and text background colors.
      */
-    private fun updateColorPickerButton() {
+    private fun AddTextDialogBinding.updateColorPickerButton() {
         context?.let { context ->
-            PathAwareVectorDrawable(context, R.drawable.ic_textcolor, color_picker_button).apply {
+            PathAwareVectorDrawable(context, R.drawable.ic_textcolor, colorPickerButton).apply {
                 // The path names used need to be defined as 'name' properties in the drawable.
                 setPathFillColor("inner-fill", colorCode)
                 setPathFillColor("outer-fill", backgroundColorCode)
@@ -252,6 +261,11 @@ class TextEditorDialogFragment : DialogFragment() {
 
     private fun trackTextStyleToggled() {
         textEditorAnalyticsHandler?.trackTextStyleToggled(textStyleGroupManager.getAnalyticsLabelFor(typefaceId))
+    }
+
+    override fun onDestroyView() {
+        binding = null
+        super.onDestroyView()
     }
 
     companion object {
@@ -273,8 +287,10 @@ class TextEditorDialogFragment : DialogFragment() {
                 arguments = Bundle().apply {
                     putString(EXTRA_INPUT_TEXT, inputText)
 
-                    putInt(EXTRA_TEXT_COLOR_CODE, textStyler?.textColor
-                                ?: ContextCompat.getColor(appCompatActivity, android.R.color.white))
+                    putInt(
+                        EXTRA_TEXT_COLOR_CODE, textStyler?.textColor
+                        ?: ContextCompat.getColor(appCompatActivity, android.R.color.white)
+                    )
                     putInt(EXTRA_TEXT_BACKGROUND_COLOR_CODE, textStyler?.textBackgroundColor ?: Color.TRANSPARENT)
                     putInt(EXTRA_TEXT_ALIGNMENT, textStyler?.textAlignment ?: TextAlignment.default())
                     putInt(EXTRA_TYPEFACE, textStyler?.typefaceId ?: TextStyleGroupManager.TYPEFACE_ID_NUNITO)

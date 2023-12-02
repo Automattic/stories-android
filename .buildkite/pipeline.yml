@@ -1,0 +1,79 @@
+common_params:
+  # Common plugin settings to use with the `plugins` key.
+  - &common_plugins
+    - automattic/a8c-ci-toolkit#2.15.0
+
+steps:
+  - label: "Gradle Wrapper Validation"
+    command: |
+      validate_gradle_wrapper
+    plugins: *common_plugins
+
+  # Wait for Gradle Wrapper to be validated before running any other jobs
+  - wait
+
+  - group: "🕵️ Linters"
+    key: all-linters
+    steps:
+      - label: "🕵️ checkstyle"
+        command: |
+          cp gradle.properties-example gradle.properties
+          ./gradlew checkstyle
+        plugins: *common_plugins
+        artifact_paths:
+          - "**/build/reports/checkstyle/checkstyle.*"
+
+      - label: "🕵️ ktlint"
+        command: |
+          cp gradle.properties-example gradle.properties
+          ./gradlew ciktlint
+        plugins: *common_plugins
+        artifact_paths:
+          - "**/build/ktlint.xml"
+
+      - label: "🕵️ Lint"
+        command: |
+          cp gradle.properties-example gradle.properties
+          ./gradlew lintRelease
+        artifact_paths:
+          - "**/build/reports/lint-results*.*"
+
+  - group: 🔬 Unit Tests
+    key: all-unit-tests
+    steps:
+      - label: "🔬 Unit Test"
+        command: |
+          cp gradle.properties-example gradle.properties
+          ./gradlew testRelease
+        plugins: *common_plugins
+
+  - group: 🚀 Publish to S3
+    key: publish-to-s3
+    depends_on:
+      - all-linters
+      - all-unit-tests
+    steps:
+      - label: "🚀 Publish :mp4compose"
+        key: "publish-mp4compose"
+        plugins: *common_plugins
+        command: |
+          cp gradle.properties-example gradle.properties
+          .buildkite/publish-mp4compose.sh
+
+      - label: "🚀 Publish :photoeditor"
+        key: "publish-photoeditor"
+        depends_on:
+          - "publish-mp4compose"
+        plugins: *common_plugins
+        command: |
+          cp gradle.properties-example gradle.properties
+          .buildkite/publish-photoeditor.sh
+
+      - label: "🚀 Publish :stories"
+        key: "publish-stories"
+        depends_on:
+          - "publish-photoeditor"
+        plugins: *common_plugins
+        command: |
+          cp gradle.properties-example gradle.properties
+          .buildkite/publish-stories.sh

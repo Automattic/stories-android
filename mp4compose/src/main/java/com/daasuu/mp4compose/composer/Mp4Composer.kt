@@ -21,7 +21,7 @@ import java.util.concurrent.Executors
  * Created by sudamasayuki on 2017/11/15.
  */
 
-class Mp4Composer {
+class Mp4Composer : ComposerInterface {
     private val srcUri: Uri?
     private val destPath: String
     private var filter: GlFilter? = null
@@ -68,7 +68,7 @@ class Mp4Composer {
         return this
     }
 
-    fun filter(filter: GlFilter?): Mp4Composer {
+    override fun filter(filter: GlFilter?): Mp4Composer {
         this.filter = filter
         return this
     }
@@ -78,7 +78,7 @@ class Mp4Composer {
         return this
     }
 
-    fun size(size: Size): Mp4Composer {
+    override fun size(size: Size): Mp4Composer {
         this.outputResolution = size
         return this
     }
@@ -88,7 +88,7 @@ class Mp4Composer {
         return this
     }
 
-    fun mute(mute: Boolean): Mp4Composer {
+    override fun mute(mute: Boolean): Mp4Composer {
         this.mute = mute
         return this
     }
@@ -108,7 +108,7 @@ class Mp4Composer {
         return this
     }
 
-    fun fillMode(fillMode: FillMode): Mp4Composer {
+    override fun fillMode(fillMode: FillMode): Mp4Composer {
         this.fillMode = fillMode
         return this
     }
@@ -119,7 +119,7 @@ class Mp4Composer {
         return this
     }
 
-    fun listener(listener: Listener): Mp4Composer {
+    override fun listener(listener: Listener): Mp4Composer {
         this.listener = listener
         return this
     }
@@ -136,7 +136,7 @@ class Mp4Composer {
         return executorService!!
     }
 
-    fun start(): Mp4Composer {
+    override fun start(): Mp4Composer {
         getExecutorService().execute(Runnable {
             val engine = Mp4ComposerEngine()
 
@@ -236,7 +236,7 @@ class Mp4Composer {
                         mute,
                         Rotation.fromInt(rotation.rotation), // FIXME assume portrait for now
                         staticImageResolution,
-                        fillMode!!,
+                        fillMode,
                         fillModeCustomItem!!,
                         timeScale,
                         flipVertical,
@@ -265,27 +265,6 @@ class Mp4Composer {
         getExecutorService().shutdownNow()
     }
 
-    interface Listener {
-        /**
-         * Called to notify progress.
-         *
-         * @param progress Progress in [0.0, 1.0] range, or negative value if progress is unknown.
-         */
-        fun onProgress(progress: Double)
-
-        /**
-         * Called when transcode completed.
-         */
-        fun onCompleted()
-
-        /**
-         * Called when transcode canceled.
-         */
-        fun onCanceled()
-
-        fun onFailed(exception: Exception)
-    }
-
     private fun initializeUriDataSource(engine: Mp4ComposerEngine) {
         engine.setDataSource(srcUri, addedRequestHeaders)
     }
@@ -294,19 +273,17 @@ class Mp4Composer {
         var mediaMetadataRetriever: MediaMetadataRetriever? = null
         try {
             mediaMetadataRetriever = MediaMetadataRetriever()
-            videoUri?.let { uri ->
-                context?.let {
-                    DataSourceUtil.setDataSource(
-                        it,
-                        uri,
-                        mediaExtractor = null,
-                        mediaMetadataRetriever = mediaMetadataRetriever,
-                        addedRequestHeaders = addedRequestHeaders
-                    )
-                }
+            context?.let {
+                DataSourceUtil.setDataSource(
+                    it,
+                    videoUri,
+                    mediaExtractor = null,
+                    mediaMetadataRetriever = mediaMetadataRetriever,
+                    addedRequestHeaders = addedRequestHeaders
+                )
             }
             val orientation = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)
-            return Integer.valueOf(orientation)
+            return orientation?.let { Integer.valueOf(it) } ?: 0
         } catch (e: IllegalArgumentException) {
             Log.e("MediaMetadataRetriever", "getVideoRotation IllegalArgumentException")
             return 0
@@ -345,10 +322,14 @@ class Mp4Composer {
                 )
             }
 
-            val width = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH))
-            val height = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT))
+            val width = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)
+            val height = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)
 
-            return Size(width, height)
+            return if (width != null && height != null) {
+                Size(Integer.valueOf(width), Integer.valueOf(height))
+            } else {
+                defaultResolution
+            }
         } catch (e: IllegalArgumentException) {
             Log.e("MediaMetadataRetriever", "getVideoResolution IllegalArgumentException")
             return defaultResolution

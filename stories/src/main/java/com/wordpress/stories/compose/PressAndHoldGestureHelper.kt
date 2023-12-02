@@ -20,6 +20,7 @@ class PressAndHoldGestureHelper(
 ) : View.OnTouchListener {
     private var holding = false
     private var canceled = false
+    @Suppress("DEPRECATION")
     private var handler = Handler()
     private val runnable = Runnable {
         // when this section runs, it means they've been holding the button

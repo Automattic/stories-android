@@ -1,15 +1,17 @@
-apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
+plugins {
+    id "com.android.library"
+    id "org.jetbrains.kotlin.android"
+    id "com.automattic.android.publish-to-s3"
+}
 
 android {
+    namespace "com.daasuu.mp4compose"
+
     compileSdkVersion rootProject.compileSdkVersion
 
     defaultConfig {
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
-        versionCode 1
-        versionName "0.2.0"
     }
 
     buildTypes {
@@ -18,7 +20,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    lintOptions {
+    lint {
         abortOnError false
     }
 
@@ -26,12 +28,25 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
 
-    implementation 'com.github.bumptech.glide:glide:4.10.0'
+    implementation "com.github.bumptech.glide:glide:$glideVersion"
 
-    lintChecks 'org.wordpress:lint:1.0.1'
+    lintChecks "org.wordpress:lint:$wordPressLintVersion"
 }
 repositories {
     mavenCentral()
+}
+
+project.afterEvaluate {
+    publishing {
+        publications {
+            MP4ComposePublication(MavenPublication) {
+                from components.release
+
+                groupId "com.automattic.stories"
+                artifactId "mp4compose"
+                // version is set by 'publish-to-s3' plugin
+            }
+        }
+   }
 }

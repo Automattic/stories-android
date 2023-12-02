@@ -1,19 +1,19 @@
-apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
-apply plugin: 'kotlin-kapt'
-apply plugin: 'kotlinx-serialization'
+plugins {
+    id "com.android.library"
+    id "org.jetbrains.kotlin.android"
+    id "org.jetbrains.kotlin.kapt"
+    id "org.jetbrains.kotlin.plugin.serialization"
+    id "com.automattic.android.publish-to-s3"
+}
 
 android {
+    namespace "com.automattic.photoeditor"
+
     compileSdkVersion rootProject.compileSdkVersion
 
     defaultConfig {
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
-
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
     }
 
@@ -34,37 +34,48 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serializationVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$kotlinxSerializationVersion"
 
-    implementation "androidx.appcompat:appcompat:$appCompatVersion"
-    implementation "androidx.core:core-ktx:$coreVersion"
+    implementation "androidx.appcompat:appcompat:$androidxAppcompatVersion"
+    implementation "androidx.core:core-ktx:$androidxCoreVersion"
 
     // jetpack camera library versions
     // check https://developer.android.com/jetpack/androidx/releases/camera for updates
     // CameraX core library
-    def camerax_version = "1.0.0-rc02"
-    def camerax_view_version = "1.0.0-alpha21"
-    implementation "androidx.camera:camera-core:${camerax_version}"
-    implementation "androidx.camera:camera-camera2:${camerax_version}"
-    implementation "androidx.camera:camera-view:${camerax_view_version}"
-    implementation "androidx.camera:camera-lifecycle:${camerax_version}"
+    implementation "androidx.camera:camera-core:$androidxCameraVersion"
+    implementation "androidx.camera:camera-camera2:$androidxCameraVersion"
+    implementation "androidx.camera:camera-view:$androidxCameraVersion"
+    implementation "androidx.camera:camera-lifecycle:$androidxCameraVersion"
 
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion"
 
-    implementation 'com.google.android.material:material:1.2.1'
+    implementation "com.google.android.material:material:$googleMaterialVersion"
 
-    implementation 'com.github.bumptech.glide:glide:4.10.0'
-    kapt 'com.github.bumptech.glide:compiler:4.10.0'
+    implementation "com.github.bumptech.glide:glide:$glideVersion"
+    kapt "com.github.bumptech.glide:compiler:$glideVersion"
 
-    implementation project(path: ':mp4compose')
+    implementation "jp.wasabeef:glide-transformations:$glideTransformationsVersion"
+    
+    implementation "com.github.chrisbanes:PhotoView:$chrisbanesPhotoviewVersion"
 
-    lintChecks 'org.wordpress:lint:1.0.1'
+    implementation mp4composeProjectDependency
 
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    implementation 'androidx.emoji:emoji:1.0.0'
+    implementation "androidx.emoji:emoji:$androidxEmojiVersion"
 }
 repositories {
     mavenCentral()
+}
+
+project.afterEvaluate {
+    publishing {
+        publications {
+            PhotoEditorPublication(MavenPublication) {
+                from components.release
+
+                groupId "com.automattic.stories"
+                artifactId "photoeditor"
+                // version is set by 'publish-to-s3' plugin
+            }
+        }
+   }
 }

@@ -1,19 +1,24 @@
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
-apply plugin: 'kotlin-kapt'
-apply plugin: 'io.sentry.android.gradle'
+plugins {
+    id "com.android.application"
+    id "org.jetbrains.kotlin.android"
+    id "io.sentry.android.gradle"
+    id "org.jetbrains.kotlin.kapt"
+}
+
+apply from: "../stories-common.gradle"
 
 android {
+    namespace "com.automattic.loop"
+
     compileSdkVersion rootProject.compileSdkVersion
 
     signingConfigs {
         release {
-            if (rootProject.hasProperty("storeFile") 
-                && rootProject.hasProperty("storePassword") 
-                && rootProject.hasProperty("keyAlias") 
+            if (rootProject.hasProperty("storeFile")
+                && rootProject.hasProperty("storePassword")
+                && rootProject.hasProperty("keyAlias")
                 && rootProject.hasProperty("keyPassword")
-            ) { 
+            ) {
                 storeFile file("${rootDir}/${rootProject.storeFile}")
                 storePassword rootProject.storePassword
                 keyAlias rootProject.keyAlias
@@ -33,8 +38,10 @@ android {
         } else {
             versionName "1.0.0.14-prealpha"
         }
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         signingConfig signingConfigs.release
+    }
+    viewBinding {
+        enabled = true
     }
     buildTypes {
         release {
@@ -46,78 +53,75 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    lintOptions {
+    lint {
         abortOnError false
-        lintConfig file('lint.xml')
+        lintConfig file("${project.rootDir}/lint.xml")
+        disable("IconLocation")
+    }
+    buildFeatures {
+        buildConfig true
     }
 
     useLibrary 'android.test.runner'
 }
 
-ext {
-    flipperVersion = '0.50.0'
-}
-
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
 
-    implementation "androidx.appcompat:appcompat:$appCompatVersion"
-    implementation "androidx.constraintlayout:constraintlayout:$constraintLayoutVersion"
-    implementation "androidx.core:core-ktx:$coreVersion"
-    implementation "androidx.navigation:navigation-fragment-ktx:$navComponentVersion"
-    implementation "androidx.navigation:navigation-ui-ktx:$navComponentVersion"
-    implementation 'androidx.emoji:emoji:1.0.0'
-    implementation "androidx.preference:preference-ktx:1.1.1"
-    implementation "androidx.recyclerview:recyclerview:1.1.0"
-    implementation "androidx.preference:preference-ktx:1.1.1"
+    implementation "androidx.appcompat:appcompat:$androidxAppcompatVersion"
+    implementation "androidx.constraintlayout:constraintlayout:$androidxConstraintlayoutVersion"
+    implementation "androidx.core:core-ktx:$androidxCoreVersion"
+    implementation "androidx.navigation:navigation-fragment-ktx:$androidxNavigationVersion"
+    implementation "androidx.navigation:navigation-ui-ktx:$androidxNavigationVersion"
+    implementation "androidx.emoji:emoji:$androidxEmojiVersion"
+    implementation "androidx.preference:preference-ktx:$androidxPreferenceVersion"
+    implementation "androidx.recyclerview:recyclerview:$androidxRecyclerviewVersion"
 
-    implementation 'com.google.android.material:material:1.2.1'
+    implementation "com.google.android.material:material:$googleMaterialVersion"
 
-    implementation 'com.github.bumptech.glide:glide:4.10.0'
-    kapt 'com.github.bumptech.glide:compiler:4.10.0'
+    implementation "com.github.bumptech.glide:glide:$glideVersion"
+    kapt "com.github.bumptech.glide:compiler:$glideVersion"
 
-    implementation 'org.greenrobot:eventbus:3.1.1'
+    implementation "org.greenrobot:eventbus:$eventBusVersion"
 
-    implementation 'io.sentry:sentry-android:1.7.27'
+    implementation "io.sentry:sentry-android:$sentryAndroidVersion"
     // this dependency is not required if you are already using your own
     // slf4j implementation
-    implementation 'org.slf4j:slf4j-nop:1.7.25'
+    implementation "org.slf4j:slf4j-nop:$slf4jVersion"
+
+    // lifecycle
+    implementation "androidx.lifecycle:lifecycle-common-java8:$androidxLifecycleVersion"
 
     implementation project(path: ':photoeditor')
     implementation project(path: ':stories')
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion"
 
-    implementation('org.wordpress:utils:1.26')
+    implementation('org.wordpress:utils:trunk-1ed207c03d2242b6fc3d74f9e388e9163cbc82a6')
 
     debugImplementation "com.facebook.flipper:flipper:$flipperVersion"
-    debugImplementation 'com.facebook.soloader:soloader:0.9.0'
+    debugImplementation "com.facebook.soloader:soloader:$soloaderVersion"
     debugImplementation "com.facebook.flipper:flipper-network-plugin:$flipperVersion"
 
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    lintChecks "org.wordpress:lint:$wordPressLintVersion"
 }
 
-tasks.register('createBuildConfigFieldsFromProperties') {
-    // Add properties named "loop.xxx" to our BuildConfig
-    android.buildTypes.all { buildType ->
-        def properties = rootProject.loadGradleProperties()
-        properties.any { property ->
-        if (property.key.toLowerCase().startsWith("loop.")) {
-                buildType.buildConfigField "String", property.key.replace("loop.", "").replace(".", "_").toUpperCase(),
-                        "\"${property.value}\""
-            }
-            else if (property.key.toLowerCase().startsWith("sentry.dsn")) {
-                buildType.buildConfigField "String", property.key.replace(".", "_").toUpperCase(),
-                        "\"${property.value}\""
-            }
-            else if (property.key.toLowerCase().startsWith("loop.res.")) {
-                buildType.resValue "string", property.key.replace("loop.res.", "").replace(".", "_").toLowerCase(),
-                        "${property.value}"
-            }
+// Add properties named "loop.xxx" to our BuildConfig
+android.buildTypes.all { buildType ->
+    def inputFile = file("${rootDir}/gradle.properties")
+    def properties = loadGradleProperties(inputFile)
+    properties.any { property ->
+    if (property.key.toLowerCase().startsWith("loop.")) {
+            buildType.buildConfigField "String", property.key.replace("loop.", "").replace(".", "_").toUpperCase(),
+                    "\"${property.value}\""
+        }
+        else if (property.key.toLowerCase().startsWith("sentry.dsn")) {
+            buildType.buildConfigField "String", property.key.replace(".", "_").toUpperCase(),
+                    "\"${property.value}\""
+        }
+        else if (property.key.toLowerCase().startsWith("loop.res.")) {
+            buildType.resValue "string", property.key.replace("loop.res.", "").replace(".", "_").toLowerCase(),
+                    "${property.value}"
         }
     }
 }
-
-preBuild.dependsOn(tasks.named("createBuildConfigFieldsFromProperties"))
 

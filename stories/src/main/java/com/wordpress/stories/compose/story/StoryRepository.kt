@@ -54,7 +54,7 @@ object StoryRepository {
         }
     }
 
-    private fun isStoryIndexValid(storyIndex: StoryIndex): Boolean {
+    fun isStoryIndexValid(storyIndex: StoryIndex): Boolean {
         return storyIndex > DEFAULT_NONE_SELECTED && stories.size > storyIndex
     }
 

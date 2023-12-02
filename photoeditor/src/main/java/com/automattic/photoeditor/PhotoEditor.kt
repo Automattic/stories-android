@@ -37,8 +37,6 @@ import com.automattic.photoeditor.util.FileUtils
 import com.automattic.photoeditor.util.VideoUtils
 import com.automattic.photoeditor.views.PhotoEditorView
 import com.automattic.photoeditor.views.ViewType
-import com.automattic.photoeditor.views.ViewType.EMOJI
-import com.automattic.photoeditor.views.ViewType.TEXT
 import com.automattic.photoeditor.views.added.AddedView
 import com.automattic.photoeditor.views.added.AddedViewInfo
 import com.automattic.photoeditor.views.added.AddedViewList
@@ -48,14 +46,15 @@ import com.automattic.photoeditor.views.filter.CustomEffect
 import com.automattic.photoeditor.views.filter.PhotoFilter
 import com.bumptech.glide.Glide
 import com.daasuu.mp4compose.FillMode
-import com.daasuu.mp4compose.composer.Mp4Composer
+import com.daasuu.mp4compose.composer.ComposerProvider
+import com.daasuu.mp4compose.composer.ComposerUseCase.SaveVideoAsFile
+import com.daasuu.mp4compose.composer.ComposerUseCase.SaveVideoFromBgAsFile
+import com.daasuu.mp4compose.composer.Listener
 import com.daasuu.mp4compose.filter.GlFilter
 import com.daasuu.mp4compose.filter.GlFilterGroup
 import com.daasuu.mp4compose.filter.GlGifWatermarkFilter
 import com.daasuu.mp4compose.filter.GlWatermarkFilter
 import com.daasuu.mp4compose.filter.ViewPositionInfo
-import kotlinx.android.synthetic.main.view_photo_editor_emoji.view.*
-import kotlinx.android.synthetic.main.view_photo_editor_text.view.*
 import java.io.File
 import java.io.FileInputStream
 import java.lang.ref.WeakReference
@@ -242,7 +241,8 @@ class PhotoEditor private constructor(builder: Builder) :
     fun addText(
         text: String,
         textStyler: TextStyler? = null,
-        isViewBeingReadded: Boolean = false
+        isViewBeingReadded: Boolean = false,
+        addTouchListener: Boolean = false
     ): View? {
         brushDrawingView.brushDrawingMode = false
         val view: View?
@@ -254,9 +254,11 @@ class PhotoEditor private constructor(builder: Builder) :
 
 //            textInputTv.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
 
-            val multiTouchListenerInstance = getNewMultitouchListener() // newMultiTouchListener
-            setGestureControlOnMultiTouchListener(this, ViewType.TEXT, multiTouchListenerInstance)
-            setOnTouchListener(multiTouchListenerInstance)
+            if (addTouchListener) {
+                val multiTouchListenerInstance = getNewMultitouchListener() // newMultiTouchListener
+                setGestureControlOnMultiTouchListener(this, ViewType.TEXT, multiTouchListenerInstance)
+                setOnTouchListener(multiTouchListenerInstance)
+            }
             addViewToParent(this, ViewType.TEXT)
 
             // now open TextEditor right away if this is new text being added
@@ -341,7 +343,7 @@ class PhotoEditor private constructor(builder: Builder) :
 
             val multiTouchListenerInstance = getNewMultitouchListener(this) // newMultiTouchListener
             setGestureControlOnMultiTouchListener(this, ViewType.EMOJI, multiTouchListenerInstance)
-            touchableArea.setOnTouchListener(multiTouchListenerInstance)
+            findViewById<View>(R.id.touchableArea)?.setOnTouchListener(multiTouchListenerInstance)
             // setOnTouchListener(multiTouchListenerInstance)
             addViewToParent(this, ViewType.EMOJI)
         }
@@ -366,14 +368,19 @@ class PhotoEditor private constructor(builder: Builder) :
     fun addViewToParentWithTouchListener(addedView: AddedView) {
         addedView.view?.let {
             addViewToParentWithTouchListener(it, addedView.viewType, addedView.uri)
-        } ?: buildViewFromAddedViewInfo(addedView.viewInfo, addedView.viewType)
+        } ?: buildViewFromAddedViewInfo(addedView.viewInfo, addedView.viewType, true)
+        .also { addedView.view = it }
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    private fun buildViewFromAddedViewInfo(addedViewInfo: AddedViewInfo, viewType: ViewType): View? {
+    fun buildViewFromAddedViewInfo(
+        addedViewInfo: AddedViewInfo,
+        viewType: ViewType,
+        addTouchListener: Boolean
+    ): View? {
         var view: View? = null
         when (viewType) {
-            EMOJI -> {
+            ViewType.EMOJI -> {
                 // create emoji view layout
                 view = addEmoji(addedViewInfo.addedViewTextInfo.text)
                 view?.let {
@@ -382,20 +389,26 @@ class PhotoEditor private constructor(builder: Builder) :
                     // the actual calculated text size as obtained from the view is expressed in px.
                     emojiTextView?.setTextSize(TypedValue.COMPLEX_UNIT_PX, addedViewInfo.addedViewTextInfo.fontSizePx)
 
-                    val multiTouchListenerInstance = getNewMultitouchListener(it) // newMultiTouchListener
-                    setGestureControlOnMultiTouchListener(it, viewType, multiTouchListenerInstance)
-                    it.touchableArea?.setOnTouchListener(multiTouchListenerInstance)
+                    if (addTouchListener) {
+                        val multiTouchListenerInstance = getNewMultitouchListener(it) // newMultiTouchListener
+                        setGestureControlOnMultiTouchListener(it, viewType, multiTouchListenerInstance)
+                        it.findViewById<TextView>(R.id.touchableArea)?.setOnTouchListener(multiTouchListenerInstance)
+                    }
                 }
             }
-            TEXT -> {
+            ViewType.TEXT -> {
                 // create TEXT view layout
                 val textStyler = TextStyler.from(addedViewInfo.addedViewTextInfo)
                 view = addText(
-                    text = addedViewInfo.addedViewTextInfo.text,
-                    textStyler = textStyler,
-                    isViewBeingReadded = true
+                        text = addedViewInfo.addedViewTextInfo.text,
+                        textStyler = textStyler,
+                        isViewBeingReadded = true,
+                        addTouchListener = addTouchListener
                 )
             }
+            ViewType.BRUSH_DRAWING -> Unit // Do nothing
+            ViewType.IMAGE -> Unit // Do nothing
+            ViewType.STICKER_ANIMATED -> Unit // Do nothing
         }
 
         // now apply all common parameters to newly created view object
@@ -422,7 +435,7 @@ class PhotoEditor private constructor(builder: Builder) :
         multiTouchListener: MultiTouchListener
     ) {
         when {
-            viewType == EMOJI -> {
+            viewType == ViewType.EMOJI -> {
                 multiTouchListener.setOnGestureControl(object :
                         MultiTouchListener.OnGestureControl {
                     override fun onClick() {
@@ -435,8 +448,8 @@ class PhotoEditor private constructor(builder: Builder) :
                 })
             }
 
-            viewType == TEXT -> {
-                val textInputTv = rootView.tvPhotoEditorText
+            viewType == ViewType.TEXT -> {
+                val textInputTv = rootView.findViewById<PhotoEditorTextView>(R.id.tvPhotoEditorText)
                 multiTouchListener.setOnGestureControl(object :
                         MultiTouchListener.OnGestureControl {
                     override fun onClick() {
@@ -465,34 +478,36 @@ class PhotoEditor private constructor(builder: Builder) :
         when (viewType) {
             ViewType.TEXT -> {
                 rootView = layoutInflater.inflate(R.layout.view_photo_editor_text, null)
-                if (rootView.tvPhotoEditorText != null) {
-                    rootView.tvPhotoEditorText.gravity = Gravity.CENTER
+
+                rootView.findViewById<PhotoEditorTextView>(R.id.tvPhotoEditorText)?.let {
+                    it.gravity = Gravity.CENTER
                     if (mDefaultTextTypeface != null) {
-                        rootView.tvPhotoEditorText.identifiableTypeface = mDefaultTextTypeface
+                        it.identifiableTypeface = mDefaultTextTypeface
                     }
                 }
             }
             ViewType.IMAGE -> rootView = layoutInflater.inflate(R.layout.view_photo_editor_image, null)
             ViewType.EMOJI -> {
                 rootView = layoutInflater.inflate(R.layout.view_photo_editor_emoji, null)
-                val txtTextEmoji = rootView.tvPhotoEditorEmoji
-                if (txtTextEmoji != null) {
+                rootView.findViewById<TextView>(R.id.tvPhotoEditorText)?.let {
                     TextViewCompat.setAutoSizeTextTypeWithDefaults(
-                        txtTextEmoji, TextViewCompat.AUTO_SIZE_TEXT_TYPE_UNIFORM)
+                        it, TextViewCompat.AUTO_SIZE_TEXT_TYPE_UNIFORM)
                     if (mDefaultEmojiTypeface != null) {
-                        txtTextEmoji.typeface = mDefaultEmojiTypeface
+                        it.typeface = mDefaultEmojiTypeface
                     }
-                    txtTextEmoji.gravity = Gravity.CENTER
-                    txtTextEmoji.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+                    it.gravity = Gravity.CENTER
+                    it.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
                 }
             }
+
+            ViewType.BRUSH_DRAWING -> Unit // Do nothing
+            ViewType.STICKER_ANIMATED -> Unit // Do nothing
         }
 
-        if (rootView != null) {
-            // We are setting tag as ViewType to identify what type of the view it is
-            // when we remove the view from stack i.e onRemoveViewListener(ViewType viewType, int numberOfAddedViews);
-            rootView.tag = viewType
-        }
+        // We are setting tag as ViewType to identify what type of the view it is
+        // when we remove the view from stack i.e onRemoveViewListener(ViewType viewType, int numberOfAddedViews);
+        rootView?.tag = viewType
+
         return rootView
     }
 
@@ -551,6 +566,7 @@ class PhotoEditor private constructor(builder: Builder) :
                 if (removedViewWithData != null && addToRedoList) {
                     redoViews.add(removedViewWithData)
                 }
+                @Suppress("DEPRECATION")
                 mOnPhotoEditorListener?.onRemoveViewListener(addedViews.size)
                 mOnPhotoEditorListener?.onRemoveViewListener(viewType, addedViews.size)
             }
@@ -572,6 +588,7 @@ class PhotoEditor private constructor(builder: Builder) :
                 parentView.removeView(removeView.view)
                 redoViews.add(removeView)
             }
+            @Suppress("DEPRECATION")
             mOnPhotoEditorListener?.onRemoveViewListener(addedViews.size)
             val viewTag = removeView.view?.tag
             (viewTag as? ViewType)?.let {
@@ -784,14 +801,23 @@ class PhotoEditor private constructor(builder: Builder) :
                 }
                 else -> {
                     clearHelperBox()
-                    filterCollection.add(GlWatermarkFilter(BitmapUtil.createBitmapFromView(v.view), viewPositionInfo))
+                    v.view?.let {
+                        filterCollection.add(GlWatermarkFilter(BitmapUtil.createBitmapFromView(it), viewPositionInfo))
+                    }
                 }
             }
         }
 
-        Mp4Composer(videoInputPath, videoOutputPath)
-            .with(context)
-            .addedHeaders(authenticationHeadersInterface?.getAuthHeaders(videoInputPath.toString()))
+        val composer = ComposerProvider.getComposerForUseCase(
+                SaveVideoAsFile(
+                        videoInputPath,
+                        videoOutputPath,
+                        context,
+                        authenticationHeadersInterface?.getAuthHeaders(videoInputPath.toString())
+                )
+        )
+
+        composer
 //            .size(width, height)
             // IMPORTANT: as we aim at a WYSIWYG UX, we need to produce a video of size equal to that of the phone
             // screen, given the user may be seeing a letterbox landscape video and placing emoji / text around
@@ -802,7 +828,7 @@ class PhotoEditor private constructor(builder: Builder) :
             .fillMode(FillMode.PRESERVE_ASPECT_FIT)
             .filter(if (customAddedViews.isNotEmpty()) GlFilterGroup(filterCollection) else null)
             .mute(muteAudio)
-            .listener(object : Mp4Composer.Listener {
+            .listener(object : Listener {
                 override fun onProgress(progress: Double) {
                     Log.d(TAG, "onProgress = $progress")
                     onSaveListener.onProgress(progress)
@@ -821,6 +847,10 @@ class PhotoEditor private constructor(builder: Builder) :
                 override fun onFailed(exception: Exception) {
                     Log.e(TAG, "onFailed()", exception)
                     onSaveListener.onFailure(exception)
+                }
+
+                override fun onStart() {
+                    Log.d(TAG, "onStart()")
                 }
             })
             .start()
@@ -854,7 +884,6 @@ class PhotoEditor private constructor(builder: Builder) :
     /**
      * Produce a new video with a static background image
      *
-     * @param saveSettings builder for multiple save options [SaveSettings]
      * @param onSaveListener callback for saving video
      * @see OnSaveListener
      */
@@ -862,7 +891,6 @@ class PhotoEditor private constructor(builder: Builder) :
     @RequiresPermission(allOf = [Manifest.permission.WRITE_EXTERNAL_STORAGE])
     fun saveVideoFromStaticBackgroundAsFile(
         videoOutputPath: String,
-        saveSettings: SaveSettings,
         onSaveListener: OnSaveWithCancelListener
     ) {
         val widthParent = parentView.width
@@ -888,9 +916,11 @@ class PhotoEditor private constructor(builder: Builder) :
                 }
                 else -> {
                     clearHelperBox()
-                    filterCollection.add(
-                        GlWatermarkFilter(BitmapUtil.createBitmapFromView(oneView.view), viewPositionInfo)
-                    )
+                    oneView.view?.let {
+                        filterCollection.add(
+                                GlWatermarkFilter(BitmapUtil.createBitmapFromView(it), viewPositionInfo)
+                        )
+                    }
                 }
             }
         }
@@ -898,11 +928,13 @@ class PhotoEditor private constructor(builder: Builder) :
         // take the static background image
         val bmp = createBitmapFromView(parentView.source)
 
-        Mp4Composer(bmp, videoOutputPath)
-            .size(bmp.width, bmp.height) // FIXME check whether these are the right values or not
+        val composer = ComposerProvider.getComposerForUseCase(SaveVideoFromBgAsFile(bmp, videoOutputPath))
+
+        composer
+            .size(Size(bmp.width, bmp.height)) // FIXME check whether these are the right values or not
             .fillMode(FillMode.PRESERVE_ASPECT_FIT)
             .filter(GlFilterGroup(filterCollection))
-            .listener(object : Mp4Composer.Listener {
+            .listener(object : Listener {
                 override fun onProgress(progress: Double) {
                     Log.d(TAG, "onProgress = $progress")
                     // TODO: show progress to user
@@ -922,8 +954,11 @@ class PhotoEditor private constructor(builder: Builder) :
                     Log.e(TAG, "onFailed()", exception)
                     onSaveListener.onFailure(exception)
                 }
-            })
-            .start()
+
+                override fun onStart() {
+                    Log.d(TAG, "onStart()")
+                }
+            }).start()
     }
 
     // TODO to be used in conjunction with mp4composer
@@ -982,6 +1017,7 @@ class PhotoEditor private constructor(builder: Builder) :
             }
             redoViews.add(removeView)
         }
+        @Suppress("DEPRECATION")
         mOnPhotoEditorListener?.onRemoveViewListener(addedViews.size)
         mOnPhotoEditorListener?.onRemoveViewListener(ViewType.BRUSH_DRAWING, addedViews.size)
     }
@@ -998,8 +1034,27 @@ class PhotoEditor private constructor(builder: Builder) :
         return (addedViews.size > 0)
     }
 
+    @Synchronized
     fun getViewsAdded(): AddedViewList {
+        // always make sure to return a freshly z-index-ordered AddedViewList
+        reorderAddedViewListAccordingToZIndex()
         return addedViews
+    }
+
+    @Synchronized
+    private fun reorderAddedViewListAccordingToZIndex() {
+        val reorderedAddedViewList = AddedViewList()
+        for (oneView in parentView.zIndexOrderedAddedViews) {
+            when (oneView.tag) {
+                ViewType.TEXT, ViewType.EMOJI, ViewType.STICKER_ANIMATED -> {
+                    addedViews.getAddedViewForNativeView(oneView)?.let {
+                        reorderedAddedViewList.add(it)
+                    }
+                }
+            }
+        }
+        addedViews.clear()
+        addedViews.addAll(reorderedAddedViewList)
     }
 
     /**

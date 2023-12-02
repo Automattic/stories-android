@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Begin text spacing -->
     <!-- The pairs of padding and horizontal margin for the TextView and EditText are interrelated - we want the
     resulting width of each view to be the same, so that long text added in the EditText wraps in the same places
@@ -15,8 +15,8 @@
     <dimen name="text_view_padding">8dp</dimen>
     <dimen name="text_view_horizontal_margin">36dp</dimen>
 
-    <dimen name="edit_text_padding">@dimen/text_view_padding</dimen>
-    <dimen name="edit_text_horizontal_margin">16dp</dimen>
+    <dimen name="edit_text_padding" tools:ignore="UnusedResources">@dimen/text_view_padding</dimen>
+    <dimen name="edit_text_horizontal_margin" tools:ignore="UnusedResources">16dp</dimen>
 
     <dimen name="rounded_background_color_span_padding">@dimen/text_view_padding</dimen>
     <dimen name="rounded_background_color_span_radius">4dp</dimen>

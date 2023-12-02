@@ -3,6 +3,7 @@ package com.automattic.loop.photopicker;
 import android.Manifest.permission;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.view.LayoutInflater;
@@ -10,15 +11,14 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.PopupMenu;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.ActionMode;
 import androidx.core.content.ContextCompat;
@@ -26,10 +26,10 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.automattic.loop.photopicker.utils.AniUtils;
-import com.automattic.loop.photopicker.PhotoPickerAdapter.PhotoPickerAdapterListener;
 import com.automattic.loop.R;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.automattic.loop.databinding.PhotoPickerFragmentBinding;
+import com.automattic.loop.photopicker.PhotoPickerAdapter.PhotoPickerAdapterListener;
+import com.automattic.loop.photopicker.utils.AniUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,20 +61,16 @@ public class PhotoPickerFragment extends Fragment {
         void onPhotoPickerIconClicked(@NonNull PhotoPickerIcon icon);
     }
 
-    private EmptyViewRecyclerView mRecycler;
     private PhotoPickerAdapter mAdapter;
-    private View mBottomBar;
-    private ActionableEmptyView mSoftAskView;
     private ActionMode mActionMode;
     private GridLayoutManager mGridManager;
     private Parcelable mRestoreState;
     private PhotoPickerListener mListener;
     private PhotoPickerIcon mLastTappedIcon;
     private MediaBrowserType mBrowserType;
-//    private SiteModel mSite;
+    //    private SiteModel mSite;
     private ArrayList<Integer> mSelectedPositions;
-    private TextView mChooseItemsDescription;
-    private FloatingActionButton mTakePicture;
+    private PhotoPickerFragmentBinding mBinding = null;
 
 //    public static PhotoPickerFragment newInstance(@NonNull PhotoPickerListener listener,
 //                                                  @NonNull MediaBrowserType browserType,
@@ -121,25 +117,26 @@ public class PhotoPickerFragment extends Fragment {
         }
     }
 
+    @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.photo_picker_fragment, container, false);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.photo_picker_fragment, container, false);
+    }
 
-        mTakePicture = view.findViewById(R.id.take_picture);
-        mTakePicture.setOnClickListener(new OnClickListener() {
-            @Override public void onClick(View view) {
-                doIconClicked(PhotoPickerIcon.WP_STORIES_CAPTURE);
-            }
-        });
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-        mRecycler = view.findViewById(R.id.recycler);
-        mRecycler.setEmptyView(view.findViewById(R.id.actionable_empty_view));
-        mRecycler.setHasFixedSize(true);
+        mBinding = PhotoPickerFragmentBinding.bind(view);
+        mBinding.takePicture.setOnClickListener(v -> doIconClicked(PhotoPickerIcon.WP_STORIES_CAPTURE));
+        mBinding.recycler.setEmptyView(mBinding.actionableEmptyView);
+        mBinding.recycler.setHasFixedSize(true);
 
         // disable thumbnail loading during a fling to conserve memory
         final int minDistance = ViewConfiguration.get(getActivity()).getScaledMaximumFlingVelocity() / 2;
 
-        mRecycler.setOnFlingListener(new RecyclerView.OnFlingListener() {
+        mBinding.recycler.setOnFlingListener(new RecyclerView.OnFlingListener() {
             @Override
             public boolean onFling(int velocityX, int velocityY) {
                 if (Math.abs(velocityY) > minDistance) {
@@ -148,7 +145,7 @@ public class PhotoPickerFragment extends Fragment {
                 return false;
             }
         });
-        mRecycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        mBinding.recycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
@@ -158,10 +155,8 @@ public class PhotoPickerFragment extends Fragment {
             }
         });
 
-        mBottomBar = view.findViewById(R.id.bottom_bar);
-
         if (!canShowBottomBar()) {
-            mBottomBar.setVisibility(View.GONE);
+            mBinding.bottomBar.setVisibility(View.GONE);
         } else {
 //            mBottomBar.findViewById(R.id.icon_camera).setOnClickListener(new View.OnClickListener() {
 //                @Override
@@ -173,15 +168,12 @@ public class PhotoPickerFragment extends Fragment {
 //                    }
 //                }
 //            });
-            mBottomBar.findViewById(R.id.icon_picker).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (mBrowserType == MediaBrowserType.GRAVATAR_IMAGE_PICKER
-                        || mBrowserType == MediaBrowserType.SITE_ICON_PICKER) {
-                        doIconClicked(PhotoPickerIcon.ANDROID_CHOOSE_PHOTO);
-                    } else {
-                        showPickerPopupMenu(v);
-                    }
+            mBinding.iconPicker.setOnClickListener(v -> {
+                if (mBrowserType == MediaBrowserType.GRAVATAR_IMAGE_PICKER
+                    || mBrowserType == MediaBrowserType.SITE_ICON_PICKER) {
+                    doIconClicked(PhotoPickerIcon.ANDROID_CHOOSE_PHOTO);
+                } else {
+                    showPickerPopupMenu(v);
                 }
             });
 
@@ -198,12 +190,6 @@ public class PhotoPickerFragment extends Fragment {
 //                });
 //            }
         }
-
-        mSoftAskView = view.findViewById(R.id.soft_ask_view);
-
-        mChooseItemsDescription = view.findViewById(R.id.text_choose_items_to_add);
-
-        return view;
     }
 
     private boolean canShowBottomBar() {
@@ -244,7 +230,7 @@ public class PhotoPickerFragment extends Fragment {
             || icon == PhotoPickerIcon.ANDROID_CAPTURE_VIDEO
             || icon == PhotoPickerIcon.WP_STORIES_CAPTURE) {
             if (ContextCompat.checkSelfPermission(
-                    getActivity(), permission.CAMERA) != PackageManager.PERMISSION_GRANTED || !hasStoragePermission()) {
+                getActivity(), permission.CAMERA) != PackageManager.PERMISSION_GRANTED || !hasStoragePermission()) {
 //                requestCameraPermission();
                 Toast.makeText(getActivity(), "Need permissions", Toast.LENGTH_SHORT).show();
                 return;
@@ -362,7 +348,7 @@ public class PhotoPickerFragment extends Fragment {
     }
 
     private boolean isBottomBarShowing() {
-        return mBottomBar.getVisibility() == View.VISIBLE;
+        return mBinding.bottomBar.getVisibility() == View.VISIBLE;
     }
 
     private final PhotoPickerAdapterListener mAdapterListener = new PhotoPickerAdapterListener() {
@@ -370,13 +356,13 @@ public class PhotoPickerFragment extends Fragment {
         public void onSelectedCountChanged(int count) {
             if (count == 0) {
                 finishActionMode();
-                mTakePicture.show();
+                mBinding.takePicture.show();
             } else {
                 if (mActionMode == null) {
                     ((AppCompatActivity) getActivity()).startSupportActionMode(new ActionModeCallback());
                 }
                 updateActionModeTitle(mAdapter.isSelectedSingleItemVideo());
-                mTakePicture.hide();
+                mBinding.takePicture.hide();
             }
         }
 
@@ -394,9 +380,9 @@ public class PhotoPickerFragment extends Fragment {
             }
 
             if (isEmpty) {
-                mChooseItemsDescription.setVisibility(View.GONE);
+                mBinding.textChooseItemsToAdd.setVisibility(View.GONE);
             } else {
-                mChooseItemsDescription.setVisibility(View.VISIBLE);
+                mBinding.textChooseItemsToAdd.setVisibility(View.VISIBLE);
             }
         }
     };
@@ -421,7 +407,7 @@ public class PhotoPickerFragment extends Fragment {
             return;
         }
 
-        if (!hasStoragePermission()) {
+        if (!hasPhotosVideosPermission()) {
             return;
         }
 
@@ -431,8 +417,8 @@ public class PhotoPickerFragment extends Fragment {
         }
 
         mGridManager = new GridLayoutManager(getActivity(), NUM_COLUMNS);
-        mRecycler.setLayoutManager(mGridManager);
-        mRecycler.setAdapter(getAdapter());
+        mBinding.recycler.setLayoutManager(mGridManager);
+        mBinding.recycler.setAdapter(getAdapter());
         getAdapter().refresh(true);
     }
 
@@ -513,13 +499,49 @@ public class PhotoPickerFragment extends Fragment {
             mActionMode = null;
             showBottomBar();
             getAdapter().clearSelection();
-            mTakePicture.show();
+            mBinding.takePicture.show();
+        }
+    }
+
+    private boolean hasPhotosVideosPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            return hasReadMediaImagesPermission() && hasReadMediaVideoPermission();
+        } else {
+            // For devices lower than API 33, storage permission is the equivalent of Photos and Videos permission
+            return hasReadStoragePermission();
         }
     }
 
     private boolean hasStoragePermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            return ContextCompat.checkSelfPermission(
+                    requireActivity(), permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+        } else {
+            return true;
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private boolean hasReadMediaImagesPermission() {
         return ContextCompat.checkSelfPermission(
-                getActivity(), permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+                requireActivity(),
+                permission.READ_MEDIA_IMAGES
+        ) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private boolean hasReadMediaVideoPermission() {
+        return ContextCompat.checkSelfPermission(
+                requireActivity(),
+                permission.READ_MEDIA_VIDEO
+        ) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private boolean hasReadStoragePermission() {
+        return ContextCompat.checkSelfPermission(
+                requireContext(),
+                permission.READ_EXTERNAL_STORAGE
+        ) == PackageManager.PERMISSION_GRANTED;
     }
 
 ///*
@@ -538,7 +560,7 @@ public class PhotoPickerFragment extends Fragment {
             return;
         }
 
-        if (hasStoragePermission()) {
+        if (hasPhotosVideosPermission()) {
             showSoftAskView(false);
             if (!hasAdapter()) {
                 reload();
@@ -578,6 +600,11 @@ public class PhotoPickerFragment extends Fragment {
 //                }
 //                break;
 //        }
+    }
+
+    @Override public void onDestroyView() {
+        super.onDestroyView();
+        mBinding = null;
     }
 
     /*
@@ -623,10 +650,10 @@ public class PhotoPickerFragment extends Fragment {
 //                }
 //            });
 //
-            mSoftAskView.setVisibility(View.VISIBLE);
+            mBinding.softAskView.setVisibility(View.VISIBLE);
 //            hideBottomBar();
-        } else if (mSoftAskView.getVisibility() == View.VISIBLE) {
-            AniUtils.fadeOut(mSoftAskView, AniUtils.Duration.MEDIUM);
+        } else if (mBinding.softAskView.getVisibility() == View.VISIBLE) {
+            AniUtils.fadeOut(mBinding.softAskView, AniUtils.Duration.MEDIUM);
 //            showBottomBar();
         }
     }

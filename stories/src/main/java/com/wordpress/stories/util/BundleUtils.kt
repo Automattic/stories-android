@@ -19,7 +19,7 @@ fun getStoryIndexFromIntentOrBundle(savedInstanceState: Bundle?, intent: Intent?
     // if selection could not be obtained as KEY_STORY_INDEX intent extra or savedInstanceState,
     // see if we're getting one from KEY_STORY_SAVE_RESULT.
     if (index == DEFAULT_NONE_SELECTED) {
-        val saveResult = intent?.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
+        @Suppress("DEPRECATION") val saveResult = intent?.getParcelableExtra(KEY_STORY_SAVE_RESULT) as StorySaveResult?
         saveResult?.let {
             index = it.storyIndex
         }

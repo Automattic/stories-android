@@ -1,21 +1,27 @@
-apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
-apply plugin: 'kotlin-kapt'
-apply plugin: 'kotlinx-serialization'
+plugins {
+    id "com.android.library"
+    id "org.jetbrains.kotlin.android"
+    id "org.jetbrains.kotlin.kapt"
+    id "org.jetbrains.kotlin.plugin.serialization"
+    id "org.jetbrains.kotlin.plugin.parcelize"
+    id "com.automattic.android.publish-to-s3"
+}
+
+apply from: "../stories-common.gradle"
 
 android {
+    namespace "com.wordpress.stories"
+
     compileSdkVersion rootProject.compileSdkVersion
 
 
     defaultConfig {
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+    }
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles 'consumer-rules.pro'
+    viewBinding {
+        enabled = true
     }
 
     buildTypes {
@@ -29,70 +35,89 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+    lint {
+        lintConfig file("${project.rootDir}/lint.xml")
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serializationVersion"
-    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$kotlinxSerializationVersion"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$gradle.ext.kotlinVersion"
 
-    implementation "androidx.appcompat:appcompat:$appCompatVersion"
-    implementation "androidx.constraintlayout:constraintlayout:$constraintLayoutVersion"
-    implementation "androidx.core:core-ktx:$coreVersion"
+    implementation "androidx.appcompat:appcompat:$androidxAppcompatVersion"
+    implementation "androidx.constraintlayout:constraintlayout:$androidxConstraintlayoutVersion"
+    implementation "androidx.core:core-ktx:$androidxCoreVersion"
 
-    implementation "androidx.navigation:navigation-fragment-ktx:$navComponentVersion"
-    implementation "androidx.navigation:navigation-ui-ktx:$navComponentVersion"
-    implementation 'androidx.emoji:emoji:1.0.0'
-    implementation "androidx.recyclerview:recyclerview:1.1.0"
+    implementation "androidx.navigation:navigation-fragment-ktx:$androidxNavigationVersion"
+    implementation "androidx.navigation:navigation-ui-ktx:$androidxNavigationVersion"
+    implementation "androidx.emoji:emoji:$androidxEmojiVersion"
+    implementation "androidx.recyclerview:recyclerview:$androidxRecyclerviewVersion"
 
-    implementation 'com.google.android.material:material:1.2.1'
+    implementation "com.google.android.material:material:$googleMaterialVersion"
 
-    implementation 'com.github.bumptech.glide:glide:4.10.0'
-    kapt 'com.github.bumptech.glide:compiler:4.10.0'
+    implementation "com.github.bumptech.glide:glide:$glideVersion"
+    kapt "com.github.bumptech.glide:compiler:$glideVersion"
 
-    implementation 'org.greenrobot:eventbus:3.1.1'
+    implementation "jp.wasabeef:glide-transformations:$glideTransformationsVersion"
 
-    implementation project(path: ':photoeditor')
+    implementation "org.greenrobot:eventbus:$eventBusVersion"
 
+    implementation photoEditorProjectDependency
+
+    // lifecycle
+    implementation "androidx.lifecycle:lifecycle-common-java8:$androidxLifecycleVersion"
     // ViewModel and LiveData
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$androidxLifecycleVersion"
     // LiveData
-    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$androidxLifecycleVersion"
 
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion"
 
-    lintChecks 'org.wordpress:lint:1.0.1'
+    implementation "com.github.chrisbanes:PhotoView:$chrisbanesPhotoviewVersion"
 
-    testImplementation 'junit:junit:4.12'
-    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion"
+    lintChecks "org.wordpress:lint:$wordPressLintVersion"
 
-    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    testImplementation "junit:junit:$junitVersion"
 }
 
-tasks.register('createBuildConfigFieldsFromProperties') {
-    // Add properties named "loop.xxx" to our BuildConfig
-    android.buildTypes.all { buildType ->
-        def properties = rootProject.loadGradleProperties()
-        properties.any { property ->
-            if (property.key.toLowerCase().startsWith("wp.stories.use.")) {
-                buildType.buildConfigField "boolean", property.key.replace("wp.stories.", "").replace(".", "_").toUpperCase(), "${property.value}"
-            }
-            else if (property.key.toLowerCase().startsWith("wp.stories.")) {
-                buildType.buildConfigField "String", property.key.replace("wp.stories.", "").replace(".", "_").toUpperCase(), "\"${property.value}\""
-            }
-            else if (property.key.toLowerCase().startsWith("wp.stories.res.")) {
-                buildType.resValue "string", property.key.replace("wp.stories.res.", "").replace(".", "_").toLowerCase(), "${property.value}"
-            }
+// Add properties named "loop.xxx" to our BuildConfig
+android.buildTypes.all { buildType ->
+    def inputFile = file("${rootDir}/gradle.properties")
+    def properties = loadGradleProperties(inputFile)
+    properties.any { property ->
+        if (property.key.toLowerCase().startsWith("wp.stories.use.")) {
+            buildType.buildConfigField "boolean", property.key.replace("wp.stories.", "").replace(".", "_").toUpperCase(), "${property.value}"
         }
+        else if (property.key.toLowerCase().startsWith("wp.stories.")) {
+            buildType.buildConfigField "String", property.key.replace("wp.stories.", "").replace(".", "_").toUpperCase(), "\"${property.value}\""
+        }
+        else if (property.key.toLowerCase().startsWith("wp.stories.res.")) {
+            buildType.resValue "string", property.key.replace("wp.stories.res.", "").replace(".", "_").toLowerCase(), "${property.value}"
+        }
+    }
 
-        if (properties.getProperty("wp.stories.use.cameraX") == null) {
-            // use cameraX implementation by default if no gradle.properties set
-            buildType.buildConfigField "boolean", "USE_CAMERAX", "true"
-        }
+    if (properties.getProperty("wp.stories.use.cameraX") == null) {
+        // use cameraX implementation by default if no gradle.properties set
+        buildType.buildConfigField "boolean", "USE_CAMERAX", "true"
     }
 }
 
-preBuild.dependsOn(tasks.named("createBuildConfigFieldsFromProperties"))
+project.afterEvaluate {
+    publishing {
+        publications {
+            StoriesPublication(MavenPublication) {
+                from components.release
 
+                groupId "com.automattic"
+                artifactId "stories"
+                // version is set by 'publish-to-s3' plugin
+            }
+        }
+   }
+}

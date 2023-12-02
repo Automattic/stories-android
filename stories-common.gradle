@@ -1,0 +1,14 @@
+static def loadGradleProperties(inputFile) {
+        def properties = new Properties()
+        if (!inputFile.exists()) {
+            return properties
+        }
+        inputFile.withInputStream { stream ->
+            properties.load(stream)
+        }
+        return properties
+}
+
+ext {
+    loadGradleProperties = this.&loadGradleProperties
+}

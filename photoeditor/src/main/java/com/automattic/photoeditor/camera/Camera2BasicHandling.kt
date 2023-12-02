@@ -200,6 +200,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
     /*
     * Media recorder
     * */
+    @Suppress("DEPRECATION")
     private var mediaRecorder: MediaRecorder = MediaRecorder()
 
     /**
@@ -347,12 +348,14 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
 
                     // Find out if we need to swap dimension to get the preview size relative to sensor
                     // coordinate.
-                    val displayRotation = activity.windowManager.defaultDisplay.rotation
+                    @Suppress("DEPRECATION") val displayRotation = activity.windowManager.defaultDisplay.rotation
 
                     sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION) ?: continue
                     val swappedDimensions = areDimensionsSwapped(displayRotation, sensorOrientation)
 
-                    val metrics = DisplayMetrics().also { textureView.display.getRealMetrics(it) }
+                    @Suppress("DEPRECATION") val metrics = DisplayMetrics().also {
+                        textureView.display.getRealMetrics(it)
+                    }
                     val displaySize = Point(metrics.widthPixels, metrics.heightPixels)
 
                     val rotatedPreviewWidth = if (swappedDimensions) height else width
@@ -483,7 +486,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
             val texture = textureView.surfaceTexture
 
             // We configure the size of default buffer to be the size of camera preview we want.
-            texture.setDefaultBufferSize(previewSize.width, previewSize.height)
+            texture?.setDefaultBufferSize(previewSize.width, previewSize.height)
 
             // This is the output Surface we need to start preview.
             val surface = Surface(texture)
@@ -494,6 +497,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
                 previewRequestBuilder.addTarget(surface)
 
                 // Here, we create a CameraCaptureSession for camera preview.
+                @Suppress("DEPRECATION")
                 camera.createCaptureSession(listOf(surface, imageReader?.surface),
                     object : CameraCaptureSession.StateCallback() {
                         override fun onConfigured(cameraCaptureSession: CameraCaptureSession) {
@@ -539,7 +543,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
      */
     private fun configureTransform(viewWidth: Int, viewHeight: Int) {
         activity?.let { activity ->
-            val rotation = activity.windowManager.defaultDisplay.rotation
+            @Suppress("DEPRECATION") val rotation = activity.windowManager.defaultDisplay.rotation
             val matrix = Matrix()
             val viewRect = RectF(0f, 0f, viewWidth.toFloat(), viewHeight.toFloat())
             val bufferRect = RectF(0f, 0f, previewSize.height.toFloat(), previewSize.width.toFloat())
@@ -605,7 +609,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
      */
     private fun captureStillPicture() {
         try {
-            val rotation = activity?.windowManager?.defaultDisplay?.rotation ?: return
+            @Suppress("DEPRECATION") val rotation = activity?.windowManager?.defaultDisplay?.rotation ?: return
 
             // This is the CaptureRequest.Builder that we use to take a picture.
             cameraDevice?.let { cameraDevice ->
@@ -740,7 +744,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
             mediaRecorder.setAudioEncodingBitRate(profile.audioBitRate)
             mediaRecorder.setAudioSamplingRate(profile.audioSampleRate)
 
-            val rotation = activity.windowManager.defaultDisplay.rotation
+            @Suppress("DEPRECATION") val rotation = activity.windowManager.defaultDisplay.rotation
             when (sensorOrientation) {
                 SENSOR_ORIENTATION_DEFAULT_DEGREES ->
                     mediaRecorder.setOrientationHint(ORIENTATIONS.get(rotation))
@@ -751,6 +755,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun findCamcorderProfile(): CamcorderProfile {
         for (quality in CAMCORDER_QUALITIES) {
             if (CamcorderProfile.hasProfile(cameraId.toInt(), quality)) {
@@ -771,7 +776,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
             val texture = textureView.surfaceTexture
 
             // We configure the size of default buffer to be the size of camera preview we want.
-            texture.setDefaultBufferSize(previewSize.width, previewSize.height)
+            texture?.setDefaultBufferSize(previewSize.width, previewSize.height)
 
             // This is the output Surface we need to start preview.
             val surface = Surface(texture)
@@ -785,6 +790,7 @@ class Camera2BasicHandling : VideoRecorderFragment(), View.OnClickListener {
                 previewRequestBuilder.addTarget(recorderSurface)
 
                 // Here, we create a CameraCaptureSession for camera recording + preview.
+                @Suppress("DEPRECATION")
                 camera.createCaptureSession(listOf(surface, recorderSurface),
                     object : CameraCaptureSession.StateCallback() {
                         override fun onConfigured(cameraCaptureSession: CameraCaptureSession) {

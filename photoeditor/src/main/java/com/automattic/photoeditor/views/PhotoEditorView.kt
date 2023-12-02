@@ -1,10 +1,10 @@
 package com.automattic.photoeditor.views
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
-import android.os.Build
 import android.util.AttributeSet
 import android.util.Log
 import android.view.TextureView
@@ -13,9 +13,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.ImageView.ScaleType.CENTER_CROP
+import android.widget.ImageView.ScaleType.FIT_CENTER
 import android.widget.ProgressBar
 import android.widget.RelativeLayout
-import androidx.annotation.RequiresApi
+import androidx.appcompat.widget.AppCompatImageView
+import androidx.core.view.children
 import com.automattic.photoeditor.OnSaveBitmap
 import com.automattic.photoeditor.R.styleable
 import com.automattic.photoeditor.views.background.fixed.BackgroundImageView
@@ -24,6 +26,9 @@ import com.automattic.photoeditor.views.brush.BrushDrawingView
 import com.automattic.photoeditor.views.filter.CustomEffect
 import com.automattic.photoeditor.views.filter.ImageFilterView
 import com.automattic.photoeditor.views.filter.PhotoFilter
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
+import jp.wasabeef.glide.transformations.BlurTransformation
 
 /**
  *
@@ -40,9 +45,11 @@ import com.automattic.photoeditor.views.filter.PhotoFilter
 class PhotoEditorView : RelativeLayout {
     private lateinit var autoFitTextureView: AutoFitTextureView
     private lateinit var backgroundImage: BackgroundImageView
+    private lateinit var backgroundImageBlurred: AppCompatImageView
     private lateinit var brushDrawingView: BrushDrawingView
     private lateinit var imageFilterView: ImageFilterView
     private lateinit var progressBar: ProgressBar
+    private var attachedToWindow: Boolean = false
 
     private var surfaceListeners: ArrayList<SurfaceTextureListener> = ArrayList()
 
@@ -72,6 +79,9 @@ class PhotoEditorView : RelativeLayout {
     val source: ImageView
         get() = backgroundImage
 
+    val sourceBlurredBkg: ImageView
+        get() = backgroundImageBlurred
+
     val brush: BrushDrawingView
         get() = brushDrawingView
 
@@ -80,6 +90,9 @@ class PhotoEditorView : RelativeLayout {
 
     val listeners: ArrayList<SurfaceTextureListener>
         get() = surfaceListeners
+
+    val zIndexOrderedAddedViews: Sequence<View>
+        get() = children
 
     constructor(context: Context) : super(context) {
         init(null)
@@ -93,7 +106,6 @@ class PhotoEditorView : RelativeLayout {
         init(attrs)
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int, defStyleRes: Int) : super(
         context,
         attrs,
@@ -103,13 +115,33 @@ class PhotoEditorView : RelativeLayout {
         init(attrs)
     }
 
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        attachedToWindow = false
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        attachedToWindow = true
+    }
+
+    fun onComposerDestroyed() {
+        attachedToWindow = false
+    }
+
     @SuppressLint("Recycle")
     private fun init(attrs: AttributeSet?) {
+        backgroundImageBlurred = AppCompatImageView(context).apply {
+            id = imgBlurSrcId
+            adjustViewBounds = true
+            scaleType = CENTER_CROP
+        }
+
         // Setup image attributes
         backgroundImage = BackgroundImageView(context).apply {
             id = imgSrcId
             adjustViewBounds = true
-            scaleType = CENTER_CROP
+            scaleType = FIT_CENTER
         }
 
         val imgSrcParam = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT).apply {
@@ -159,6 +191,14 @@ class PhotoEditorView : RelativeLayout {
 
         backgroundImage.setOnImageChangedListener(object : BackgroundImageView.OnImageChangedListener {
             override fun onBitmapLoaded(sourceBitmap: Bitmap?) {
+                // We are conditioning on both the manually tracked attachedToWindow and the similar built-in flag to
+                // be reduce the likelihood of a race induced crash in Glide load. See:
+                // https://github.com/Automattic/stories-android/pull/739#discussion_r1297544914
+                if (attachedToWindow && isAttachedToWindow && (context as? Activity)?.isDestroyedOrFinishing != true) {
+                    Glide.with(context).load(sourceBitmap)
+                            .apply(RequestOptions.bitmapTransform(BlurTransformation(25, 3)))
+                            .into(backgroundImageBlurred)
+                }
                 imageFilterView.setFilterEffect(PhotoFilter.NONE)
                 imageFilterView.setSourceBitmap(sourceBitmap)
                 Log.d(TAG, "onBitmapLoaded() called with: sourceBitmap = [$sourceBitmap]")
@@ -178,6 +218,9 @@ class PhotoEditorView : RelativeLayout {
 
         // Add camera preview
         addView(autoFitTextureView, cameraParam)
+
+        // Add image source
+        addView(backgroundImageBlurred, imgSrcParam)
 
         // Add image source
         addView(backgroundImage, imgSrcParam)
@@ -232,7 +275,7 @@ class PhotoEditorView : RelativeLayout {
             })
         } else if (autoFitTextureView.visibility == View.VISIBLE) {
             // this saves just a snapshot of whatever is being displayed on the TextureSurface
-            backgroundImage.setImageBitmap(autoFitTextureView.bitmap)
+            autoFitTextureView.bitmap?.let { backgroundImage.setImageBitmap(it) }
             toggleTextureView()
             onSaveBitmap.onBitmapReady(backgroundImage.bitmap!!)
         } else {
@@ -254,11 +297,13 @@ class PhotoEditorView : RelativeLayout {
 
     internal fun turnTextureViewOn() {
         backgroundImage.visibility = View.INVISIBLE
+        backgroundImageBlurred.visibility = View.INVISIBLE
         autoFitTextureView.visibility = View.VISIBLE
     }
 
     internal fun turnTextureViewOff() {
         backgroundImage.visibility = View.VISIBLE
+        backgroundImageBlurred.visibility = View.VISIBLE
         autoFitTextureView.visibility = View.INVISIBLE
     }
 
@@ -266,11 +311,13 @@ class PhotoEditorView : RelativeLayout {
         backgroundImage.visibility = autoFitTextureView.visibility.also {
             autoFitTextureView.visibility = backgroundImage.visibility
         }
+        backgroundImageBlurred.visibility = backgroundImage.visibility
         return autoFitTextureView.visibility == View.VISIBLE
     }
 
     internal fun turnTextureAndImageViewOff() {
         backgroundImage.visibility = View.INVISIBLE
+        backgroundImageBlurred.visibility = View.INVISIBLE
         autoFitTextureView.visibility = View.INVISIBLE
     }
 
@@ -286,9 +333,12 @@ class PhotoEditorView : RelativeLayout {
 
     companion object {
         private val TAG = "PhotoEditorView"
+        private val imgBlurSrcId = 5
         private val imgSrcId = 1
         private val brushSrcId = 2
         private val glFilterId = 3
         private val cameraPreviewId = 4
+        private val Activity.isDestroyedOrFinishing
+            get() = isDestroyed || isFinishing
     }
 }

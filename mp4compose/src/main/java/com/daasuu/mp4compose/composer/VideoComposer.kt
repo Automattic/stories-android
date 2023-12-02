@@ -36,6 +36,9 @@ internal class VideoComposer {
     private var encoderStarted: Boolean = false
     var writtenPresentationTimeUs: Long = 0
         private set
+    // TODO: currently we do not use the timeScale feature. Also the timeScale ends up
+    // being converted into an int in here being a float in upper layers.
+    // See https://github.com/Automattic/stories-android/issues/685 for more context.
     private val timeScale: Int
     private var useStaticBkg: Boolean = false
     private var addedFrameCount = 0
@@ -164,7 +167,7 @@ internal class VideoComposer {
                 // byte[] input = BitmapEncodingUtils.getNV12(bkgBitmap.getWidth(), bkgBitmap.getHeight(), bkgBitmap);
                 val inputBuffer = encoder!!.getInputBuffer(inputBufIdx)
                 inputBuffer!!.clear()
-                inputBuffer.put(bkgBitmapBytesNV12)
+                inputBuffer.put(bkgBitmapBytesNV12!!)
                 encoder!!.queueInputBuffer(
                     inputBufIdx, 0, bkgBitmapBytesNV12!!.size,
                     getPresentationTimeUsec(addedFrameCount), 0
@@ -246,6 +249,7 @@ internal class VideoComposer {
     private fun drainDecoder(): Int {
         if (isDecoderEOS) return DRAIN_STATE_NONE
         val result = decoder!!.dequeueOutputBuffer(bufferInfo, 0)
+        @Suppress("DEPRECATION")
         when (result) {
             MediaCodec.INFO_TRY_AGAIN_LATER -> return DRAIN_STATE_NONE
             MediaCodec.INFO_OUTPUT_FORMAT_CHANGED, MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED ->
@@ -273,6 +277,7 @@ internal class VideoComposer {
         if (isFinished) return DRAIN_STATE_NONE
         val result = encoder!!.dequeueOutputBuffer(bufferInfo, 0)
         var encoderOutputBuffer: ByteBuffer? = null
+        @Suppress("DEPRECATION")
         when (result) {
             MediaCodec.INFO_TRY_AGAIN_LATER -> return DRAIN_STATE_NONE
             MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
@@ -285,7 +290,6 @@ internal class VideoComposer {
                 return DRAIN_STATE_SHOULD_RETRY_IMMEDIATELY
             }
             MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED -> {
-                encoderOutputBuffer = encoder!!.getOutputBuffer(result)
                 return DRAIN_STATE_SHOULD_RETRY_IMMEDIATELY
             }
             else -> {
