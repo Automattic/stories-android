@@ -27,11 +27,15 @@ object FontRequester {
 
     fun registerFont(context: Context, @FontRes fontRes: Int, fallback: Typeface) {
         // Set the font to the fallback right away in case it's requested before getFont completes.
-        fontMap[fontRes] = fallback
-        try {
-            ResourcesCompat.getFont(context, fontRes, fontCallbackFor(context, fontRes), null)
-        } catch (e: NotFoundException) {
-            Log.e(TAG, "Font ${context.resources.getResourceEntryName(fontRes)} not found")
+        if (fontMap[fontRes] == null) {
+            fontMap[fontRes] = fallback
+        }
+        if (fontMap[fontRes] == fallback) {
+            try {
+                ResourcesCompat.getFont(context, fontRes, fontCallbackFor(context, fontRes), null)
+            } catch (e: NotFoundException) {
+                Log.e(TAG, "Font ${context.resources.getResourceEntryName(fontRes)} not found")
+            }
         }
     }
 
